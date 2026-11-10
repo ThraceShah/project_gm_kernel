@@ -125,7 +125,7 @@ export const InspectionPanel: React.FC<InspectionPanelProps> = ({
 
       {/* Tab Content Body */}
       {!isCollapsed && (
-        <div className="h-64 overflow-y-auto">
+        <div className="h-48 sm:h-64 overflow-y-auto">
           {activeTab === 'checks' && <ChecksTable checks={testCase.checks} evidenceBaseDir={manifestDir} />}
           {activeTab === 'perf' && <PerformanceView perf={testCase.performance} />}
           {activeTab === 'params' && (
@@ -181,6 +181,51 @@ export const InspectionPanel: React.FC<InspectionPanelProps> = ({
                   <p className="text-xs text-slate-400">无工程备注。</p>
                 )}
               </div>
+
+              {/* Capability scope & adapter status (real fields, no inferred kernel claims) */}
+              {(testCase.capabilityScope || testCase.adapterStatus || testCase.kernelCapability !== undefined) && (
+                <div
+                  data-testid="capability-info"
+                  className="text-xs text-slate-600 bg-slate-50 p-3 rounded-md border border-slate-200 space-y-1"
+                >
+                  <h4 className="font-semibold text-slate-700">能力范围与适配状态 (Capability / Adapter)</h4>
+                  <div className="font-mono-code text-[11px]">
+                    capabilityScope={String(testCase.capabilityScope ?? '-')}
+                    {' '}adapterStatus={String(testCase.adapterStatus ?? '-')}
+                    {' '}kernelCapability={testCase.kernelCapability == null ? 'null' : String(testCase.kernelCapability)}
+                    {testCase.sessionPrecision != null ? ` sessionPrecision=${String(testCase.sessionPrecision)}` : ''}
+                  </div>
+                  <div className="text-[11px] text-slate-500">
+                    {testCase.adapterStatus === 'not-implemented'
+                      ? '展示/导出适配器未实现（web-export-adapter not-implemented），非内核操作不支持；未执行也未推断通过。'
+                      : testCase.adapterStatus === 'implemented'
+                        ? '展示/导配器已实现（web-export-adapter implemented）。'
+                        : '早期 run 未提供 adapterStatus 字段，状态以 notes 为准。'}
+                    {testCase.kernelCapability == null
+                      ? ' kernelCapability=null：内核能力未评估/未知，不能称为内核缺失。'
+                      : ''}
+                  </div>
+                </div>
+              )}
+
+              {/* Original process execution (exit codes) */}
+              {testCase.execution && (
+                <div
+                  data-testid="execution-info"
+                  className="text-xs text-slate-600 bg-slate-50 p-3 rounded-md border border-slate-200 space-y-1"
+                >
+                  <h4 className="font-semibold text-slate-700">原进程执行信息 (Execution)</h4>
+                  <div className="font-mono-code text-[11px]">
+                    exitCodes=[{(testCase.execution.exitCodes ?? (testCase.execution.exitCode !== null && testCase.execution.exitCode !== undefined ? [testCase.execution.exitCode] : [])).join(', ')}]
+                    {' '}(exitCode={String(testCase.execution.exitCode)})
+                    {' '}attempted={String(testCase.execution.attempted)}
+                    {' '}timedOut={String(testCase.execution.timedOut)}
+                  </div>
+                  <div className="text-[11px] text-slate-500">
+                    原进程退出码保留为结果数据；非零退出不代表导出成功，失败结果不得计为通过。
+                  </div>
+                </div>
+              )}
 
               {/* Source Repo Reference */}
               {testCase.source && (

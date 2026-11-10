@@ -1,6 +1,19 @@
+/**
+ * Live HTTPS verification for the published gm-kernel-progress portal.
+ *
+ * Verifies against the real Tailscale HTTPS deployment:
+ *  - homepage + JS/CSS + data index/manifest + mesh + evidence all reachable,
+ *  - both viewports actually render real geometry (stats + model pixels),
+ *  - the real FAIL cases show their values/thresholds (never green, ratio empty),
+ *  - the 390x844 layout is usable,
+ *  - fresh screenshots in temp_docs for manual review.
+ *
+ * Browser path: SMOKE_BROWSER_PATH / PLAYWRIGHT_CHROMIUM_PATH env or auto-discovered.
+ */
 import { chromium } from 'playwright-core';
 import path from 'path';
 import fs from 'fs';
+import os from 'os';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -12,106 +25,214 @@ if (!fs.existsSync(tempDocsDir)) {
   fs.mkdirSync(tempDocsDir, { recursive: true });
 }
 
-const chromePath = '/home/thrace/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome';
+function resolveBrowserPath() {
+  const candidates = [];
+  if (process.env.SMOKE_BROWSER_PATH) candidates.push(process.env.SMOKE_BROWSER_PATH);
+  if (process.env.PLAYWRIGHT_CHROMIUM_PATH) candidates.push(process.env.PLAYWRIGHT_CHROMIUM_PATH);
+  try {
+    const p = chromium.executablePath();
+    if (p) candidates.push(p);
+  } catch {
+    /* ignore */
+  }
+  const cacheRoot =
+    process.env.PLAYWRIGHT_BROWSERS_PATH || path.join(os.homedir(), '.cache', 'ms-playwright');
+  if (fs.existsSync(cacheRoot)) {
+    const dirs = fs.readdirSync(cacheRoot).sort().reverse();
+    // prefer full chromium builds over headless-shell
+    const ordered = [
+      ...dirs.filter((d) => /^chromium-\d+$/.test(d)),
+      ...dirs.filter((d) => /^chromium-/.test(d) && !/^chromium-\d+$/.test(d)),
+      ...dirs.filter((d) => !/^chromium-/.test(d)),
+    ];
+    for (const d of ordered) {
+      for (const rel of [
+        'chrome-linux64/chrome',
+        'chrome-linux/chrome',
+        'chrome-headless-shell-linux64/chrome-headless-shell',
+        'chrome-mac/Chromium.app/Contents/MacOS/Chromium',
+      ]) {
+        candidates.push(path.join(cacheRoot, d, rel));
+      }
+    }
+  }
+  candidates.push('/usr/bin/chromium', '/usr/bin/chromium-browser', '/usr/bin/google-chrome');
+  const found = candidates.find((p) => p && fs.existsSync(p));
+  if (!found) throw new Error('No Chromium binary found; set SMOKE_BROWSER_PATH');
+  return found;
+}
+
+const chromePath = resolveBrowserPath();
 const liveUrl = 'https://qingyu1-linux.tail77e06.ts.net/apps/gm-kernel-progress/';
 
-delete process.env.http_proxy;
-delete process.env.https_proxy;
-delete process.env.HTTP_PROXY;
-delete process.env.HTTPS_PROXY;
-delete process.env.all_proxy;
-delete process.env.ALL_PROXY;
+for (const k of ['http_proxy', 'https_proxy', 'HTTP_PROXY', 'HTTPS_PROXY', 'all_proxy', 'ALL_PROXY']) {
+  delete process.env[k];
+}
+
+const results = [];
+function check(name, ok, detail = '') {
+  results.push({ name, ok: !!ok, detail });
+  console.log(`${ok ? 'PASS' : 'FAIL'} ${name}${detail ? ` -- ${detail}` : ''}`);
+}
+
+async function canvasMetrics(page, idx) {
+  return page.evaluate((i) => {
+    const hosts = document.querySelectorAll('[data-testid="viewer-canvas-host"]');
+    const host = hosts[i];
+    const c = host && host.querySelector('canvas');
+    if (!c) return null;
+    const t = document.createElement('canvas');
+    t.width = c.width;
+    t.height = c.height;
+    const ctx = t.getContext('2d');
+    ctx.drawImage(c, 0, 0);
+    const d = ctx.getImageData(0, 0, t.width, t.height).data;
+    let bright = 0;
+    for (let p = 0; p < d.length; p += 4) {
+      if (Math.max(d[p], d[p + 1], d[p + 2]) >= 100) bright++;
+    }
+    return { bright };
+  }, idx);
+}
+
+async function viewerStats(page) {
+  return page.$$eval('[data-testid="viewer-canvas-host"]', (els) =>
+    els.map((e) => ({
+      bodyId: e.dataset.bodyId || '',
+      faces: Number(e.dataset.faceCount || 0),
+      triangles: Number(e.dataset.triangleCount || 0),
+    }))
+  );
+}
 
 async function verifyPortalLive() {
-  const cleanEnv = { ...process.env };
-  delete cleanEnv.http_proxy;
-  delete cleanEnv.https_proxy;
-  delete cleanEnv.HTTP_PROXY;
-  delete cleanEnv.HTTPS_PROXY;
-  delete cleanEnv.all_proxy;
-  delete cleanEnv.ALL_PROXY;
-
-  console.log(`[PortalVerify] Navigating to live HTTPS portal: ${liveUrl}`);
+  console.log(`[PortalVerify] browser: ${chromePath}`);
+  console.log(`[PortalVerify] live URL: ${liveUrl}`);
   const browser = await chromium.launch({
     executablePath: chromePath,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-gpu',
-      '--use-gl=swiftshader',
-      '--no-proxy-server',
-    ],
+    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu', '--use-gl=swiftshader', '--no-proxy-server'],
   });
-
   const errors = [];
-  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
-  page.on('pageerror', (err) => errors.push(`[Portal Page Error] ${err.message}`));
-  page.on('console', (msg) => {
-    if (msg.type() === 'error') errors.push(`[Portal Console Error] ${msg.text()}`);
-  });
 
   try {
-    const res = await page.goto(liveUrl, { waitUntil: 'networkidle', timeout: 30000 });
-    console.log(`[PortalVerify] Status: ${res.status()} ${res.statusText()}`);
-    if (res.status() !== 200) {
-      throw new Error(`Failed to load portal URL: status ${res.status()}`);
-    }
+    // ---- static assets reachable over real HTTPS ----
+    const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+    page.on('pageerror', (err) => errors.push(`[Page Error] ${err.message}`));
 
+    const indexRes = await page.request.get(liveUrl);
+    check('https: homepage 200', indexRes.ok(), String(indexRes.status()));
+    const html = await indexRes.text();
+    const assetHrefs = [...html.matchAll(/(?:src|href)="([^"]+)"/g)].map((m) => m[1]);
+    for (const href of assetHrefs.filter((h) => /\.(js|css)$/.test(h))) {
+      const r = await page.request.get(new URL(href, liveUrl).toString());
+      check(`https: asset ${href} 200`, r.ok(), String(r.status()));
+    }
+    const dataIndex = await page.request.get(`${liveUrl}data/index.json`);
+    check('https: data/index.json 200', dataIndex.ok(), String(dataIndex.status()));
+    const indexJson = await dataIndex.json();
+    const latestRunId = indexJson.latestRunId;
+    const latestSummary = indexJson.runs.find((r) => r.id === latestRunId);
+    const manifestRes = await page.request.get(`${liveUrl}data/${latestSummary.manifest}`);
+    check('https: latest manifest 200', manifestRes.ok(), String(manifestRes.status()));
+    const manifest = await manifestRes.json();
+    const counts = { pass: 0, fail: 0, missing: 0, unsupported: 0 };
+    for (const c of manifest.cases) counts[c.status] = (counts[c.status] || 0) + 1;
+    console.log(`[PortalVerify] latest run ${latestRunId}: ${JSON.stringify(counts)} total=${manifest.cases.length}`);
+
+    const meshedCase = manifest.cases.find(
+      (c) => (c.status === 'pass' || c.status === 'diagnostic') && c.steps?.length > 0 && c.steps[0].gm?.before
+    );
+    const meshPath = `${latestSummary.manifest.replace(/\/[^/]+$/, '')}/${meshedCase.steps[0].gm.before}`;
+    const meshRes = await page.request.get(`${liveUrl}data/${meshPath}`);
+    check('https: mesh JSON 200', meshRes.ok(), `${meshPath} -> ${meshRes.status()}`);
+    const evidencePath = `${latestSummary.manifest.replace(/\/[^/]+$/, '')}/${meshedCase.evidence[0].path}`;
+    const evRes = await page.request.get(`${liveUrl}data/${evidencePath}`);
+    check('https: evidence file 200', evRes.ok(), `${meshedCase.evidence[0].path} -> ${evRes.status()}`);
+
+    // ---- real page content ----
+    await page.goto(liveUrl, { waitUntil: 'networkidle', timeout: 30000 });
     await page.waitForTimeout(1500);
-
+    await page.waitForFunction(
+      () => {
+        const hs = document.querySelectorAll('[data-testid="viewer-canvas-host"]');
+        return hs.length === 2 && (hs[0].dataset.bodyId || hs[1].dataset.bodyId);
+      },
+      { timeout: 20000 }
+    );
     const bodyText = await page.textContent('body');
-    if (!bodyText.includes('GM Kernel vs Parasolid 对比工作台')) {
-      throw new Error('Title not found on live portal page');
+    check('live: workbench title', bodyText.includes('GM Kernel vs Parasolid 对比工作台'));
+    check('live: real pass count', bodyText.includes(`通过 ${counts.pass}`), `通过 ${counts.pass}`);
+    check('live: real fail count', bodyText.includes(`失败 ${counts.fail}`), `失败 ${counts.fail}`);
+    check('live: adapter-vs-kernel wording', bodyText.includes('非内核能力缺失'));
+
+    const stats = await viewerStats(page);
+    check('live: both viewers drew real geometry', stats.length === 2 && stats.every((s) => s.faces > 0 && s.triangles > 0), JSON.stringify(stats));
+    const m0 = await canvasMetrics(page, 0);
+    const m1 = await canvasMetrics(page, 1);
+    check('live: GM model pixels visible', m0 && m0.bright > 3000, `bright=${m0 && m0.bright}`);
+    check('live: PK model pixels visible', m1 && m1.bright > 3000, `bright=${m1 && m1.bright}`);
+    await page.screenshot({ path: path.join(tempDocsDir, 'webui_v2_live_desktop.png') });
+
+    // ---- real FAIL data visible on HTTPS ----
+    const failCase = manifest.cases.find((c) => c.status === 'fail' && c.checks.some((k) => k.status === 'fail' && /Inertia/.test(k.label || '')));
+    if (failCase) {
+      await page.click(`[data-case-id="${failCase.id}"]`);
+      await page.waitForTimeout(1200);
+      await page.getByText(/逐项验收/).first().click();
+      await page.waitForTimeout(300);
+      await page.evaluate(() => {
+        const rows = [...document.querySelectorAll('tr')];
+        const row = rows.find((r) => r.textContent.includes('FAIL'));
+        const body = row ? row.closest('.overflow-y-auto') : null;
+        if (row && body) {
+          body.scrollTop += row.getBoundingClientRect().top - body.getBoundingClientRect().top - Math.floor(body.clientHeight / 3);
+          body.scrollLeft = 0;
+        }
+      });
+      await page.waitForTimeout(300);
+      const failText = await page.textContent('body');
+      const inertiaFail = failCase.checks.find((k) => k.status === 'fail' && /Inertia/.test(k.label || ''));
+      check('live: fail value visible', failText.includes(inertiaFail.absDelta.toExponential(7).split('e')[0]));
+      check('live: fail threshold visible', failText.includes(String(inertiaFail.threshold)), String(inertiaFail.threshold));
+      check('live: fail ratio empty', failText.includes('比率: N/A') && !/\b0(\.0+)?x\b/.test(failText));
+      await page.screenshot({ path: path.join(tempDocsDir, 'webui_v2_live_fail.png') });
+    } else {
+      check('live: an inertia fail case exists', false, 'not found in live manifest');
     }
-    if (!bodyText.includes('Current GM / real PK oracle data')) {
-      throw new Error('Real Run data not loaded on live portal page');
-    }
-    if (!bodyText.includes('通过 4')) {
-      throw new Error('Real Pass counter not found on live portal page');
-    }
 
-    const canvases = await page.$$('canvas');
-    console.log(`[PortalVerify] Found ${canvases.length} WebGL canvases`);
-    if (canvases.length < 2) {
-      throw new Error('Expected 2 3D WebGL canvases on live portal page');
-    }
-
-    // Capture Desktop Live Portal Screenshot
-    const liveDesktopScreenshot = path.join(tempDocsDir, 'portal_https_desktop_live.png');
-    await page.screenshot({ path: liveDesktopScreenshot });
-    console.log(`[PortalVerify] Saved live desktop screenshot to: ${liveDesktopScreenshot}`);
-
-    // Verify Checks tab
-    const checksTab = await page.waitForSelector('text=逐项验收');
-    await checksTab.click();
-    await page.waitForTimeout(500);
-
-    const liveChecksScreenshot = path.join(tempDocsDir, 'portal_https_checks_live.png');
-    await page.screenshot({ path: liveChecksScreenshot });
-    console.log(`[PortalVerify] Saved live checks screenshot to: ${liveChecksScreenshot}`);
-
-    // Narrow Screen Viewport
+    // ---- mobile usable on HTTPS ----
     const mobilePage = await browser.newPage({ viewport: { width: 390, height: 844 } });
     await mobilePage.goto(liveUrl, { waitUntil: 'networkidle', timeout: 30000 });
-    await mobilePage.waitForTimeout(1000);
-
-    const liveMobileScreenshot = path.join(tempDocsDir, 'portal_https_mobile_live.png');
-    await mobilePage.screenshot({ path: liveMobileScreenshot });
-    console.log(`[PortalVerify] Saved live mobile screenshot to: ${liveMobileScreenshot}`);
+    await mobilePage.waitForTimeout(1500);
+    const mobOverflow = await mobilePage.evaluate(() => document.documentElement.scrollWidth);
+    check('live mobile: no horizontal overflow', mobOverflow <= 390, `scrollWidth=${mobOverflow}`);
+    const mobCanvas = await mobilePage.locator('[data-testid="viewer-canvas-host"]').first().boundingBox();
+    check('live mobile: canvas >= 250px wide', mobCanvas.width >= 250, `w=${mobCanvas.width}`);
+    await mobilePage.screenshot({ path: path.join(tempDocsDir, 'webui_v2_live_mobile.png') });
     await mobilePage.close();
 
+    check('live: no uncaught page errors', errors.length === 0, errors.slice(0, 3).join(' | '));
     console.log('\n======================================================');
-    console.log('🎉 LIVE PORTAL VERIFICATION FULLY PASSED!');
+    console.log(`LIVE PORTAL VERIFICATION: ${results.filter((r) => r.ok).length}/${results.length} passed`);
     console.log(`Live URL: ${liveUrl}`);
-    console.log(`Errors: ${errors.length}`);
-    if (errors.length > 0) console.error(errors);
     console.log('======================================================\n');
   } catch (err) {
-    console.error('❌ Portal verification failed:', err);
+    console.error('Portal verification failed:', err);
     process.exitCode = 1;
   } finally {
     await browser.close();
   }
+
+  const failed = results.filter((r) => !r.ok);
+  if (failed.length > 0) {
+    console.log('Failed checks:');
+    for (const f of failed) console.log(`  - ${f.name} ${f.detail}`);
+    process.exitCode = 1;
+  }
+  fs.writeFileSync(
+    path.join(tempDocsDir, 'webui_v2_live_log.txt'),
+    [`webui_v2 live portal verify -- ${new Date().toISOString()}`, `url: ${liveUrl}`, '', ...results.map((r) => `${r.ok ? 'PASS' : 'FAIL'} ${r.name}${r.detail ? ` -- ${r.detail}` : ''}`), '', `SUMMARY: ${results.length - failed.length}/${results.length} passed`].join('\n')
+  );
 }
 
 verifyPortalLive();

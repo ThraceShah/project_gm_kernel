@@ -89,6 +89,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="搜索用例 ID / 标题 / API 操作..."
+            data-testid="case-search"
             className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-md placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:bg-white text-slate-800"
           />
           {searchQuery && (
@@ -174,6 +175,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           <button
             onClick={() => onStatusFilterChange('missing')}
+            title="本次 run 未选中执行，当前证据缺失（不推断通过，也不代表内核能力缺失）"
             className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded border transition-colors ${
               statusFilter === 'missing'
                 ? 'bg-slate-600 text-white border-slate-600 font-semibold'
@@ -187,6 +189,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {counts.unsupported > 0 && (
             <button
               onClick={() => onStatusFilterChange('unsupported')}
+              title="展示/导出未适配：已注册用例，web 快照/结构化检查适配器未实现（非内核操作不支持）；未执行也未推断通过，以 manifest notes 为准"
+              data-testid="status-unsupported-pill"
               className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded border transition-colors ${
                 statusFilter === 'unsupported'
                   ? 'bg-amber-600 text-white border-amber-600 font-semibold'
@@ -194,7 +198,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               }`}
             >
               <Ban className="w-3 h-3 text-amber-600" />
-              <span>不支持 {counts.unsupported}</span>
+              <span>未适配 {counts.unsupported}</span>
             </button>
           )}
 
@@ -244,6 +248,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <div
                 key={c.id}
                 onClick={() => onSelectCase(c.id)}
+                data-testid="case-item"
+                data-case-id={c.id}
                 className={`p-3 cursor-pointer text-left transition-colors border-l-4 ${
                   isSelected
                     ? 'bg-sky-50/70 border-l-sky-600 text-sky-950 shadow-xs'
@@ -262,7 +268,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       <HelpCircle className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
                     )}
                     {c.status === 'unsupported' && (
-                      <Ban className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
+                      <Ban
+                        className="w-3.5 h-3.5 text-amber-600 flex-shrink-0"
+                        aria-label="展示/导出未适配（非内核能力缺失）"
+                      />
                     )}
                     {c.status === 'timeout' && (
                       <Clock className="w-3.5 h-3.5 text-purple-600 flex-shrink-0" />
@@ -305,6 +314,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <span>显示 {filteredCases.length} / {cases.length} 项</span>
         </div>
         <span className="font-mono-code text-[10px] text-slate-400">Schema v1</span>
+      </div>
+      <div className="px-3 pb-2 text-[10px] leading-relaxed text-slate-400 bg-slate-50">
+        未适配 = 展示/导出适配器未实现（非内核能力缺失）；缺失 = 本次 run 未执行。状态含义以各用例 manifest notes 为准。
       </div>
     </aside>
   );

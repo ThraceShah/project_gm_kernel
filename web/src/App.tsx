@@ -57,6 +57,9 @@ export const App: React.FC = () => {
   const [cameraSync, setCameraSync] = useState<boolean>(true);
   const [resetTrigger, setResetTrigger] = useState<number>(0);
 
+  // Mobile sidebar drawer
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
+
   // Request Guard & Cancellation Refs
   const manifestReqRef = useRef<number>(0);
   const manifestAbortRef = useRef<AbortController | null>(null);
@@ -255,12 +258,13 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-slate-100 overflow-hidden font-sans">
+    <div className="flex flex-col h-screen w-full bg-slate-100 overflow-hidden font-sans">
       {/* Top Header */}
       <Header
         runs={indexData?.runs || []}
         selectedRunId={selectedRunId}
         onSelectRun={setSelectedRunId}
+        latestRunId={indexData?.latestRunId || ''}
         runMeta={manifestData?.run || null}
         onRefresh={handleRefresh}
         isLoading={isLoadingIndex || isLoadingManifest}
@@ -269,6 +273,7 @@ export const App: React.FC = () => {
         onResetView={() => setResetTrigger((prev) => prev + 1)}
         isFixture={useFixture}
         onToggleFixture={handleToggleFixture}
+        onOpenSidebar={() => setSidebarOpen(true)}
       />
 
       {/* Fixture Alert Notice Banner (if active in dev) */}
@@ -341,18 +346,37 @@ export const App: React.FC = () => {
       ) : (
         // Standard Workbench Layout
         <div className="flex-1 flex overflow-hidden">
-          {/* Left Sidebar: Filter & Case List */}
-          <Sidebar
-            cases={manifestData?.cases || []}
-            selectedCaseId={selectedCaseId}
-            onSelectCase={setSelectedCaseId}
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            familyFilter={familyFilter}
-            onFamilyFilterChange={setFamilyFilter}
-            statusFilter={statusFilter}
-            onStatusFilterChange={setStatusFilter}
-          />
+          {/* Mobile drawer backdrop */}
+          {sidebarOpen && (
+            <div
+              className="fixed inset-0 bg-slate-900/40 z-30 md:hidden"
+              onClick={() => setSidebarOpen(false)}
+              data-testid="sidebar-backdrop"
+            />
+          )}
+
+          {/* Left Sidebar: Filter & Case List (drawer on narrow screens) */}
+          <div
+            data-testid="sidebar-shell"
+            className={`fixed md:static inset-y-0 left-0 z-40 max-w-[85vw] transform transition-transform duration-200 ${
+              sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+            }`}
+          >
+            <Sidebar
+              cases={manifestData?.cases || []}
+              selectedCaseId={selectedCaseId}
+              onSelectCase={(caseId) => {
+                setSelectedCaseId(caseId);
+                setSidebarOpen(false);
+              }}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              familyFilter={familyFilter}
+              onFamilyFilterChange={setFamilyFilter}
+              statusFilter={statusFilter}
+              onStatusFilterChange={setStatusFilter}
+            />
+          </div>
 
           {/* Right Area: Dual Viewport + Timeline + Inspection Panel */}
           <main className="flex-1 flex flex-col overflow-hidden bg-slate-900">
@@ -373,8 +397,11 @@ export const App: React.FC = () => {
             ) : currentCase ? (
               <>
                 {/* Active Case Top Bar */}
-                <div className="bg-slate-900 border-b border-slate-800 px-4 py-2 flex items-center justify-between gap-3 text-xs text-slate-300 z-10 flex-shrink-0">
-                  <div className="flex items-center gap-2 truncate">
+                <div
+                  data-testid="case-topbar"
+                  className="bg-slate-900 border-b border-slate-800 px-4 py-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs text-slate-300 z-10 flex-shrink-0"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
                     <span className="font-semibold text-slate-100 truncate text-sm">
                       {currentCase.title}
                     </span>
@@ -382,6 +409,13 @@ export const App: React.FC = () => {
                       ({currentCase.id})
                     </span>
                     <span
+                      title={
+                        currentCase.status === 'unsupported'
+                          ? `以 manifest notes 为准: ${currentCase.notes?.join(' ') || '未提供原因'}`
+                          : currentCase.status === 'missing'
+                            ? `以 manifest notes 为准: ${currentCase.notes?.join(' ') || '未提供原因'}`
+                            : undefined
+                      }
                       className={`px-2 py-0.5 rounded text-[11px] font-semibold whitespace-nowrap ${
                         formatStatus(currentCase.status).badgeClass
                       }`}
@@ -410,7 +444,7 @@ export const App: React.FC = () => {
                 </div>
 
                 {/* 3D Dual Viewports */}
-                <div className="flex-1 relative overflow-hidden">
+                <div className="flex-1 relative overflow-hidden min-h-[220px]" data-testid="viewport-region">
                   <ViewportContainer
                     gmMesh={gmMeshes}
                     pkMesh={pkMeshes}

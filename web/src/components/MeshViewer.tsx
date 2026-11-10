@@ -9,6 +9,8 @@ export interface CameraSyncState {
   target: [number, number, number];
   quaternion: [number, number, number, number];
   zoom: number;
+  near: number;
+  far: number;
 }
 
 interface MeshViewerProps {
@@ -43,8 +45,17 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
   const controlsRef = useRef<OrbitControls | null>(null);
   const currentMeshGroupRef = useRef<THREE.Group | null>(null);
   const isSyncingFromExternal = useRef<boolean>(false);
+  const pickThresholdRef = useRef<number>(0.1);
 
-  // Fit camera to bounding box
+  // Latest-prop refs so the scene lifecycle never depends on callback identity.
+  const cameraSyncRef = useRef<boolean>(cameraSync);
+  const onCameraChangeRef = useRef<((state: CameraSyncState) => void) | undefined>(onCameraChange);
+  useEffect(() => {
+    cameraSyncRef.current = cameraSync;
+    onCameraChangeRef.current = onCameraChange;
+  });
+
+  // Fit camera to bounding box (also publishes common near/far clipping planes)
   const fitCameraToBox = useCallback((group: THREE.Group) => {
     if (!cameraRef.current || !controlsRef.current) return;
     const box = new THREE.Box3().setFromObject(group);
@@ -52,7 +63,8 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
 
     const center = box.getCenter(new THREE.Vector3());
     const size = box.getSize(new THREE.Vector3());
-    const maxDim = Math.max(size.x, size.y, size.z, 5);
+    const maxDim = Math.max(size.x, size.y, size.z, 1e-6);
+    pickThresholdRef.current = maxDim * 0.015;
 
     const fov = cameraRef.current.fov * (Math.PI / 180);
     const cameraDistance = (maxDim / 2) / Math.tan(fov / 2) * 1.8;
@@ -66,7 +78,7 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
     controlsRef.current.update();
   }, []);
 
-  // Initialize Three.js scene
+  // Initialize Three.js scene exactly once (stable scene lifecycle)
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -88,6 +100,7 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
       powerPreference: 'high-performance',
+      preserveDrawingBuffer: true,
     });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -118,10 +131,12 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
     // Subtle CAD Floor Grid
     const grid = new THREE.GridHelper(30, 30, 0x334155, 0x1e293b);
     grid.position.y = -0.01;
+    grid.name = '__helper_grid';
     scene.add(grid);
 
     // Axes Helper
     const axes = new THREE.AxesHelper(3);
+    axes.name = '__helper_axes';
     scene.add(axes);
 
     // Render loop
@@ -133,17 +148,19 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
     };
     animate();
 
-    // Broadcast camera change
+    // Broadcast camera change (guard prevents external-sync feedback loops)
     const onControlsChange = () => {
       if (isSyncingFromExternal.current) return;
-      if (cameraSync && onCameraChange && cameraRef.current && controlsRef.current) {
+      if (cameraSyncRef.current && onCameraChangeRef.current && cameraRef.current && controlsRef.current) {
         const c = cameraRef.current;
         const t = controlsRef.current.target;
-        onCameraChange({
+        onCameraChangeRef.current({
           position: [c.position.x, c.position.y, c.position.z],
           target: [t.x, t.y, t.z],
           quaternion: [c.quaternion.x, c.quaternion.y, c.quaternion.z, c.quaternion.w],
           zoom: c.zoom,
+          near: c.near,
+          far: c.far,
         });
       }
     };
@@ -162,20 +179,31 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
     });
     resizeObserver.observe(container);
 
-    // Cleanup
+    // Cleanup: full scene / renderer / geometry disposal
     return () => {
       cancelAnimationFrame(animId);
       controls.removeEventListener('change', onControlsChange);
       resizeObserver.disconnect();
       controls.dispose();
+      scene.traverse((child) => {
+        if (child instanceof THREE.Mesh || child instanceof THREE.LineSegments || child instanceof THREE.Line) {
+          child.geometry.dispose();
+          if (Array.isArray(child.material)) child.material.forEach((m) => m.dispose());
+          else child.material.dispose();
+        }
+      });
       renderer.dispose();
       if (renderer.domElement && container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
       }
+      sceneRef.current = null;
+      cameraRef.current = null;
+      controlsRef.current = null;
+      rendererRef.current = null;
     };
-  }, [cameraSync, onCameraChange]);
+  }, []);
 
-  // Apply external camera sync
+  // Apply external camera sync (synchronous guard, shared near/far clipping)
   useEffect(() => {
     if (!cameraSync || !externalCameraState || !cameraRef.current || !controlsRef.current) {
       return;
@@ -189,14 +217,15 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
     cameraRef.current.position.set(px, py, pz);
     cameraRef.current.quaternion.set(qx, qy, qz, qw);
     cameraRef.current.zoom = externalCameraState.zoom;
+    if (externalCameraState.near > 0) cameraRef.current.near = externalCameraState.near;
+    if (externalCameraState.far > externalCameraState.near) cameraRef.current.far = externalCameraState.far;
     cameraRef.current.updateProjectionMatrix();
     controlsRef.current.target.set(tx, ty, tz);
     controlsRef.current.update();
 
-    // Unlock after small delay
-    setTimeout(() => {
-      isSyncingFromExternal.current = false;
-    }, 10);
+    // 'change' events are dispatched synchronously inside update();
+    // clear the guard immediately afterwards - no timer-based retry.
+    isSyncingFromExternal.current = false;
   }, [externalCameraState, cameraSync]);
 
   // Reset View Trigger
@@ -209,17 +238,14 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
   // Update Geometry when meshData changes
   useEffect(() => {
     const scene = sceneRef.current;
+    const container = containerRef.current;
     if (!scene) return;
 
     // Remove old mesh group
     if (currentMeshGroupRef.current) {
       scene.remove(currentMeshGroupRef.current);
       currentMeshGroupRef.current.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          child.geometry.dispose();
-          if (Array.isArray(child.material)) child.material.forEach((m) => m.dispose());
-          else child.material.dispose();
-        } else if (child instanceof THREE.LineSegments) {
+        if (child instanceof THREE.Mesh || child instanceof THREE.LineSegments) {
           child.geometry.dispose();
           if (Array.isArray(child.material)) child.material.forEach((m) => m.dispose());
           else child.material.dispose();
@@ -228,12 +254,52 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
       currentMeshGroupRef.current = null;
     }
 
-    if (!meshData) return;
+    // Expose real drawn-geometry counts on the DOM for inspection/tests
+    const setStats = (
+      bodyId: string,
+      faces: number,
+      edges: number,
+      triangles: number,
+      roleFaces: Record<string, number>,
+      roleEdges: Record<string, number>
+    ) => {
+      if (!container) return;
+      container.dataset.bodyId = bodyId;
+      container.dataset.faceCount = String(faces);
+      container.dataset.edgeCount = String(edges);
+      container.dataset.triangleCount = String(triangles);
+      container.dataset.roleFaces = JSON.stringify(roleFaces);
+      container.dataset.roleEdges = JSON.stringify(roleEdges);
+    };
+
+    if (!meshData) {
+      setStats('', 0, 0, 0, {}, {});
+      return;
+    }
 
     // Build new geometry group
     const newGroup = buildThreeGeometry(meshData);
+    let faces = 0;
+    let edges = 0;
+    let triangles = 0;
+    const roleFaces: Record<string, number> = {};
+    const roleEdges: Record<string, number> = {};
+    newGroup.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        faces += 1;
+        const role = String((child.userData && child.userData.role) || 'unknown');
+        roleFaces[role] = (roleFaces[role] || 0) + 1;
+        const index = child.geometry.getIndex();
+        triangles += index ? index.count / 3 : child.geometry.getAttribute('position').count / 3;
+      } else if (child instanceof THREE.LineSegments) {
+        edges += 1;
+        const role = String((child.userData && child.userData.role) || 'unknown');
+        roleEdges[role] = (roleEdges[role] || 0) + 1;
+      }
+    });
     scene.add(newGroup);
     currentMeshGroupRef.current = newGroup;
+    setStats(meshData.bodyId, faces, edges, triangles, roleFaces, roleEdges);
 
     // Center view if not synced or first load
     fitCameraToBox(newGroup);
@@ -247,7 +313,7 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
     const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
     const raycaster = new THREE.Raycaster();
-    raycaster.params.Line = { threshold: 0.1 };
+    raycaster.params.Line = { threshold: pickThresholdRef.current };
     raycaster.setFromCamera(new THREE.Vector2(x, y), cameraRef.current);
 
     const intersects = raycaster.intersectObjects(currentMeshGroupRef.current.children, true);
@@ -268,16 +334,24 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
   };
 
   return (
-    <div className="relative w-full h-full bg-slate-900 overflow-hidden select-none">
+    <div
+      className="relative w-full h-full bg-slate-900 overflow-hidden select-none"
+      data-testid="viewer-root"
+      data-viewer={kernelName === 'GM Kernel' ? 'gm' : 'pk'}
+    >
       {/* 3D WebGL Canvas */}
       <div
         ref={containerRef}
         onPointerDown={handlePointerDown}
+        data-testid="viewer-canvas-host"
         className="w-full h-full cursor-grab active:cursor-grabbing"
       />
 
       {/* Top Banner Tag: Kernel & Tessellator info */}
-      <div className="absolute top-2 left-2 z-10 flex items-center gap-1.5 bg-slate-900/80 backdrop-blur-xs border border-slate-700/60 rounded px-2.5 py-1 text-xs text-slate-200">
+      <div
+        data-testid="viewer-banner"
+        className="absolute top-2 left-2 z-10 flex items-center gap-1.5 bg-slate-900/80 backdrop-blur-xs border border-slate-700/60 rounded px-2.5 py-1 text-xs text-slate-200"
+      >
         <span
           className={`w-2 h-2 rounded-full ${
             kernelName === 'GM Kernel' ? 'bg-sky-400' : 'bg-emerald-400'
@@ -285,7 +359,7 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
         />
         <span className="font-semibold">{kernelName}</span>
         {meshData?.source?.tessellator && (
-          <span className="text-[10px] text-slate-400 border-l border-slate-700 pl-1.5 font-mono-code">
+          <span className="hidden sm:inline text-[10px] text-slate-400 border-l border-slate-700 pl-1.5 font-mono-code">
             {meshData.source.tessellator}
           </span>
         )}
@@ -293,7 +367,10 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
 
       {/* Loading Overlay */}
       {isLoading && (
-        <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-20">
+        <div
+          data-testid="viewer-loading"
+          className="absolute inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-20"
+        >
           <div className="flex items-center gap-2 text-xs text-sky-400 bg-slate-900 px-3 py-2 rounded border border-slate-700 shadow-md">
             <span className="w-3.5 h-3.5 border-2 border-sky-400 border-t-transparent rounded-full animate-spin" />
             <span>网格数据加载中...</span>
@@ -303,7 +380,10 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
 
       {/* Empty / Error Overlay */}
       {!isLoading && !meshData && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-10 pointer-events-none">
+        <div
+          data-testid="viewer-empty"
+          className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-10 pointer-events-none"
+        >
           <div className="bg-slate-800/90 border border-slate-700 rounded-lg p-4 max-w-xs shadow-lg">
             <p className={`text-xs font-medium mb-1 ${errorMessage ? 'text-rose-400' : 'text-slate-300'}`}>
               {errorMessage || emptyMessage}

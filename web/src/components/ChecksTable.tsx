@@ -42,7 +42,8 @@ export const ChecksTable: React.FC<ChecksTableProps> = ({ checks, evidenceBaseDi
               if (v === null || v === undefined) return <span className="text-slate-400 italic">null</span>;
               if (typeof v === 'number') {
                 if (Number.isInteger(v)) return v.toString();
-                return v.toFixed(6).replace(/\.?0+$/, '');
+                // Keep tiny non-zero deviations visible (never render them as "0" or "")
+                return String(Number(v.toPrecision(10)));
               }
               if (typeof v === 'object') {
                 return JSON.stringify(v);

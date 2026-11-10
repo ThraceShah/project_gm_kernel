@@ -87,6 +87,9 @@ export interface PerformanceInfo {
   host?: string | Record<string, unknown> | null;
   configuration?: string | Record<string, unknown> | null;
   note?: string | null;
+  measurementKind?: string | null;
+  stableBenchmark?: boolean | string | null;
+  qualifiedScope?: string | null;
   [key: string]: unknown;
 }
 
@@ -98,6 +101,14 @@ export interface EvidenceItem {
 export interface CaseSource {
   path: string;
   revision: string;
+}
+
+export interface ExecutionInfo {
+  selected?: boolean;
+  attempted?: boolean;
+  exitCode?: number | null;
+  exitCodes?: number[];
+  timedOut?: boolean;
 }
 
 export interface TestCase {
@@ -117,6 +128,12 @@ export interface TestCase {
   evidence: EvidenceItem[];
   notes: string[];
   source: CaseSource;
+  execution?: ExecutionInfo;
+  suite?: string;
+  capabilityScope?: string | null;
+  adapterStatus?: string | null;
+  kernelCapability?: string | null;
+  sessionPrecision?: string | number | null;
 }
 
 export interface ManifestData {

@@ -34,7 +34,7 @@ export function formatStatus(status: CaseStatus | string): {
       };
     case 'unsupported':
       return {
-        label: '不支持 (UNSUPPORTED)',
+        label: '未适配 (UNSUPPORTED)',
         badgeClass: 'bg-amber-600 text-white',
         bgLight: 'bg-amber-50 text-amber-800 border-amber-300',
         borderClass: 'border-amber-500',
@@ -76,7 +76,7 @@ export function formatRatio(ratio: number | null | undefined): {
     return {
       text: 'N/A',
       badgeClass: 'bg-slate-100 text-slate-500 border border-slate-300',
-      subtext: '无有效耗时倍率',
+      subtext: '无有效比率 (null)',
     };
   }
 

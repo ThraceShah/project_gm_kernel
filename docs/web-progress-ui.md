@@ -27,8 +27,9 @@
    - 容错规范：缺失数据严格显式为 `null` / `missing`，数值 `0` 不代表缺失，未识别检查项严禁自动判定为通过。
 5. **性能度量 (Performance Benchmark)**:
    - 毫秒级耗时：GM Kernel 耗时 vs Parasolid (PK) 耗时。
-   - 核心倍率：`ratioGmOverPk`（$GM \div PK$，数字越小代表 GM 越快）。
-   - 资格认证：`correctnessQualified`（几何与拓扑强制验收项全部满足门限时才标记为具备性能认证资格，避免错误几何的“虚假快速”）。
+   - 核心倍率：`ratioGmOverPk`（$GM \div PK$，数字越小代表 GM 越快）；比率为 `null` 时表示无有效倍率，严禁标为 0 倍。
+   - 测量口径：按 manifest 真实字段显示 `measurementKind`（如 `single-cold-sample` 单次冷启动）、`samples` / `warmup`、`stableBenchmark` 与 `qualifiedScope`，不泛称“性能认证”或稳态性能结论。
+   - 正确性资格：`correctnessQualified`（几何与拓扑强制验收项全部满足门限时才标记为具备正确性资格，避免错误几何的“虚假快速”；仅为正确性资格，非性能认证）。
    - 硬件与运行配置：真实记录宿主机 CPU 架构（如 Apple M4 Arm64 / x86_64）、操作系统、SDK/Runtime 版本与编译发布配置（如 Release Managed / NativeAOT）、测试样本数与预热轮数。
 6. **自包含与门户兼容性**:
    - 静态构建 (`web/dist/`) 采用相对资源路径 (`base: './'`)，自包含 Three.js、React 与 Tailwind CSS，生产产物零外部 CDN 依赖，且构建时自动将真实数据包打包至 `web/dist/data/`。
@@ -38,29 +39,28 @@
 
 ## 2. 真实数据接入与现状
 
-当前前端已成功整合真实首包基准数据（来源分支 `origin/web/progress-data`，commit `cc1fe3f`）。
+当前前端已整合多批真实基准数据（来源分支 `origin/web/progress-data`，最新 commit `18e67aa`），根索引 `web/data/index.json` 含三份历史 run，UI 可切换并真实展示各自统计；非最新 run 在选择器中显式标注“·历史”，旧 SHA 结果不会被误读为已重验。
 
-### 2.1 真实数据统计
-- **基准 Run ID**: `initial-adapted-a1e4500`
-- **对应内核 Commit**: `a1e45006c08491db85f4ef87ced6d236342b15e6`
+### 2.1 最新真实数据统计（Run `20261110T180347Z-90acd4a9`）
+- **对应内核 Commit**: `90acd4a9d7e766cdaa09e2ea4fb2cf7bf5d2aa45`（固定构建 SHA），17 代表用例约 442 秒跑完
 - **Parasolid Oracle 版本**: `38.0.150`
-- **宿主环境**: Apple M4 / macOS 27.2.0 (Arm64), .NET 10.0.11 Release
-- **总注册用例数**: 414 项 (Blend 228 项, Boolean 186 项)
-- **真实网格与三角片**: 32 个真实几何切片，共 14,992 个三角面片
-- **通过 (Pass)**: 4 项（均含完整双内核真实三角网格与逐项几何/拓扑/质量属性严格通过对比）:
-  1. `solid-blend.plane-nurbs`: 真实平面-NURBS 单凸边倒圆角，GM 耗时 1537.67ms vs PK 1.51ms，29 项严格检查全通过。
-  2. `short-edge.a1-r0.5-t1e-07-reversefalse-default`: 严格 1e-7 容差门限倒角，29 项严格检查全通过。
-  3. `planar-boolean.overlap-two-axes-subtract`: 平面多轴重叠布尔减运算，含 Tool 刀具几何，27 项严格检查全通过。
-  4. `analytic-boolean.equal-overlap-subtract`: 解析曲面等厚重叠布尔减，含 Tool 刀具几何，27 项严格检查全通过。
-- **诊断测试 (Diagnostic)**: 1 项:
-  - `regular-curved.block-subtract`: 常规曲面块布尔减。因选择器曾命中变体实体，依契约保留完整 53 项比对证据但 ratioGmOverPk 置空，明确标为诊断态（天蓝色徽章），严禁标绿。
-- **数据缺失 (Missing)**: 205 项（等待后续批次数据生成与适配）
-- **内核暂不支持 (Unsupported)**: 204 项（明确记录尚未支持的用例范围）
+- **宿主环境**: Apple M4 / macOS 27.2.0 (Arm64), .NET 10.0.11 Release（run.host / run.provenance 记录 PKToy commit 与源码哈希）
+- **注册用例数**: 463 项（registry `2026-11-11.default-recipes-v5`），其中 347 项具备展示/导出适配器
+- **本 run 实际执行**: 17 项（scope.case=representatives，单用例 300s / 总 1200s 预算）
+- **真实网格与三角片**: 124 个真实几何切片文件，共 30,922 个三角面片（GM 15,948 / PK 14,974），920 项逐项验收检查、26 个步骤快照
+- **通过 (Pass)**: 14 项（含 `solid-blend.plane-nurbs`、`blend-chain.chain-2-base-self-source`、`support-chain.asymmetric43-base`、`trivalent-corner.base-self`、`planar-boolean.overlap-two-axes-subtract`、`mixed-analytic.basic-subtract` 等，均含双内核真实三角网格与逐项严格对比）
+- **失败 (Fail)**: 3 项（ratio 严格置空，原进程退出码保留为结果数据）:
+  1. `local-blend.block-single-fillet`: 原进程 exit 0，但新增 strict compare 失败（`Type, regions and strict BODY_compare`: web strict fresh XT body geometry/structure/sense/tolerance/matching differs）。
+  2. `short-edge.standard-strict-lifecycle`: 原进程 exit 134，`Full BODY_check` 检出 bad_loops faults（note `[{"state":13826,...}]`）。
+  3. `short-edge.transverse-witness-lifecycle`: 原进程 exit 134，原惯量 Inertia YZ/ZY 偏差 2.01e-7 超过原阈值 1e-7（accuracy=0.99999999）。
+- **数据缺失 (Missing)**: 330 项（本次 run 未选中执行，证据缺失；不推断通过）
+- **展示/导出未适配 (Unsupported)**: 116 项（manifest 真实字段：`capabilityScope=web-export-adapter`、`adapterStatus=not-implemented`、`kernelCapability=null`；含义是 web 快照/结构化检查适配器未实现，**不是内核操作不支持**，也未执行/未推断通过；内核能力未评估/未知，不得称为内核缺失）
+- **性能测量口径**: `measurementKind=single-cold-sample`（samples=1 / warmup=0 单次冷启动）、`stableBenchmark=false`、`qualifiedScope="Current correctness gates only; no steady-state performance certification."`；UI 显示真实字段，不泛称“性能认证”或稳态性能结论，ratio 为 null 时不标 0 倍。
 
 ### 2.2 共享数据契约
 数据目录统一位于 `web/data/`:
 - 根索引: `web/data/index.json`
-- 运行清单: `web/data/runs/<id>/manifest.json`
+- 运行清单: `web/data/runs/<id>/manifest.json`（用例含 `capabilityScope` / `adapterStatus` / `kernelCapability` / `execution` / `performance.measurementKind` 等真实字段）
 - 几何网格与切片: `web/data/runs/<id>/cases/<case_id>/sample-0/meshes/`
 - 原始验证证据与日志: `web/data/runs/<id>/cases/<case_id>/sample-0/evidence/` 及 `oracle.log`
 
@@ -77,48 +77,48 @@ pnpm run build
 构建产物输出至 `web/dist/`，Vite 插件会自动将 `web/data/` 目录递归复制至 `web/dist/data/`。生产产物大小约 8.5 MB（数据包约 4.2 MB），包含约 60 个文件，远低于栖点门户 32 MB 与 5000 文件的发布限制。
 
 ### 3.2 自动化测试
-运行基于真实无头 Chromium 的端到端测试，全面覆盖 13 项验收点：
+运行基于真实无头 Chromium 的端到端测试（浏览器路径通过 `SMOKE_BROWSER_PATH` 配置或自动发现，不绑定特定 Chromium 版本），所有期望统计均从 `web/data/index.json` 与对应 run 的 `manifest.json` 实时读取，不硬编码用例数，数据批次更新不会使测试失效：
 ```bash
 cd web
-pnpm run test:smoke
+pnpm run test:smoke   # 本地 dist 真实断言
+pnpm run test:portal  # 真实 HTTPS 门户发布验证
 ```
-自动化测试验证要点：
-1. 默认加载 414 项真实用例，无任何 Dev Fixture 污染。
-2. 倒角 (228) / 布尔 (186) 分类与状态筛选（Pass 4、Missing 205、Unsupported 204、Diagnostic 1）及全文搜索。
-3. 真实通过的 `solid-blend.plane-nurbs` 前态与后态 3D 双视角网格渲染与实体角色色标（新生成圆角面绿色 `#16a34a`，选中边明黄色 `#facc15`，修改面橙色 `#ea580c`）。
-4. 3D 视口射线拾取（Raycasting）：点击面/边弹出实体详情、角色标签与三角片数。
-5. 布尔运算刀具体（Tool Bodies）在 Before 态下的展示与 After 态下的拓扑重构。
-6. Timeline 快照步进、自动播放/暂停、倍速切换（0.5x, 1x, 2x）与滑动条拖动。
-7. 双视角相机联动（平移/缩放/旋转同步）与解锁独立控制、一键复位视角。
-8. API 调用与参数结构化 JSON 视图。
-9. 逐项验收检查矩阵（实测值、基准值、绝对偏差、相对偏差、容差门限与单位）。
-10. 性能指标面板（Apple M4 宿主配置、毫秒耗时、倍率与正确性资格认证状态）。
-11. 原始证据与日志文件的可点击跳转链接。
-12. 严格杜绝伪造通过：Missing、Unsupported 与 Diagnostic 绝不标绿。
-13. 快速切换用例/Run 与网络 404 错误防护：旧几何瞬间清除，过期异步响应被代数守卫丢弃。
+自动化测试的实质断言（非“canvas 存在”式检查）：
+1. **真实双侧网格渲染**：左右视口的绘制统计（面/边/三角片数与角色分布）必须等于源 mesh JSON 的真实几何，且 WebGL 画布内模型像素超门限。
+2. **before→after 真实变化**：前态黄色选边（`#facc15`）可见、后态新增绿色 blend 面（区域化绿色像素去噪后显著增长）可见，快照像素签名真实改变。
+3. **可证拾取**：射线拾取返回的实体 ID 必须存在于真实 mesh JSON 的 face/edge ID 集合中，并显示真实角色标签与三角片数。
+4. **双相机联动/独立/复位**：拖拽与缩放时另一侧跟随；解锁后不跟随；复位后几何保持（模型像素仍在）。
+5. **播放真实切快照**：播放期间绘制角色分布真实变化、时间轴计数推进；暂停后画面冻结（非仅按钮状态）。
+6. **快速切 case/run 不旧数据**：最终 bodyId/面数/三角数等于最终用例的源 mesh；run 快速往返后回到最新清单统计。
+7. **404 错误无旧 geometry**：mesh 请求失败时旧网格清除（bodyId 清空）并显示错误提示。
+8. **状态诚实性**：缺失/未适配/诊断/失败绝不标绿，比率为空（N/A，不标 0 倍）；最新 3 个真实 FAIL 的具体差异（bad_loops state 13826、原惯量 2.01e-7 超阈值 1e-7、strict BODY_compare 差异）、原阈值、API 参数（`PK_BODY_fix_blends` 等）与原进程退出码（exitCodes=[134]/[0]）均可见且证据文件可访问。
+9. **性能口径诚实**：显示真实 `measurementKind=single-cold-sample`、samples/warmup、`qualifiedScope`，不宣称性能认证/稳态结论。
+10. **产物卫生**：dist 无外部 CDN 依赖（仅允许 w3.org 命名空间与 react.dev 文档链接）、无 DEV FIXTURE 数据。
+11. **布局验收**：桌面（1440×900）侧栏 320px、双视口并排不重叠、header 不横向溢出；窄屏（390×844）侧栏改抽屉、主画布宽≥250px、header 换行不溢出、图例默认折叠不遮模型、抽屉选 case 后关闭、GM/PK 切视图与 before/after、参数/差异/性能均可查看。
+12. **run 切换真实统计**：三份历史 run 各自的真实统计独立展示，历史 run 在选择器标注“·历史”。
 
-测试截图保存于 `temp_docs/`:
-- `temp_docs/real_smoke_desktop_workbench.png`: 真实数据桌面工作台概览
-- `temp_docs/real_smoke_desktop_blend_before.png`: 倒角用例前态（含选中边高亮）
-- `temp_docs/real_smoke_desktop_blend_after.png`: 倒角用例后态（含新生成圆角面）
-- `temp_docs/real_smoke_desktop_boolean_tools.png`: 布尔减运算（含刀具体展示）
-- `temp_docs/real_smoke_desktop_checks.png`: 逐项验收检查表
-- `temp_docs/real_smoke_desktop_perf.png`: 性能度量与资格认证
-- `temp_docs/real_smoke_desktop_params.png`: API 与参数详情
-- `temp_docs/real_smoke_desktop_evidence.png`: 原始证据文件链接列表
-- `temp_docs/real_smoke_desktop_diagnostic.png`: 诊断用例展示
-- `temp_docs/real_smoke_mobile_narrow.png`: 移动窄屏自适应布局与视口切换
-- `temp_docs/real_smoke_live_portal.png`: 真实 HTTPS 门户生产页面验证截图
+测试截图保存于 `temp_docs/`（每次运行重新拍摄；`real_smoke_*` 系列为修复前 grid-only 缺陷的历史证据，不作为成功依据）：
+- `temp_docs/webui_v2_desktop_workbench.png`: 真实数据桌面工作台概览（双侧真实模型）
+- `temp_docs/webui_v2_desktop_blend_before.png`: 倒角用例前态（黄色选边高亮可见）
+- `temp_docs/webui_v2_desktop_blend_after.png`: 倒角用例后态（绿色新 blend 面与橙色修改面可见）
+- `temp_docs/webui_v2_desktop_boolean_tools.png`: 布尔减运算（含刀具体展示）
+- `temp_docs/webui_v2_desktop_fail_compare.png`: strict compare 失败的具体差异
+- `temp_docs/webui_v2_desktop_fail_bodycheck.png`: bad_loops state 13826 失败详情
+- `temp_docs/webui_v2_desktop_fail_numeric.png`: 原惯量数值/阈值失败详情（2.01e-7 vs 1e-7）
+- `temp_docs/webui_v2_desktop_perf.png`: 性能口径（single-cold-sample / 非性能认证）
+- `temp_docs/webui_v2_mobile_main.png` / `webui_v2_mobile_drawer.png` / `webui_v2_mobile_inspection.png` / `webui_v2_mobile_fail.png`: 390×844 移动布局、抽屉选 case、参数查看与失败数据
+- `temp_docs/webui_v2_live_desktop.png` / `webui_v2_live_fail.png` / `webui_v2_live_mobile.png`: 真实 HTTPS 门户验证截图
+- `temp_docs/webui_v2_smoke_log.txt` / `temp_docs/webui_v2_live_log.txt`: 测试断言日志
 
 ### 3.3 栖点门户正式发布 (Tailnet Publish)
 
-发布命令（供自动发布 runner 衔接）：
+发布命令（供自动发布 runner 衔接；`portalctl` 通过 PATH 解析）：
 ```bash
 # 构建生产产物
 cd web && pnpm run build
 
-# 发布静态应用至栖点门户
-~/.local/bin/portalctl static \
+# 发布静态应用至栖点门户（同一 slug 覆盖更新，保留权限）
+portalctl static \
   --slug gm-kernel-progress \
   --name 'GM Kernel vs Parasolid 对比工作台' \
   --description 'GM 几何建模内核与 Parasolid 真实对比与工程指标追踪工作台' \

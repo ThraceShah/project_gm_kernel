@@ -65,7 +65,14 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({ perf }) => {
             {formatMs(perf.gmMs)}
           </div>
           <div className="text-[11px] text-sky-700/80 mt-1">
-            {perf.samples ? `统计样本: ${perf.samples} 次 (预热: ${perf.warmup ?? 0})` : '单次基准'}
+            {perf.samples
+              ? `统计样本: ${perf.samples} 次 (预热: ${perf.warmup ?? 0})`
+              : '单次基准'}
+            {perf.measurementKind === 'single-cold-sample'
+              ? ' · 单次冷启动实测 (single-cold-sample)，非稳态性能结论'
+              : perf.measurementKind === 'not-run'
+                ? ' · 未运行性能测量 (not-run)'
+                : ''}
           </div>
         </div>
 
@@ -101,23 +108,30 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({ perf }) => {
             </span>
           </div>
           <div className="text-[11px] text-slate-500 mt-1">
-            {perf.ratioGmOverPk && perf.ratioGmOverPk < 1.0 ? 'GM 具备速度优势' : 'PK 处于性能领先'}
+            {perf.ratioGmOverPk === null || perf.ratioGmOverPk === undefined
+              ? '比率为 null：无有效耗时倍率，不代表 0 倍'
+              : perf.ratioGmOverPk < 1.0
+                ? 'GM 具备速度优势'
+                : 'PK 处于性能领先'}
           </div>
         </div>
       </div>
 
-      {/* Correctness & Qualification Banner */}
-      <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-700">
+      {/* Correctness Qualification Banner */}
+      <div
+        data-testid="perf-qualification"
+        className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-700"
+      >
         <Award
           className={`w-4 h-4 flex-shrink-0 ${
             perf.correctnessQualified ? 'text-emerald-600' : 'text-amber-500'
           }`}
         />
         <div className="flex-1">
-          <span className="font-semibold mr-1">正确性资格认证 (Correctness Qualified):</span>
+          <span className="font-semibold mr-1">正确性资格 (Correctness Qualified):</span>
           {perf.correctnessQualified === true ? (
             <span className="text-emerald-700 font-medium">
-              通过认证 (几何与拓扑所有强制验收项满足容差门限)
+              已满足资格 (几何与拓扑所有强制验收项满足容差门限)；仅为正确性资格，非性能认证
             </span>
           ) : perf.correctnessQualified === false ? (
             <span className="text-rose-700 font-medium">
@@ -126,6 +140,16 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({ perf }) => {
           ) : (
             <span className="text-slate-500">待资格评定</span>
           )}
+          <div className="mt-1 text-[11px] text-slate-500">
+            实测口径: samples={perf.samples ?? '-'} / warmup={perf.warmup ?? '-'}
+            {' '}/ 测量类型: {perf.measurementKind ?? '未标注'}
+            {' '}/ 稳态基准: {String(perf.stableBenchmark ?? '未标注')}
+            {typeof perf.scope === 'string' ? ` / ${perf.scope}` : ''}
+            {perf.qualifiedScope ? `（${perf.qualifiedScope}）` : ''}
+            {perf.measurementKind === 'single-cold-sample'
+              ? '（单次冷启动测试，不能泛化为稳态性能结论）'
+              : ''}
+          </div>
         </div>
       </div>
 

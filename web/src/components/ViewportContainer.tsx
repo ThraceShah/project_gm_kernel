@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { MeshViewer, CameraSyncState } from './MeshViewer';
 import { EntityLegend } from './EntityLegend';
 import { MeshData } from '../types/contract';
@@ -28,18 +28,25 @@ export const ViewportContainer: React.FC<ViewportContainerProps> = ({
   const [rightSyncCam, setRightSyncCam] = useState<CameraSyncState | null>(null);
   const [selectedEntity, setSelectedEntity] = useState<PickedEntity | null>(null);
   const [mobileTab, setMobileTab] = useState<'both' | 'gm' | 'pk'>('both');
+  const [legendOpen, setLegendOpen] = useState<boolean>(() =>
+    typeof window === 'undefined' ? true : window.innerWidth >= 768
+  );
 
-  const handleGmCamChange = (state: CameraSyncState) => {
-    if (cameraSync) {
+  // Stable callbacks: camera sync must never recreate the scene lifecycle.
+  const cameraSyncRef = useRef<boolean>(cameraSync);
+  cameraSyncRef.current = cameraSync;
+
+  const handleGmCamChange = useCallback((state: CameraSyncState) => {
+    if (cameraSyncRef.current) {
       setRightSyncCam(state);
     }
-  };
+  }, []);
 
-  const handlePkCamChange = (state: CameraSyncState) => {
-    if (cameraSync) {
+  const handlePkCamChange = useCallback((state: CameraSyncState) => {
+    if (cameraSyncRef.current) {
       setLeftSyncCam(state);
     }
-  };
+  }, []);
 
   return (
     <div className="relative w-full h-full flex flex-col bg-slate-950 overflow-hidden select-none">
@@ -53,7 +60,7 @@ export const ViewportContainer: React.FC<ViewportContainerProps> = ({
               mobileTab === 'both' ? 'bg-sky-600 text-white' : 'text-slate-400'
             }`}
           >
-            并排分屏
+            双视图
           </button>
           <button
             onClick={() => setMobileTab('gm')}
@@ -127,7 +134,10 @@ export const ViewportContainer: React.FC<ViewportContainerProps> = ({
 
       {/* Floating Entity Inspector (Top Center) */}
       {selectedEntity && (
-        <div className="absolute top-12 left-1/2 -translate-x-1/2 z-20 bg-slate-900/95 backdrop-blur-xs border border-sky-600/80 rounded-md px-3 py-1.5 shadow-xl flex items-center gap-2 text-xs text-slate-200">
+        <div
+          data-testid="entity-inspector"
+          className="absolute top-12 left-1/2 -translate-x-1/2 z-20 bg-slate-900/95 backdrop-blur-xs border border-sky-600/80 rounded-md px-3 py-1.5 shadow-xl flex items-center gap-2 text-xs text-slate-200"
+        >
           <Box className="w-3.5 h-3.5 text-sky-400" />
           <span className="font-semibold">
             {selectedEntity.type === 'face' ? '面' : '边'} [
@@ -160,9 +170,18 @@ export const ViewportContainer: React.FC<ViewportContainerProps> = ({
         </div>
       )}
 
-      {/* Floating Entity Legend (Bottom Left) */}
-      <div className="absolute bottom-3 left-3 z-20 max-w-xs">
-        <EntityLegend />
+      {/* Floating Entity Legend (Bottom Left, collapsible on narrow screens) */}
+      <div className="absolute bottom-3 left-3 z-20 max-w-[min(20rem,calc(100%-1.5rem))]">
+        <button
+          onClick={() => setLegendOpen((v) => !v)}
+          data-testid="legend-toggle"
+          className="md:hidden mb-1 px-2 py-0.5 rounded text-[11px] bg-slate-900/90 border border-slate-700 text-slate-300 shadow-md"
+        >
+          {legendOpen ? '收起图例' : '图例'}
+        </button>
+        <div className={legendOpen ? 'block' : 'hidden md:block'} data-testid="legend-body">
+          <EntityLegend />
+        </div>
       </div>
     </div>
   );
