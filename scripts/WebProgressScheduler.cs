@@ -291,7 +291,7 @@ internal static class WebProgressScheduler
         return outcomes;
     }
 
-    internal static void RecordOutcome(JsonObject state, string caseId, string kind, string? status, string runId, string revision, string entryHash, int batchIndex)
+    internal static void RecordOutcome(JsonObject state, string caseId, string kind, string? status, string runId, string revision, string entryHash, int batchIndex, string? checkVersion = null)
     {
         var pending = state["pending"]!.AsArray();
         var completed = state["completed"]!.AsObject();
@@ -309,6 +309,10 @@ internal static class WebProgressScheduler
                 {
                     ["runId"] = runId, ["revision"] = revision, ["status"] = status, ["attempts"] = attempts,
                     ["completedAt"] = now, ["batchIndex"] = batchIndex, ["entryHash"] = entryHash,
+                    // The real check version is persisted at measurement
+                    // confirmation so later carry-forward/stale display can
+                    // report provenance without guessing.
+                    ["checkVersion"] = checkVersion,
                 };
                 break;
             case "export-failure":
@@ -383,7 +387,7 @@ internal static class WebProgressScheduler
                 var sourceRunId = record["runId"]!.GetValue<string>();
                 var fresh = sourceRunId == runId;
                 var built = BuildEntry(sourceRunId);
-                built["measurement"] = Measurement(sourceRunId, record, loadRun, checkVersion);
+                built["measurement"] = Measurement(sourceRunId, record, loadRun);
                 built["measurement"]!["freshness"] = "current";
                 built["measurement"]!["carriedForward"] = !fresh;
                 built["caseProgress"] = new JsonObject { ["classification"] = "current", ["attempts"] = record["attempts"]?.DeepClone(), ["batchIndex"] = record["batchIndex"]?.DeepClone() };
@@ -412,7 +416,7 @@ internal static class WebProgressScheduler
                         ["previousCompletedAt"] = previous["completedAt"]?.DeepClone(), ["markedAt"] = previous["markedAt"]?.DeepClone(),
                         ["reason"] = previous["reason"]?.DeepClone(),
                     };
-                    built["measurement"] = Measurement(sourceRunId!, previous!, loadRun, checkVersion);
+                    built["measurement"] = Measurement(sourceRunId!, previous!, loadRun);
                     built["measurement"]!["freshness"] = "stale";
                     built["measurement"]!["carriedForward"] = sourceRunId != runId;
                     var revisionText = previous!["revision"]?.GetValue<string>() ?? "unknown";
@@ -560,10 +564,15 @@ internal static class WebProgressScheduler
             if (item?["path"] is JsonValue path && path.TryGetValue<string>(out var text)) item["path"] = Join(prefix,text);
     }
 
-    private static JsonObject Measurement(string sourceRunId, JsonObject record, Func<string, JsonObject?> loadRun, string checkVersion)
+    private static JsonObject Measurement(string sourceRunId, JsonObject record, Func<string, JsonObject?> loadRun)
     {
         var run = loadRun(sourceRunId);
-        var measuredCheck = run?["run"]?["provenance"]?["checkVersion"]?.GetValue<string>() ?? checkVersion;
+        // Provenance is never backfilled from the current round: the version
+        // recorded at confirmation wins, then the source run's own manifest;
+        // untraceable history is explicitly unknown.
+        var measuredCheck = record["checkVersion"]?.GetValue<string>()
+            ?? run?["run"]?["provenance"]?["checkVersion"]?.GetValue<string>()
+            ?? "unknown";
         return new JsonObject
         {
             ["runId"] = sourceRunId, ["revision"] = record["revision"]?.DeepClone(),

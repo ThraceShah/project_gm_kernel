@@ -173,6 +173,9 @@ async Task<int?> RunOnce()
         return 2;
     }
     var checkVersion = WebProgressScheduler.ComputeCheckVersion(scripts);
+    // Persist the real check version on the raw manifest at measurement
+    // confirmation so every later carry-forward can report true provenance.
+    manifest!["run"]!["provenance"]!.AsObject()["checkVersion"] = checkVersion;
     var stateSnapshot = state.ToJsonString();
     foreach (var id in plan)
     {
@@ -180,7 +183,7 @@ async Task<int?> RunOnce()
         var attempted = entry["execution"]?["attempted"]?.GetValue<bool>() == true;
         var status = entry["status"]!.GetValue<string>();
         if (!attempted) continue;
-        if (status is "pass" or "fail" or "timeout") { WebProgressScheduler.RecordOutcome(state, id, "completed", status, runId, revision, EntryHashOf(registry, id), batchIndex); Console.WriteLine("RESULT " + id + ": " + status + " completed"); }
+        if (status is "pass" or "fail" or "timeout") { WebProgressScheduler.RecordOutcome(state, id, "completed", status, runId, revision, EntryHashOf(registry, id), batchIndex, checkVersion); Console.WriteLine("RESULT " + id + ": " + status + " completed"); }
         else { WebProgressScheduler.RecordOutcome(state, id, "export-failure", status, runId, revision, EntryHashOf(registry, id), batchIndex); Console.WriteLine("RESULT " + id + ": exporter failure, retry scheduled"); }
     }
     batch["status"] = "complete"; batch["finishedAt"] = DateTimeOffset.UtcNow.ToString("O");

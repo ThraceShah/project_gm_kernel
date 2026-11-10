@@ -396,6 +396,41 @@ for (var i = 0; i < WebProgressScheduler.MaxAttempts; i++) WebProgressScheduler.
 WebProgressScheduler.MarkChanges(s10, ["src/Changed.cs"], regAlpha, "rev-1");
 Assert(s10["pending"]!.AsArray().Any(p => p!["caseId"]!.GetValue<string>() == "blend.alpha" && p["reason"]!.GetValue<string>() == "affected") && !s10["blocked"]!.AsObject().ContainsKey("blend.alpha"), "a source change also unblocks a parked case and re-queues it as affected");
 
+// ---- 17. measurement provenance: real check versions only, unknown when untraceable ----
+JsonObject ProvManifest(string runId, string? checkVersion)
+{
+    var provenance = new JsonObject();
+    if (checkVersion != null) provenance["checkVersion"] = checkVersion;
+    return new JsonObject
+    {
+        ["schemaVersion"] = 1,
+        ["run"] = new JsonObject { ["id"] = runId, ["commit"] = "rev-old", ["generatedAt"] = DateTimeOffset.UtcNow.ToString("O"), ["pkVersion"] = "test", ["host"] = new JsonObject { ["os"] = "test-host" }, ["configuration"] = new JsonObject(), ["scope"] = new JsonObject(), ["provenance"] = provenance },
+        ["cases"] = new JsonArray((JsonNode)Entry("blend.alpha", "missing", "", "")),
+    };
+}
+JsonObject ProvRaw() => new()
+{
+    ["schemaVersion"] = 1,
+    ["run"] = new JsonObject { ["id"] = "run-new", ["commit"] = "rev-1", ["generatedAt"] = DateTimeOffset.UtcNow.ToString("O"), ["pkVersion"] = "test", ["host"] = new JsonObject { ["os"] = "test-host" }, ["configuration"] = new JsonObject(), ["scope"] = new JsonObject(), ["provenance"] = new JsonObject() },
+    ["cases"] = new JsonArray((JsonNode)Entry("blend.alpha", "missing", "", "")),
+};
+var s11 = WebProgressScheduler.NewState("rev-0", "h11", "test-registry-v1");
+WebProgressScheduler.Reconcile(s11, Registry(alpha), "h11", "test-registry-v1");
+WebProgressScheduler.RecordOutcome(s11, "blend.alpha", "completed", "pass", "run-old", "rev-0", WebProgressScheduler.EntryHash(alpha), 0);
+var mergedProv1 = WebProgressScheduler.BuildAggregate(ProvRaw(), Registry(alpha), s11, dataRoot, "run-new", "rev-1", "NEW-CHECK-VERSION", 2, id => id == "run-old" ? ProvManifest("run-old", null) : null);
+Assert(mergedProv1["cases"]![0]!["measurement"]!["checkVersion"]!.GetValue<string>() == "unknown", "an untraceable old measurement reports checkVersion=unknown, never the current version (was NEW-CHECK-VERSION)");
+Assert(mergedProv1["cases"]![0]!["measurement"]!["revision"]!.GetValue<string>() == "rev-0", "carry-forward keeps the original measurement revision");
+var s12 = WebProgressScheduler.NewState("rev-0", "h12", "test-registry-v1");
+WebProgressScheduler.Reconcile(s12, Registry(alpha), "h12", "test-registry-v1");
+WebProgressScheduler.RecordOutcome(s12, "blend.alpha", "completed", "pass", "run-old", "rev-0", WebProgressScheduler.EntryHash(alpha), 0, "REAL-OLD-CHECK");
+var mergedProv2 = WebProgressScheduler.BuildAggregate(ProvRaw(), Registry(alpha), s12, dataRoot, "run-new", "rev-1", "NEW-CHECK-VERSION", 2, id => id == "run-old" ? ProvManifest("run-old", null) : null);
+Assert(mergedProv2["cases"]![0]!["measurement"]!["checkVersion"]!.GetValue<string>() == "REAL-OLD-CHECK", "the check version persisted at measurement confirmation is reported verbatim");
+var s13 = WebProgressScheduler.NewState("rev-0", "h13", "test-registry-v1");
+WebProgressScheduler.Reconcile(s13, Registry(alpha), "h13", "test-registry-v1");
+WebProgressScheduler.RecordOutcome(s13, "blend.alpha", "completed", "pass", "run-old", "rev-0", WebProgressScheduler.EntryHash(alpha), 0);
+var mergedProv3 = WebProgressScheduler.BuildAggregate(ProvRaw(), Registry(alpha), s13, dataRoot, "run-new", "rev-1", "NEW-CHECK-VERSION", 2, id => id == "run-old" ? ProvManifest("run-old", "check-run-old") : null);
+Assert(mergedProv3["cases"]![0]!["measurement"]!["checkVersion"]!.GetValue<string>() == "check-run-old", "a traceable source-run check version is preferred over any current value");
+
 Console.WriteLine("ALL PASS " + passed + " scheduling contract checks");
 return 0;
 static string ScriptPath([CallerFilePath] string path = "") => path;
