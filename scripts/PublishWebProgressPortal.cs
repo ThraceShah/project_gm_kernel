@@ -3,6 +3,7 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 
 // Deployment-owner publish step for the validated GM Kernel progress site.
 // Publishes a staged web/dist bundle via portalctl static (atomic snapshot
@@ -60,38 +61,62 @@ if (!File.Exists(Path.GetFullPath(manifestRel, Path.Combine(dist, "data"))))
     return 1;
 }
 
-// 3. Stage a bundle bounded by the portal's static size limit.
+// 3. Stage a bundle bounded by the portal's static size limit. The latest
+//    aggregate manifest references the measurement runs of its accumulated
+//    cases ("../<runId>/..."); those runs are required evidence and are never
+//    silently dropped. Older history runs are kept while they fit, newest
+//    first. If the latest aggregate and its evidence alone exceed the budget,
+//    the publication is refused loudly with measured sizes instead of cutting
+//    cases or evidence.
 var bundle = Path.Combine(Path.GetDirectoryName(statePath)!, "bundle");
 if (Directory.Exists(bundle)) Directory.Delete(bundle, true);
 CopyTree(dist, bundle);
 var bundleIndex = JsonNode.Parse(File.ReadAllText(Path.Combine(bundle, "data", "index.json")))!;
-var keepRuns = bundleIndex["runs"]!.AsArray()
-    .OrderByDescending(r => r!["generatedAt"]?.GetValue<string>() ?? string.Empty)
-    .ToList();
-var keepIds = new HashSet<string>(keepRuns.Select(r => r!["id"]!.GetValue<string>()));
 var bundleRunsDir = Path.Combine(bundle, "data", "runs");
+var orderedRuns = bundleIndex["runs"]!.AsArray()
+    .OrderByDescending(r => r!["id"]!.GetValue<string>() == latest)
+    .ThenByDescending(r => r!["generatedAt"]?.GetValue<string>() ?? string.Empty)
+    .ToList();
+long NonRunSize()
+{
+    long total = TreeSize(bundle);
+    if (Directory.Exists(bundleRunsDir)) foreach (var dir in Directory.GetDirectories(bundleRunsDir)) total -= TreeSize(dir);
+    return total;
+}
+HashSet<string> ReferencesOf(string runId)
+{
+    var references = new HashSet<string>(StringComparer.Ordinal);
+    var manifestPath2 = Path.Combine(bundleRunsDir, runId, "manifest.json");
+    if (!File.Exists(manifestPath2)) return references;
+    foreach (Match match in Regex.Matches(File.ReadAllText(manifestPath2), "\\.\\./([^/]+)/")) references.Add(match.Groups[1].Value);
+    return references;
+}
+var keepRuns = new List<JsonObject>();
+var keepIds = new HashSet<string>(StringComparer.Ordinal);
+foreach (var run in orderedRuns)
+{
+    var id = run!["id"]!.GetValue<string>();
+    var candidate = new HashSet<string>(keepIds, StringComparer.Ordinal) { id };
+    foreach (var reference in ReferencesOf(id)) candidate.Add(reference);
+    var projected = NonRunSize();
+    foreach (var candidateId in candidate) if (Directory.Exists(Path.Combine(bundleRunsDir, candidateId))) projected += TreeSize(Path.Combine(bundleRunsDir, candidateId));
+    if (projected > BundleBudgetBytes && keepRuns.Count > 0) { Console.WriteLine("PUBLISH_PRUNED_HISTORY_RUN " + id + " projected=" + projected); continue; }
+    keepRuns.Add(run.AsObject());
+    foreach (var candidateId in candidate) keepIds.Add(candidateId);
+}
 if (Directory.Exists(bundleRunsDir))
 {
     foreach (var dir in Directory.GetDirectories(bundleRunsDir))
-    {
-        if (!keepIds.Contains(Path.GetFileName(dir))) Directory.Delete(dir, true);
-    }
+        if (!keepIds.Contains(Path.GetFileName(dir))) { Directory.Delete(dir, true); Console.WriteLine("PUBLISH_PRUNED_UNREFERENCED_RUN " + Path.GetFileName(dir)); }
 }
-while (TreeSize(bundle) > BundleBudgetBytes && keepRuns.Count > 1)
-{
-    var dropped = keepRuns[^1]!;
-    keepRuns.RemoveAt(keepRuns.Count - 1);
-    keepIds.Remove(dropped["id"]!.GetValue<string>());
-    var droppedDir = Path.Combine(bundleRunsDir, dropped["id"]!.GetValue<string>());
-    if (Directory.Exists(droppedDir)) Directory.Delete(droppedDir, true);
-    Console.WriteLine("PUBLISH_PRUNED_OLDEST_RUN " + dropped["id"]!.GetValue<string>());
-}
-bundleIndex["runs"] = new JsonArray(keepRuns.Select(r => (JsonNode?)r!.DeepClone()).ToArray());
+// Required referenced runs that are not themselves index entries stay as
+// directory evidence even when their index descriptor was pruned.
+bundleIndex["runs"] = new JsonArray(keepRuns.Select(r => (JsonNode?)r.DeepClone()).ToArray());
 File.WriteAllText(Path.Combine(bundle, "data", "index.json"), bundleIndex.ToJsonString());
 var bundleSize = TreeSize(bundle);
 if (bundleSize > 32L * 1024 * 1024)
 {
-    Console.Error.WriteLine($"PUBLISH_REFUSED bundle {bundleSize} bytes exceeds the 32 MiB portal limit");
+    Console.Error.WriteLine($"PUBLISH_REFUSED_BUNDLE_OVERSIZE bundle {bundleSize} bytes exceeds the 32 MiB portal limit; the latest aggregate and its measurement evidence alone do not fit. Validated cache keeps the full history; use a persistent static serving path (docs/web-progress-persistent-scheduling.md capacity plan) instead of dropping case geometry or evidence.");
     return 1;
 }
 Console.WriteLine($"PUBLISH_BUNDLE runs={keepRuns.Count} bytes={bundleSize}");

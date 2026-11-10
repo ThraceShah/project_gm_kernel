@@ -30,4 +30,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)WebProgressPublishing.cs" Link="WebProgressPublishing.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebProgressMetadata.cs" Link="WebProgressMetadata.cs" />
   </ItemGroup>
+  <ItemGroup Condition="'$(UseWebProgressScheduler)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)WebProgressScheduler.cs" Link="WebProgressScheduler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebProgressDataValidation.cs" Link="WebProgressDataValidation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebProgressPublishing.cs" Link="WebProgressPublishing.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebProgressMetadata.cs" Link="WebProgressMetadata.cs" />
+  </ItemGroup>
 </Project>

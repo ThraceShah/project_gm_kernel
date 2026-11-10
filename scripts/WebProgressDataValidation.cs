@@ -15,7 +15,12 @@ internal static class WebProgressDataValidation
             if(reference is null)return null;
             if(reference is not JsonValue value||!value.TryGetValue<string>(out var relative)||Path.IsPathRooted(relative)||relative.Contains('\\')||relative.Contains(':')){Error(context+": invalid relative path");return null;}
             var path=Path.GetFullPath(relative,root);
-            if(!path.StartsWith(Path.GetFullPath(root)+Path.DirectorySeparatorChar,StringComparison.Ordinal)||!File.Exists(path)){Error(context+": missing or escaping path "+relative);return null;}
+            // Accumulated manifests reference evidence of other measurement runs
+            // as "../<runId>/..."; such references must stay inside the data
+            // root's runs tree. Anything else must stay inside the run itself.
+            var underRoot=path.StartsWith(Path.GetFullPath(root)+Path.DirectorySeparatorChar,StringComparison.Ordinal);
+            var underRuns=path.StartsWith(Path.GetFullPath(Path.Combine(data,"runs"))+Path.DirectorySeparatorChar,StringComparison.Ordinal);
+            if((!underRoot&&!underRuns)||!File.Exists(path)){Error(context+": missing or escaping path "+relative);return null;}
             return path;
         }
         JsonNode? Read(string path){try{return JsonNode.Parse(File.ReadAllText(path));}catch(Exception e){Error(Path.GetFileName(path)+": "+e.Message);return null;}}
