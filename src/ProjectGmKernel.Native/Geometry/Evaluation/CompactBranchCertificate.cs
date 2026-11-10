@@ -13,8 +13,9 @@ internal struct CompactBranchReport
     internal double ChordalBound;
     /// <summary>Largest angle between the original tangent and a compact chord.</summary>
     internal double AngularBound;
-    /// <summary>Largest spatial distance, along the compact chord, between a
-    /// shared root and the compact parameter used at that station.</summary>
+    /// <summary>Upper bound of the spatial distance between the original root
+    /// at a station and the compact root at its station parameter: the spatial
+    /// diameter of the compact uniqueness box holding both.</summary>
     internal double LinkDeviation;
     internal BufferCount Boxes;
     internal BufferOffset FailedCell;
@@ -43,18 +44,24 @@ internal static partial class JointNestedBlendEvaluation
     ///    affine in p, so the compact arc is also strictly increasing in g.
     /// 3. At t_k and t_k+1 the complete original root state lies inside a
     ///    compact Krawczyk uniqueness box, on the same nested CHART cells,
-    ///    whose parameter interval contains that root's compact gauge level.
-    ///    The two arcs therefore share both end states exactly.
+    ///    over a parameter interval containing both that root's compact gauge
+    ///    level p* and the station parameter. So the original end state is
+    ///    exactly the compact root at p*, and the compact root at the station
+    ///    is within the box's spatial diameter of it. That diameter, rounded
+    ///    up, must not exceed the link tolerance.
     /// Proof of equality: parametrize both arcs by the level s=g. The set of
-    /// levels where they agree contains both ends and is closed. At such a
-    /// level the solution set is regular with D·e&gt;0, so by the implicit
-    /// function theorem it meets the nearby level planes in exactly one point
-    /// near the common state; both arcs are continuous in s, so they agree on
-    /// a neighbourhood. The agreement set is open and closed in a connected
-    /// interval: the arcs are the same branch, with the same sense. Since
-    /// D·e&gt;0 holds on closed boxes including the ends, a complementary arc
-    /// of a closed component cannot qualify. Any uncertain, singular or
-    /// unbounded box, or an exhausted depth/box budget, rejects the
+    /// levels between the two p* where they agree contains both ends and is
+    /// closed. At such a level the solution set is regular with D·e&gt;0, so
+    /// by the implicit function theorem it meets the nearby level planes in
+    /// exactly one point near the common state; both arcs are continuous in
+    /// s, so they agree on a neighbourhood. The agreement set is open and
+    /// closed in a connected interval: the arcs are the same branch, with the
+    /// same sense, and the published ends are within the link bound of the
+    /// original ends. Since D·e&gt;0 holds on closed boxes including the
+    /// ends, a complementary arc of a closed component cannot qualify.
+    /// Scalar bounds (mean-value radius, square roots, arccosine) are rounded
+    /// outward. Any uncertain, singular or unbounded box, or an exhausted
+    /// depth/box budget, rejects the
     /// certificate. No conclusion is drawn from samples.
     /// </summary>
     internal static AlgorithmStatus CertifyCompactBranch(in NestedBlendProgram program,BlendSpineIndex original,BlendSpineIndex compact,
@@ -136,16 +143,15 @@ internal static partial class JointNestedBlendEvaluation
                         var found=BoundGeometry(program,-1,spine,new(midpoint,midpoint,0,0),centre);
                         if(found==AlgorithmStatus.Success)
                         {
-                            var half=new IntervalNumber(0,(box.U1-box.U0)*.5);
-                            var d0=centre[0]-cell.Position.X;var d1=centre[1]-cell.Position.Y;var d2=centre[2]-cell.Position.Z;
-                            var s=d0*e0+d1*e1+d2*e2;
-                            var q0=d0-s*e0;var q1=d1-s*e1;var q2=d2-s*e2;
-                            var w0=output[3]-along*e0;var w1=output[4]-along*e1;var w2=output[5]-along*e2;
-                            var distance=Math.Sqrt((IntervalNumber.Square(q0)+IntervalNumber.Square(q1)+IntervalNumber.Square(q2)).Upper)
-                                +Math.Sqrt((IntervalNumber.Square(w0)+IntervalNumber.Square(w1)+IntervalNumber.Square(w2)).Upper)*half.Upper;
-                            var speed=Math.Sqrt((IntervalNumber.Square(output[3])+IntervalNumber.Square(output[4])+IntervalNumber.Square(output[5])).Upper);
-                            var cosine=Math.Min(1,along.Lower/speed);var angle=cosine>0?Math.Acos(cosine):double.PositiveInfinity;
-                            if(double.IsFinite(distance)&&distance<=chordalLimit&&angle<=angularLimit)
+                            // Radius from the rounded midpoint to the farther
+                            // end, rounded up: the box is not symmetric about it.
+                            var half=MeanValueRadius(box.U0,midpoint,box.U1);
+                            var bound=MeasureChordBox(centre,output,along,cell,half);
+                            var distance=bound.Distance;var cosine=bound.CosineLower;
+                            var angleAccepted=angularLimit>=Math.PI||cosine>=CosineUpper(angularLimit);
+                            // Reported angle only; acceptance is the cosine test.
+                            var angle=Math.Acos(Math.Clamp(cosine,-1,1));
+                            if(double.IsFinite(distance)&&distance<=chordalLimit&&angleAccepted)
                             {
                                 accepted=true;
                                 report.ChordalBound=Math.Max(report.ChordalBound,distance);
@@ -185,9 +191,75 @@ internal static partial class JointNestedBlendEvaluation
         var lo=Math.BitDecrement(Math.Min(level.Lower,reference));var hi=Math.BitIncrement(Math.Max(level.Upper,reference));
         status=BoundSegment(program,-1,compact,new(lo,hi,0,0),output,requireWitness:witness,rootChart:cell,requireCharts:charts);
         if(status!=AlgorithmStatus.Success){report.FailedStage+=10;report.FailedLower=lo;report.FailedUpper=hi;return status==AlgorithmStatus.Unsupported?status:AlgorithmStatus.NotConverged;}
-        report.LinkDeviation=Math.Max(report.LinkDeviation,Math.Max(reference-lo,hi-reference)/c.Scale);
+        // The box holds the unique compact root for every parameter in
+        // [lo,hi], including the reference station, and the original root.
+        // Its spatial diameter bounds their distance.
+        var diameter=IntervalNumber.Square(output[0].Upper-output[0])+IntervalNumber.Square(output[1].Upper-output[1])+IntervalNumber.Square(output[2].Upper-output[2]);
+        if(!diameter.Finite)return AlgorithmStatus.NotConverged;
+        report.LinkDeviation=Math.Max(report.LinkDeviation,UpperSqrt(diameter.Upper));
         return AlgorithmStatus.Success;
     }
+
+    // Upper bound of the distance from a rounded centre to both box ends.
+    // Each difference is rounded to nearest (error at most half an ulp of the
+    // result); stepping up one ulp gives an upper bound.
+    internal static double MeanValueRadius(double lower,double centre,double upper)=>
+        Math.BitIncrement(Math.Max(centre-lower,upper-centre));
+
+    internal readonly struct ChordBoxBound(double distance,double cosineLower)
+    {
+        /// <summary>Upper bound of the distance from the chord line.</summary>
+        internal readonly double Distance=distance;
+        /// <summary>Lower bound of the cosine between tangent and chord.</summary>
+        internal readonly double CosineLower=cosineLower;
+    }
+
+    /// <summary>
+    /// Mean-value bounds on one parameter box: <paramref name="centre"/>
+    /// encloses the root at a centre parameter, <paramref name="box"/>
+    /// encloses root and derivative D over the box, <paramref name="along"/>
+    /// encloses D·e and <paramref name="radius"/> bounds the parameter distance
+    /// to the centre. The chord need not be exactly unit. All operations are
+    /// outward interval arithmetic or explicit upward/downward steps.
+    /// </summary>
+    internal static ChordBoxBound MeasureChordBox(ReadOnlySpan<IntervalNumber> centre,ReadOnlySpan<IntervalNumber> box,IntervalNumber along,
+        in BlendChartInstruction cell,double radius)
+    {
+        var e0=new IntervalNumber(cell.Chord.X);var e1=new IntervalNumber(cell.Chord.Y);var e2=new IntervalNumber(cell.Chord.Z);
+        var ee=IntervalNumber.Square(e0)+IntervalNumber.Square(e1)+IntervalNumber.Square(e2);
+        if(!ee.Finite||!(ee.Lower>0))return new(double.PositiveInfinity,-1);
+        var d0=centre[0]-cell.Position.X;var d1=centre[1]-cell.Position.Y;var d2=centre[2]-cell.Position.Z;
+        var s=(d0*e0+d1*e1+d2*e2)/ee;
+        var q0=d0-s*e0;var q1=d1-s*e1;var q2=d2-s*e2;
+        var a=along/ee;
+        var w0=box[3]-a*e0;var w1=box[4]-a*e1;var w2=box[5]-a*e2;
+        var offset=IntervalNumber.Square(q0)+IntervalNumber.Square(q1)+IntervalNumber.Square(q2);
+        var drift=(IntervalNumber.Square(w0)+IntervalNumber.Square(w1)+IntervalNumber.Square(w2))*IntervalNumber.Square(new IntervalNumber(radius));
+        if(!offset.Finite||!drift.Finite)return new(double.PositiveInfinity,-1);
+        // Sum of two upper bounds, rounded to nearest, then one ulp up.
+        var distance=Math.BitIncrement(UpperSqrt(offset.Upper)+UpperSqrt(drift.Upper));
+        var speed=IntervalNumber.Square(box[3])+IntervalNumber.Square(box[4])+IntervalNumber.Square(box[5]);
+        if(!speed.Finite||!(along.Lower>0))return new(distance,-1);
+        // cos(D,e) = D·e/(|D||e|) >= along.Lower/(upper|D| upper|e|).
+        var denominator=new IntervalNumber(UpperSqrt(speed.Upper))*new IntervalNumber(UpperSqrt(ee.Upper));
+        var cosine=(new IntervalNumber(along.Lower)/new IntervalNumber(denominator.Upper)).Lower;
+        return new(distance,cosine);
+    }
+
+    /// <summary>
+    /// Upper bound of cos(x): the Taylor sum through x^8. For every real x,
+    /// a partial sum ending with a positive term bounds cos from above
+    /// (repeated integration of cos t &lt;= 1). Evaluated in outward intervals.
+    /// </summary>
+    internal static double CosineUpper(double x)
+    {
+        var x2=IntervalNumber.Square(new IntervalNumber(x));
+        var sum=new IntervalNumber(1)-x2/2+IntervalNumber.Square(x2)/24-IntervalNumber.Square(x2)*x2/720+IntervalNumber.Square(IntervalNumber.Square(x2))/40320;
+        return Math.Min(1,sum.Upper);
+    }
+
+    // IEEE 754 square root is correctly rounded; one step up bounds it.
+    private static double UpperSqrt(double value)=>value<=0?0:Math.BitIncrement(Math.Sqrt(value));
 
     private static BufferCount RootStateCount(in NestedBlendProgram program,BlendSpineIndex spine,double parameter,out BufferCount occurrenceCount)
     {

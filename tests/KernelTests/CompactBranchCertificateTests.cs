@@ -1,4 +1,5 @@
 using ProjectGmKernel.Native.Computation;
+using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Runtime;
 using Xunit;
@@ -219,5 +220,106 @@ public class CompactBranchCertificateTests
             new(){Position=new(){X=1,Z=.75},Chord=new(){Z=1},Parameter=.75,Scale=1},
         ];
         Assert.Equal(AlgorithmStatus.NotConverged,Certify(surfaces,original,compact,[.25,.75],out _));
+    }
+
+    [Theory]
+    [InlineData(.01)]
+    [InlineData(.001)]
+    public void CompactEndpointOffsetAlongALowCosineChordIsRejected(double epsilon)
+    {
+        // Independent review R2a: a half-circle chord meets the arc at angle
+        // ~π/2-ε, so a 1e-11 gauge offset is a 1e-11/ε spatial end offset.
+        var surfaces=Supports();var start=-Math.PI/2+epsilon;var end=Math.PI/2-epsilon;
+        var original=ArcChart(start,end,64,0,1);var upper=original[^1].Parameter;
+        var shift=1e-11/epsilon;
+        var compact=ArcChart(start,end+shift,1,0,upper/(2*Math.Sin((end+shift-start)/2)));
+        compact[^1].Parameter=upper;
+        BlendSpineInstruction[] spines=[new(){First=0,Second=1,ChartCount=original.Length},
+            new(){First=0,Second=1,ChartOffset=original.Length,ChartCount=2,ChordalError=4,AngularError=Math.PI}];
+        var program=new NestedBlendProgram(surfaces,spines,original.Concat(compact).ToArray());
+        Assert.Equal(AlgorithmStatus.NotConverged,JointNestedBlendEvaluation.CertifyCompactBranch(program,0,1,[0.0,upper],0,upper,Link,out var report));
+        Assert.True(report.LinkDeviation>=.9*shift,$"link={report.LinkDeviation}");
+        // Without the offset the same chord is certified.
+        var exact=ArcChart(start,end,1,0,upper/(2*Math.Sin((end-start)/2)));exact[^1].Parameter=upper;
+        program=new NestedBlendProgram(surfaces,spines,original.Concat(exact).ToArray());
+        Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.CertifyCompactBranch(program,0,1,[0.0,upper],0,upper,Link,out report));
+        Assert.True(report.LinkDeviation<=Link);
+    }
+
+    [Theory]
+    [InlineData(1e12,3)]
+    [InlineData(1e12,1)]
+    [InlineData(-1e12,3)]
+    [InlineData(1e-300,5)]
+    [InlineData(.5,7)]
+    public void MeanValueRadiusReachesBothEndsOfOddUlpBoxes(double lower,int ulps)
+    {
+        // Independent review R2b: half of the rounded width does not reach
+        // the farther end from a rounded midpoint.
+        var upper=lower;for(var i=0;i<ulps;i++)upper=Math.BitIncrement(upper);
+        var centre=lower+(upper-lower)*.5;
+        // Sterbenz: differences of these same-sign values within a factor of
+        // two are exact, so the comparison below is exact.
+        var radius=JointNestedBlendEvaluation.MeanValueRadius(lower,centre,upper);
+        Assert.True(radius>=centre-lower,$"lower {radius} {centre-lower}");
+        Assert.True(radius>=upper-centre,$"upper {radius} {upper-centre}");
+        if(lower==1e12&&ulps==3)Assert.True(radius>=0.000244140625);
+    }
+
+    [Fact]
+    public void CosineUpperBoundsCosineAndIsTightAtProductionAngles()
+    {
+        for(var i=0;i<=4000;i++)
+        {
+            var x=Math.PI*i/4000;
+            Assert.True(JointNestedBlendEvaluation.CosineUpper(x)>=Math.Cos(x),$"x={x}");
+        }
+        Assert.Equal(1,JointNestedBlendEvaluation.CosineUpper(0));
+        foreach(var x in new[]{1e-6,.0087,.3368,.4})Assert.True(JointNestedBlendEvaluation.CosineUpper(x)-Math.Cos(x)<1e-10,$"x={x}");
+    }
+
+    [Fact]
+    public void ChordBoxBoundUsesTheTrueLineDistanceForANonUnitChord()
+    {
+        // Point (1,1,0) with zero drift, chord along x scaled by (1+1e-9):
+        // distance from the line is exactly 1, cosine of D=(1,0,0) is 1.
+        Span<IntervalNumber> centre=[1,1,0,0,0,0,0,0,0];
+        Span<IntervalNumber> box=[1,1,0,1,0,0,0,0,0];
+        var cell=new BlendChartInstruction{Chord=new(){X=1+1e-9}};
+        var along=box[3]*new IntervalNumber(cell.Chord.X);
+        var bound=JointNestedBlendEvaluation.MeasureChordBox(centre,box,along,cell,.5);
+        Assert.True(bound.Distance>=1&&bound.Distance<1+1e-14,$"d={bound.Distance}");
+        Assert.True(bound.CosineLower<=1&&bound.CosineLower>1-1e-14,$"c={bound.CosineLower}");
+        // A derivative off the chord adds drift times the radius.
+        box[4]=new IntervalNumber(-.25,.25);
+        bound=JointNestedBlendEvaluation.MeasureChordBox(centre,box,along,cell,.5);
+        Assert.True(bound.Distance>=1.125,$"d={bound.Distance}");
+        Assert.True(bound.CosineLower<=1/Math.Sqrt(1.0625),$"c={bound.CosineLower}");
+    }
+
+    [Fact]
+    public void AngularErrorAtTheExactHalfTurnBoundary()
+    {
+        // Unit arc of 0.6 rad: the tangent-chord angle peaks at exactly 0.3.
+        var surfaces=Supports();var original=OriginalArc(1.2,24);
+        double[] stations=[original[2].Parameter,original[14].Parameter];
+        var points=Evaluate(surfaces,original,stations);var compact=Chart(points,Tangents(points),stations[0],stations[1]);
+        BlendSpineInstruction[] spines=[new(){First=0,Second=1,ChartOffset=0,ChartCount=original.Length},new(){First=0,Second=1,ChartOffset=original.Length,ChartCount=compact.Length}];
+        var program=new NestedBlendProgram(surfaces,spines,original.Concat(compact).ToArray());
+        var chordal=Declared(compact,out _);
+        Assert.Equal(AlgorithmStatus.NotConverged,JointNestedBlendEvaluation.CertifyCompactBranch(program,0,1,stations,stations[0],stations[1],Link,chordal,.3*(1-1e-9),out _));
+        Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.CertifyCompactBranch(program,0,1,stations,stations[0],stations[1],Link,chordal,.3*(1+1e-6),out var report));
+        Assert.True(report.AngularBound>=.3-1e-12);
+    }
+
+    private static BlendChartInstruction[] ArcChart(double start,double end,int cells,double lower,double scale)
+    {
+        var points=new KernelVector3[cells+1];var tangents=new KernelVector3[cells+1];
+        for(var i=0;i<=cells;i++){var a=start+(end-start)*i/cells;points[i]=Circle(a);tangents[i]=Tangent(a);}
+        var parameters=new double[cells+1];var scales=new double[cells];var chords=new KernelVector3[cells];
+        Assert.Equal(AlgorithmStatus.Success,OriginalChartParameterMap.Build(points,tangents,lower,scale,parameters,scales,chords,out _,out _));
+        var result=new BlendChartInstruction[cells+1];
+        for(var i=0;i<=cells;i++)result[i]=new(){Position=points[i],Parameter=parameters[i],Scale=i<cells?scales[i]:1,Chord=i<cells?chords[i]:default};
+        return result;
     }
 }
