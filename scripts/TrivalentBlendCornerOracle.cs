@@ -5,6 +5,7 @@
 #:property UsePskernelSharpUsings=true
 #:property UseParasolidScriptHost=true
 #:property AllowUnsafeBlocks=true
+#:property UseWebProgressCapture=true
 using static parasolid;
 using ProjectGmKernel.Native.Runtime;
 using System.Runtime.CompilerServices;
@@ -134,15 +135,20 @@ static unsafe int Corner(bool own,string name,byte[] source,int permutation,List
  }
  var set=new PK_EDGE_set_blend_constant_o_t();set.properties.tolerance=1e-7;int* marked;Check(own?KernelRuntime.EdgeSetBlendConstant(3,selected,radius*scale,(M.PK_EDGE_set_blend_constant_o_s*)&set,&n,&marked):PK_EDGE_set_blend_constant(3,selected,radius*scale,&set,&n,&marked),"set three equal radii");Free(own,marked);
  trace?.Clear();
+ WebProgressCapture.Before(own,body,new ReadOnlySpan<int>(selected,3).ToArray());
  var began=Stopwatch.GetTimestamp();
  if(own)
  {
   var fix=new M.PK_BODY_fix_blends_o_s{o_t_version=31,update=PK_blend_edge_update_v261_c,tolerance=1e-7};int* blends;M.PK_FACE_array_s* under;int* replaced;int fault,edge,topol;
+  WebProgressCapture.BlendParameters(true,*(PK_BODY_fix_blends_o_t*)&fix,radius*scale,1e-7);
+  var webStarted=Stopwatch.GetTimestamp();
   var error=KernelRuntime.BodyFixBlends(body,&fix,&n,&blends,&under,&replaced,&fault,&edge,&topol);
+  var webMs=Stopwatch.GetElapsedTime(webStarted).TotalMilliseconds;
+  WebProgressCapture.After(true,body,webMs,error,n,blends,fault,(PK_FACE_array_t*)under,replaced);
   Console.WriteLine($"SELF corner error={error}, stage={KernelRuntime.LastBlendCornerStage}, event={KernelRuntime.LastBlendCornerEvent}, pair={KernelRuntime.LastBlendCornerPair}, certificate={KernelRuntime.LastCornerCertificate}/{KernelRuntime.LastCornerCertificateBand}/{KernelRuntime.LastCornerCertificateFace}, roots={KernelRuntime.LastBlendCornerRoots}, status={KernelRuntime.LastBlendCornerRootStatus}");Check(error,"corner fix_blends");Require(n==expectedProducts,"surviving bands and spherical corner products");
   Free(true,blends);Free(true,replaced);for(var i=0;i<n;i++)Free(true,under[i].array);Free(true,under);
  }
- else{var fix=new PK_BODY_fix_blends_o_t{update=PK_blend_edge_update_v261_c,tolerance=1e-7};int fault,edge,topol;int* blends;PK_FACE_array_t* unders;int* replaced;Check(PK_BODY_fix_blends(body,&fix,&n,&blends,&unders,&replaced,&fault,&edge,&topol),"native corner fix");Require(n==expectedProducts,"surviving edge blends plus a vertex blend");PK_MEMORY_free(blends);PK_MEMORY_free(replaced);for(var i=0;i<n;i++)PK_MEMORY_free(unders[i].array);PK_MEMORY_free(unders);}
+ else{var fix=new PK_BODY_fix_blends_o_t{update=PK_blend_edge_update_v261_c,tolerance=1e-7};int fault,edge,topol;int* blends;PK_FACE_array_t* unders;int* replaced;WebProgressCapture.BlendParameters(false,fix,radius*scale,1e-7);var webStarted=Stopwatch.GetTimestamp();var webError=PK_BODY_fix_blends(body,&fix,&n,&blends,&unders,&replaced,&fault,&edge,&topol);var webMs=Stopwatch.GetElapsedTime(webStarted).TotalMilliseconds;WebProgressCapture.After(false,body,webMs,webError,n,blends,fault,unders,replaced);Check(webError,"native corner fix");Require(n==expectedProducts,"surviving edge blends plus a vertex blend");PK_MEMORY_free(blends);PK_MEMORY_free(replaced);for(var i=0;i<n;i++)PK_MEMORY_free(unders[i].array);PK_MEMORY_free(unders);}
  Console.WriteLine($"TIME {(own?"self":"native")} {name} ms={Stopwatch.GetElapsedTime(began).TotalMilliseconds:F3}");return body;
 }
 static unsafe void CheckCornerLifecycle(int own,int reference,string label,string directory)

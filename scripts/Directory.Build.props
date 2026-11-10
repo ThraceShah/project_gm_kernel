@@ -27,5 +27,6 @@
   </ItemGroup>
   <ItemGroup Condition="'$(UseWebProgressValidation)' == 'true'">
     <Compile Include="$(MSBuildThisFileDirectory)WebProgressDataValidation.cs" Link="WebProgressDataValidation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebProgressPublishing.cs" Link="WebProgressPublishing.cs" />
   </ItemGroup>
 </Project>

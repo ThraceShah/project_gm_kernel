@@ -199,6 +199,7 @@ static unsafe int Fillet(bool own,int body,double radius,bool concave=false)
     // this case to a B-surface; v261 preserves the dependent rolling Blend.
     var fix=new PK_BODY_fix_blends_o_t{tolerance=1e-7,local_check=PK_LOGICAL_true,update=PK_blend_edge_update_v261_c};int* blends;int fault,fe,ft;
     WebProgressCapture.Before(own,body,[selected]);
+    WebProgressCapture.BlendParameters(own,fix,radius,options.properties.tolerance);
     var started=Stopwatch.GetTimestamp();
     PK_FACE_array_t* webUnders=null;int* webTopols=null;
     var error=own?KernelRuntime.BodyFixBlends(body,(M.PK_BODY_fix_blends_o_s*)&fix,&count,&blends,WebProgressCapture.Enabled?(M.PK_FACE_array_s**)&webUnders:null,WebProgressCapture.Enabled?&webTopols:null,&fault,&fe,&ft):PK_BODY_fix_blends(body,&fix,&count,&blends,WebProgressCapture.Enabled?&webUnders:null,WebProgressCapture.Enabled?&webTopols:null,&fault,&fe,&ft);
@@ -377,8 +378,10 @@ static unsafe int Cut(bool own,int body,double x)
 {
     // The default station is the symmetry plane of both supports.
     var tool=Block(own,x+.5,.5,-.1,1,2,2);var options=new PK_BODY_boolean_o_t{function=PK_boolean_subtract_c,default_tol=1e-7,tracking=PK_LOGICAL_false};int n;int* bodies;
+    WebProgressCapture.Before(own,body,[],"PK_BODY_boolean",[tool]);WebProgressCapture.BooleanParameters(own,options);
     var started=Stopwatch.GetTimestamp();
     var error=own?KernelRuntime.BodyBoolean(body,1,&tool,(M.PK_BODY_boolean_o_s*)&options,&n,&bodies):PK_BODY_boolean(body,1,&tool,&options,&n,&bodies);
+    var webMs=Stopwatch.GetElapsedTime(started).TotalMilliseconds;WebProgressCapture.BooleanAfter(own,error==0?new ReadOnlySpan<int>(bodies,n).ToArray():[],webMs,error,0,null);
     Console.WriteLine($"TIME {(own?"self":"PK")} BODY_boolean x={x:R} ms={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F3}, error={error}");Check(error,"cut filleted solid");
     try{Require(n==1,"one cut solid");return bodies[0];}finally{Free(own,bodies);}
 }

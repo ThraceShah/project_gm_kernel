@@ -1,5 +1,6 @@
 #!/usr/bin/env dotnet run
 #:property AllowUnsafeBlocks=true
+#:property UseWebProgressCapture=true
 #:property UsePskernelSharpUsings=true
 #:property UseParasolidScriptHost=true
 #:property AssemblyName=LocalOperationOracle
@@ -55,6 +56,7 @@ try
             var failures=0;var executed=0;
             foreach(var c in cases)
             {
+                if(!WebProgressCapture.Select(c.Name))continue;
                 if(trace!=null&&(c.Operation is not ("fillet" or "chamfer" or "unequal-chamfer")||axialArrangement&&c.Shape!="cylinder"))continue;
                 executed++;
                 try
@@ -158,14 +160,16 @@ static unsafe string Apply(bool managed,int body,string shape,string operation,d
             Check(error,"set "+operation);Require(count==edges.Length,"set blend edge count");Free(managed,output);
         }
         var fix=new PK_BODY_fix_blends_o_t();fix.local_check=PK_LOGICAL_true;int made=0;int* blends=null;int* replaced=null;int fault=0,faultEdge=0,faultTopol=0;
+        WebProgressCapture.Before(managed,body,edges);
+        WebProgressCapture.BlendParameters(managed,fix,amount,operation=="fillet"?round.properties.tolerance:flat.properties.tolerance,operation=="fillet"?"PK_EDGE_set_blend_constant":"PK_EDGE_set_blend_chamfer",operation=="fillet"?null:secondRange,firstFace==0?null:firstFace);
         if(managed)
         {
-            M.PK_FACE_array_s* unders=null;Check(KernelRuntime.BodyFixBlends(body,(M.PK_BODY_fix_blends_o_s*)&fix,&made,&blends,&unders,&replaced,&fault,&faultEdge,&faultTopol),"managed fix blends");
+            M.PK_FACE_array_s* unders=null;var webStarted=System.Diagnostics.Stopwatch.GetTimestamp();var webError=KernelRuntime.BodyFixBlends(body,(M.PK_BODY_fix_blends_o_s*)&fix,&made,&blends,&unders,&replaced,&fault,&faultEdge,&faultTopol);var webMs=System.Diagnostics.Stopwatch.GetElapsedTime(webStarted).TotalMilliseconds;WebProgressCapture.After(true,body,webMs,webError,made,blends,fault,(PK_FACE_array_t*)unders,replaced);Check(webError,"managed fix blends");
             var records=new List<int>();for(var i=0;i<made;i++){records.Add(unders[i].length);Free(true,unders[i].array);}Free(true,unders);records.Sort();signature="blends:"+string.Join(",",records);
         }
         else
         {
-            PK_FACE_array_t* unders=null;Check(PK_BODY_fix_blends(body,&fix,&made,&blends,&unders,&replaced,&fault,&faultEdge,&faultTopol),"independent PK fix blends");
+            PK_FACE_array_t* unders=null;var webStarted=System.Diagnostics.Stopwatch.GetTimestamp();var webError=PK_BODY_fix_blends(body,&fix,&made,&blends,&unders,&replaced,&fault,&faultEdge,&faultTopol);var webMs=System.Diagnostics.Stopwatch.GetElapsedTime(webStarted).TotalMilliseconds;WebProgressCapture.After(false,body,webMs,webError,made,blends,fault,unders,replaced);Check(webError,"independent PK fix blends");
             var records=new List<int>();for(var i=0;i<made;i++){records.Add(unders[i].length);Free(false,unders[i].array);}Free(false,unders);records.Sort();signature="blends:"+string.Join(",",records);
         }
         Require(fault==PK_blend_fault_no_fault_c,"fix blend fault: "+fault);Free(managed,blends);Free(managed,replaced);

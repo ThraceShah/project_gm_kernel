@@ -5,6 +5,7 @@
 #:property UsePskernelSharpUsings=true
 #:property UseParasolidScriptHost=true
 #:property AllowUnsafeBlocks=true
+#:property UseWebProgressCapture=true
 using static parasolid;
 using ProjectGmKernel.Native.Runtime;
 using System.Diagnostics;
@@ -29,14 +30,17 @@ using(host)unsafe
             if(ssiOnly)continue;
             foreach(var function in new[]{PK_boolean_subtract_c,PK_boolean_intersect_c})
             {
+                if(!WebProgressCapture.Select($"{height:R}-{function}"))continue;
                 var own=BowlSolid(true);var native=BowlSolid(false);CheckBody(native,"source native");var received=Receive(Transmit(own));
                 try{CheckBody(received,"source received");Compare(native,received,"source");}finally{Check(PK_ENTITY_delete(1,&received),"delete source receive");}
                 File.WriteAllBytes(Path.Combine(directory,$"source-{height:R}-{function}.x_t"),Transmit(own));
                 var ownTool=Block(true,0,0,-1,2,2,1.5+height);var nativeTool=Block(false,0,0,-1,2,2,1.5+height);
                 var options=new PK_BODY_boolean_o_t{function=function,default_tol=1e-9,tracking=PK_LOGICAL_false};int mn=0,pn=0;int* mb=null;int* pb=null;
+                WebProgressCapture.Before(true,own,[],"PK_BODY_boolean",[ownTool]);WebProgressCapture.BooleanParameters(true,options);
                 var started=Stopwatch.GetTimestamp();var me=KernelRuntime.BodyBoolean(own,1,&ownTool,(M.PK_BODY_boolean_o_s*)&options,&mn,&mb);
+                var webGmMs=Stopwatch.GetElapsedTime(started).TotalMilliseconds;WebProgressCapture.BooleanAfter(true,me==0?new ReadOnlySpan<int>(mb,mn).ToArray():[],webGmMs,me,0,null);
                 Console.WriteLine($"BOOLEAN own h={height:R} op={function} error={me} n={mn} seconds={Stopwatch.GetElapsedTime(started).TotalSeconds:F6} stage={KernelRuntime.LastRegularBooleanStage} faces={KernelRuntime.LastRegularBooleanFace}/{KernelRuntime.LastRegularBooleanOtherFace}");
-                var pe=PK_BODY_boolean(native,1,&nativeTool,&options,&pn,&pb);Console.WriteLine($"BOOLEAN PK h={height:R} op={function} error={pe} n={pn}");
+                WebProgressCapture.Before(false,native,[],"PK_BODY_boolean",[nativeTool]);WebProgressCapture.BooleanParameters(false,options);var webPkStarted=Stopwatch.GetTimestamp();var pe=PK_BODY_boolean(native,1,&nativeTool,&options,&pn,&pb);var webPkMs=Stopwatch.GetElapsedTime(webPkStarted).TotalMilliseconds;WebProgressCapture.BooleanAfter(false,pe==0?new ReadOnlySpan<int>(pb,pn).ToArray():[],webPkMs,pe,0,null);Console.WriteLine($"BOOLEAN PK h={height:R} op={function} error={pe} n={pn}");
                 Check(me,$"h={height:R} own Boolean");Check(pe,$"h={height:R} native Boolean");Require(mn==pn,$"h={height:R} Boolean body counts own={mn}/PK={pn}");
                 if(me==0&&pe==0&&mn==pn)
                 {
