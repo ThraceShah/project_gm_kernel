@@ -5,6 +5,7 @@
 #:property UsePskernelSharpUsings=true
 #:property UseParasolidScriptHost=true
 #:property AllowUnsafeBlocks=true
+#:property UseWebProgressCapture=true
 using static parasolid;
 using ProjectGmKernel.Native.Runtime;
 using System.Runtime.CompilerServices;
@@ -21,7 +22,7 @@ using(host)unsafe
         foreach(var kind in new[]{"basic","seam","mirrored","reload-partial","reload-partial-seam","repeat-partial"})
         foreach(var function in new[]{PK_boolean_unite_c,PK_boolean_intersect_c,PK_boolean_subtract_c})
         {
-            var name=$"{kind}-{function}";if(args.Length!=0&&!name.Contains(args[0],StringComparison.Ordinal))continue;
+            var name=$"{kind}-{function}";if(!WebProgressCapture.Select(name))continue;if(args.Length!=0&&!name.Contains(args[0],StringComparison.Ordinal))continue;
             try
             {
                 var own=Produce(true,kind,function);var reference=Produce(false,kind,function);
@@ -69,7 +70,12 @@ static unsafe int[] Produce(bool own,string kind,int function)
 static unsafe int[] Boolean(bool own,int target,int tool,int function)
 {
     var options=new PK_BODY_boolean_o_t{function=function,default_tol=1e-6,tracking=PK_LOGICAL_false};int n;int* result;
-    Check(own?KernelRuntime.BodyBoolean(target,1,&tool,(M.PK_BODY_boolean_o_s*)&options,&n,&result):PK_BODY_boolean(target,1,&tool,&options,&n,&result),"Boolean");
+    WebProgressCapture.Before(own,target,[],"PK_BODY_boolean",[tool]);
+    WebProgressCapture.BooleanParameters(own,options);
+    var webStarted=System.Diagnostics.Stopwatch.GetTimestamp();
+    var webError=own?KernelRuntime.BodyBoolean(target,1,&tool,(M.PK_BODY_boolean_o_s*)&options,&n,&result):PK_BODY_boolean(target,1,&tool,&options,&n,&result);
+    var webMs=System.Diagnostics.Stopwatch.GetElapsedTime(webStarted).TotalMilliseconds;
+    WebProgressCapture.BooleanAfter(own,webError==0?new ReadOnlySpan<int>(result,n).ToArray():[],webMs,webError,0,null);Check(webError,"Boolean");
     try{return new ReadOnlySpan<int>(result,n).ToArray();}finally{if(result!=null)Check(own?KernelRuntime.MemoryFree(result):PK_MEMORY_free(result),"Boolean buffers");}
 }
 static unsafe int Block(bool own,double x,double y,double z,double width,double depth,double height)

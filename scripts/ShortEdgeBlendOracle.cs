@@ -5,6 +5,7 @@
 #:property UsePskernelSharpUsings=true
 #:property UseParasolidScriptHost=true
 #:property AllowUnsafeBlocks=true
+#:property UseWebProgressCapture=true
 using static parasolid;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -166,7 +167,7 @@ using(host)unsafe
         foreach(var radius in matrix?new[]{.25,.5,.6}:new[]{NumberOption(args,"--radius=",.5)})
         foreach(var tolerance in matrix?new[]{1e-7,1e-5}:new[]{NumberOption(args,"--tolerance=",1e-7)})
         foreach(var reverse in matrix?new[]{false,true}:new[]{args.Contains("--reverse-selection")})
-        foreach(var procedural in args.Contains("--both-updates")?new[]{false,true}:new[]{false})
+        foreach(var procedural in args.Contains("--both-updates")?new[]{false,true}:new[]{args.Contains("--web-procedural")})
         {
             var name=$"a{angle:R}-r{radius:R}-t{tolerance:R}-reverse{reverse}-"+(procedural?"v261":"default");
             if(floor!=0)name+=$"-floor{floor:R}";
@@ -338,6 +339,7 @@ static unsafe PK_VECTOR_t MapPoint(M.PK_TRANSF_sf_s* matrix,PK_VECTOR_t point,bo
 
 static unsafe int Lifecycle(ref int source,int reference,string output,string name,M.PK_TRANSF_sf_s* input,double inputScale,bool localCut,bool transverseCut,double transversePlaneDifference,bool materialOwnership=false,bool requireNativeCutWitness=false,bool reloadBeforeLocalCut=false,bool checkNativeTrims=false,bool proofOnly=false,bool requireCutterChartWitness=false,bool requireNativeFinBoxes=false,bool requireNativeFaceDomains=false)
 {
+    WebProgressCapture.Context=name;
     int own,native;Check(KernelRuntime.EntityCopy(source,&own),"copy fillet product");Check(PK_ENTITY_copy(reference,&native),"copy PK fillet");
     var matrix=new M.PK_TRANSF_sf_s();var a=.37;var s=1.7;
     matrix.matrix[0]=-s*Math.Cos(a);matrix.matrix[1]=-s*Math.Sin(a);matrix.matrix[4]=-s*Math.Sin(a);matrix.matrix[5]=s*Math.Cos(a);matrix.matrix[10]=s;matrix.matrix[15]=1;
@@ -576,7 +578,11 @@ static unsafe void Move(bool own,int body,int transform)
 static unsafe int Cut(bool own,int body,int tool)
 {
     var options=new PK_BODY_boolean_o_t{function=PK_boolean_subtract_c,default_tol=1e-7,tracking=PK_LOGICAL_false};int n;int* bodies;
+    WebProgressCapture.Before(own,body,[],"PK_BODY_boolean",[tool]);
+    WebProgressCapture.BooleanParameters(own,options);
     var started=Stopwatch.GetTimestamp();var error=own?KernelRuntime.BodyBoolean(body,1,&tool,(M.PK_BODY_boolean_o_s*)&options,&n,&bodies):PK_BODY_boolean(body,1,&tool,&options,&n,&bodies);
+    var webMs=Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+    WebProgressCapture.BooleanAfter(own,error==0?new ReadOnlySpan<int>(bodies,n).ToArray():[],webMs,error,0,null);
     Console.WriteLine($"TIME {(own?"self":"PK")} Boolean error={error} ms={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F3} stage={KernelRuntime.LastRegularBooleanStage} face={KernelRuntime.LastRegularBooleanFace} other={KernelRuntime.LastRegularBooleanOtherFace} sheet={KernelRuntime.LastSheetPartitionStage} curve={KernelRuntime.LastSheetCurve} t={KernelRuntime.LastSheetParameter:R} status={KernelRuntime.LastSheetAlgorithmStatus} uv=({KernelRuntime.LastSheetRayU:R},{KernelRuntime.LastSheetRayV:R}) proof_only={KernelRuntime.ForbidSpatialBoundaryReuse}");
     if(own&&error!=0&&KernelRuntime.TraceFiniteBoundary!=null)
     {
@@ -933,9 +939,10 @@ static unsafe void Mass(int reference,int actual,string label)
     var options=new PK_TOPOL_eval_mass_props_o_t();double* a=stackalloc double[15];double* b=stackalloc double[15];
     ReadOnlySpan<string> properties=["volume","mass","centroid.x","centroid.y","centroid.z","inertia.xx","inertia.xy","inertia.xz",
         "inertia.yx","inertia.yy","inertia.yz","inertia.zx","inertia.zy","inertia.zz","area"];
-    var error=double.PositiveInfinity;var worst=0;
+    var error=double.PositiveInfinity;var worst=0;var webAccuracy=0.0;
     foreach(var accuracy in new[]{.99999999,.99999999999})
     {
+        webAccuracy=accuracy;
         Check(PK_TOPOL_eval_mass_props(1,&reference,accuracy,&options,a,a+1,a+2,a+5,a+14),"reference mass");
         Check(PK_TOPOL_eval_mass_props(1,&actual,accuracy,&options,b,b+1,b+2,b+5,b+14),"actual mass");
         error=0;worst=0;
@@ -948,6 +955,7 @@ static unsafe void Mass(int reference,int actual,string label)
         Console.WriteLine($"MASS {label} accuracy={accuracy:R} volume={a[0]:R}/{b[0]:R} area={a[14]:R}/{b[14]:R} normalized15={error:R} worst={properties[worst]} points={a[worst]:R}/{b[worst]:R}");
         if(error<1e-7)break;
     }
+    WebProgressCapture.RecordMass(label,webAccuracy,a,b);
     if(!(error<1e-7))ReportMassBounds(reference,actual,label,properties[worst],worst);
     Require(error<1e-7,"mass mismatch");
 }
@@ -1654,8 +1662,15 @@ static unsafe int Fillet(bool own,int body,double angle,double radius,double tol
     var mark=new PK_EDGE_set_blend_constant_o_t();mark.properties.tolerance=1e-7*unitScale;int count;int* marked;
     fixed(int* selection=selected)Check(own?KernelRuntime.EdgeSetBlendConstant(selected.Length,selection,radius,(M.PK_EDGE_set_blend_constant_o_s*)&mark,&count,&marked):PK_EDGE_set_blend_constant(selected.Length,selection,radius,&mark,&count,&marked),"set blend");Free(own,marked);
     var fix=new PK_BODY_fix_blends_o_t{local_check=PK_LOGICAL_true,tolerance=tolerance};if(procedural)fix.update=PK_blend_edge_update_v261_c;
+    WebProgressCapture.Context="";
+    WebProgressCapture.Before(own,body,selected);
+    WebProgressCapture.BlendParameters(own,fix,radius,mark.properties.tolerance);
     int* made;int fault,edgeFault,topolFault;var started=Stopwatch.GetTimestamp();
-    var error=own?KernelRuntime.BodyFixBlends(body,(M.PK_BODY_fix_blends_o_s*)&fix,&count,&made,null,null,&fault,&edgeFault,&topolFault):PK_BODY_fix_blends(body,&fix,&count,&made,null,null,&fault,&edgeFault,&topolFault);
+    PK_FACE_array_t* webUnders=null;int* webTopols=null;
+    var error=own?KernelRuntime.BodyFixBlends(body,(M.PK_BODY_fix_blends_o_s*)&fix,&count,&made,WebProgressCapture.Enabled?(M.PK_FACE_array_s**)&webUnders:null,WebProgressCapture.Enabled?&webTopols:null,&fault,&edgeFault,&topolFault):PK_BODY_fix_blends(body,&fix,&count,&made,WebProgressCapture.Enabled?&webUnders:null,WebProgressCapture.Enabled?&webTopols:null,&fault,&edgeFault,&topolFault);
+    var webElapsed=Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+    WebProgressCapture.After(own,body,webElapsed,error,count,made,fault,webUnders,webTopols);
+    WebProgressCapture.FreeBlendTracking(own,count,webUnders,webTopols);
     Console.WriteLine($"FIX {(own?"self":"PK")} error={error} faces={count} fault={fault} edge={edgeFault} topol={topolFault} stage={KernelRuntime.LastRegularBlendStage} network={KernelRuntime.LastRollingNetworkStage} SSI={KernelRuntime.LastGeneralIntersectionStage}/{KernelRuntime.LastGeneralIntersectionStatus}/{KernelRuntime.LastGeneralIntersectionNodes}/{KernelRuntime.LastGeneralIntersectionSegments} ms={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F3}");
     if(own&&error!=0&&KernelRuntime.ForbidLegacyRegularBlendAssembly)
     {
@@ -1703,6 +1718,7 @@ static unsafe void CheckBody(int body,string label)
             Console.WriteLine($"FAULT {label} state={faults[i].state} entities={faults[i].entity_1}/{faults[i].entity_2} class={entityClass}");
             if(entityClass==PK_CLASS_face){int surface,type;Check(PK_FACE_ask_surf(faults[i].entity_1,&surface),"fault support");Check(PK_ENTITY_ask_class(surface,&type),"fault support class");Console.WriteLine($"FAULT support={surface} type={type}");}
         }
+        WebProgressCapture.RecordBodyCheck(label,n,faults);
         Require(n==0,label+" faults="+n);Console.WriteLine(label+" full check: 0 faults");
     }
     finally{Free(false,faults);}

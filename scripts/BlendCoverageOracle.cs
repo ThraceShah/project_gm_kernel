@@ -5,6 +5,7 @@
 #:property UsePskernelSharpUsings=true
 #:property UseParasolidScriptHost=true
 #:property AllowUnsafeBlocks=true
+#:property UseWebProgressCapture=true
 using static parasolid;
 using ProjectGmKernel.Native.Runtime;
 using System.Runtime.CompilerServices;
@@ -17,6 +18,7 @@ using(session)unsafe
  var start=new M.PK_SESSION_start_o_s{o_t_version=1};Check(KernelRuntime.SessionStart(&start),"self start");
  try
  {
+  if(WebProgressCapture.Enabled&&Environment.GetEnvironmentVariable("GM_WEB_SELECT")?.StartsWith("open-",StringComparison.Ordinal)==true){OpenCoverage();return 0;}
   var folder=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","nested-blend-native");var document=XtText.DecodeDocument(File.ReadAllText(Path.Combine(folder,"depth3.x_t")));var count=0;
   foreach(var node in document.Nodes)
   {
@@ -37,9 +39,13 @@ static unsafe void OpenCoverage()
  var wall=new PK_PLANE_sf_t();wall.basis_set.axis=new(0,1,0);wall.basis_set.ref_direction=new(1,0,0);int plane,ownPlane;Check(PK_PLANE_create(&wall,&plane),"native wall");Check(KernelRuntime.PlaneCreate((M.PK_PLANE_sf_s*)&wall,&ownPlane),"own wall");
  foreach(var swap in new[]{false,true})foreach(var firstSign in new[]{1.0,-1.0})foreach(var secondSign in new[]{1.0,-1.0})
  {
-  var a=new PK_VECTOR_t(.5,0,.075);var b=new PK_VECTOR_t(-.5,0,.075);var options=new PK_SURF_create_blend_o_t();int native=0;var error=PK_SURF_create_blend(swap?plane:source,.1*firstSign,swap?source:plane,.1*secondSign,a,b,&options,&native);
-  if(error!=0){(a,b)=(b,a);Check(PK_SURF_create_blend(swap?plane:source,.1*firstSign,swap?source:plane,.1*secondSign,a,b,&options,&native),"native open reversed hints");}
-  int own;Check(KernelRuntime.SurfCreateBlend(swap?ownPlane:ownSource,.1*firstSign,swap?ownSource:ownPlane,.1*secondSign,*(M.PK_VECTOR_s*)&a,*(M.PK_VECTOR_s*)&b,(M.PK_SURF_create_blend_o_s*)&options,&own),"own open construction");
+  var webLabel=$"open-swap{swap}-r{firstSign}-{secondSign}";var webSelected=WebProgressCapture.Select(webLabel);if(!webSelected)continue;
+  if(webSelected)WebProgressCapture.BeforeSurfaces(false,swap?plane:source,swap?source:plane);
+  var a=new PK_VECTOR_t(.5,0,.075);var b=new PK_VECTOR_t(-.5,0,.075);var options=new PK_SURF_create_blend_o_t();int native=0;var webPkStarted=System.Diagnostics.Stopwatch.GetTimestamp();var error=PK_SURF_create_blend(swap?plane:source,.1*firstSign,swap?source:plane,.1*secondSign,a,b,&options,&native);
+  var webPkMs=System.Diagnostics.Stopwatch.GetElapsedTime(webPkStarted).TotalMilliseconds;
+  if(error!=0){(a,b)=(b,a);webPkStarted=System.Diagnostics.Stopwatch.GetTimestamp();var retry=PK_SURF_create_blend(swap?plane:source,.1*firstSign,swap?source:plane,.1*secondSign,a,b,&options,&native);webPkMs+=System.Diagnostics.Stopwatch.GetElapsedTime(webPkStarted).TotalMilliseconds;Check(retry,"native open reversed hints");}
+  if(webSelected)WebProgressCapture.BeforeSurfaces(true,swap?ownPlane:ownSource,swap?ownSource:ownPlane);
+  int own;var webGmStarted=System.Diagnostics.Stopwatch.GetTimestamp();var webGmError=KernelRuntime.SurfCreateBlend(swap?ownPlane:ownSource,.1*firstSign,swap?ownSource:ownPlane,.1*secondSign,*(M.PK_VECTOR_s*)&a,*(M.PK_VECTOR_s*)&b,(M.PK_SURF_create_blend_o_s*)&options,&own);var webGmMs=System.Diagnostics.Stopwatch.GetElapsedTime(webGmStarted).TotalMilliseconds;Check(webGmError,"own open construction");
   var nativeDefinition=new PK_BLENDSF_sf_t();Check(PK_BLENDSF_ask(native,&nativeDefinition),"native definition");var ownDefinition=new M.PK_BLENDSF_sf_s();Check(KernelRuntime.BlendSfAsk(own,&ownDefinition),"own definition");
   Console.WriteLine($"case swap={swap} signs={firstSign}/{secondSign} native supports={nativeDefinition.geom_1}/{nativeDefinition.geom_2} input={source}/{plane} radii={nativeDefinition.radii[0]}/{nativeDefinition.radii[1]}");
   var ownBox=new M.PK_UVBOX_s();Check(KernelRuntime.SurfAskUvbox(own,&ownBox),"own range");var nativeBox=new PK_UVBOX_t();nativeBox.param[1]=.15;nativeBox.param[3]=.85;
@@ -51,7 +57,7 @@ static unsafe void OpenCoverage()
   }
   if(nativeBox.param[2]<nativeBox.param[0])(nativeBox.param[0],nativeBox.param[2])=(nativeBox.param[2],nativeBox.param[0]);
   var width=ownBox.param[2]-ownBox.param[0];var lower=ownBox.param[0];ownBox.param[0]=lower+.4*width;ownBox.param[2]=lower+.6*width;ownBox.param[1]=.15;ownBox.param[3]=.85;
-  int ownSheet,nativeSheet;Check(KernelRuntime.SurfMakeSheetBody(own,ownBox,&ownSheet),"own open sheet");Check(PK_SURF_make_sheet_body(native,nativeBox,&nativeSheet),"native open sheet");Compare(ownSheet,nativeSheet,$"open-swap{swap}-r{firstSign}-{secondSign}");
+  int ownSheet,nativeSheet;Check(KernelRuntime.SurfMakeSheetBody(own,ownBox,&ownSheet),"own open sheet");Check(PK_SURF_make_sheet_body(native,nativeBox,&nativeSheet),"native open sheet");if(webSelected){WebProgressCapture.SurfaceAfter(true,ownSheet,webGmMs);WebProgressCapture.SurfaceAfter(false,nativeSheet,webPkMs);}Compare(ownSheet,nativeSheet,$"open-swap{swap}-r{firstSign}-{secondSign}");
   Console.WriteLine($"PASS open swap={swap}, radii={firstSign}/{secondSign}");
  }
 }

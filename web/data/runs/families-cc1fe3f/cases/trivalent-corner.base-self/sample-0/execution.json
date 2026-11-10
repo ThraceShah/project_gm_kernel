@@ -1,0 +1,1 @@
+{"exitCode":0,"timedOut":false,"budgetSeconds":180,"arguments":["run","--file","scripts/TrivalentBlendCornerOracle.cs","-c","Release","-p:UseSharedCompilation=false","--","base","--self-author"],"logSha256":"8b17372bd919666f4d1990174262ca91a5c6179e2f262361893bd8970ff960a9"}

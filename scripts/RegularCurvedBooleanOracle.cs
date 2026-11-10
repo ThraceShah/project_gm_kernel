@@ -5,6 +5,7 @@
 #:property UsePskernelSharpUsings=true
 #:property UseParasolidScriptHost=true
 #:property AllowUnsafeBlocks=true
+#:property UseWebProgressCapture=true
 using static parasolid;
 using ProjectGmKernel.Native.Runtime;
 using System.Runtime.CompilerServices;
@@ -22,7 +23,7 @@ using(host)unsafe
         foreach(var kind in new[]{"block","nurbs","closed-cut","disjoint","enclosed-tool","enclosed-target","two-tools","mixed-disjoint","continuous","reloaded","reloaded-block","same-domain","same-domain-reloaded","same-domain-partial","same-domain-partial-reloaded"})
         foreach(var function in new[]{PK_boolean_unite_c,PK_boolean_intersect_c,PK_boolean_subtract_c})
         {
-            var name=$"{kind}-{function}";if(args.Length!=0&&!name.Contains(args[0],StringComparison.Ordinal))continue;
+            var name=$"{kind}-{function}";if(!WebProgressCapture.Select(name))continue;if(args.Length!=0&&!name.Contains(args[0],StringComparison.Ordinal))continue;
             try
             {
                 var ours=Produce(true,kind,function);var reference=Produce(false,kind,function);Require(ours.Length==reference.Length,name+" body count");
@@ -82,6 +83,22 @@ static unsafe int[] Produce(bool own,string kind,int function,double tolerance=1
         tools[0]=Block(own,.25,.35,.2,1,1,1.1);
         tools[1]=kind=="two-tools"?Block(own,.83,.62,.17,.8,.7,.91):Block(own,3,3,.25,1,1,1);toolCount=2;
         Check(own?KernelRuntime.EntityDelete(1,&tool):PK_ENTITY_delete(1,&tool),"unused initial tool");
+    }
+    if(WebProgressCapture.Enabled)
+    {
+        // Preserve the oracle's tracking=false option: this GM curved path rejects tracking=true.
+        WebProgressCapture.Before(own,target,[],"PK_BODY_boolean_2",new ReadOnlySpan<int>(tools,toolCount).ToArray());
+    WebProgressCapture.BooleanParameters(own,options);
+        PK_TOPOL_track_r_t tracking=default;PK_boolean_r_t result=default;
+        var started=System.Diagnostics.Stopwatch.GetTimestamp();
+        var error=own?KernelRuntime.BodyBoolean2(target,toolCount,tools,(M.PK_BODY_boolean_o_s*)&options,(M.PK_TOPOL_track_r_s*)&tracking,(M.PK_boolean_r_s*)&result):PK_BODY_boolean_2(target,toolCount,tools,&options,&tracking,&result);
+        var ms=System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+        try
+        {
+            var output=error==0?new ReadOnlySpan<int>(result.bodies,result.n_bodies).ToArray():[];
+            WebProgressCapture.BooleanAfter(own,output,ms,error,result.result,&tracking);Check(error,"web tracked Boolean");return output;
+        }
+        finally {if(own){KernelRuntime.TopolTrackResultFree((M.PK_TOPOL_track_r_s*)&tracking);KernelRuntime.BooleanResultFree((M.PK_boolean_r_s*)&result);}else{PK_TOPOL_track_r_f(&tracking);PK_boolean_r_f(&result);}}
     }
     Check(own?KernelRuntime.BodyBoolean(target,toolCount,tools,(M.PK_BODY_boolean_o_s*)&options,&count,&bodies):PK_BODY_boolean(target,toolCount,tools,&options,&count,&bodies),$"{(own?"own":"native")} {kind} Boolean");
     try{var result=new int[count];new ReadOnlySpan<int>(bodies,count).CopyTo(result);if(kind=="mixed-disjoint"&&function==PK_boolean_unite_c)Require(result.Contains(tools[1]),"disjoint tool body identity");return result;}

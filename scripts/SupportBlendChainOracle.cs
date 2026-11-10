@@ -5,6 +5,7 @@
 #:property UsePskernelSharpUsings=true
 #:property UseParasolidScriptHost=true
 #:property AllowUnsafeBlocks=true
+#:property UseWebProgressCapture=true
 using static parasolid;
 using ProjectGmKernel.Native.Runtime;
 using System.Diagnostics;
@@ -162,7 +163,13 @@ static unsafe int Fix(bool own,int body,int[] edges,double radius)
 {
     var set=new PK_EDGE_set_blend_constant_o_t();set.properties.tolerance=1e-7;int n;int* marked;fixed(int* input=edges)Check(own?KernelRuntime.EdgeSetBlendConstant(edges.Length,input,radius,(M.PK_EDGE_set_blend_constant_o_s*)&set,&n,&marked):PK_EDGE_set_blend_constant(edges.Length,input,radius,&set,&n,&marked),"mark selected chain");Free(own,marked);
     var fix=new PK_BODY_fix_blends_o_t{tolerance=1e-7,update=PK_blend_edge_update_v261_c,local_check=PK_LOGICAL_true};int fault,fe,ft;int* output;
-    var started=Stopwatch.GetTimestamp();var error=own?KernelRuntime.BodyFixBlends(body,(M.PK_BODY_fix_blends_o_s*)&fix,&n,&output,null,null,&fault,&fe,&ft):PK_BODY_fix_blends(body,&fix,&n,&output,null,null,&fault,&fe,&ft);
+    WebProgressCapture.Before(own,body,edges);
+    WebProgressCapture.BlendParameters(own,fix,radius,set.properties.tolerance);
+    PK_FACE_array_t* webUnders=null;int* webTopols=null;
+    var started=Stopwatch.GetTimestamp();var error=own?KernelRuntime.BodyFixBlends(body,(M.PK_BODY_fix_blends_o_s*)&fix,&n,&output,WebProgressCapture.Enabled?(M.PK_FACE_array_s**)&webUnders:null,WebProgressCapture.Enabled?&webTopols:null,&fault,&fe,&ft):PK_BODY_fix_blends(body,&fix,&n,&output,WebProgressCapture.Enabled?&webUnders:null,WebProgressCapture.Enabled?&webTopols:null,&fault,&fe,&ft);
+    var webMs=Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+    WebProgressCapture.After(own,body,webMs,error,n,output,fault,webUnders,webTopols);
+    WebProgressCapture.FreeBlendTracking(own,n,webUnders,webTopols);
     Console.WriteLine($"TIME FixBlends own={own} seconds={Stopwatch.GetElapsedTime(started).TotalSeconds:F6} error={error} faces={n}");Check(error,"fix support chain");Free(own,output);return n;
 }
 static unsafe void Transform(bool own,int body)
