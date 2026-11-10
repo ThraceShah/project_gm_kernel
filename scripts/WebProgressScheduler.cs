@@ -352,6 +352,43 @@ internal static class WebProgressScheduler
             if (batch["status"]!.GetValue<string>() == "running") batch["status"] = "interrupted";
     }
 
+    // Isolate a bad or unconfirmed run: its directory and raw evidence are kept
+    // exactly as-is, but it leaves the validated/published index so one broken
+    // historical manifest can never poison later batches. Completed
+    // observations that relied on the quarantined evidence are demoted to
+    // stale (history retained) and re-queued; aggregates never reference the
+    // quarantined run's meshes/manifests.
+    internal static void QuarantineRun(JsonObject state, string dataRoot, string runId, string reason, JsonArray errors)
+    {
+        var quarantined = (state["quarantined"] ??= new JsonObject()).AsObject();
+        quarantined[runId] = new JsonObject { ["reason"] = reason, ["errors"] = errors.DeepClone(), ["quarantinedAt"] = DateTimeOffset.UtcNow.ToString("O") };
+        var indexPath = Path.Combine(dataRoot, "index.json");
+        if (File.Exists(indexPath))
+        {
+            var index = JsonNode.Parse(File.ReadAllText(indexPath))!.AsObject();
+            var runs = index["runs"]!.AsArray();
+            for (var i = runs.Count - 1; i >= 0; i--)
+                if (runs[i]!["id"]!.GetValue<string>() == runId) runs.RemoveAt(i);
+            if (index["latestRunId"]?.GetValue<string>() == runId && runs.Count > 0) index["latestRunId"] = runs[0]!["id"]!.DeepClone();
+            File.WriteAllText(indexPath + ".tmp", index.ToJsonString());
+            File.Move(indexPath + ".tmp", indexPath, true);
+        }
+        var completed = state["completed"]!.AsObject();
+        var stale = state["stale"]!.AsObject();
+        var pending = state["pending"]!.AsArray();
+        var pendingIds = PendingIds(state);
+        foreach (var pair in completed.ToList())
+        {
+            if (pair.Value?["runId"]?.GetValue<string>() != runId) continue;
+            var moved = pair.Value!.DeepClone().AsObject();
+            moved["markedAt"] = DateTimeOffset.UtcNow.ToString("O");
+            moved["reason"] = "evidence-quarantined";
+            stale[pair.Key] = moved;
+            completed.Remove(pair.Key);
+            if (!pendingIds.Contains(pair.Key)) pending.Add(Pending(pair.Key, "evidence-quarantined"));
+        }
+    }
+
     // Aggregate manifest for the current run. The raw collection manifest is
     // the base; cases confirmed at the current validity are accumulated with
     // their real measurement run (paths rewritten to that run), stale results
@@ -365,6 +402,7 @@ internal static class WebProgressScheduler
         var staleRecords = state["stale"]!.AsObject();
         var blocked = state["blocked"]!.AsObject();
         var pendingIds = PendingIds(state);
+        var quarantined = (state["quarantined"] ?? new JsonObject()).AsObject();
         var adapted = registry["cases"]!.AsArray().OfType<JsonObject>().Where(c => c["meshAdapter"]!.GetValue<bool>() == true).Select(c => c["id"]!.GetValue<string>()).ToHashSet(StringComparer.Ordinal);
         var unadapted = 0; var staleCount = 0; var blockedCount = 0; var carried = 0; var measured = 0; var notRun = 0;
         for (var i = 0; i < cases.Count; i++)
@@ -401,7 +439,11 @@ internal static class WebProgressScheduler
                 var isBlocked = bad != null;
                 var fromStale = previous != null;
                 var sourceRunId = previous?["runId"]?.GetValue<string>();
-                var built = sourceRunId != null ? BuildEntry(sourceRunId) : baseEntry;
+                // A quarantined source run's meshes/manifests must never be
+                // referenced from an aggregate: the display degrades to the
+                // placeholder entry plus stale history metadata and a note.
+                var quarantinedSource = sourceRunId != null && quarantined.ContainsKey(sourceRunId);
+                var built = sourceRunId != null && !quarantinedSource ? BuildEntry(sourceRunId) : baseEntry;
                 if (fromStale)
                 {
                     built["status"] = "missing";
@@ -421,6 +463,7 @@ internal static class WebProgressScheduler
                     built["measurement"]!["carriedForward"] = sourceRunId != runId;
                     var revisionText = previous!["revision"]?.GetValue<string>() ?? "unknown";
                     Note(built, "过时结果：本条为 " + Short(revisionText) + "（run " + sourceRunId + "）的真实测量，源/配方变更影响本 case，等待重验；当前状态不是通过，网格/检查仅作 stale 历史展示。");
+                    if (quarantinedSource) Note(built, "证据隔离：历史测量 run " + sourceRunId + " 因契约失败已隔离（原始证据留存但不进入发布索引），不展示其网格/检查，仅保留历史元数据；本条等待重验。");
                 }
                 if (isBlocked)
                 {

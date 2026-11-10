@@ -431,6 +431,67 @@ WebProgressScheduler.RecordOutcome(s13, "blend.alpha", "completed", "pass", "run
 var mergedProv3 = WebProgressScheduler.BuildAggregate(ProvRaw(), Registry(alpha), s13, dataRoot, "run-new", "rev-1", "NEW-CHECK-VERSION", 2, id => id == "run-old" ? ProvManifest("run-old", "check-run-old") : null);
 Assert(mergedProv3["cases"]![0]!["measurement"]!["checkVersion"]!.GetValue<string>() == "check-run-old", "a traceable source-run check version is preferred over any current value");
 
+// ---- 18. bad-run quarantine: evidence kept, index clean, next batch advances ----
+var qRoot = Path.Combine(root, "quarantine");
+Directory.CreateDirectory(qRoot);
+var qGood = Entry("blend.alpha", "pass", "cases/blend.alpha/sample-0/meshes/m.json", "cases/blend.alpha/sample-0/oracle.log");
+var qBad = Entry("bool.delta", "pass", "cases/bool.delta/sample-0/meshes/m.json", "cases/bool.delta/sample-0/oracle.log");
+WriteRun(qRoot, "run-good", "rev-0", true, qGood);
+WriteRun(qRoot, "run-bad", "rev-0", true, qBad);
+var badManifestPath = Path.Combine(qRoot, "runs", "run-bad", "manifest.json");
+var badManifest = JsonNode.Parse(File.ReadAllText(badManifestPath))!.AsObject();
+badManifest["cases"]![0]!["steps"]![0]!["gm"]!["before"] = "cases/bool.delta/sample-0/meshes/missing.json";
+File.WriteAllText(badManifestPath, badManifest.ToJsonString());
+File.WriteAllText(Path.Combine(qRoot, "runs", "run-bad", "collection-manifest.json"), badManifest.ToJsonString());
+WriteIndex(qRoot, "run-good", "run-bad");
+var polluted = WebProgressDataValidation.Validate(qRoot);
+Assert(polluted["errors"]!.AsArray().Count > 0 && polluted["runErrors"]!["run-bad"]!.AsArray().Count > 0 && polluted["runErrors"]!["run-good"] is not JsonArray { Count: > 0 }, "validation attributes the pollution to the bad run only (runErrors)");
+var s14 = WebProgressScheduler.NewState("rev-0", "h14", "test-registry-v1");
+WebProgressScheduler.Reconcile(s14, Registry(alpha, beta), "h14", "test-registry-v1");
+WebProgressScheduler.RecordOutcome(s14, "blend.alpha", "completed", "pass", "run-bad", "rev-0", WebProgressScheduler.EntryHash(alpha), 0, "check-bad");
+WebProgressScheduler.QuarantineRun(s14, qRoot, "run-bad", "contract-failed", polluted["runErrors"]!["run-bad"]!.AsArray());
+var qIndex = JsonNode.Parse(File.ReadAllText(Path.Combine(qRoot, "index.json")))!;
+Assert(!qIndex["runs"]!.AsArray().Any(r => r!["id"]!.GetValue<string>() == "run-bad"), "the quarantined run leaves the validated/published index");
+Assert(File.Exists(badManifestPath) && Directory.Exists(Path.Combine(qRoot, "runs", "run-bad", "cases")), "the quarantined run's raw evidence is retained untouched (no log or manifest deleted)");
+Assert(WebProgressDataValidation.Validate(qRoot)["errors"]!.AsArray().Count == 0, "after isolation the next valid batch advances: same validator, no standard lowered, no error ignored");
+Assert(qIndex["latestRunId"]!.GetValue<string>() == "run-good", "the index follows the newest remaining validated run");
+Assert(s14["stale"]!.AsObject().ContainsKey("blend.alpha") && s14["stale"]!["blend.alpha"]!["reason"]!.GetValue<string>() == "evidence-quarantined" && s14["pending"]!.AsArray().Any(p => p!["caseId"]!.GetValue<string>() == "blend.alpha" && p["reason"]!.GetValue<string>() == "evidence-quarantined"), "observations relying on quarantined evidence become stale history and re-queue; they are never kept as current passes");
+var rawQ = new JsonObject
+{
+    ["schemaVersion"] = 1,
+    ["run"] = new JsonObject { ["id"] = "run-new", ["commit"] = "rev-1", ["generatedAt"] = DateTimeOffset.UtcNow.ToString("O"), ["pkVersion"] = "test", ["host"] = new JsonObject { ["os"] = "test-host" }, ["configuration"] = new JsonObject(), ["scope"] = new JsonObject(), ["provenance"] = new JsonObject { ["checkVersion"] = "check-new" } },
+    ["cases"] = new JsonArray((JsonNode)Entry("blend.alpha", "missing", "", ""), (JsonNode)Entry("blend.beta", "missing", "", "")),
+};
+var mergedQ = WebProgressScheduler.BuildAggregate(rawQ, Registry(alpha, beta), s14, qRoot, "run-new", "rev-1", "check-new", 1, id => id == "run-bad" ? badManifest : null);
+var mergedQText = mergedQ.ToJsonString();
+Assert(!mergedQText.Contains("../run-bad/cases", StringComparison.Ordinal), "the aggregate never points at the quarantined run's meshes/manifests");
+Assert(mergedQ["cases"]![0]!["notes"]!.AsArray().Any(n => n!.GetValue<string>().Contains("证据隔离")), "the degraded stale display explains the quarantine explicitly");
+
+// ---- 19. aggregate-invalid recovery: rollback keeps a valid raw run, then the next batch advances ----
+var qRoot2 = Path.Combine(root, "aggregate-recovery");
+Directory.CreateDirectory(Path.Combine(qRoot2, "runs", "run-19"));
+var s16 = WebProgressScheduler.NewState("rev-0", "h16", "test-registry-v1");
+WebProgressScheduler.Reconcile(s16, Registry(alpha, beta), "h16", "test-registry-v1");
+for (var i = 0; i < WebProgressScheduler.MaxAttempts; i++) WebProgressScheduler.RecordOutcome(s16, "blend.beta", "export-failure", "missing", "run-ghost", "rev-0", WebProgressScheduler.EntryHash(beta), 0);
+var raw19 = new JsonObject
+{
+    ["schemaVersion"] = 1,
+    ["run"] = new JsonObject { ["id"] = "run-19", ["commit"] = "rev-1", ["generatedAt"] = DateTimeOffset.UtcNow.ToString("O"), ["pkVersion"] = "test", ["host"] = new JsonObject { ["os"] = "test-host" }, ["configuration"] = new JsonObject(), ["scope"] = new JsonObject(), ["provenance"] = new JsonObject { ["checkVersion"] = "check-19" } },
+    ["cases"] = new JsonArray((JsonNode)Entry("blend.alpha", "missing", "", ""), (JsonNode)Entry("blend.beta", "missing", "", "")),
+};
+var merged19 = WebProgressScheduler.BuildAggregate(raw19, Registry(alpha, beta), s16, qRoot2, "run-19", "rev-1", "check-19", 0, _ => null);
+File.WriteAllText(Path.Combine(qRoot2, "runs", "run-19", "collection-manifest.json"), raw19.ToJsonString());
+File.WriteAllText(Path.Combine(qRoot2, "runs", "run-19", "manifest.json"), merged19.ToJsonString());
+WriteIndex(qRoot2, "run-19");
+Assert(WebProgressDataValidation.Validate(qRoot2)["errors"]!.AsArray().Count > 0, "an aggregate whose blocked evidence dangles is invalid and must roll back");
+File.WriteAllText(Path.Combine(qRoot2, "runs", "run-19", "manifest.json"), raw19.ToJsonString());
+Assert(WebProgressDataValidation.Validate(qRoot2)["errors"]!.AsArray().Count == 0 && s16["completed"]!.AsObject().Count == 0, "rollback restores the raw manifest, nothing advances as completed");
+Directory.CreateDirectory(Path.Combine(qRoot2, "runs", "run-ghost", "cases", "blend.beta", "sample-0"));
+File.WriteAllText(Path.Combine(qRoot2, "runs", "run-ghost", "cases", "blend.beta", "sample-0", "oracle.log"), "failure log\n");
+var merged19b = WebProgressScheduler.BuildAggregate(raw19, Registry(alpha, beta), s16, qRoot2, "run-19", "rev-1", "check-19", 0, _ => null);
+File.WriteAllText(Path.Combine(qRoot2, "runs", "run-19", "manifest.json"), merged19b.ToJsonString());
+Assert(WebProgressDataValidation.Validate(qRoot2)["errors"]!.AsArray().Count == 0, "after the cause is resolved the next aggregate validates and the batch can advance");
+
 Console.WriteLine("ALL PASS " + passed + " scheduling contract checks");
 return 0;
 static string ScriptPath([CallerFilePath] string path = "") => path;

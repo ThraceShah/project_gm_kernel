@@ -29,7 +29,11 @@ internal static class WebProgressPublishing
             }
             else Directory.Move(staging,final);
             var input=JsonNode.Parse(File.ReadAllText(Path.Combine(data,"index.json")))!;
-            var descriptor=input["runs"]!.AsArray().Single(r=>r!["id"]!.GetValue<string>()==runId)!.DeepClone();
+            var descriptor=input["runs"]!.AsArray().FirstOrDefault(r=>r!["id"]!.GetValue<string>()==runId)?.DeepClone();
+            // A run without a validated index descriptor (quarantined bad or
+            // unconfirmed run) is copied as raw evidence only and must never
+            // enter the published index.
+            if(descriptor==null)return;
             var indexPath=Path.Combine(destination,"index.json");
             var index=File.Exists(indexPath)?JsonNode.Parse(File.ReadAllText(indexPath))!.AsObject():new JsonObject{["schemaVersion"]=1,["runs"]=new JsonArray()};
             var descriptors=index["runs"]!.AsArray();var previous=descriptors.FirstOrDefault(r=>r!["id"]!.GetValue<string>()==runId);if(previous!=null)descriptors.Remove(previous);descriptors.Insert(0,descriptor);

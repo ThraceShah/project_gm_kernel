@@ -7,7 +7,10 @@ internal static class WebProgressDataValidation
     internal static JsonObject Validate(string data)
     {
         var errors=new JsonArray();var meshCount=0;var triangles=0;var caseCount=0;var seenMeshes=new HashSet<string>();
-        void Error(string message)=>errors.Add((JsonNode?)JsonValue.Create(message));
+        // Errors are additionally attributed per run (runErrors) so callers can
+        // isolate a bad run without weakening any check or losing any error.
+        var runErrors=new JsonObject();string? currentRun=null;
+        void Error(string message){errors.Add((JsonNode?)JsonValue.Create(message));if(currentRun!=null)((JsonArray)(runErrors[currentRun]??=new JsonArray())).Add((JsonNode?)JsonValue.Create(message));}
         void Fields(JsonNode? node,string names,string context)
         {if(node is not JsonObject obj){Error(context+": expected object");return;}foreach(var key in names.Split(' '))if(!obj.ContainsKey(key))Error(context+": missing "+key);}
         string? Resolve(string root,JsonNode? reference,string context)
@@ -59,7 +62,7 @@ internal static class WebProgressDataValidation
         foreach(var descriptor in index?["runs"]?.AsArray()??[])
         {
             Fields(descriptor,"id commit generatedAt label manifest","index run");
-            var id=descriptor!["id"]!.GetValue<string>();if(!runIds.Add(id))Error("duplicate run ID");
+            var id=descriptor!["id"]!.GetValue<string>();currentRun=id;if(!runIds.Add(id))Error("duplicate run ID");
             var path=Resolve(data,descriptor["manifest"],id);if(path==null)continue;
             var manifest=Read(path);var runRoot=Path.GetDirectoryName(path)!;
             Fields(manifest,"schemaVersion run cases",id);
@@ -104,8 +107,9 @@ internal static class WebProgressDataValidation
                 }
             }
         }
+        currentRun=null;
         if(index?["latestRunId"] is JsonValue latest&&!runIds.Contains(latest.GetValue<string>()))Error("latestRunId is not registered");
         return Result();
-        JsonObject Result()=>new(){["schemaVersion"]=1,["cases"]=caseCount,["meshes"]=meshCount,["triangles"]=triangles,["errors"]=errors};
+        JsonObject Result()=>new(){["schemaVersion"]=1,["cases"]=caseCount,["meshes"]=meshCount,["triangles"]=triangles,["errors"]=errors,["runErrors"]=runErrors};
     }
 }

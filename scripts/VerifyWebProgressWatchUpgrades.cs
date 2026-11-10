@@ -9,8 +9,8 @@ using System.Text.Json.Nodes;
 // fixture git repository with one cheap controlled oracle (no PK): pure staged
 // changes, dirty->clean reverts and rename/delete reverses must all invalidate
 // the affected observations through the union of previously and currently
-// dirty paths, so an old dirty measurement is never carried as a clean current
-// result. Offline: no network, no PK, no real geometry.
+// dirty paths, and a poisoned historical run must be quarantined out of the
+// validated index on the next tick. Offline: no network, no PK, no geometry.
 var scripts = Path.GetDirectoryName(ScriptPath())!;
 var root = Path.GetFullPath("..", scripts);
 var work = Path.Combine(root, "temp_docs", "web-progress-watch-tests");
@@ -144,6 +144,23 @@ ResetTree();
 var tickD2 = Tick("delete-restore");
 Assert(ChangedPathCount(tickD2.Text) == 1, "delete restore (reverse) still invalidates through the previous dirty path set: " + ChangedPathCount(tickD2.Text));
 Assert(StateRunId() != beforeD2, "delete restore re-verifies instead of silently keeping the old measurement");
+
+// ---- E. historical poison recovery: a bad indexed run is isolated on the next tick ----
+ResetTree();
+var runDirs = Directory.GetDirectories(Path.Combine(fixture, "data", "runs")).Order().ToList();
+var victim = runDirs.First();
+var victimId = Path.GetFileName(victim);
+var victimManifest = Path.Combine(victim, "manifest.json");
+var victimDoc = JsonNode.Parse(File.ReadAllText(victimManifest))!;
+victimDoc["cases"]![0]!["status"] = "bogus-status";
+File.WriteAllText(victimManifest, victimDoc.ToJsonString());
+var tickE = Tick("quarantine");
+Assert(tickE.Exit == 0, "a poisoned historical run neither crashes nor blocks the tick (was permanent full-root pollution): " + tickE.Exit);
+var stateE = JsonNode.Parse(File.ReadAllText(Path.Combine(fixture, "state.json")))!;
+Assert(stateE["quarantined"]?[victimId] != null, "the tick-start sweep quarantines the poisoned run");
+var indexE = JsonNode.Parse(File.ReadAllText(Path.Combine(fixture, "data", "index.json")))!;
+Assert(!indexE["runs"]!.AsArray().Any(r => r!["id"]!.GetValue<string>() == victimId), "the poisoned run leaves the validated index so later batches can proceed");
+Assert(File.Exists(victimManifest), "the poisoned run's raw evidence is retained untouched");
 
 if (failures.Count > 0)
 {

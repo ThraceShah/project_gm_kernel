@@ -91,6 +91,33 @@ async Task<int?> RunOnce()
         return 2;
     }
     WebProgressScheduler.RecoverInterrupted(state);
+    // Isolate bad or unconfirmed runs before anything else: raw evidence stays
+    // on disk untouched, but a broken historical manifest must never poison
+    // later batches or the validated/published index.
+    var quarantined = (state["quarantined"] ??= new JsonObject()).AsObject();
+    if (File.Exists(Path.Combine(data, "index.json")))
+    {
+        var sweep = WebProgressDataValidation.Validate(data);
+        foreach (var pair in (sweep["runErrors"] ?? new JsonObject()).AsObject())
+            if (pair.Value!.AsArray().Count > 0)
+            {
+                WebProgressScheduler.QuarantineRun(state, data, pair.Key, "validation-errors", pair.Value.AsArray());
+                Console.WriteLine("RUN_QUARANTINED " + pair.Key + " left the validated index (" + pair.Value.AsArray().Count + " validation errors); raw evidence retained.");
+            }
+    }
+    foreach (var past in state["batches"]!.AsArray().OfType<JsonObject>().ToList())
+    {
+        var badRun = past["runId"]?.GetValue<string>();
+        if (badRun == null || quarantined.ContainsKey(badRun)) continue;
+        if (past["status"]!.GetValue<string>() is not ("running" or "interrupted" or "run-failed" or "contract-failed")) continue;
+        var validationPath = Path.Combine(data, "runs", badRun, "validation.json");
+        var confirmed = File.Exists(validationPath) && JsonNode.Parse(File.ReadAllText(validationPath))!["errors"]!.AsArray().Count == 0;
+        if (!confirmed && Directory.Exists(Path.Combine(data, "runs", badRun)))
+        {
+            WebProgressScheduler.QuarantineRun(state, data, badRun, "unconfirmed", new JsonArray());
+            Console.WriteLine("RUN_QUARANTINED " + badRun + " unconfirmed run left the validated index; partial evidence retained.");
+        }
+    }
     if (args.Contains("--force"))
     {
         var completed = state["completed"]!.AsObject(); var stale = state["stale"]!.AsObject();
@@ -163,6 +190,8 @@ async Task<int?> RunOnce()
     if (validation["errors"]!.AsArray().Count > 0)
     {
         batch["status"] = "contract-failed"; batch["finishedAt"] = DateTimeOffset.UtcNow.ToString("O"); batch["validationErrors"] = validation["errors"]!.DeepClone();
+        WebProgressScheduler.QuarantineRun(state, data, runId, "contract-failed", validation["errors"]!.AsArray());
+        Console.WriteLine("RUN_QUARANTINED " + runId + " contract failure; raw evidence retained, excluded from the validated index.");
         foreach (var id in plan)
         {
             var attempted = manifest!["cases"]!.AsArray().OfType<JsonObject>().FirstOrDefault(c => c["id"]!.GetValue<string>() == id)?["execution"]?["attempted"]?.GetValue<bool>() == true;
