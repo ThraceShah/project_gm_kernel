@@ -16,7 +16,7 @@ do
 {
     var source=Run("git",["rev-parse","HEAD"])+Run("git",["diff","--no-ext-diff","--","src","scripts","tests/KernelTests/Fixtures"])+File.ReadAllText(Path.GetFullPath(Option("--registry","web-progress-registry.json"),scripts));
     var fingerprint=Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(source)));
-    if(last!=fingerprint||args.Contains("--force"))
+    if(last!=fingerprint||args.Contains("--force")||!CacheAvailable())
     {
         var info=new ProcessStartInfo("dotnet"){UseShellExecute=false,WorkingDirectory=root};
         foreach(var arg in new[]{"run","--file","scripts/RefreshWebProgress.cs","--"})info.ArgumentList.Add(arg);
@@ -32,6 +32,19 @@ do
     if(!once)try{await Task.Delay(TimeSpan.FromSeconds(interval),stop.Token);}catch(OperationCanceledException){break;}
 }while(!once&&!stop.IsCancellationRequested);
 return 0;
+bool CacheAvailable()
+{
+    try
+    {
+        var cache=Path.GetFullPath(Option("--publish-data-to",Option("--output","../temp_docs/web-progress/data")),scripts);
+        var indexPath=Path.Combine(cache,"index.json");if(!File.Exists(indexPath))return false;
+        var index=JsonNode.Parse(File.ReadAllText(indexPath))!;var latest=index["latestRunId"]!.GetValue<string>();
+        var descriptor=index["runs"]!.AsArray().Single(r=>r!["id"]!.GetValue<string>()==latest);
+        return File.Exists(Path.GetFullPath(descriptor!["manifest"]!.GetValue<string>(),cache));
+    }
+    catch(IOException){return false;}
+    catch(System.Text.Json.JsonException){return false;}
+}
 string Option(string name,string fallback){var at=Array.IndexOf(args,name);return at<0?fallback:args[at+1];}
 static string ScriptPath([CallerFilePath]string path="")=>path;
 static string Run(string command,string[] args){var info=new ProcessStartInfo(command){RedirectStandardOutput=true,UseShellExecute=false};foreach(var arg in args)info.ArgumentList.Add(arg);using var p=Process.Start(info)!;var output=p.StandardOutput.ReadToEnd();p.WaitForExit();if(p.ExitCode!=0)throw new IOException(command+" failed");return output.Trim();}

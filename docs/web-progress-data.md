@@ -63,3 +63,8 @@ MSBUILDDISABLENODEREUSE=1 dotnet run --file scripts/PublishWebProgress.cs -- --s
 ```
 
 The publisher performs the same complete contract validation and allowlist checks. It preserves original run/source metadata and never relabels copied results as a new execution.
+
+
+Capability and timing labels are explicit: `case.capabilityScope=web-export-adapter`, `adapterStatus=implemented|not-implemented`, `kernelCapability=null` where no general claim is made, and `performance.measurementKind=not-run|single-cold-sample|fresh-process-cold-median`. `correctnessQualified` gates the ratio using current checks; `stableBenchmark=false` prevents interpreting it as steady-state performance certification. A one-time additive metadata finalization was applied to the unpublished 17-case artifact; its original manifest hash, processor hash and unchanged modeling-result signature are retained in `run.provenance.metadataFinalization`. This changes no exit code, check, parameter, snapshot, API time or ratio, and does not rewrite the two previously committed runs.
+
+`PrepareWebProgressSite.cs` keeps UI source and generated static data separate. Local `--no-build` verification exercises complete safe dist/data assembly and history retention; actual package-manager/UI building and portal publication are the deployment owner's responsibility. The supplied systemd unit leaves portalctl to that owner's final drop-in. Generation state, site-build state, and the owner's successful portal-publication state are separate; a portal failure must retry the validated cache even when generation skips an unchanged SHA. Installation and activation on qingyu2 are explicitly handed off, not claimed as completed by the Mac data task.

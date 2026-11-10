@@ -37,7 +37,7 @@ public static unsafe class ParasolidDisplayBridge
     /// buffers before changing the model; source entity tags are preserved exactly.
     /// Both sessions must remain serialized by the caller, as with Create.
     /// </summary>
-    public static DisplayBody CreateParasolidSnapshot(int body,double chordTolerance=1e-3)
+    public static DisplayBody CreateParasolidSnapshot(BodyTag body,double chordTolerance=1e-3)
     {
         if(!double.IsFinite(chordTolerance)||chordTolerance<=0)throw new ArgumentOutOfRangeException(nameof(chordTolerance));
         lock(ParasolidGate)

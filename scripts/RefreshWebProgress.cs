@@ -27,7 +27,7 @@ if(id.IndexOfAny(Path.GetInvalidFileNameChars())>=0||id.Contains('/')||id.Contai
 var data=Path.GetFullPath(Option("--output","../temp_docs/web-progress/data"),Path.GetDirectoryName(ScriptPath())!);
 var run=Path.Combine(data,"runs",id);if(Directory.Exists(run))throw new IOException("Run already exists: choose a new --run-id; existing evidence is immutable.");Directory.CreateDirectory(run);
 var host=new JsonObject{["os"]=RuntimeInformation.OSDescription,["architecture"]=RuntimeInformation.OSArchitecture.ToString(),["processArchitecture"]=RuntimeInformation.ProcessArchitecture.ToString(),["logicalProcessors"]=Environment.ProcessorCount,["cpu"]=OperatingSystem.IsMacOS()?Command("sysctl",["-n","machdep.cpu.brand_string"]):ReadCpu(),["memoryBytes"]=OperatingSystem.IsMacOS()?Command("sysctl",["-n","hw.memsize"]):null,["sdk"]=Command("dotnet",["--version"]),["runtime"]=RuntimeInformation.FrameworkDescription,["stopwatchFrequency"]=Stopwatch.Frequency};
-var configuration=new JsonObject{["build"]=config,["nativeAot"]=false,["timing"]="Stopwatch elapsed wall time around API only",["tieredCompilation"]=Environment.GetEnvironmentVariable("DOTNET_TieredCompilation")??"runtime-default",["cache"]="oracle defaults, fresh process per sample",["parallelism"]="serial PK sessions",["samplesRequested"]=samples};
+var configuration=new JsonObject{["build"]=config,["nativeAot"]=false,["timing"]="Stopwatch elapsed wall time around API only",["tieredCompilation"]=Environment.GetEnvironmentVariable("DOTNET_TieredCompilation")??"runtime-default",["cache"]="oracle defaults, fresh process per sample",["parallelism"]="serial PK sessions",["samplesRequested"]=samples,["resourceLimits"]=Environment.GetEnvironmentVariable("GM_WEB_RESOURCE_LIMITS")};
 var cases=new JsonArray();
 var manifest=new JsonObject{["schemaVersion"]=1,["run"]=new JsonObject{["id"]=id,["commit"]=commit,["generatedAt"]=now.ToString("O"),["pkVersion"]=null,["host"]=host.DeepClone(),["configuration"]=configuration.DeepClone(),["scope"]=new JsonObject{["registryVersion"]=registry["version"]!.DeepClone(),["registered"]=registry["cases"]!.AsArray().Count,["family"]=Option("--family","all"),["suite"]=Option("--suite","all"),["case"]=Option("--case","representatives"),["seconds"]=budget,["caseSeconds"]=caseBudget},["provenance"]=new JsonObject{["pkToyCommit"]=Command("git",["-C","third_party/PKToy","rev-parse","HEAD"]),["dirtyAtStart"]=dirty.Length>0,["sourceHashes"]=SourceHashes(),["registryHash"]=Hash(File.ReadAllBytes(registryPath)),["workingDiffSha256"]=Hash(Encoding.UTF8.GetBytes(Command("git",["diff","--no-ext-diff"]))),["sourceMode"]="direct managed KernelRuntime plus independent PskernelSharp real PK",["registry"]= "registry.json",["reviewSources"]=registry["reviewSources"]?.DeepClone(),["implementationTree"]=Command("git",["rev-parse","HEAD:src"]),["limitations"]=registry["limitations"]!.DeepClone()}},["cases"]=cases};
 File.WriteAllText(Path.Combine(run,"registry.json"),registry.ToJsonString());
@@ -61,7 +61,7 @@ foreach(var entry in registry["cases"]!.AsArray().OfType<JsonObject>())
         foreach(var arg in entry["arguments"]!.AsArray())info.ArgumentList.Add(arg!.GetValue<string>());
         info.Environment["MSBUILDDISABLENODEREUSE"]="1";
         info.Environment["GM_WEB_ROOT"]=root;info.Environment["GM_WEB_CAPTURE"]=caseDir;info.Environment["GM_WEB_COMMIT"]=commit;info.Environment["GM_WEB_SELECT"]=entry["selector"]?.GetValue<string>();info.Environment["GM_WEB_GEOMETRY_AUTHOR"]=entry["geometryAuthor"]?.GetValue<string>()??"independent GM and PK construction, identical numeric parameters";
-        using var process=new Process{StartInfo=info};process.Start();
+        using var process=new Process{StartInfo=info};var processStarted=Stopwatch.GetTimestamp();process.Start();
         var stdout=process.StandardOutput.ReadToEndAsync();var stderr=process.StandardError.ReadToEndAsync();
         var timedOut=false;var remaining=Math.Max(1,Math.Min(caseBudget,budget-clock.Elapsed.TotalSeconds));
         using(var cancellation=new CancellationTokenSource(TimeSpan.FromSeconds(remaining)))
@@ -72,7 +72,7 @@ foreach(var entry in registry["cases"]!.AsArray().OfType<JsonObject>())
         File.WriteAllText(Path.Combine(caseDir,"oracle.log"),text);exitCodes.Add((JsonNode?)JsonValue.Create(process.ExitCode));anyTimeout|=timedOut;
         var prefix=$"cases/{caseId}/sample-{sample}/";
         evidence.Add((JsonNode)new JsonObject{["label"]=$"Oracle sample {sample} raw exit={process.ExitCode}"+(timedOut?" timeout":""),["path"]=prefix+"oracle.log"});
-        File.WriteAllText(Path.Combine(caseDir,"execution.json"),new JsonObject{["exitCode"]=process.ExitCode,["timedOut"]=timedOut,["budgetSeconds"]=remaining,["arguments"]=Args(info),["sourceHashes"]=sampleSources,["logSha256"]=Hash(Encoding.UTF8.GetBytes(text))}.ToJsonString());
+        File.WriteAllText(Path.Combine(caseDir,"execution.json"),new JsonObject{["exitCode"]=process.ExitCode,["timedOut"]=timedOut,["processElapsedMs"]=Stopwatch.GetElapsedTime(processStarted).TotalMilliseconds,["budgetSeconds"]=remaining,["arguments"]=Args(info),["sourceHashes"]=sampleSources,["logSha256"]=Hash(Encoding.UTF8.GetBytes(text))}.ToJsonString());
         evidence.Add((JsonNode)new JsonObject{["label"]="Execution provenance",["path"]=prefix+"execution.json"});
         c["execution"]!["exitCode"]=process.ExitCode;
         var capturePath=Path.Combine(caseDir,"capture.json");JsonObject? capture=File.Exists(capturePath)?JsonNode.Parse(File.ReadAllText(capturePath))!.AsObject():null;
@@ -129,7 +129,7 @@ foreach(var entry in registry["cases"]!.AsArray().OfType<JsonObject>())
     perf["note"]="API-only elapsed totals across captured steps; median of fresh-process samples, warmup=0. Cold JIT/cache effects remain; no stable throughput claim. Ratio withheld unless both sides succeeded and every current acceptance check passed.";
     Console.WriteLine($"RESULT {caseId}: {c["status"]}, exits={exitCodes.ToJsonString()}");Save();
 }
-manifest["run"]!["scope"]!["executed"]=executed;completed=true;Save();
+manifest["run"]!["scope"]!["executed"]=executed;manifest["run"]!["finishedAt"]=DateTimeOffset.UtcNow.ToString("O");manifest["run"]!["collectionElapsedSeconds"]=clock.Elapsed.TotalSeconds;completed=true;Save();
 var validation=WebProgressDataValidation.Validate(data);
 File.WriteAllText(Path.Combine(run,"validation.json"),validation.ToJsonString());
 if(validation["errors"]!.AsArray().Count>0)exporterBroken=true;
@@ -149,6 +149,7 @@ return exporterBroken?2:0;
 
 void Save()
 {
+    WebProgressMetadata.Apply(manifest,registry);
     File.WriteAllText(Path.Combine(run,"manifest.json.tmp"),manifest.ToJsonString());File.Move(Path.Combine(run,"manifest.json.tmp"),Path.Combine(run,"manifest.json"),true);
     if(!completed)return;
     var indexPath=Path.Combine(data,"index.json");var index=File.Exists(indexPath)?JsonNode.Parse(File.ReadAllText(indexPath))!.AsObject():new JsonObject{["schemaVersion"]=1,["runs"]=new JsonArray()};
@@ -159,7 +160,7 @@ void Save()
 }
 string Option(string name,string fallback){var at=Array.IndexOf(args,name);return at<0?fallback:at+1<args.Length?args[at+1]:throw new ArgumentException(name+" requires a value");}
 int Number(string name,int fallback)=>int.Parse(Option(name,fallback.ToString()),System.Globalization.CultureInfo.InvariantCulture);
-JsonObject SourceHashes(){var hashes=new JsonObject();foreach(var path in registry["cases"]!.AsArray().Select(c=>c!["source"]!.GetValue<string>()).Concat(new[]{"scripts/RefreshWebProgress.cs","scripts/WebProgressCapture.cs","scripts/WebProgressDataValidation.cs","scripts/WebProgressPublishing.cs","scripts/Directory.Build.props","scripts/ParasolidScriptHost.cs","scripts/ParasolidBodyCompare.cs","src/ProjectGmKernel.DisplayBridge/ParasolidDisplayBridge.cs"}).Distinct())if(File.Exists(path))hashes[path]=Hash(File.ReadAllBytes(path));return hashes;}
+JsonObject SourceHashes(){var hashes=new JsonObject();foreach(var path in registry["cases"]!.AsArray().Select(c=>c!["source"]!.GetValue<string>()).Concat(new[]{"scripts/RefreshWebProgress.cs","scripts/WebProgressCapture.cs","scripts/WebProgressDataValidation.cs","scripts/WebProgressPublishing.cs","scripts/WebProgressMetadata.cs","scripts/Directory.Build.props","scripts/ParasolidScriptHost.cs","scripts/ParasolidBodyCompare.cs","src/ProjectGmKernel.DisplayBridge/ParasolidDisplayBridge.cs"}).Distinct())if(File.Exists(path))hashes[path]=Hash(File.ReadAllBytes(path));return hashes;}
 static string ScriptPath([CallerFilePath]string path="")=>path;
 static string Hash(byte[] bytes)=>Convert.ToHexStringLower(SHA256.HashData(bytes));
 static double Median(List<double> values){var array=values.Order().ToArray();return array.Length%2==1?array[array.Length/2]:(array[array.Length/2-1]+array[array.Length/2])/2;}

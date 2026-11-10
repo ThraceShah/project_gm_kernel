@@ -1,0 +1,47 @@
+./scripts/TrivalentBlendCornerOracle.cs.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.11 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.11 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./scripts/TrivalentBlendCornerOracle.cs.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.11 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.11 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+SELECTED native order=0: 96,99,100
+TIME native base ms=14.745
+base-self-author native full BODY_check: 0 faults
+SELECTED self order=0: 160,163,164
+web strict fresh XT: global=21921 local=21930 face_pairs=5
+  faces=395/1098 diff=21949 entities=402/1042 counts=4/27 values=0/0
+  faces=395/1098 diff=21949 entities=399/1048 counts=3/27 values=0/0
+  faces=466/1100 diff=21949 entities=425/1037 counts=4/27 values=0/0
+  faces=471/1108 diff=21949 entities=385/1009 counts=3/27 values=0/0
+  faces=391/1120 diff=21949 entities=385/1009 counts=3/27 values=0/0
+  faces=391/1120 diff=21949 entities=402/1042 counts=4/27 values=0/0
+  faces=407/1110 diff=21949 entities=399/1048 counts=3/27 values=0/0
+  faces=407/1110 diff=21949 entities=425/1037 counts=4/27 values=0/0
+SELF corner error=0, stage=Release, event=None, pair=2, certificate=NeighborMonotonicity/2/1, roots=1, status=Success
+TIME self base ms=2035.804
+base-self-author received full BODY_check: 0 faults
+base-self-author topology 0: native=2 own=2
+base-self-author topology 1: native=2 own=2
+base-self-author topology 2: native=10 own=10
+base-self-author topology 3: native=21 own=21
+base-self-author topology 4: native=13 own=13
+base-self-author material regions: native=0:1,1:1, own=0:1,1:1
+base-self-author compare=21921/21930, face_pairs=5
+global diff=21940, entities=1/1
+global diff=21941, entities=10/10
+global diff=21943, entities=21/21
+global diff=21944, entities=0/0
+global diff=21946, entities=13/13
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=294/1249, class=500/500, int=4/27, value=0/0
+CHART face=0, diff=21949, entity=289/1246, class=500/500, int=3/27, value=0/0
+CHART face=1, diff=21949, entity=261/1251, class=500/500, int=4/27, value=0/0
+CHART face=2, diff=21949, entity=239/1258, class=500/500, int=3/27, value=0/0
+CHART face=3, diff=21949, entity=239/1258, class=500/500, int=3/27, value=0/0
+CHART face=3, diff=21949, entity=294/1249, class=500/500, int=4/27, value=0/0
+CHART face=4, diff=21949, entity=289/1246, class=500/500, int=3/27, value=0/0
+CHART face=4, diff=21949, entity=261/1251, class=500/500, int=4/27, value=0/0
+base-self-author PK mass: volume=1.0101729947510274/1.010172995015005, area=5.876619965157478/5.876619966394153, max normalized residual=2.535697932194166E-10
+PASS radius/center and 27 spherical interface position samples; 27 live-band G1 samples
+PASS independent finite band geometry samples=108, max distance=1.0861311850794508E-12; source contact G1 samples=54
+PASS base-self-author
+
+STDERR
