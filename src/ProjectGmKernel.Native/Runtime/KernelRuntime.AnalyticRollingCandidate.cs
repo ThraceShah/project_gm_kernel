@@ -46,7 +46,7 @@ internal static unsafe partial class KernelRuntime
         var r0=direction*LocalSenseSign(Faces[fa].Orientation)*radius;var r1=direction*LocalSenseSign(Faces[fb].Orientation)*radius;
         status=OffsetAnalyticBlendSupport(a,r0*LocalSenseSign(Surfaces[GetSurfaceSlotByTag(sa)].Sense),out var oa);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
         status=OffsetAnalyticBlendSupport(b,r1*LocalSenseSign(Surfaces[GetSurfaceSlotByTag(sb)].Sense),out var ob);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
-        CurveTag spine=0;var lower=first;var upper=last;
+        CurveTag spine=0;var lower=first;var upper=last;var spineSense=source.Sense;var carrierMajor=default(KernelVector3);
         if(a.Kind==SurfaceClass.Plane&&b.Kind==SurfaceClass.Plane&&source.Class==CurveClass.Line)
         {
             var cosine=Dot(a.Axis,b.Axis);var determinant=1-cosine*cosine;if(!(determinant>1e-14))return ParasolidConstants.PK_ERROR_cant_do_intersect;
@@ -78,11 +78,24 @@ internal static unsafe partial class KernelRuntime
             var definition=new PK_ELLIPSE_sf_s{R1=ellipse.R1*scale,R2=ellipse.R2*scale};
             WriteVector(&definition.basis_set.location,Vector(ellipse.CenterX,ellipse.CenterY,ellipse.CenterZ));
             var axis=Vector(ellipse.AxisX,ellipse.AxisY,ellipse.AxisZ);
-            var refDir=Vector(ellipse.RefDirX,ellipse.RefDirY,ellipse.RefDirZ);
+            var refDir=Vector(ellipse.RefDirX,ellipse.RefDirY,ellipse.RefDirZ);carrierMajor=refDir;
+            // Choose the signs of the carrier's own normal and major axis from
+            // the two equal cylinders, in blend support order: normal along
+            // A+B and major axis along A-B of their axis vectors. The conic is
+            // unchanged; a reversed normal reverses its natural direction, so
+            // the sense is flipped to keep the carrier's traversal. Only the
+            // bisecting plane with normal parallel to A+B is covered.
+            var plus=Add(a.Axis,b.Axis);var minus=Sub(a.Axis,b.Axis);
+            if(ProfileNormalize(ref plus)&&ProfileNormalize(ref minus)
+                &&Math.Abs(Math.Abs(Dot(axis,plus))-1)<=1e-9&&Math.Abs(Math.Abs(Dot(refDir,minus))-1)<=1e-9)
+            {
+                if(Dot(axis,plus)<0){axis=Scale(axis,-1);spineSense=FlipLocalSense(source.Sense);}
+                if(Dot(refDir,minus)<0)refDir=Scale(refDir,-1);
+            }
             WriteVector(&definition.basis_set.axis,axis);
             WriteVector(&definition.basis_set.ref_direction,refDir);
             error=EllipseCreateImplementation(&definition,&spine);if(error!=0)return error;
-            Curves[GetCurveSlotByTag(spine)].Sense=source.Sense;
+            Curves[GetCurveSlotByTag(spine)].Sense=spineSense;
             var center=Vector(ellipse.CenterX,ellipse.CenterY,ellipse.CenterZ);
             var x=refDir;var y=ProfileCross(axis,x);
             var dMid=Sub(jet[0],center);
@@ -104,7 +117,7 @@ internal static unsafe partial class KernelRuntime
             }
         }
         else return ParasolidConstants.PK_ERROR_not_implemented;
-        Curves[GetCurveSlotByTag(spine)].Sense=source.Sense;
+        Curves[GetCurveSlotByTag(spine)].Sense=spineSense;
         Span<GeomTag> supports=stackalloc GeomTag[2]{sa,sb},copies=stackalloc GeomTag[2];
         error=TryCloneEntitiesCore(supports,copies);if(error!=0)return error;SurfTag surface=0;
         error=CompileAndBindNestedBlend(copies[0],copies[1],spine,r0,r1,&surface,lower,upper);if(error!=0)return error;
@@ -118,7 +131,9 @@ internal static unsafe partial class KernelRuntime
         // projections of the selected conic's major direction. These are
         // unchanged by rigid motion or reflection, and do not depend on
         // which fin is first or where the selected conic was split.
-        var major=new IntervalVector(instruction.Curve.First);
+        // Use the selected carrier's major direction, not the sign chosen
+        // for the spine frame.
+        var major=new IntervalVector(carrierMajor);
         var axialA=IntervalVector.Dot(major,new IntervalVector(a.Axis)).Value;
         var axialB=IntervalVector.Dot(major,new IntervalVector(b.Axis)).Value;
         var contactSense=axialA.Lower>0&&axialB.Upper<0?ParasolidConstants.PK_TOPOL_sense_positive_c
