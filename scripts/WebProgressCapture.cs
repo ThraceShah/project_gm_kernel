@@ -159,13 +159,13 @@ internal static unsafe class WebProgressCapture
             var positions=new JsonArray();var normals=new JsonArray();var indices=new JsonArray();var index=0;
             foreach(var t in group){Vector(positions,t.A);Vector(positions,t.B);Vector(positions,t.C);Vector(normals,t.NormalA);Vector(normals,t.NormalB);Vector(normals,t.NormalC);indices.Add((JsonNode?)JsonValue.Create(index++));indices.Add((JsonNode?)JsonValue.Create(index++));indices.Add((JsonNode?)JsonValue.Create(index++));}
             var entity=group.First().Face;
-            faces.Add((JsonNode)new JsonObject{["id"]=Id(own,entity),["entityTag"]=entity.EntityTag,["identifier"]=entity.Identifier,["positions"]=positions,["normals"]=normals,["indices"]=indices,["role"]=Role(entity),["roleKnown"]=roleKnown});
+            faces.Add((JsonNode)new JsonObject{["id"]=Id(own,entity),["entityTag"]=entity.EntityTag,["identifier"]=entity.Identifier,["positions"]=positions,["normals"]=normals,["indices"]=indices,["role"]=Role(entity),["roleKnown"]=isBefore||tool||Role(entity)!="unchanged"&&roleKnown});
         }
         foreach(var group in display.EdgeSegments.GroupBy(t=>t.Edge.EntityTag))
         {
             var positions=new JsonArray();var first=true;Vector3 previous=default;
             foreach(var segment in group){if(first||segment.A!=previous)Vector(positions,segment.A);Vector(positions,segment.B);previous=segment.B;first=false;}
-            var entity=group.First().Edge;edges.Add((JsonNode)new JsonObject{["id"]=Id(own,entity),["entityTag"]=entity.EntityTag,["identifier"]=entity.Identifier,["positions"]=positions,["role"]=Role(entity),["roleKnown"]=roleKnown});
+            var entity=group.First().Edge;edges.Add((JsonNode)new JsonObject{["id"]=Id(own,entity),["entityTag"]=entity.EntityTag,["identifier"]=entity.Identifier,["positions"]=positions,["role"]=Role(entity),["roleKnown"]=isBefore||tool||Role(entity)!="unchanged"&&roleKnown});
         }
         return new JsonObject{["schemaVersion"]=1,["bodyId"]=(own?"gm:":"pk:")+body,["source"]=new JsonObject{["kernel"]=own?"GM":"PK",["geometryAuthor"]=Environment.GetEnvironmentVariable("GM_WEB_GEOMETRY_AUTHOR")??"independent-construction",["tessellator"]="Parasolid PK_TOPOL_facet / PK_GEOM_render_line",["commit"]=Environment.GetEnvironmentVariable("GM_WEB_COMMIT"),["chordTolerance"]=ChordTolerance,["freshXtReceive"]=own},["faces"]=faces,["edges"]=edges};
     }

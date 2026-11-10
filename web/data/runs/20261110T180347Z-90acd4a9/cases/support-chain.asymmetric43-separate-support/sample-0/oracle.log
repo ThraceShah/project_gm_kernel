@@ -1,0 +1,86 @@
+./scripts/SupportBlendChainOracle.cs.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.11 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.11 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./scripts/SupportBlendChainOracle.cs.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.11 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.11 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+SUPPORT CERTIFICATE own=True face=66 source=4 copy=134 map=identity
+SUPPORT CERTIFICATE own=False face=111 source=138 copy=186 map=identity
+TIME FixBlends own=True seconds=2.934634 error=0 faces=3
+web strict fresh XT: global=21921 local=21930 face_pairs=7
+  faces=1393/1018 diff=21949 entities=1310/930 counts=3/27 values=0/0
+  faces=1293/1007 diff=21949 entities=1302/924 counts=3/27 values=0/0
+  faces=1293/1007 diff=21949 entities=1299/921 counts=2/27 values=0/0
+  faces=1399/1005 diff=21949 entities=1371/912 counts=3/27 values=0/0
+  faces=1307/1006 diff=21949 entities=1305/877 counts=3/27 values=0/0
+  faces=1307/1006 diff=21949 entities=1303/875 counts=2/27 values=0/0
+  faces=1381/1022 diff=21949 entities=1371/912 counts=3/27 values=0/0
+  faces=1381/1022 diff=21949 entities=1305/877 counts=3/27 values=0/0
+  faces=1382/1026 diff=21949 entities=1299/921 counts=2/27 values=0/0
+  faces=1382/1026 diff=21949 entities=1303/875 counts=2/27 values=0/0
+  faces=1394/1027 diff=21949 entities=1302/924 counts=3/27 values=0/0
+  faces=1394/1027 diff=21949 entities=1310/930 counts=3/27 values=0/0
+TIME FixBlends own=False seconds=0.071084 error=0 faces=3
+asymmetric43-base native full BODY_check: 0 faults
+asymmetric43-base received full BODY_check: 0 faults
+asymmetric43-base topology 0: native=2 own=2
+asymmetric43-base topology 1: native=2 own=2
+asymmetric43-base topology 2: native=13 own=13
+asymmetric43-base topology 3: native=28 own=28
+asymmetric43-base topology 4: native=17 own=17
+asymmetric43-base material regions: native=0:1,1:1, own=0:1,1:1
+asymmetric43-base compare=21921/21930, face_pairs=7
+global diff=21940, entities=1/1
+global diff=21941, entities=13/13
+global diff=21943, entities=28/28
+global diff=21944, entities=0/0
+global diff=21946, entities=17/17
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=1129/1553, class=500/500, int=3/27, value=0/0
+CHART face=1, diff=21949, entity=1157/1556, class=500/500, int=3/27, value=0/0
+CHART face=1, diff=21949, entity=1152/1557, class=500/500, int=2/27, value=0/0
+CHART face=2, diff=21949, entity=1185/1561, class=500/500, int=3/27, value=0/0
+CHART face=3, diff=21949, entity=1174/1564, class=500/500, int=3/27, value=0/0
+CHART face=3, diff=21949, entity=1169/1565, class=500/500, int=2/27, value=0/0
+CHART face=4, diff=21949, entity=1185/1561, class=500/500, int=3/27, value=0/0
+CHART face=4, diff=21949, entity=1174/1564, class=500/500, int=3/27, value=0/0
+CHART face=5, diff=21949, entity=1152/1557, class=500/500, int=2/27, value=0/0
+CHART face=5, diff=21949, entity=1169/1565, class=500/500, int=2/27, value=0/0
+CHART face=6, diff=21949, entity=1157/1556, class=500/500, int=3/27, value=0/0
+CHART face=6, diff=21949, entity=1129/1553, class=500/500, int=3/27, value=0/0
+asymmetric43-base PK mass: volume=1.0250977821388036/1.0250977822771132, area=5.97797224192888/5.977972242708399, max normalized residual=1.1171147333153529E-10
+TIME Boolean own=True seconds=12.161865
+TIME Boolean own=False seconds=0.001350
+asymmetric43-base cut native full BODY_check: 0 faults
+asymmetric43-base cut received full BODY_check: 0 faults
+asymmetric43-base cut topology 0: native=2 own=2
+asymmetric43-base cut topology 1: native=2 own=2
+asymmetric43-base cut topology 2: native=13 own=13
+asymmetric43-base cut topology 3: native=28 own=28
+asymmetric43-base cut topology 4: native=17 own=17
+asymmetric43-base cut material regions: native=0:1,1:1, own=0:1,1:1
+asymmetric43-base cut compare=21921/21930, face_pairs=8
+global diff=21940, entities=1/1
+global diff=21941, entities=13/13
+global diff=21943, entities=28/28
+global diff=21944, entities=0/0
+global diff=21946, entities=17/17
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=1129/2053, class=500/500, int=3/27, value=0/0
+CHART face=1, diff=21949, entity=1157/2056, class=500/500, int=3/27, value=0/0
+CHART face=1, diff=21949, entity=1152/2057, class=500/500, int=2/27, value=0/0
+CHART face=2, diff=21949, entity=1755/2061, class=500/500, int=4/33, value=0/0
+CHART face=2, diff=21949, entity=1185/2060, class=500/500, int=3/27, value=0/0
+CHART face=3, diff=21949, entity=1174/2064, class=500/500, int=3/27, value=0/0
+CHART face=3, diff=21949, entity=1169/2065, class=500/500, int=2/27, value=0/0
+CHART face=4, diff=21949, entity=1734/2070, class=500/500, int=5/9, value=0/0
+CHART face=4, diff=21949, entity=1185/2060, class=500/500, int=3/27, value=0/0
+CHART face=4, diff=21949, entity=1174/2064, class=500/500, int=3/27, value=0/0
+CHART face=5, diff=21949, entity=1152/2057, class=500/500, int=2/27, value=0/0
+CHART face=5, diff=21949, entity=1169/2065, class=500/500, int=2/27, value=0/0
+CHART face=6, diff=21949, entity=1157/2056, class=500/500, int=3/27, value=0/0
+CHART face=6, diff=21949, entity=1129/2053, class=500/500, int=3/27, value=0/0
+CHART face=7, diff=21949, entity=1755/2061, class=500/500, int=4/33, value=0/0
+CHART face=7, diff=21949, entity=1734/2070, class=500/500, int=5/9, value=0/0
+asymmetric43-base cut PK mass: volume=0.564975903092338/0.5649759031808432, area=4.2364924258334336/4.236492425335182, max normalized residual=5.119010088369448E-10
+PASS asymmetric43-base
+
+STDERR

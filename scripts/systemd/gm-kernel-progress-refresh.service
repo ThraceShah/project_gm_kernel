@@ -1,0 +1,29 @@
+[Unit]
+Description=Refresh validated GM Kernel progress data in the dedicated publisher checkout
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/code/project_gm_kernel-progress-publisher
+Environment=MSBUILDDISABLENODEREUSE=1
+Environment=DOTNET_CLI_TELEMETRY_OPTOUT=1
+Environment=DOTNET_TieredCompilation=0
+Environment="GM_WEB_RESOURCE_LIMITS=systemd CPUQuota=200%; MemoryMax=12G; serial oracle processes"
+ExecStartPre=git diff --quiet
+ExecStartPre=git diff --cached --quiet
+ExecStartPre=git fetch origin main:refs/remotes/origin/main
+ExecStartPre=git merge --ff-only origin/main
+ExecStartPre=git submodule update --init --recursive
+ExecStart=dotnet run --file scripts/WatchWebProgress.cs -- --once --state ../temp_docs/web-progress-publish/watch-state.json --registry web-progress-registry.json --case representatives --configuration Release --samples 1 --seconds 1200 --case-seconds 300 --output ../temp_docs/web-progress-publish/generated --publish-data-to ../temp_docs/web-progress-publish/data
+ExecStartPost=dotnet run --file scripts/PrepareWebProgressSite.cs -- --data ../temp_docs/web-progress-publish/data --web ../web --state ../temp_docs/web-progress-publish/site-state.json --builder pnpm
+TimeoutStartSec=25min
+KillMode=control-group
+CPUQuota=200%
+MemoryMax=12G
+TasksMax=256
+StandardOutput=journal
+StandardError=journal
+
+# The deployment owner adds a final ExecStartPost portalctl invocation in a
+# drop-in after verifying the prepared dist. This template never publishes a portal.
