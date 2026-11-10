@@ -30,4 +30,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)WebProgressPublishing.cs" Link="WebProgressPublishing.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebProgressMetadata.cs" Link="WebProgressMetadata.cs" />
   </ItemGroup>
+  <ItemGroup Condition="'$(UseHostedWebProgressSite)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)HostedWebProgressSite.cs" Link="HostedWebProgressSite.cs" />
+  </ItemGroup>
 </Project>
