@@ -39,16 +39,26 @@ internal static class HostedWebProgressSite
         var combined = Path.GetFullPath(reference, baseDirectory);
         var prefix = allowedRoot[^1] == Path.DirectorySeparatorChar ? allowedRoot : allowedRoot + Path.DirectorySeparatorChar;
         if (!combined.StartsWith(prefix, StringComparison.Ordinal)) return false;
-        for (var current = prefix.Length; current <= combined.Length; current++)
+        // Full chain from "/": allowed root, its parents, all intermediates and
+        // the final file must not be symlinks (root swaps cannot escape).
+        if (!IsChainSafe(combined)) return false;
+        physical = combined;
+        return true;
+    }
+
+    // True when no component of the path (from "/" inclusive) is a symlink.
+    internal static bool IsChainSafe(string path)
+    {
+        var full = Path.GetFullPath(path);
+        for (var i = 1; i <= full.Length; i++)
         {
-            if (current == combined.Length || combined[current] == Path.DirectorySeparatorChar)
+            if (i == full.Length || full[i] == Path.DirectorySeparatorChar)
             {
-                var segmentPath = combined[..current];
+                var segmentPath = full[..i];
                 if ((File.Exists(segmentPath) || Directory.Exists(segmentPath))
                     && (File.GetAttributes(segmentPath) & FileAttributes.ReparsePoint) != 0) return false;
             }
         }
-        physical = combined;
         return true;
     }
 
@@ -74,6 +84,7 @@ internal static class HostedWebProgressSite
         var runsRoot = Path.Combine(data, "runs");
         if (!Directory.Exists(data)) { Error("data root missing"); return Result(); }
         if (!Directory.Exists(runsRoot)) { Error("runs tree missing"); return Result(); }
+        if (!IsChainSafe(data)) Error("reparse point/symlink on the data root chain");
         if (HasReparsePoint(data)) Error("reparse point/symlink inside data root");
         var indexPath = Path.Combine(data, "index.json");
         if (!File.Exists(indexPath)) { Error("index.json missing"); return Result(); }
@@ -154,7 +165,9 @@ internal static class HostedWebProgressSite
     internal static JsonObject PrepareRelease(string siteRoot, string distDirectory)
     {
         var releases = Path.Combine(siteRoot, "ui-releases");
+        if (Directory.Exists(siteRoot) && !IsChainSafe(siteRoot)) throw new InvalidDataException("Site root chain contains symlinks; refusing to write: " + siteRoot);
         Directory.CreateDirectory(releases);
+        if (!IsChainSafe(releases)) throw new InvalidDataException("Releases root chain contains symlinks; refusing to write: " + releases);
         var indexHtml = Path.Combine(distDirectory, "index.html");
         if (!File.Exists(indexHtml)) throw new FileNotFoundException("Built dist is missing index.html: " + distDirectory);
         if (HasReparsePoint(distDirectory)) throw new InvalidDataException("Built dist contains symlinks; refusing to snapshot");
@@ -246,6 +259,7 @@ internal static class HostedWebProgressSite
         var metaPath = Path.Combine(releases, releaseId + ".meta.json");
         if (!Directory.Exists(releaseRoot)) { Error("release directory missing"); return new JsonObject { ["errors"] = errors }; }
         if (!File.Exists(metaPath)) { Error("release manifest missing"); return new JsonObject { ["errors"] = errors }; }
+        if (!IsChainSafe(releaseRoot)) Error("reparse point/symlink on the release root chain");
         if (HasReparsePoint(releaseRoot)) Error("reparse point/symlink inside release");
         JsonNode? manifest;
         try { manifest = JsonNode.Parse(File.ReadAllText(metaPath)); }

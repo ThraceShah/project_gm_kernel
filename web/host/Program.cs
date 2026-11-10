@@ -1,24 +1,25 @@
 using System.Net;
 using System.Text;
 using GmProgressHost;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.StaticFiles;
-using Microsoft.Extensions.FileProviders;
 
 // GmProgressHost: read-only product host for the GM Kernel progress workbench.
 //
 // It serves exactly two safe public roots and nothing else:
 //   1. the currently activated immutable UI release (site/ui-releases/<id>), and
-//   2. the validated data cache root (absolute path recorded in the activation
-//      pointer) whose runs/ tree carries all mesh/evidence assets, including
-//      cross-run references between measurement runs.
+//   2. the validated data root recorded in the activation pointer, whose runs/
+//      tree carries all mesh/evidence assets, including cross-run references.
 //
 // There is no directory listing, no write/upload/API endpoint and no control
 // surface: activation is performed by scripts/ActivateHostedWebProgressSite.cs
 // which atomically replaces the site.json pointer. Only GET and HEAD are
-// accepted. Request paths are restricted to a strict character allowlist and
-// every path component is re-checked against symlink escapes, so a validated
-// root is never blindly trusted. Streaming is delegated to the mature
-// ASP.NET Core static file middleware (kernel send-file, no full-file loads).
+// accepted. Request paths are restricted to a strict character allowlist
+// (raw-target level included), every path component from the filesystem root
+// down to the final file is re-checked against symlink escapes, and the file
+// open uses the checked object (O_NOFOLLOW leaf, post-open chain re-verify),
+// so a validated root is never blindly trusted. Streaming uses kernel
+// send-file from the opened handle (no full-file loads).
 //
 // Usage:
 //   dotnet run --project web/host -- --site <siteRoot> --listen <ip:port> [--listen <ip:port>]
@@ -70,12 +71,6 @@ builder.WebHost.ConfigureKestrel(kestrel =>
 var app = builder.Build();
 var state = new SiteState(siteRoot);
 
-// Content types: mature provider defaults plus the two project-specific text
-// types. Unknown extensions are never served (ServeUnknownFileTypes stays off).
-var contentTypes = new FileExtensionContentTypeProvider();
-contentTypes.Mappings[".log"] = "text/plain; charset=utf-8";
-contentTypes.Mappings[".webmanifest"] = "application/manifest+json";
-
 // 1. Security headers on every response, including errors.
 app.Use(async (context, next) =>
 {
@@ -101,11 +96,19 @@ app.Use(async (context, next) =>
     await WriteTextAsync(context, "Method Not Allowed\n");
 });
 
-// 3. Path guard: strict allowlist, no dot segments / empty segments / encoded
-//    leftovers, plus per-component symlink escape rejection against the root
-//    that would actually serve the request.
+// 3. Path guard: strict allowlist on the RAW request target (before server
+//    normalization can collapse encoded dot segments) and on the decoded path:
+//    no percent-encoding, dot segments, empty segments, backslashes or control
+//    characters anywhere.
 app.Use(async (context, next) =>
 {
+    var rawTarget = context.Features.Get<IHttpRequestFeature>()?.RawTarget ?? context.Request.Path.Value ?? "/";
+    if (!SafePaths.IsSafeRawTarget(rawTarget, out _))
+    {
+        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+        await WriteTextAsync(context, "Bad Request\n");
+        return;
+    }
     var path = context.Request.Path.Value ?? "/";
     var probe = path == "/" ? "/index.html" : path;
     if (!SafePaths.IsSafeRequestPath(probe))
@@ -129,7 +132,7 @@ app.Use(async (context, next) =>
     var isData = probe == "/data" || probe.StartsWith("/data/", StringComparison.Ordinal);
     var root = isData ? roots.DataRoot : roots.UiRoot;
     var relative = isData ? probe["/data".Length..].TrimStart('/') : probe.TrimStart('/');
-    if (!SafePaths.TryResolve(root, relative, out _))
+    if (relative.Length == 0 || !SafePaths.TryResolve(root, relative, out _))
     {
         context.Response.StatusCode = StatusCodes.Status404NotFound;
         await WriteTextAsync(context, "Not Found\n");
@@ -159,55 +162,48 @@ app.Map("/healthz", health =>
 //    release, no directory index for /data itself.
 app.Map("/data", dataBranch =>
 {
-    dataBranch.UseStaticFiles(new StaticFileOptions
-    {
-        FileProvider = new SwitchableFileProvider(() => state.Current()?.DataProvider),
-        ContentTypeProvider = contentTypes,
-        ServeUnknownFileTypes = false,
-        OnPrepareResponse = CacheControlFor(isData: true),
-    });
     dataBranch.Run(async context =>
     {
-        context.Response.StatusCode = StatusCodes.Status404NotFound;
-        await WriteTextAsync(context, "Not Found\n");
+        var roots = state.Current();
+        if (roots is null) { context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable; await WriteTextAsync(context, "No active site\n"); return; }
+        var relative = (context.Request.Path.Value ?? "").TrimStart('/');
+        if (relative.Length == 0) { context.Response.StatusCode = StatusCodes.Status404NotFound; await WriteTextAsync(context, "Not Found\n"); return; }
+        if (!await SafeFiles.ServeAsync(context, roots.DataRoot, relative, CacheControl(isData: true, context.Request.Path.Value ?? "", Path.GetFileName(relative))))
+        {
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            await WriteTextAsync(context, "Not Found\n");
+        }
     });
 });
 
 // 6. UI release at "/": index.html for the root, static files elsewhere.
-var uiProvider = new SwitchableFileProvider(() => state.Current()?.UiProvider);
-var defaultFiles = new DefaultFilesOptions { FileProvider = uiProvider };
-defaultFiles.DefaultFileNames.Clear();
-defaultFiles.DefaultFileNames.Add("index.html");
-app.UseDefaultFiles(defaultFiles);
-app.UseStaticFiles(new StaticFileOptions
-{
-    FileProvider = uiProvider,
-    ContentTypeProvider = contentTypes,
-    ServeUnknownFileTypes = false,
-    OnPrepareResponse = CacheControlFor(isData: false),
-});
 app.Run(async context =>
 {
-    context.Response.StatusCode = StatusCodes.Status404NotFound;
-    await WriteTextAsync(context, "Not Found\n");
+    var roots = state.Current();
+    if (roots is null) { context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable; await WriteTextAsync(context, "No active site\n"); return; }
+    var path = context.Request.Path.Value ?? "/";
+    var relative = path == "/" ? "index.html" : path.TrimStart('/');
+    if (!await SafeFiles.ServeAsync(context, roots.UiRoot, relative, CacheControl(isData: false, path, Path.GetFileName(relative))))
+    {
+        context.Response.StatusCode = StatusCodes.Status404NotFound;
+        await WriteTextAsync(context, "Not Found\n");
+    }
 });
 
 app.Run();
 return 0;
 
-static Action<StaticFileResponseContext> CacheControlFor(bool isData) => context =>
+static string CacheControl(bool isData, string requestPath, string fileName)
 {
     // index.json / manifest.json / index.html must always revalidate so a new
     // activation is picked up immediately; immutable run assets and hashed UI
     // build assets are content-stable and cache forever.
-    var name = context.File.Name;
-    var cache = name is "index.html" or "index.json" or "manifest.json" or "collection-manifest.json"
+    return fileName is "index.html" or "index.json" or "manifest.json" or "collection-manifest.json"
         ? "no-cache"
-        : isData || context.Context.Request.Path.StartsWithSegments("/assets")
+        : isData || requestPath.StartsWith("/assets/")
             ? "public, max-age=31536000, immutable"
             : "public, max-age=300";
-    context.Context.Response.Headers.CacheControl = cache;
-};
+}
 
 static Task WriteTextAsync(HttpContext context, string text)
 {
