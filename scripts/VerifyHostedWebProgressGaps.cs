@@ -484,6 +484,156 @@ if (Wanted("H4"))
         $"exit={rollbackCmd} ui={afterRollback?["uiRelease"]}");
 }
 
+// ------------------------------------------------------------------ H1b: store integrity on reuse (CAS/tree/meta/index/object faults)
+if (Wanted("H1b"))
+{
+    // Restore the r1 fixture (later sections may have evolved the cache).
+    WriteRun("r1", "sha-r1", "e.log", "R1_EVIDENCE_V1\n");
+    WriteIndex("r1", ("r1", "sha-r1"));
+    Prepare(distOld);
+    var releaseOld = ReleaseOf("old-111.js");
+    var act = Activate(releaseOld, cache);
+    Check("H1b: initial activation imports and serves source bytes",
+        act.Code == 0 && (act.Out.Contains("GENERATION_PREPARED") || act.Out.Contains("GENERATION_CACHED")), $"exit={act.Code}");
+    var genId = JsonNode.Parse(SitePointer())!["generation"]!.GetValue<string>();
+    var genMetaPath = Path.Combine(site, "generations", genId + ".meta.json");
+    var genDir = Path.Combine(site, "generations", genId);
+    var treeHash = JsonNode.Parse(File.ReadAllText(genMetaPath))!["runs"]!["r1"]!.GetValue<string>();
+    var objectSha = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(Path.Combine(cache, "runs", "r1", "cases", "c1", "sample-0", "e.log")))).ToLowerInvariant();
+    var objectPath = Path.Combine(site, "data-store", "objects", objectSha);
+    var treePath = Path.Combine(site, "data-store", "trees", treeHash + ".json");
+    await StartHost();
+
+    // Normal cache hit: same input, intact store -> cached + skip, no rebuild.
+    var hit = Activate(releaseOld, cache);
+    Check("H1b: intact store cache hit is verified, idempotent and non-destructive",
+        hit.Code == 0 && hit.Out.Contains("GENERATION_CACHED") && hit.Out.Contains("ACTIVATE_SKIP_SAME"), $"exit={hit.Code}");
+
+    // CAS object corrupted in place (content key unchanged): must be detected
+    // and repaired from the still-valid source, never served as correct.
+    File.WriteAllText(objectPath, "CONTROLLED_OBJECT_STORAGE_FAULT\n");
+    var casRepair = Activate(releaseOld, cache);
+    var servedLog = await Get("/data/runs/r1/cases/c1/sample-0/e.log");
+    Check("H1b: corrupted CAS object detected and repaired from source on reactivation",
+        casRepair.Code == 0 && casRepair.Out.Contains("STORE_OBJECT_REPAIRED") && servedLog.Body == "R1_EVIDENCE_V1\n"
+        && Sha(servedLog.Bytes) == objectSha,
+        $"exit={casRepair.Code} body={servedLog.Body.Trim()} sha={Sha(servedLog.Bytes)[..16]}");
+
+    // Tree record corrupted: rebuilt from verified objects, not trusted.
+    File.WriteAllText(treePath, "{\"corrupt\":true}\n");
+    var treeRepair = Activate(releaseOld, cache);
+    var servedManifest = await Get("/data/runs/r1/manifest.json");
+    Check("H1b: corrupted tree record detected and rebuilt",
+        treeRepair.Code == 0 && treeRepair.Out.Contains("STORE_TREE_REPAIRED") && servedManifest.Status == 200 && servedManifest.Body.Contains("gaps fixture"),
+        $"exit={treeRepair.Code} manifest=http {servedManifest.Status}");
+
+    // Generation metadata corrupted: record rebuilt, same content identity.
+    File.WriteAllText(genMetaPath, "NOT-JSON\n");
+    var metaRepair = Activate(releaseOld, cache);
+    var servedIndex = await Get("/data/index.json");
+    Check("H1b: corrupted generation metadata detected and rebuilt",
+        metaRepair.Code == 0 && metaRepair.Out.Contains("GENERATION_INCOMPLETE_REBUILDING") && Sha(servedIndex.Bytes) == Sha(r1IndexBytes),
+        $"exit={metaRepair.Code} indexSha={Sha(servedIndex.Bytes)[..16]}");
+
+    // Generation index snapshot corrupted: rebuilt from the source snapshot.
+    File.WriteAllText(Path.Combine(genDir, "index.json"), "{\"corrupt\":true}\n");
+    var indexRepair = Activate(releaseOld, cache);
+    var servedIndex2 = await Get("/data/index.json");
+    Check("H1b: corrupted generation index snapshot detected and rebuilt",
+        indexRepair.Code == 0 && indexRepair.Out.Contains("GENERATION_INCOMPLETE_REBUILDING") && Sha(servedIndex2.Bytes) == Sha(r1IndexBytes),
+        $"exit={indexRepair.Code} indexSha={Sha(servedIndex2.Bytes)[..16]}");
+
+    // Missing object: restored from the source copy.
+    File.Delete(objectPath);
+    var restore = Activate(releaseOld, cache);
+    var servedLog2 = await Get("/data/runs/r1/cases/c1/sample-0/e.log");
+    Check("H1b: missing object restored from source on reactivation",
+        restore.Code == 0 && restore.Out.Contains("STORE_OBJECT_RESTORED") && servedLog2.Body == "R1_EVIDENCE_V1\n",
+        $"exit={restore.Code} body={servedLog2.Body.Trim()}");
+
+    // Unreparable corruption (source no longer provides the bytes): rollback
+    // must refuse the compromised generation with an explicit non-claim and
+    // keep the verifiable current activation serving.
+    var cache2 = Path.Combine(work, "cache2");
+    WriteRun("r9", "sha-r9", "e9.log", "R9_EVIDENCE\n");
+    WriteIndex("r9", ("r9", "sha-r9"));
+    Directory.Move(cache, cache2);
+    var act9 = Activate(releaseOld, cache2);
+    Directory.Move(cache2, cache);
+    File.WriteAllText(objectPath, "CONTROLLED_OBJECT_STORAGE_FAULT\n");
+    File.Delete(Path.Combine(cache, "runs", "r1", "cases", "c1", "sample-0", "e.log"));
+    var refuse = Rollback();
+    var stillServing = await Get("/data/runs/r9/cases/c1/sample-0/e9.log");
+    Check("H1b: rollback to a corrupted generation refuses without false claims",
+        act9.Code == 0 && refuse.Code == 3 && refuse.Out.Contains("ACTIVATE_REFUSED_GENERATION_CORRUPT")
+        && refuse.Out.Contains("integrity compromised") && stillServing.Body == "R9_EVIDENCE\n",
+        $"activate9={act9.Code} rollback={refuse.Code} currentServing={stillServing.Body.Trim()}");
+    StopHost();
+}
+
+// ------------------------------------------------------------------ H4b: complete mirror reconciliation across fault chains
+if (Wanted("H4b"))
+{
+    // Restore the r1 fixture and a healthy store for this section.
+    WriteRun("r1", "sha-r1", "e.log", "R1_EVIDENCE_V1\n");
+    WriteIndex("r1", ("r1", "sha-r1"));
+    Prepare(distOld);
+    Prepare(distNew);
+    var releaseOld = ReleaseOf("old-111.js");
+    var releaseNew = ReleaseOf("new-222.js");
+    var baseCount = JsonNode.Parse(SitePointer())?["activationCount"]?.GetValue<int>() ?? 0;
+    var generationsBefore = Directory.GetFiles(Path.Combine(site, "generations"), "gen-*.meta.json").Length;
+    var act1 = Activate(releaseOld, cache);
+    var pointer1 = JsonNode.Parse(SitePointer());
+    var mirror1 = JsonNode.Parse(File.ReadAllText(statePath));
+    Check("H4b: activation writes a complete derived mirror (count + previous match pointer)",
+        act1.Code == 0 && pointer1?["activationCount"]?.GetValue<int>() == baseCount + 1
+        && mirror1?["activationCount"]?.GetValue<int>() == baseCount + 1
+        && JsonNode.DeepEquals(mirror1?["previous"], pointer1?["previous"])
+        && mirror1?["active"]?["uiRelease"]?.GetValue<string>() == releaseOld,
+        $"count={pointer1?["activationCount"]}");
+
+    // Forward activation with a failing mirror path; the pointer commits.
+    var badMirror = Path.Combine(work, "mirror-as-directory");
+    Directory.CreateDirectory(badMirror);
+    var act2 = Cmd("H4b activate with broken mirror", "dotnet",
+        ["run", "--file", activateScript, "--", "--site", site, "--data", cache, "--state", badMirror, "--release", releaseNew], out _);
+    var pointer2 = JsonNode.Parse(SitePointer());
+    Check("H4b: broken mirror does not block commit or truthful reporting",
+        act2 == 0 && pointer2?["activationCount"]?.GetValue<int>() == baseCount + 2 && pointer2?["uiRelease"]?.GetValue<string>() == releaseNew,
+        $"exit={act2} count={pointer2?["activationCount"]}");
+
+    // Rollback with the same broken mirror path; the pointer commits again.
+    var rollback2 = Cmd("H4b rollback with broken mirror", "dotnet",
+        ["run", "--file", activateScript, "--", "--site", site, "--data", cache, "--state", badMirror, "--rollback"], out _);
+    var pointer3 = JsonNode.Parse(SitePointer());
+    Check("H4b: rollback through broken mirror restores the exact previous pair",
+        rollback2 == 0 && pointer3?["activationCount"]?.GetValue<int>() == baseCount + 3 && pointer3?["uiRelease"]?.GetValue<string>() == releaseOld
+        && pointer3?["previous"]?["uiRelease"]?.GetValue<string>() == releaseNew,
+        $"exit={rollback2} count={pointer3?["activationCount"]}");
+
+    // Same-pair retry with a healthy mirror path must rebuild the COMPLETE
+    // derived state (count + previous), not just the active pair.
+    var retry = Activate(releaseOld, cache);
+    var mirror = JsonNode.Parse(File.ReadAllText(statePath));
+    var pointer4 = JsonNode.Parse(SitePointer());
+    Check("H4b: same-pair retry repairs full mirror (count/previous), no new activation",
+        retry.Code == 0 && retry.Out.Contains("ACTIVATE_SKIP_SAME") && retry.Out.Contains("ACTIVATION_STATE_REPAIRED")
+        && retry.Out.Contains("GENERATION_CACHED")
+        && mirror?["activationCount"]?.GetValue<int>() == baseCount + 3
+        && JsonNode.DeepEquals(mirror?["previous"], pointer4?["previous"])
+        && mirror?["previous"]?["uiRelease"]?.GetValue<string>() == releaseNew
+        && mirror?["active"]?["uiRelease"]?.GetValue<string>() == releaseOld
+        && mirror?["active"]?["generation"]?.GetValue<string>() == pointer4?["generation"]?.GetValue<string>(),
+        $"mirrorCount={mirror?["activationCount"]} pointerCount={pointer4?["activationCount"]} mirrorPrev={mirror?["previous"]?["uiRelease"]}");
+
+    // The pointer's real activation history is unchanged by the repair.
+    Check("H4b: repair does not alter authoritative counts or create generations",
+        pointer4?["activationCount"]?.GetValue<int>() == baseCount + 3
+        && Directory.GetFiles(Path.Combine(site, "generations"), "gen-*.meta.json").Length == generationsBefore,
+        $"count={pointer4?["activationCount"]} generations={Directory.GetFiles(Path.Combine(site, "generations"), "gen-*.meta.json").Length}");
+}
+
 // ------------------------------------------------------------------ report
 StopHost();
 var failed = results.Where(r => !r.Ok).ToArray();

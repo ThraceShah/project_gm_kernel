@@ -369,6 +369,9 @@ internal static class HostedWebProgressSite
             .Concat(check["referencedRunIds"]!.AsArray().Select(r => r!.GetValue<string>()))
             .Distinct(StringComparer.Ordinal).Order().ToArray();
         var runs = new JsonObject();
+        // Per-invocation dedup of object hash verification: every unique
+        // content key is verified (or repaired) exactly once per activation.
+        var verifiedObjects = new HashSet<string>(StringComparer.Ordinal);
         foreach (var runId in import)
         {
             if (!IsSafeName(runId)) throw new InvalidDataException("unsafe run id " + runId);
@@ -382,13 +385,7 @@ internal static class HostedWebProgressSite
                 if (!IsSafeRelativePath(relative)) throw new InvalidDataException("unsafe run file name " + runId + "/" + relative);
                 if (Path.GetExtension(file) is not (".json" or ".log")) throw new InvalidDataException("non-public extension in run " + runId + ": " + relative);
                 var sha = HashHex(File.ReadAllBytes(file));
-                var objectPath = Path.Combine(objects, sha);
-                if (!File.Exists(objectPath))
-                {
-                    var tmp = objectPath + ".tmp-" + Guid.NewGuid().ToString("N");
-                    File.Copy(file, tmp);
-                    File.Move(tmp, objectPath);
-                }
+                EnsureObject(objects, sha, file, verifiedObjects);
                 map[relative] = sha;
             }
             using var tree = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
@@ -398,13 +395,7 @@ internal static class HostedWebProgressSite
                 tree.AppendData(System.Text.Encoding.UTF8.GetBytes(sha));
             }
             var treeHash = Convert.ToHexString(tree.GetHashAndReset()).ToLowerInvariant();
-            var treeMeta = Path.Combine(trees, treeHash + ".json");
-            if (!File.Exists(treeMeta)) WriteJsonAtomic(treeMeta, new JsonObject
-            {
-                ["schemaVersion"] = 1,
-                ["treeHash"] = treeHash,
-                ["files"] = new JsonArray(map.Select(kv => (JsonNode?)new JsonArray(kv.Key, kv.Value)).ToArray()),
-            });
+            EnsureTreeRecord(trees, treeHash, map);
             runs[runId] = treeHash;
         }
         var indexBytes = File.ReadAllBytes(Path.Combine(sourceDataRoot, "index.json"));
@@ -419,8 +410,9 @@ internal static class HostedWebProgressSite
         var generationMeta = Path.Combine(generations, generationId + ".meta.json");
         if (Directory.Exists(generationDir))
         {
-            var existing = ReadJsonObject(generationMeta);
-            if (existing?["indexSha256"]?.GetValue<string>() == indexSha && File.Exists(Path.Combine(generationDir, "index.json")))
+            // Reuse requires verified integrity, not just existence: the record
+            // must bind exactly this index and run mapping.
+            if (VerifyGenerationRecord(generationDir, generationMeta, generationId, indexSha, runs))
             {
                 Console.WriteLine("GENERATION_CACHED " + generationId + " runs=" + runs.Count + " indexSha=" + indexSha[..16]);
                 return new JsonObject { ["id"] = generationId, ["indexSha256"] = indexSha, ["runs"] = runs };
@@ -453,6 +445,94 @@ internal static class HostedWebProgressSite
         return new JsonObject { ["id"] = generationId, ["indexSha256"] = indexSha, ["runs"] = runs };
     }
 
+    // Content-verified object reuse: the object must hash to its content key.
+    // A mismatch (controlled storage fault) is repaired atomically from the
+    // verified source copy; existence alone is never accepted as integrity.
+    private static void EnsureObject(string objects, string sha, string sourceFile, HashSet<string> verified)
+    {
+        var objectPath = Path.Combine(objects, sha);
+        if (verified.Add(sha) || !File.Exists(objectPath))
+        {
+            if (File.Exists(objectPath))
+            {
+                if (HashHex(File.ReadAllBytes(objectPath)) == sha) return;
+                Console.WriteLine("STORE_OBJECT_REPAIRED " + sha);
+            }
+            else Console.WriteLine("STORE_OBJECT_RESTORED " + sha);
+            var tmp = objectPath + ".tmp-" + Guid.NewGuid().ToString("N");
+            File.Copy(sourceFile, tmp);
+            File.Move(tmp, objectPath, true);
+        }
+    }
+
+    // The tree record must exactly describe the computed file map (its key is
+    // the hash of that map); a mismatched record is replaced, never trusted.
+    private static void EnsureTreeRecord(string trees, string treeHash, SortedDictionary<string, string> map)
+    {
+        var record = new JsonObject
+        {
+            ["schemaVersion"] = 1,
+            ["treeHash"] = treeHash,
+            ["files"] = new JsonArray(map.Select(kv => (JsonNode?)new JsonArray(kv.Key, kv.Value)).ToArray()),
+        };
+        var treeMeta = Path.Combine(trees, treeHash + ".json");
+        var existing = ReadJsonObject(treeMeta);
+        if (existing is not null && JsonNode.DeepEquals(existing, record)) return;
+        if (existing is not null) Console.WriteLine("STORE_TREE_REPAIRED " + treeHash);
+        WriteJsonAtomic(treeMeta, record);
+    }
+
+    // A cached generation may only be reused when its record binds exactly this
+    // index and run mapping and its index snapshot matches the metadata hash.
+    private static bool VerifyGenerationRecord(string generationDir, string generationMeta, string generationId, string indexSha, JsonObject runs)
+    {
+        var meta = ReadJsonObject(generationMeta);
+        if (meta is null) return false;
+        if (meta["id"]?.GetValue<string>() != generationId) return false;
+        if (meta["indexSha256"]?.GetValue<string>() != indexSha) return false;
+        if (!JsonNode.DeepEquals(meta["runs"], runs)) return false;
+        var indexPath = Path.Combine(generationDir, "index.json");
+        return File.Exists(indexPath) && HashHex(File.ReadAllBytes(indexPath)) == indexSha;
+    }
+
+    // Full referenced-closure verification of a generation: every tree record
+    // must match its content key and every referenced object must hash to its
+    // key. Used before rollback restores a generation; refuses on corruption
+    // instead of claiming bad bytes are correct.
+    internal static bool VerifyGenerationClosure(string siteRoot, string generationId, out string errors)
+    {
+        var problems = new List<string>();
+        var meta = ReadJsonObject(Path.Combine(siteRoot, "generations", generationId + ".meta.json"));
+        if (meta is null) { errors = "generation metadata unreadable"; return false; }
+        var trees = Path.Combine(siteRoot, "data-store", "trees");
+        var objects = Path.Combine(siteRoot, "data-store", "objects");
+        foreach (var (runId, node) in (meta["runs"] as JsonObject) ?? new JsonObject())
+        {
+            var treeHash = node?.GetValue<string>();
+            if (treeHash is null || treeHash.Length == 0) { problems.Add(runId + ": tree binding missing"); continue; }
+            var treeMeta = ReadJsonObject(Path.Combine(trees, treeHash + ".json"));
+            if (treeMeta?["files"] is not JsonArray files) { problems.Add(runId + ": tree record missing or malformed"); continue; }
+            using var recomputed = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+            foreach (var pair in files)
+            {
+                var rel = pair?[0]?.GetValue<string>();
+                var sha = pair?[1]?.GetValue<string>();
+                if (rel is null || sha is null) { problems.Add(runId + ": malformed tree entry"); continue; }
+                recomputed.AppendData(System.Text.Encoding.UTF8.GetBytes(rel));
+                recomputed.AppendData(System.Text.Encoding.UTF8.GetBytes(sha));
+                var objectPath = Path.Combine(objects, sha);
+                if (!File.Exists(objectPath)) problems.Add(runId + "/" + rel + ": object missing " + sha);
+                else if (HashHex(File.ReadAllBytes(objectPath)) != sha) problems.Add(runId + "/" + rel + ": object content does not match key " + sha);
+            }
+            if (Convert.ToHexString(recomputed.GetHashAndReset()).ToLowerInvariant() != treeHash) problems.Add(runId + ": tree record does not match its key");
+        }
+        var indexPath = Path.Combine(siteRoot, "generations", generationId, "index.json");
+        if (!File.Exists(indexPath)) problems.Add("index snapshot missing");
+        else if (HashHex(File.ReadAllBytes(indexPath)) != meta["indexSha256"]?.GetValue<string>()) problems.Add("index snapshot does not match metadata hash");
+        errors = string.Join("; ", problems);
+        return problems.Count == 0;
+    }
+
     // Rollback re-activates the exact previously active generation and UI
     // release recorded IN THE AUTHORITATIVE POINTER: same index bytes, same run
     // file hashes, no re-resolution of "current latest" anywhere. Works even
@@ -469,12 +549,23 @@ internal static class HostedWebProgressSite
             Console.Error.WriteLine("ACTIVATE_REFUSED_NO_PREVIOUS authoritative pointer has no previous ui/generation pair");
             return new JsonObject { ["status"] = "ACTIVATE_REFUSED_NO_PREVIOUS" };
         }
-        if (VerifyRelease(siteRoot, releaseId)["errors"]!.AsArray().Count > 0
-            || !File.Exists(Path.Combine(siteRoot, "generations", generationId + ".meta.json"))
+        if (VerifyRelease(siteRoot, releaseId)["errors"]!.AsArray().Count > 0)
+        {
+            Console.Error.WriteLine("ACTIVATE_REFUSED_NO_PREVIOUS previous release is not retained");
+            return new JsonObject { ["status"] = "ACTIVATE_REFUSED_NO_PREVIOUS" };
+        }
+        if (!File.Exists(Path.Combine(siteRoot, "generations", generationId + ".meta.json"))
             || !File.Exists(Path.Combine(siteRoot, "generations", generationId, "index.json")))
         {
-            Console.Error.WriteLine("ACTIVATE_REFUSED_NO_PREVIOUS previous release/generation is not retained");
+            Console.Error.WriteLine("ACTIVATE_REFUSED_NO_PREVIOUS previous generation is not retained");
             return new JsonObject { ["status"] = "ACTIVATE_REFUSED_NO_PREVIOUS" };
+        }
+        if (!VerifyGenerationClosure(siteRoot, generationId, out var closureErrors))
+        {
+            // Explicit refusal: do NOT claim the compromised generation's bytes
+            // are correct and do not restore it.
+            Console.Error.WriteLine("ACTIVATE_REFUSED_GENERATION_CORRUPT previous generation integrity compromised, refusing rollback: " + closureErrors);
+            return new JsonObject { ["status"] = "ACTIVATE_REFUSED_GENERATION_CORRUPT" };
         }
         var restored = new JsonObject
         {
@@ -520,7 +611,9 @@ internal static class HostedWebProgressSite
     }
 
     // Repairs the derived mirror from the authoritative pointer. Returns true
-    // when a repair was performed.
+    // when a repair was performed. The mirror must be the COMPLETE derived
+    // state: active pair, previous pair and activation count are all compared,
+    // so a same-pair retry after a mirror failure still recovers history.
     private static bool ReconcileMirror(string statePath, JsonObject pointer)
     {
         var mirror = ReadJsonObject(statePath);
