@@ -1,5 +1,6 @@
 #!/usr/bin/env dotnet run
 #:property TargetFramework=net10.0
+#:property UseWebProgressValidation=true
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
@@ -165,12 +166,14 @@ string Option(string optionName, string fallback) { var at = Array.IndexOf(args,
 static string ScriptPath([CallerFilePath] string path = "") => path;
 static void CopyTree(string source, string target)
 {
-    // Same contract as the data publisher: symlinks and other reparse points
-    // are not static data and must never be followed into a bundle.
+    // Same canonical-root contract as the validator and the data publisher:
+    // symlinks and other reparse points are not static data and must never be
+    // followed into a bundle (root, ancestors, intermediate, leaf).
     Directory.CreateDirectory(target);
+    if (!WebProgressSafePath.IsSafeChain(source, out var rootOffender)) throw new IOException("Symlinks are not static data: " + rootOffender);
     foreach (var entry in Directory.EnumerateFileSystemEntries(source))
     {
-        if ((File.GetAttributes(entry) & FileAttributes.ReparsePoint) != 0) throw new IOException("Symlinks are not static data: " + Path.GetFileName(entry));
+        if (!WebProgressSafePath.IsSafeChain(entry, out var offender)) throw new IOException("Symlinks are not static data: " + offender);
         if (Directory.Exists(entry)) CopyTree(entry, Path.Combine(target, Path.GetFileName(entry)));
         else File.Copy(entry, Path.Combine(target, Path.GetFileName(entry)));
     }

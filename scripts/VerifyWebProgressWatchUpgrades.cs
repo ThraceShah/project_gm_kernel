@@ -30,7 +30,12 @@ void Assert(bool condition, string label)
 }
 
 foreach (var name in new[] { "WatchWebProgress.cs", "WebProgressScheduler.cs", "WebProgressDataValidation.cs", "WebProgressPublishing.cs", "WebProgressMetadata.cs", "Directory.Build.props", "RefreshWebProgress.cs" })
+{
     File.Copy(Path.Combine(scripts, name), Path.Combine(fixture, "scripts", name));
+    // dotnet runfile caches builds per script path; copied files must look
+    // newer than any cached build of a previous fixture at the same path.
+    File.SetLastWriteTime(Path.Combine(fixture, "scripts", name), DateTime.Now);
+}
 File.WriteAllText(Path.Combine(fixture, "scripts", "FakeOracle.cs"),
     "#!/usr/bin/env dotnet run\n" +
     "#:property TargetFramework=net10.0\n" +
@@ -193,6 +198,35 @@ var tickF4 = Tick("run-failed-recovered");
 Assert(tickF4.Exit == 0 && tickF4.Text.Contains("RESULT fake.alpha", StringComparison.Ordinal), "restoring the collector re-verifies the affected case normally (tracked source change): " + tickF4.Exit);
 var tickF5 = Tick("run-failed-complete");
 Assert(tickF5.Exit == 0 && tickF5.Text.Contains("queue complete", StringComparison.Ordinal), "the queue then completes normally; failures were never declared success with exit 0: " + tickF5.Exit);
+
+// ---- G. publish retry results are persisted across processes (review S10) ----
+FreshState();
+var setupG = Tick("publish-setup");
+Assert(setupG.Exit == 0 && StateRunId() != null, "publish-retry setup completes a real observation");
+var stateG = JsonNode.Parse(File.ReadAllText(Path.Combine(fixture, "state.json")))!;
+stateG["publish"]!["pending"] = true;
+File.WriteAllText(Path.Combine(fixture, "state.json"), stateG.ToJsonString());
+var tickG1 = Tick("publish-retry-1", "--publish-data-to", "../published");
+Assert(tickG1.Exit == 0 && tickG1.Text.Contains("PUBLISHED_DATA", StringComparison.Ordinal), "the pending publish retry succeeds");
+var stateG1 = JsonNode.Parse(File.ReadAllText(Path.Combine(fixture, "state.json")))!;
+Assert(stateG1["publish"]!["pending"]!.GetValue<bool>() == false, "the publish result is persisted to disk across processes (review S10: disk state stayed pending)");
+var tickG2 = Tick("publish-retry-2", "--publish-data-to", "../published");
+Assert(tickG2.Exit == 0 && !tickG2.Text.Contains("PUBLISHED_DATA", StringComparison.Ordinal) && tickG2.Text.Contains("queue complete", StringComparison.Ordinal), "the next round truly skips the finished publish without re-copying or re-running cases");
+var stateG2 = JsonNode.Parse(File.ReadAllText(Path.Combine(fixture, "state.json")))!;
+stateG2["publish"]!["pending"] = true;
+File.WriteAllText(Path.Combine(fixture, "state.json"), stateG2.ToJsonString());
+var linkedDestination = Path.Combine(fixture, "linked-destination");
+if (!Directory.Exists(linkedDestination)) Directory.CreateSymbolicLink(linkedDestination, "published");
+var tickG3 = Tick("publish-retry-fail", "--publish-data-to", "../linked-destination");
+var stateG3 = JsonNode.Parse(File.ReadAllText(Path.Combine(fixture, "state.json")))!;
+Assert(tickG3.Exit == 2 && tickG3.Text.Contains("PUBLISH_FAILED", StringComparison.Ordinal) && stateG3["publish"]!["pending"]!.GetValue<bool>() == true && stateG3["publish"]!["lastError"] != null && stateG3["publish"]!["lastErrorAt"] != null, "a failed publish stays pending with the recorded reason and time");
+
+// ---- H. a collector exiting 0 without a manifest is a contract failure (review S9-r2) ----
+FreshState();
+File.WriteAllText(refreshPath, "#:property TargetFramework=net10.0\nreturn 0;\n");
+var tickH1 = Tick("zero-collector-1");
+Assert(tickH1.Exit == 2 && tickH1.Text.Contains("BATCH_RUN_FAILED", StringComparison.Ordinal) && StateAttempts() == 1, "exit 0 without a finished manifest is a bounded contract failure (was exit 0 interrupted forever): " + tickH1.Exit + " attempts=" + StateAttempts());
+File.WriteAllText(refreshPath, refreshOriginal);
 
 if (failures.Count > 0)
 {

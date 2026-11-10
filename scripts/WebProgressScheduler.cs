@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 
 // Persistent web-progress scheduling core. Pure data logic over the existing
@@ -52,24 +53,46 @@ internal static class WebProgressScheduler
     internal static JsonObject? LoadState(string statePath, out string? legacyBackup)
     {
         legacyBackup = null;
-        var text = File.ReadAllText(statePath);
         JsonNode? node;
-        try { node = JsonNode.Parse(text); }
-        catch (Exception e) { throw new InvalidDataException("STATE_SCHEMA_INVALID " + Path.GetFileName(statePath) + " is not valid JSON (" + e.Message + "); original file kept untouched at " + statePath); }
+        try { node = JsonNode.Parse(File.ReadAllText(statePath)); }
+        catch (JsonException e) { throw new InvalidDataException("STATE_SCHEMA_INVALID " + Path.GetFileName(statePath) + " is not valid JSON (" + e.Message + "); original file kept untouched at " + statePath); }
         if (node is not JsonObject state) throw new InvalidDataException("STATE_SCHEMA_INVALID " + Path.GetFileName(statePath) + " is not a JSON object; original file kept untouched at " + statePath);
-        if (state["scheduler"] is null && state["fingerprint"] is not null)
+        if (state["scheduler"] is null && state["fingerprint"] is JsonValue legacyFingerprint && legacyFingerprint.TryGetValue<string>(out _))
         {
             legacyBackup = statePath + ".legacy-" + DateTimeOffset.UtcNow.ToString("yyyyMMddTHHmmssfffZ") + ".bak";
             File.Copy(statePath, legacyBackup, false);
             return null;
         }
-        if (state["scheduler"]?.GetValue<string>() != SchedulerName || state["schemaVersion"]?.GetValue<int?>() != 1)
-            throw new InvalidDataException("STATE_SCHEMA_INVALID " + Path.GetFileName(statePath) + " has an unknown scheduler/schemaVersion; original file kept untouched at " + statePath);
-        foreach (var key in new[] { "sourceRevision", "registryHash", "registryVersion", "updatedAt", "publish" })
-            if (state[key] is null) throw new InvalidDataException("STATE_SCHEMA_INVALID " + Path.GetFileName(statePath) + " misses " + key + "; original file kept untouched at " + statePath);
-        if (state["pending"] is not JsonArray || state["batches"] is not JsonArray
-            || state["completed"] is not JsonObject || state["blocked"] is not JsonObject || state["stale"] is not JsonObject)
-            throw new InvalidDataException("STATE_SCHEMA_INVALID " + Path.GetFileName(statePath) + " has corrupt queue collections; original file kept untouched at " + statePath);
+        // Typed schema rejection: an unknown or mistyped scheduler/schemaVersion
+        // and any container/record/scalar/null mismatch fails explicitly instead
+        // of a silent reset or a late cast crash. Real IO errors still propagate.
+        InvalidDataException Bad(string message) => new("STATE_SCHEMA_INVALID " + Path.GetFileName(statePath) + " " + message + "; original file kept untouched at " + statePath);
+        static bool Str(JsonNode? value, bool required) => value is JsonValue v && v.TryGetValue<string>(out _) || !required && value is null;
+        static bool Num(JsonNode? value, bool required) => value is JsonValue v && v.TryGetValue<int>(out _) || !required && value is null;
+        if (!Str(state["scheduler"], true) || state["scheduler"]!.GetValue<string>() != SchedulerName
+            || !Num(state["schemaVersion"], true) || state["schemaVersion"]!.GetValue<int>() != 1)
+            throw Bad("has an unknown or mistyped scheduler/schemaVersion");
+        foreach (var key in new[] { "sourceRevision", "registryHash", "registryVersion", "updatedAt" })
+            if (!Str(state[key], true)) throw Bad("misses or mistypes " + key);
+        if (state["publish"] is not JsonObject publish || publish["pending"] is not JsonValue
+            || state["pending"] is not JsonArray pendingArray || state["batches"] is not JsonArray batchArray
+            || state["completed"] is not JsonObject completed || state["blocked"] is not JsonObject blocked || state["stale"] is not JsonObject stale)
+            throw Bad("has corrupt queue collections");
+        foreach (var item in pendingArray)
+            if (item is not JsonObject entry || !Str(entry["caseId"], true) || !Str(entry["reason"], true) || !Num(entry["attempts"], false) || !Str(entry["retryReason"], false) || !Str(entry["lastRunId"], false))
+                throw Bad("has corrupt pending entries");
+        foreach (var item in batchArray)
+            if (item is not JsonObject batch || !Str(batch["runId"], true) || !Str(batch["status"], true) || !Num(batch["exitCode"], false))
+                throw Bad("has corrupt batch entries");
+        foreach (var pair in completed)
+            if (pair.Value is not JsonObject done || !Str(done["entryHash"], true) || !Str(done["runId"], true) || !Str(done["revision"], false) || !Str(done["status"], false) || !Num(done["attempts"], false) || !Num(done["batchIndex"], false) || !Str(done["completedAt"], false) || !Str(done["checkVersion"], false))
+                throw Bad("has corrupt completed records");
+        foreach (var pair in blocked)
+            if (pair.Value is not JsonObject bad1 || !Str(bad1["entryHash"], true) || !Num(bad1["attempts"], true) || !Str(bad1["retryReason"], true) || !Str(bad1["lastRunId"], false) || !Str(bad1["blockedAt"], false))
+                throw Bad("has corrupt blocked records");
+        foreach (var pair in stale)
+            if (pair.Value is not JsonObject old || !Str(old["entryHash"], true) || !Str(old["runId"], true) || !Str(old["revision"], false) || !Str(old["status"], false) || !Str(old["markedAt"], false) || !Str(old["reason"], false))
+                throw Bad("has corrupt stale records");
         return state;
     }
 
@@ -162,6 +185,23 @@ internal static class WebProgressScheduler
         tomb["records"]!.AsArray().Add((JsonNode)new JsonObject { ["kind"] = kind, ["record"] = record.DeepClone() });
     }
 
+    // Invalidation markers for retired records: a case can sit retired across
+    // source/force changes while filtered out. The marker preserves the
+    // measurement/attempt invalidation basis during retirement and Restore
+    // consumes it to make exactly the decision the active paths would make.
+    internal static void MarkRetiredInvalidation(JsonObject state, string reason, string? revision, string? onlyCaseId = null)
+    {
+        if (state["retired"] is not JsonObject retired) return;
+        foreach (var pair in retired)
+        {
+            if (onlyCaseId != null && pair.Key != onlyCaseId) continue;
+            var tomb = pair.Value!.AsObject();
+            tomb["invalidateReason"] = reason;
+            tomb["invalidateRevision"] = revision;
+            tomb["invalidatedAt"] = DateTimeOffset.UtcNow.ToString("O");
+        }
+    }
+
     private static void Restore(JsonObject state, JsonObject retired, string id)
     {
         var tomb = retired[id]!.AsObject();
@@ -180,6 +220,27 @@ internal static class WebProgressScheduler
         }
         foreach (var raw in records)
             if (raw["kind"]!.GetValue<string>() == "pending" && !pendingIds.Contains(id) && !blocked.ContainsKey(id)) pending.Add(raw["record"]!.DeepClone());
+        // Consume invalidations that arrived while the case was retired. The
+        // active paths decide what a source change/force does to a park, and
+        // restore makes the same decision: the park is lifted, the case is
+        // re-queued with a fresh attempt cycle, and the old failure evidence
+        // (lastRunId/retryReason) is carried instead of erased. Recipe changes
+        // are consumed by the reconcile chain through the stored entry hashes.
+        // Nothing here promotes old state to a current pass.
+        if (tomb["invalidateReason"]?.GetValue<string>() is "source-change" or "forced")
+        {
+            var parked = blocked[id] as JsonObject;
+            if (parked != null) blocked.Remove(id);
+            var item = pending.OfType<JsonObject>().FirstOrDefault(p => p["caseId"]!.GetValue<string>() == id);
+            if (item == null)
+            {
+                item = Pending(id, "affected");
+                if (parked?["lastRunId"]?.GetValue<string>() is string lastRun) item["lastRunId"] = lastRun;
+                if (parked?["retryReason"]?.GetValue<string>() is string retry) item["retryReason"] = retry;
+                pending.Add(item);
+            }
+            else item["reason"] = "affected";
+        }
         retired.Remove(id);
     }
 
@@ -219,6 +280,10 @@ internal static class WebProgressScheduler
         {
             var id = entry["id"]!.GetValue<string>();
             if (entry["meshAdapter"]!.GetValue<bool>() != true || (!all && !affected.Contains(id))) continue;
+            // A case sitting retired (filtered out) must not swallow the
+            // invalidation: the marker is preserved on its tombstone and
+            // consumed on restore exactly like the active paths decide.
+            MarkRetiredInvalidation(state, "source-change", newRevision, id);
             if (completed[id] is JsonObject record)
             {
                 var moved = record.DeepClone().AsObject();

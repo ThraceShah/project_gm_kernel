@@ -19,8 +19,8 @@
 
 JSON、单写者（`<state>.lock` 文件级排它锁，跨进程已验证拒绝并发实例）、原子写（tmp+rename）。保存：`sourceRevision`、`registryHash`、`registryVersion`、`workingDiffHash`、`workingPaths`（先前脏路径集，反向变更失效用）、有序 `pending`（含 `reason`/`attempts`/`retryReason`/`lastRunId`）、`completed`（`runId`/`revision`/`status`/`attempts`/`completedAt`/`batchIndex`/`entryHash`/`checkVersion`——测量确认时持久保存真实检查版本）、`blocked`、`stale`（保留完整旧观测记录）、`retired`（离开当前 eligible 集合的 pending/blocked/stale 历史存档，重新 eligible 时恢复）、`quarantined`（被隔离 run 记录）、`batches`（每批 `running`/`complete`/`interrupted`/`run-failed`/`contract-failed`/`aggregate-invalid` 与 case 列表、`exitCode`）、`publish`（失败重试标记）、`lastRunId`。
 
-- 重启/中断恢复：加载时把仍是 `running` 的批次标记 `interrupted`；只有被确认（写入 `completed`）的观测算完成，未确认项只重跑自己，绝不把未运行推进为通过，也不会重复整批已完成 case。中断批次的 run 目录（partial evidence）永久保留。真实取消/外部中断（exit 130/137/143）记为 `interrupted`；collector 无 finished manifest 的其他非零退出是确定失败（`run-failed`，保留原 exitCode），计划 case 计入有限 attempts，watcher 以非零退出，绝不以 exit 0 宣告成功；输入错误（如 `--samples 0`）在开批前拒绝（`WATCH_CONFIG_INVALID`，exit 2）。
-- 旧 watcher 的 fingerprint 状态（`{fingerprint,updatedAt,commit}`）会被识别并**备份**为 `<state>.legacy-<时间戳>.bak`，然后按文档承诺安全重建「全部已适配入队」（旧 fingerprint 不当作已测）；损坏 JSON / 未知 scheduler/schemaVersion / 缺 v1 必填键的状态**明确失败**（`STATE_SCHEMA_INVALID`，exit 2）且原文件字节不动，绝不静默当空队列。
+- 重启/中断恢复：加载时把仍是 `running` 的批次标记 `interrupted`；只有被确认（写入 `completed`）的观测算完成，未确认项只重跑自己，绝不把未运行推进为通过，也不会重复整批已完成 case。中断批次的 run 目录（partial evidence）永久保留。真实取消/外部中断（exit 130/137/143）记为 `interrupted`；collector 无 finished manifest 的**任何退出（包括 exit 0 无产出）都是契约失败**（`run-failed`，保留原 exitCode），计划 case 计入有限 attempts，watcher 以非零退出，绝不以 exit 0 宣告成功；输入错误（如 `--samples 0`）在开批前拒绝（`WATCH_CONFIG_INVALID`，exit 2）。
+- 旧 watcher 的 fingerprint 状态（`{fingerprint,updatedAt,commit}`）会被识别并**备份**为 `<state>.legacy-<时间戳>.bak`，然后按文档承诺安全重建「全部已适配入队」（旧 fingerprint 不当作已测）；损坏 JSON / 未知或**类型不符**的 scheduler/schemaVersion / 缺 v1 必填键 / 容器或记录字段类型/形状不匹配的状态都**明确失败**（`STATE_SCHEMA_INVALID`，exit 2）且原文件字节不动，绝不静默当空队列或晚期转型崩溃。
 - 配方入队单元是 registry 里 `meshAdapter=true` 且通过本轮选择（`--case`/`--suite`/`--family`）的 case；未适配注册不入队。新 registry 扩展（其他 adapter worker）自动入队（`reason=new-recipe`）；recipe 定义（source/arguments/parameters/api 等测量相关字段，`EntryHash`）变化使旧观测失效（`reason=recipe-change`）并**解除 blocked**按新配方重试（stale 与 blocked 共存也不例外）；删除的 recipe/适配撤销/筛选收窄会把不合当前 eligible 集合的 pending/blocked/stale 明确清理进 `retired` 历史存档（completed 旧有效观测永不删），Planning 绝不执行不在当前选择集的 case；筛选恢复时 retired 记录准确恢复（reason/attempts/lastRunId 保留，blocked 仍 parked）。
 
 ## 影响映射与失效（保守优先，绝不漏跑默认通过）
@@ -42,7 +42,8 @@ JSON、单写者（`<state>.lock` 文件级排它锁，跨进程已验证拒绝�
 - 结果分类：API 真实 `pass`/`fail`/`timeout`（含退出 134）都是**完成的有效观测**（完成并累计，fail 比率为空）；attempted 但无结构化捕获（导出器编译/契约失败）**不推进完成**——保留原始日志与旧有效展示，`attempts++`、`retryReason=exporter-compile-or-contract-failure`，最多 `MaxAttempts=3` 次后 `export-blocked` 暂停排队（不饿死整队）；源变更或 `--force` 后重新排队。批次级契约失败（`validation.json` errors 非空）整批不推进、有限重试；聚合校验失败回滚到原始清单且不推进。
 - `--force`：全部已适配 case 转 stale（`reason=forced`）重新排队，历史证据保留。
 - 同 SHA 队列未完时下一 timer 继续推进（**不因 fingerprint 相同而永久 skip**）；只有「无事可做」才跳过：无变更时输出 `Source and registry unchanged; queue complete; ...`，有变更但不影响测量时输出 `Changes observed without measurement impact; queue complete; ...`。
-- 发布失败（`PUBLISH_FAILED`）保留有效 cache，`state.publish.pending` 使下一轮只重试发布、不重跑任何 case。发布按被 index 保留 manifests 的完整引用闭包收齐、目标预验证后原子切 index；失败保留旧目标 index，绝不把生成成功当发布成功。
+- 发布失败（`PUBLISH_FAILED`）保留有效 cache，`state.publish.pending` 使下一轮只重试发布、不重跑任何 case（重试结果**持久化到磁盘 state**，成功后下轮真跳过；失败保留原因与时间 `lastError`/`lastErrorAt`）。发布按被 index 保留 manifests 的完整引用闭包收齐、目标预验证后原子切 index；所有公开入口（`WebProgressPublishing.Publish` 单 run API、`PublishWebProgress.cs` CLI、`WatchWebProgress` 聚合发布）同一闭包契约；失败保留旧目标 index，绝不把生成成功当发布成功。
+- 符号链接/重解析逃逸在**规范根语义**下全面拒绝：验证器、发布复制、门户打包同一契约（`WebProgressSafePath`），检查卷根→根目录→祖先→中间组件→叶子的每个文件系统组件（含 root 自身与父链接），以文件系统属性而非字符串前缀判定；外部文件绝不能验证通过或进入静态包。
 - 坏/未确认 run（契约失败、缺 clean validation.json、tick-start sweep 检出的验证错误）**隔离**：run 目录原始证据（含日志/清单）原样保留，但移出 validated/published index；依赖其证据的 completed 降级为 stale 历史并重排队，聚合绝不指向被隔离 run 的网格/清单（仅允许失败日志引用），不降 validator、不抹日志。
 
 ## 聚合视图口径（每轮发布最新聚合）

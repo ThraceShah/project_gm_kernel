@@ -137,6 +137,7 @@ async Task<int?> RunOnce()
             stale[pair.Key] = moved;
         }
         completed.Clear(); state["blocked"] = new JsonObject();
+        WebProgressScheduler.MarkRetiredInvalidation(state, "forced", revision);
         foreach (var id in stale) if (!state["pending"]!.AsArray().Any(p => p!["caseId"]!.GetValue<string>() == id.Key)) state["pending"]!.AsArray().Add((JsonNode)new JsonObject { ["caseId"] = id.Key, ["reason"] = "affected", ["attempts"] = 0, ["retryReason"] = null });
         Console.WriteLine("FORCE re-verification requested for all adapted cases.");
     }
@@ -164,7 +165,14 @@ async Task<int?> RunOnce()
     var plan = WebProgressScheduler.PlanBatch(state, registry, batchSize);
     if (plan.Count == 0)
     {
-        if (state["publish"]!["pending"]?.GetValue<bool>() == true) return FinishPublish(state) ? 0 : 2;
+        if (state["publish"]!["pending"]?.GetValue<bool>() == true)
+        {
+            var publishedRetry = FinishPublish(state);
+            // The retry result is persisted in the same tick: success must not
+            // re-publish on every later timer round, failure stays pending.
+            WebProgressScheduler.Save(statePath, state);
+            return publishedRetry ? 0 : 2;
+        }
         Console.WriteLine((sourceChanged ? "Changes observed without measurement impact; queue complete; " : "Source and registry unchanged; queue complete; ") + "retained current static data. pending=0 completed=" + state["completed"]!.AsObject().Count + " stale=" + state["stale"]!.AsObject().Count + " blocked=" + state["blocked"]!.AsObject().Count);
         WebProgressScheduler.Save(statePath, state);
         return null;
@@ -205,13 +213,17 @@ async Task<int?> RunOnce()
         // non-zero exit with no finished manifest is a definite collector
         // failure (bad input, compile/launch error): it burns bounded attempts
         // and surfaces a non-zero watcher exit instead of looping forever.
-        if (exitCode is 137 or 143 or 130 || exitCode == 0)
+        if (exitCode is 137 or 143 or 130)
         {
             batch["status"] = "interrupted";
             WebProgressScheduler.Save(statePath, state);
             Console.WriteLine("BATCH_INTERRUPTED " + runId + " exit=" + exitCode + " partial evidence retained; unconfirmed cases stay pending.");
             return null;
         }
+        // Anything else without a finished manifest — including a collector that
+        // exits 0 while producing no required output — is a definite contract
+        // failure: it burns bounded attempts and surfaces a non-zero watcher
+        // exit instead of looping forever.
         batch["status"] = "run-failed";
         foreach (var id in plan) WebProgressScheduler.RecordOutcome(state, id, "export-failure", "missing", runId, revision, EntryHashOf(registry, id), batchIndex);
         WebProgressScheduler.Save(statePath, state);
@@ -314,13 +326,13 @@ bool FinishPublish(JsonObject state)
         // the destination index retains is collected and the target is
         // pre-validated before its index switches atomically.
         WebProgressPublishing.PublishClosure(data, runIds, current, publishTo);
-        state["publish"]!["pending"] = false; state["publish"]!["lastError"] = null;
+        state["publish"]!["pending"] = false; state["publish"]!["lastError"] = null; state["publish"]!["lastErrorAt"] = null;
         Console.WriteLine("PUBLISHED_DATA " + Path.GetRelativePath(root, publishTo) + " runs=" + runIds.Count + " latest=" + current);
         return true;
     }
     catch (Exception e)
     {
-        state["publish"]!["pending"] = true; state["publish"]!["lastError"] = e.Message;
+        state["publish"]!["pending"] = true; state["publish"]!["lastError"] = e.Message; state["publish"]!["lastErrorAt"] = DateTimeOffset.UtcNow.ToString("O");
         Console.Error.WriteLine("PUBLISH_FAILED " + e.Message + "; validated cache kept, retrying without re-running cases.");
         return false;
     }

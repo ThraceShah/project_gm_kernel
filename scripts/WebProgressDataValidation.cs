@@ -1,5 +1,50 @@
 using System.Text.Json.Nodes;
 
+// One security contract for the validator and every static copy. The boundary
+// is the canonical root: paths are normalized with the platform's canonical
+// rules (GetFullPath/GetRelativePath, never string-prefix comparisons) and
+// every filesystem component from the volume root down to the referenced
+// entry — the root itself, its ancestors, intermediate directories and the
+// leaf — must be a real entry: symlinks and other reparse points are rejected
+// everywhere, so source roots, destination roots and referenced files can
+// never escape through links.
+internal static class WebProgressSafePath
+{
+    internal static bool IsSafeChain(string fullPath, out string? offending)
+    {
+        offending = null;
+        var normalized = Path.GetFullPath(fullPath);
+        var volume = Path.GetPathRoot(normalized) ?? "";
+        var current = volume;
+        foreach (var segment in Path.GetRelativePath(volume, normalized).Split(new[] { '/', Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries))
+        {
+            current = Path.Combine(current, segment);
+            if (!File.Exists(current) && !Directory.Exists(current)) continue; // missing leaves are rejected by callers
+            if ((File.GetAttributes(current) & FileAttributes.ReparsePoint) != 0) { offending = current; return false; }
+        }
+        return true;
+    }
+
+    internal static bool IsWithin(string root, string fullPath)
+    {
+        var relative = Path.GetRelativePath(Path.GetFullPath(root), Path.GetFullPath(fullPath));
+        return !Path.IsPathRooted(relative) && relative != ".." && !relative.StartsWith("../", StringComparison.Ordinal) && !relative.StartsWith("..\\", StringComparison.Ordinal);
+    }
+
+    internal static bool TryResolve(string root, string relative, out string path, out string? offending)
+    {
+        path = "";
+        offending = null;
+        var canonicalRoot = Path.GetFullPath(root);
+        if (!IsSafeChain(canonicalRoot, out offending)) return false;
+        var combined = Path.GetFullPath(relative, canonicalRoot);
+        if (!IsWithin(canonicalRoot, combined)) { offending = relative; return false; }
+        if (!IsSafeChain(combined, out offending)) return false;
+        path = combined;
+        return true;
+    }
+}
+
 internal static class WebProgressDataValidation
 {
     private static readonly HashSet<string> Statuses=["pass","fail","missing","unsupported","timeout","diagnostic"];
@@ -14,6 +59,9 @@ internal static class WebProgressDataValidation
         // isolate a bad run without weakening any check or losing any error.
         var runErrors=new JsonObject();string? currentRun=null;
         void Error(string message){errors.Add((JsonNode?)JsonValue.Create(message));if(currentRun!=null)((JsonArray)(runErrors[currentRun]??=new JsonArray())).Add((JsonNode?)JsonValue.Create(message));}
+        // The canonical root itself and its ancestors are part of the security
+        // boundary: a root reached through symlinks is rejected outright.
+        if(!WebProgressSafePath.IsSafeChain(data,out var rootOffender)){Error("root: symlink/reparse root rejected "+rootOffender);return Result();}
         void Fields(JsonNode? node,string names,string context)
         {if(node is not JsonObject obj){Error(context+": expected object");return;}foreach(var key in names.Split(' '))if(!obj.ContainsKey(key))Error(context+": missing "+key);}
         string? Resolve(string root,JsonNode? reference,string context)
@@ -24,20 +72,14 @@ internal static class WebProgressDataValidation
             // Accumulated manifests reference evidence of other measurement runs
             // as "../<runId>/..."; such references must stay inside the data
             // root's runs tree. Anything else must stay inside the run itself.
-            var underRoot=path.StartsWith(Path.GetFullPath(root)+Path.DirectorySeparatorChar,StringComparison.Ordinal);
-            var underRuns=path.StartsWith(Path.GetFullPath(Path.Combine(data,"runs"))+Path.DirectorySeparatorChar,StringComparison.Ordinal);
+            var underRoot=WebProgressSafePath.IsWithin(root,path);
+            var underRuns=WebProgressSafePath.IsWithin(Path.Combine(data,"runs"),path);
             if((!underRoot&&!underRuns)||!File.Exists(path)){Error(context+": missing or escaping path "+relative);return null;}
-            // Security root: every component between the validated data root and
-            // the referenced file (including intermediate directories and the
-            // leaf) must be a real entry — symlink/reparse escapes are rejected
-            // so external files can never validate or enter static bundles.
-            var dataRoot=Path.GetFullPath(data);
-            var current=dataRoot;
-            foreach(var segment in Path.GetRelativePath(dataRoot,path).Split('/',Path.DirectorySeparatorChar,StringSplitOptions.RemoveEmptyEntries))
-            {
-                current=Path.Combine(current,segment);
-                if((File.GetAttributes(current)&FileAttributes.ReparsePoint)!=0){Error(context+": symlink/reparse escape rejected "+relative);return null;}
-            }
+            // Canonical security boundary: the root, its ancestors, intermediate
+            // directories and the leaf must all be real entries; symlink/reparse
+            // escapes are rejected so external files can never validate or enter
+            // static bundles.
+            if(!WebProgressSafePath.IsSafeChain(path,out var offender)){Error(context+": symlink/reparse escape rejected "+relative);return null;}
             return path;
         }
         JsonNode? Read(string path){try{return JsonNode.Parse(File.ReadAllText(path));}catch(Exception e){Error(Path.GetFileName(path)+": "+e.Message);return null;}}

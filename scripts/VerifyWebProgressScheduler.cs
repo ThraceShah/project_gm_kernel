@@ -579,6 +579,150 @@ SymCheck("../../other/adjacent.log", false, "an adjacent-directory reference bey
 File.WriteAllText(Path.Combine(symRoot, "runs", "external-real.log"), "inside\n");
 SymCheck("../external-real.log", true, "real files inside the runs tree still validate (contract not tightened beyond link escapes)");
 
+// ---- 22. canonical root security: validator and copy share one contract ----
+var secBase = Path.Combine(root, "safe-path");
+var secReal = Path.Combine(secBase, "real-root");
+Directory.CreateDirectory(secReal);
+WriteRun(secReal, "run-1", "rev-0", true, Entry("blend.alpha", "pass", "cases/blend.alpha/sample-0/meshes/m.json", "cases/blend.alpha/sample-0/oracle.log"));
+WriteIndex(secReal, "run-1");
+Directory.CreateDirectory(Path.Combine(secBase, "outside-root"));
+File.WriteAllText(Path.Combine(secBase, "outside-root", "outside-marker.log"), "OUTSIDE");
+var gateCounter = 0;
+void Gate(string dataRoot, bool expectValid, bool expectCopy, string label)
+{
+    var errors = WebProgressDataValidation.Validate(dataRoot)["errors"]!.AsArray();
+    Assert((errors.Count == 0) == expectValid, label + " validator gate: " + errors.ToJsonString());
+    var dest = Path.Combine(secBase, "dest-" + gateCounter++);
+    var copied = true; var refusal = "";
+    try { WebProgressPublishing.PublishClosure(dataRoot, ["run-1"], "run-1", dest); }
+    catch (Exception e) { copied = false; refusal = e.GetType().Name + ": " + e.Message; }
+    Assert(copied == expectCopy, label + " copy gate agrees with the validator (refused " + refusal + ")");
+}
+var secManifestPath = Path.Combine(secReal, "runs", "run-1", "manifest.json");
+var secManifest = JsonNode.Parse(File.ReadAllText(secManifestPath))!;
+void SecEvidence(string? path)
+{
+    secManifest["cases"]![0]!["evidence"] = path == null
+        ? new JsonArray((JsonNode)new JsonObject { ["label"] = "Oracle log", ["path"] = "cases/blend.alpha/sample-0/oracle.log" })
+        : new JsonArray((JsonNode)new JsonObject { ["label"] = "linked", ["path"] = path });
+    File.WriteAllText(secManifestPath, secManifest.ToJsonString());
+}
+var rootLink = Path.Combine(secBase, "root-link");
+Directory.CreateSymbolicLink(rootLink, Path.GetRelativePath(secBase, secReal));
+Gate(rootLink, false, false, "ROOT link (the data root itself is a symlink)");
+var parentLink = Path.Combine(secBase, "parent-link");
+Directory.CreateSymbolicLink(parentLink, ".");
+Gate(Path.Combine(parentLink, "real-root"), false, false, "PARENT link (an ancestor of the data root is a symlink)");
+Directory.CreateSymbolicLink(Path.Combine(secReal, "runs", "linked"), Path.Combine(secBase, "outside-root"));
+SecEvidence("linked/outside-marker.log");
+Gate(secReal, false, false, "internal directory link");
+Directory.Delete(Path.Combine(secReal, "runs", "linked"));
+File.CreateSymbolicLink(Path.Combine(secReal, "runs", "run-1", "escape.log"), Path.Combine(secBase, "outside-root", "outside-marker.log"));
+SecEvidence("escape.log");
+Gate(secReal, false, false, "leaf link");
+File.Delete(Path.Combine(secReal, "runs", "run-1", "escape.log"));
+SecEvidence(null);
+Gate(secReal, true, true, "normal directory");
+// an unreferenced link can never leak through the copy gate either
+File.CreateSymbolicLink(Path.Combine(secReal, "runs", "run-1", "escape.log"), Path.Combine(secBase, "outside-root", "outside-marker.log"));
+Gate(secReal, true, false, "unreferenced leaf link: validator has nothing to reject, the copy gate still refuses the leak");
+File.Delete(Path.Combine(secReal, "runs", "run-1", "escape.log"));
+// the destination root obeys the same contract
+var destLink = Path.Combine(secBase, "dest-link");
+Directory.CreateSymbolicLink(destLink, Path.GetRelativePath(secBase, Path.Combine(secBase, "outside-root")));
+var destRefused = false;
+try { WebProgressPublishing.PublishClosure(secReal, ["run-1"], "run-1", destLink); } catch (IOException) { destRefused = true; }
+Assert(destRefused, "a destination root reached through a symlink is refused by the same contract");
+
+// ---- 23. retired records consume invalidations; restore re-queues accurately ----
+// (a) inactive + source change (review Extra S3/S5-r2), never planned while filtered
+var s18 = WebProgressScheduler.NewState("old", "h18", "test-registry-v1");
+var regAlpha2 = Registry(alpha);
+WebProgressScheduler.Reconcile(s18, regAlpha2, "h18", "test-registry-v1");
+for (var i = 0; i < WebProgressScheduler.MaxAttempts; i++) WebProgressScheduler.RecordOutcome(s18, "blend.alpha", "export-failure", "missing", "bad", "old", WebProgressScheduler.EntryHash(alpha), 0);
+WebProgressScheduler.Reconcile(s18, regAlpha2, "h18", "test-registry-v1", _ => false);
+WebProgressScheduler.MarkChanges(s18, ["src/Fixed.cs"], regAlpha2, "new");
+Assert(WebProgressScheduler.PlanBatch(s18, regAlpha2, 1).Count == 0, "a retired case is never planned while still filtered after a source change");
+WebProgressScheduler.Reconcile(s18, regAlpha2, "h18", "test-registry-v1", _ => false);
+WebProgressScheduler.Reconcile(s18, regAlpha2, "h18", "test-registry-v1", _ => true);
+var item18 = s18["pending"]!.AsArray().OfType<JsonObject>().FirstOrDefault(p => p["caseId"]!.GetValue<string>() == "blend.alpha");
+Assert(item18 != null && item18["reason"]!.GetValue<string>() == "affected" && item18["attempts"]!.GetValue<int>() == 0 && !s18["blocked"]!.AsObject().ContainsKey("blend.alpha"), "a source change during retirement lifts the park and re-queues with a fresh attempt cycle (was permanently parked)");
+Assert(item18!["lastRunId"]?.GetValue<string>() == "bad" && WebProgressScheduler.PlanBatch(s18, regAlpha2, 1).Contains("blend.alpha"), "the old failure evidence reference is carried and the case plans again");
+Assert(s18["completed"]!.AsObject().Count == 0, "nothing from the retired past is promoted to a current pass");
+// (a2) stale+blocked retired across a source change keeps the stale history real
+var s18b = WebProgressScheduler.NewState("rev-0", "h18b", "test-registry-v1");
+WebProgressScheduler.Reconcile(s18b, regAlpha2, "h18b", "test-registry-v1");
+WebProgressScheduler.RecordOutcome(s18b, "blend.alpha", "completed", "pass", "run-old", "rev-0", WebProgressScheduler.EntryHash(alpha), 0);
+WebProgressScheduler.MarkChanges(s18b, ["src/Changed.cs"], regAlpha2, "rev-1");
+for (var i = 0; i < WebProgressScheduler.MaxAttempts; i++) WebProgressScheduler.RecordOutcome(s18b, "blend.alpha", "export-failure", "missing", "run-18b", "rev-1", WebProgressScheduler.EntryHash(alpha), 1);
+WebProgressScheduler.Reconcile(s18b, regAlpha2, "h18b", "test-registry-v1", _ => false);
+WebProgressScheduler.MarkChanges(s18b, ["src/Fixed.cs"], regAlpha2, "rev-2");
+WebProgressScheduler.Reconcile(s18b, regAlpha2, "h18b", "test-registry-v1", _ => true);
+Assert(s18b["stale"]!.AsObject()["blend.alpha"]!["revision"]!.GetValue<string>() == "rev-0" && s18b["stale"]!.AsObject()["blend.alpha"]!["runId"]!.GetValue<string>() == "run-old", "the stale display keeps its real measurement source/revision across the retirement window");
+Assert(s18b["pending"]!.AsArray().Any(p => p!["caseId"]!.GetValue<string>() == "blend.alpha") && !s18b["blocked"]!.AsObject().ContainsKey("blend.alpha"), "stale+blocked retired across a source change re-queues instead of sticking");
+// (b) inactive + recipe change
+var s19 = WebProgressScheduler.NewState("rev-0", "h19", "test-registry-v1");
+WebProgressScheduler.Reconcile(s19, regAlpha2, "h19", "test-registry-v1");
+for (var i = 0; i < WebProgressScheduler.MaxAttempts; i++) WebProgressScheduler.RecordOutcome(s19, "blend.alpha", "export-failure", "missing", "run-19", "rev-0", WebProgressScheduler.EntryHash(alpha), 0);
+WebProgressScheduler.Reconcile(s19, regAlpha2, "h19", "test-registry-v1", _ => false);
+var alphaChanged2 = alpha.DeepClone().AsObject();
+alphaChanged2["parameters"] = JsonNode.Parse("""{"radius":0.2}""");
+var regChanged2 = Registry(alphaChanged2);
+WebProgressScheduler.Reconcile(s19, regChanged2, "h19b", "test-registry-v1", _ => false);
+WebProgressScheduler.Reconcile(s19, regChanged2, "h19b", "test-registry-v1", _ => true);
+Assert(s19["pending"]!.AsArray().Any(p => p!["caseId"]!.GetValue<string>() == "blend.alpha" && p["reason"]!.GetValue<string>() == "recipe-change") && !s19["blocked"]!.AsObject().ContainsKey("blend.alpha"), "a recipe change during retirement re-queues for the new recipe");
+// (c) restore without any invalidation keeps the park
+var s20 = WebProgressScheduler.NewState("rev-0", "h20", "test-registry-v1");
+WebProgressScheduler.Reconcile(s20, regAlpha2, "h20", "test-registry-v1");
+for (var i = 0; i < WebProgressScheduler.MaxAttempts; i++) WebProgressScheduler.RecordOutcome(s20, "blend.alpha", "export-failure", "missing", "run-20", "rev-0", WebProgressScheduler.EntryHash(alpha), 0);
+WebProgressScheduler.Reconcile(s20, regAlpha2, "h20", "test-registry-v1", _ => false);
+WebProgressScheduler.Reconcile(s20, regAlpha2, "h20", "test-registry-v1", _ => true);
+Assert(s20["blocked"]!.AsObject().ContainsKey("blend.alpha") && s20["pending"]!.AsArray().Count == 0, "restoring without any invalidation keeps the export park intact");
+// (d) force during retirement unblocks and re-queues
+var s21 = WebProgressScheduler.NewState("rev-0", "h21", "test-registry-v1");
+WebProgressScheduler.Reconcile(s21, regAlpha2, "h21", "test-registry-v1");
+for (var i = 0; i < WebProgressScheduler.MaxAttempts; i++) WebProgressScheduler.RecordOutcome(s21, "blend.alpha", "export-failure", "missing", "run-21", "rev-0", WebProgressScheduler.EntryHash(alpha), 0);
+WebProgressScheduler.Reconcile(s21, regAlpha2, "h21", "test-registry-v1", _ => false);
+WebProgressScheduler.MarkRetiredInvalidation(s21, "forced", "rev-9");
+WebProgressScheduler.Reconcile(s21, regAlpha2, "h21", "test-registry-v1", _ => true);
+Assert(s21["pending"]!.AsArray().Any(p => p!["caseId"]!.GetValue<string>() == "blend.alpha" && p["reason"]!.GetValue<string>() == "affected") && !s21["blocked"]!.AsObject().ContainsKey("blend.alpha"), "force during retirement lifts the park and re-queues");
+
+// ---- 24. typed state schema rejection (review S1-r2) ----
+var typedBase = WebProgressScheduler.NewState("r", "h", "v");
+typedBase["pending"]!.AsArray().Add((JsonNode)new JsonObject { ["caseId"] = "a", ["reason"] = "initial", ["attempts"] = 0, ["retryReason"] = null });
+var typedPath = Path.Combine(root, "typed-state.json");
+void Typed(string label, Action<JsonObject> mutate)
+{
+    var copy = typedBase.DeepClone().AsObject();
+    mutate(copy);
+    var json = copy.ToJsonString();
+    File.WriteAllText(typedPath, json);
+    var failed = false;
+    try { WebProgressScheduler.LoadState(typedPath, out _); } catch (InvalidDataException) { failed = true; }
+    Assert(failed && File.ReadAllText(typedPath) == json, label);
+}
+Typed("a mistyped scheduler scalar fails as STATE_SCHEMA_INVALID, not a cast crash (was exit 134)", s => s["scheduler"] = 123);
+Typed("a mistyped schemaVersion is rejected", s => s["schemaVersion"] = "1");
+Typed("a scalar publish marker is rejected", s => s["publish"] = true);
+Typed("a mistyped pending caseId is rejected", s => s["pending"]![0]!["caseId"] = 123);
+Typed("a mistyped pending attempts is rejected", s => s["pending"]![0]!["attempts"] = "x");
+Typed("a batch without a run id or status is rejected", s => s["batches"]!.AsArray().Add((JsonNode)new JsonObject { ["index"] = 0 }));
+Typed("a completed record without an entry hash is rejected", s => s["completed"]!["a"] = new JsonObject { ["runId"] = "r0" });
+Typed("a blocked record with mistyped fields is rejected", s => s["blocked"]!["a"] = new JsonObject { ["entryHash"] = "x", ["attempts"] = "y", ["retryReason"] = "z" });
+Typed("a stale record without an entry hash is rejected", s => s["stale"]!["a"] = new JsonObject { ["runId"] = "r0" });
+
+// ---- 20b. the public single-run Publish entry carries the same closure contract ----
+var s7Dest4 = Path.Combine(root, "publish-dest-old-api");
+Directory.CreateDirectory(s7Dest4);
+WebProgressPublishing.Publish(dataRoot, "run-0", s7Dest4);
+WebProgressPublishing.Publish(dataRoot, "run-1", s7Dest4);
+Assert(Directory.Exists(Path.Combine(s7Dest4, "runs", "run-0")) && WebProgressDataValidation.Validate(s7Dest4)["errors"]!.AsArray().Count == 0, "the public Publish entry collects the closure and validates the target (was 5 missing ../run-1 references)");
+Assert(JsonNode.Parse(File.ReadAllText(Path.Combine(s7Dest4, "index.json")))!["runs"]!.AsArray().Any(r => r!["id"]!.GetValue<string>() == "run-0"), "older published history stays indexed at the destination");
+var s7IndexBefore4 = File.ReadAllText(Path.Combine(s7Dest4, "index.json"));
+var s7Failed4 = false;
+try { WebProgressPublishing.Publish(s7BadRoot, "run-x", s7Dest4); } catch (InvalidDataException) { s7Failed4 = true; }
+Assert(s7Failed4 && File.ReadAllText(Path.Combine(s7Dest4, "index.json")) == s7IndexBefore4, "the public entry keeps the previous destination index on failure too");
+
 Console.WriteLine("ALL PASS " + passed + " scheduling contract checks");
 return 0;
 static string ScriptPath([CallerFilePath] string path = "") => path;
