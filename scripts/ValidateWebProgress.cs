@@ -36,6 +36,21 @@ if(args.Contains("--self-test"))
         ["representationContracts"]=new JsonArray(),
         ["timing"]=new JsonObject{["boundary"]="api-only",["gmMs"]=2.0,["pkMs"]=1.0,["coldKind"]="fresh-process",["warmup"]=0,["samples"]=1,["correctnessQualified"]=true,["ratio"]=2.0}
     };
+    // Complete synthetic capture contract; the former single compare check did
+    // not establish any operation's required primary checks or input identity.
+    op1["primaryContract"]="capture-body-result-v1";
+    op1["returns"]=new JsonObject{["gm"]=0,["pk"]=0};
+    op1["options"]=new JsonObject{["gm"]=new JsonObject{["radius"]=1},["pk"]=new JsonObject{["radius"]=1}};
+    op1["parameterHash"]=OperationAcceptanceLedger.HashString(op1["options"]!.ToJsonString());
+    op1["sameInput"]=true;
+    op1["inputProvenance"]=new JsonObject{["scope"]="isolated-same-input",["sameInputEvidence"]="synthetic validator fixture only"};
+    op1["inputHashes"]=new JsonObject{["gm"]=new JsonObject{["target"]=new string('a',64),["tools"]=new JsonArray()},["pk"]=new JsonObject{["target"]=new string('a',64),["tools"]=new JsonArray()}};
+    op1["timing"]!["measurementKind"]="api-elapsed-wall";
+    var required=new List<string>{"body-count","True-body-check","False-body-check","equivalence"};
+    for(var i=0;i<5;i++)required.Add("count-"+i);
+    for(var i=0;i<15;i++)required.Add("mass-"+i);
+    op1["primaryChecks"]=new JsonArray();
+    foreach(var check in required)op1["primaryChecks"]!.AsArray().Add((JsonNode)new JsonObject{["id"]="0-"+check,["owner"]="op-1",["category"]="primary",["label"]=check,["status"]="pass"});
     c["operations"]=new JsonArray((JsonNode)op1);
     c["operationSchemaVersion"]="operation-layered-v1";
     c["scenarioId"]="case";
@@ -89,6 +104,7 @@ if(args.Contains("--self-test"))
         ["role"]="lifecycle",
         ["api"]="PK_BODY_boolean",
         ["status"]="not-run",
+        ["terminalStatus"]="not-run",
         ["primaryChecks"]=new JsonArray(),
         ["auxiliaryChecks"]=new JsonArray(),
         ["representationContracts"]=new JsonArray(),
@@ -105,6 +121,7 @@ if(args.Contains("--self-test"))
         ["role"]="lifecycle",
         ["api"]="PK_BODY_boolean",
         ["status"]="not-run",
+        ["terminalStatus"]="not-run",
         ["primaryChecks"]=new JsonArray(),
         ["auxiliaryChecks"]=new JsonArray(),
         ["representationContracts"]=new JsonArray(),

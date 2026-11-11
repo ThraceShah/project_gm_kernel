@@ -96,11 +96,14 @@ internal static class WebProgressDataValidation
                 if(c["operations"] is JsonArray operations)
                 {
                     var opIds=new HashSet<string>();
+                    var ordinals=new HashSet<double>();
                     foreach(var op in operations)
                     {
                         Fields(op,"operationId ordinal role api status primaryChecks auxiliaryChecks representationContracts timing",caseId+" operation");
                         var opId=op?["operationId"]?.GetValue<string>()??"unknown";
                         if(opId=="unknown"||!opIds.Add(opId))Error(caseId+": duplicate/invalid operation ID");
+                        var ordinal=OperationAcceptanceRules.Number(op?["ordinal"]);
+                        if(ordinal is null||ordinal<0||ordinal!=Math.Truncate(ordinal.Value)||!ordinals.Add(ordinal.Value))Error(caseId+" "+opId+": duplicate/invalid ordinal");
                         var opStatus=op?["status"]?.GetValue<string>();
                         if(opStatus==null||!OperationStatuses.Contains(opStatus))Error(caseId+" "+opId+": invalid operation status "+opStatus);
                         var opRole=op?["role"]?.GetValue<string>();
@@ -112,18 +115,38 @@ internal static class WebProgressDataValidation
                             {
                                 Fields(ch,"id label status",caseId+" "+opId+" check");
                                 var chOwner=ch?["owner"]?.GetValue<string>();
-                                if(chOwner!=null&&chOwner!=opId)Error(caseId+" "+opId+": check owner mismatch "+chOwner);
+                                if(chOwner!=opId)Error(caseId+" "+opId+": check owner mismatch "+chOwner);
+                                var category=cat=="primaryChecks"?"primary":cat=="auxiliaryChecks"?"auxiliary":"representation";
+                                if(OperationAcceptanceRules.Text(ch?["category"])!=category)Error(caseId+" "+opId+": check category mismatch");
                                 var chStatus=ch?["status"]?.GetValue<string>();
                                 if(chStatus==null||!Statuses.Contains(chStatus))Error(caseId+" "+opId+": invalid check status "+chStatus);
                             }
                         }
                         var timing=op?["timing"];
                         Fields(timing,"boundary gmMs pkMs coldKind warmup samples correctnessQualified ratio",caseId+" "+opId+" timing");
+                        if(op is JsonObject operation)
+                        {
+                            var derived=OperationAcceptanceRules.Evaluate(operation);
+                            if(opStatus!=derived.Status)Error(caseId+" "+opId+": status disagrees with recorded facts; expected "+derived.Status);
+                            if(op["primaryStatus"]!=null&&OperationAcceptanceRules.Text(op["primaryStatus"])!=derived.PrimaryStatus)Error(caseId+" "+opId+": primaryStatus disagrees with recorded facts");
+                            if(OperationAcceptanceRules.IsTrue(timing?["correctnessQualified"])!=derived.Qualified)Error(caseId+" "+opId+": qualification disagrees with recorded facts "+derived.Reasons.ToJsonString());
+                            if(timing?["unqualifiedReasons"]!=null&&!JsonNode.DeepEquals(timing["unqualifiedReasons"],derived.Reasons))Error(caseId+" "+opId+": incorrect unqualified reasons");
+                            if(op["parameterHash"]!=null&&(!OperationAcceptanceRules.IsHash(op["parameterHash"])||op["options"]==null||OperationAcceptanceRules.Text(op["parameterHash"])!=OperationAcceptanceLedger.HashString(op["options"]!.ToJsonString())))Error(caseId+" "+opId+": invalid parameter hash");
+                            foreach(var side in new[]{"gm","pk"})
+                            {
+                                if(op["inputHashes"]?[side] is JsonObject input)
+                                    foreach(var field in input)
+                                        if(field.Key=="target"?field.Value!=null&&!OperationAcceptanceRules.IsHash(field.Value):field.Key!="tools"||field.Value is not JsonArray hashes||hashes.Any(h=>!OperationAcceptanceRules.IsHash(h)))Error(caseId+" "+opId+": invalid input hash field "+field.Key);
+                                if(op["outputHashes"]?[side] is JsonObject output)
+                                    foreach(var field in output)
+                                        if(field.Key!="bodies"||field.Value is not JsonArray hashes||hashes.Any(h=>!OperationAcceptanceRules.IsHash(h)))Error(caseId+" "+opId+": invalid output hash field "+field.Key);
+                            }
+                        }
                         if(timing?["ratio"]!=null)
                         {
                             var gm=timing["gmMs"]?.GetValue<double>();var pk=timing["pkMs"]?.GetValue<double>();var ratio=timing["ratio"]!.GetValue<double>();
                             var qualified=timing["correctnessQualified"]?.GetValue<bool>()==true;
-                            if(opStatus!="pass"||!qualified||gm is null||pk is not >0||!double.IsFinite(ratio)||Math.Abs(ratio-gm.Value/pk.Value)>1e-6*Math.Max(1,ratio))Error(caseId+" "+opId+": invalid/unqualified operation ratio");
+                            if(opStatus!="pass"||!qualified||gm is not >0||pk is not >0||!double.IsFinite(gm.Value)||!double.IsFinite(pk.Value)||!double.IsFinite(ratio)||ratio<=0||Math.Abs(ratio-gm.Value/pk.Value)>1e-6*Math.Max(1,ratio))Error(caseId+" "+opId+": invalid/unqualified operation ratio");
                         }
                         else if(timing?["correctnessQualified"]?.GetValue<bool>()==true)
                         {

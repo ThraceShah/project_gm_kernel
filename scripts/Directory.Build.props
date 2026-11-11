@@ -32,5 +32,6 @@
   </ItemGroup>
   <ItemGroup Condition="'$(UseOperationAcceptanceLedger)' == 'true' or '$(UseWebProgressCapture)' == 'true' or '$(UseWebProgressValidation)' == 'true'">
     <Compile Include="$(MSBuildThisFileDirectory)OperationAcceptanceLedger.cs" Link="OperationAcceptanceLedger.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OperationAcceptanceRules.cs" Link="OperationAcceptanceRules.cs" />
   </ItemGroup>
 </Project>

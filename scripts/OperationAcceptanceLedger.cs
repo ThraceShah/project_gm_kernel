@@ -44,10 +44,10 @@ internal sealed class OperationAcceptanceLedger
         string api = "unknown",
         JsonObject? options = null,
         JsonNode? inputProvenance = null,
-        bool sameInput = true)
+        bool sameInput = false)
     {
-        if (_byId.TryGetValue(id, out var existing))
-            return existing;
+        if (_byId.ContainsKey(id))
+            throw new InvalidOperationException($"Duplicate operation ID: {id}");
 
         var ordinal = Operations.Count;
         var op = new OperationRecord(id, ordinal, name, role, api, options, inputProvenance, sameInput);
@@ -125,7 +125,7 @@ internal sealed class OperationAcceptanceLedger
             ["pk"] = Finite(pk),
             ["absDelta"] = gm.HasValue && pk.HasValue ? Finite(Math.Abs(gm.Value - pk.Value)) : null,
             ["normalizedDelta"] = gm.HasValue && pk.HasValue ? Finite(Math.Abs(gm.Value - pk.Value) / (1 + Math.Abs(pk.Value))) : null,
-            ["threshold"] = threshold,
+            ["threshold"] = Finite(threshold),
             ["unit"] = unit,
             ["evidence"] = evidence,
             ["note"] = note
@@ -158,9 +158,12 @@ internal sealed class OperationAcceptanceLedger
         var op = GetOperation(opId);
         if (op == null) return;
         if (!string.IsNullOrEmpty(statusOverride))
-            op.Status = statusOverride;
-        else
-            op.EvaluateStatus();
+        {
+            op.SetTerminalStatus(statusOverride);
+            if (statusOverride is "fail" or "timeout")
+                RecordCheck(opId, "primary", opId + "-terminal", "Explicit operation termination", "fail", note: statusOverride);
+        }
+        op.EvaluateStatus();
     }
 
     public void EndScenario(int legacyExitCode, double? elapsedMs = null)
@@ -173,20 +176,20 @@ internal sealed class OperationAcceptanceLedger
         foreach (var op in Operations)
         {
             op.EvaluateStatus();
-            if (op.GmMs.HasValue) { sumGm += op.GmMs.Value; hasGm = true; }
-            if (op.PkMs.HasValue) { sumPk += op.PkMs.Value; hasPk = true; }
+            if (op.GmMs is > 0 && double.IsFinite(op.GmMs.Value)) { sumGm += op.GmMs.Value; hasGm = true; }
+            if (op.PkMs is > 0 && double.IsFinite(op.PkMs.Value)) { sumPk += op.PkMs.Value; hasPk = true; }
         }
 
         ScenarioCapturedApiMs = new JsonObject
         {
-            ["gm"] = hasGm ? sumGm : null,
-            ["pk"] = hasPk ? sumPk : null
+            ["gm"] = hasGm ? Finite(sumGm) : null,
+            ["pk"] = hasPk ? Finite(sumPk) : null
         };
 
-        var anyFail = Operations.Any(o => o.PrimaryStatus == "fail" || o.Returns["gm"]?.GetValue<int?>() != 0) || legacyExitCode != 0;
+        var anyFail = Operations.Any(o => o.Status == "fail") || legacyExitCode != 0;
         var anyTimeout = Operations.Any(o => o.Status == "timeout");
 
-        FirstFailedOperationId = Operations.FirstOrDefault(o => o.PrimaryStatus == "fail" || o.Status == "fail")?.Id;
+        FirstFailedOperationId = Operations.FirstOrDefault(o => o.Status is "fail" or "timeout")?.Id;
 
         if (anyTimeout)
             ScenarioStatus = "timeout";
@@ -195,7 +198,7 @@ internal sealed class OperationAcceptanceLedger
         else if (Operations.Count == 0)
             ScenarioStatus = "missing";
         else
-            ScenarioStatus = "pass";
+            ScenarioStatus = Operations.All(o => o.Status == "pass") ? "pass" : "unverified";
     }
 
     public JsonObject ToJsonObject()
@@ -216,8 +219,8 @@ internal sealed class OperationAcceptanceLedger
             ["firstFailedOperationId"] = FirstFailedOperationId,
             ["legacyExitCode"] = LegacyExitCode,
             ["checkVersion"] = CheckVersion,
-            ["scenarioWallElapsedMs"] = ScenarioWallElapsedMs,
-            ["scenarioElapsedMs"] = ScenarioElapsedMs,
+            ["scenarioWallElapsedMs"] = Finite(ScenarioWallElapsedMs),
+            ["scenarioElapsedMs"] = Finite(ScenarioElapsedMs),
             ["scenarioCapturedApiMs"] = ScenarioCapturedApiMs?.DeepClone(),
             ["operations"] = ops,
             ["checks"] = checks
@@ -255,7 +258,7 @@ internal sealed class OperationAcceptanceLedger
     public static string HashBytes(byte[] bytes) => Convert.ToHexStringLower(SHA256.HashData(bytes));
     public static string HashString(string text) => HashBytes(Encoding.UTF8.GetBytes(text));
 
-    private static JsonNode? Finite(double? value) =>
+    internal static JsonNode? Finite(double? value) =>
         value.HasValue && double.IsFinite(value.Value) ? JsonValue.Create(value.Value) : null;
 }
 
@@ -269,21 +272,28 @@ internal sealed class OperationRecord
     public string Api { get; }
     public JsonObject? Options
     {
-        get => _options;
+        get => (JsonObject?)_options?.DeepClone();
         set
         {
-            _options = value;
-            ParameterHash = value != null ? OperationAcceptanceLedger.HashString(value.ToJsonString()) : null;
+            _options = (JsonObject?)value?.DeepClone();
+            ParameterHash = _options != null ? OperationAcceptanceLedger.HashString(_options.ToJsonString()) : null;
         }
     }
     public string? ParameterHash { get; private set; }
-    public JsonNode? InputProvenance { get; set; }
+    private JsonNode? _inputProvenance;
+    public JsonNode? InputProvenance { get => _inputProvenance?.DeepClone(); set => _inputProvenance = value?.DeepClone(); }
     public bool SameInput { get; set; }
+    public string? PrimaryContract { get; set; }
+    public string? TerminalStatus { get; private set; }
+    public void SetTerminalStatus(string status)
+    {
+        if (TerminalStatus is not ("fail" or "timeout")) TerminalStatus = status;
+    }
 
     public JsonObject InputHashes { get; } = new() { ["gm"] = new JsonObject(), ["pk"] = new JsonObject() };
     public JsonArray Preconditions { get; } = [];
     public JsonObject OutputHashes { get; } = new() { ["gm"] = new JsonObject(), ["pk"] = new JsonObject() };
-    public JsonObject Returns { get; } = new() { ["gm"] = 0, ["pk"] = 0 };
+    public JsonObject Returns { get; } = new() { ["gm"] = null, ["pk"] = null };
 
     public string Status { get; set; } = "unverified";
     public string PrimaryStatus { get; set; } = "unverified";
@@ -323,7 +333,7 @@ internal sealed class OperationRecord
         Timing["measurementKind"] = "api-elapsed-wall";
         Timing["gmMs"] = null;
         Timing["pkMs"] = null;
-        Timing["coldKind"] = ordinal == 0 ? "fresh-process-first-api" : "subsequent-in-process";
+        Timing["coldKind"] = "unknown";
         Timing["warmup"] = 0;
         Timing["samples"] = 0;
         Timing["correctnessQualified"] = false;
@@ -345,37 +355,6 @@ internal sealed class OperationRecord
 
     public string EvaluateStatus()
     {
-        if (Status == "not-run")
-        {
-            PrimaryStatus = "not-run";
-            return Status;
-        }
-
-        var gmErr = Returns["gm"]?.GetValue<int?>() ?? 0;
-        var pkErr = Returns["pk"]?.GetValue<int?>() ?? 0;
-
-        // Primary status
-        if (gmErr != 0 || pkErr != 0)
-        {
-            PrimaryStatus = "fail";
-        }
-        else if (PrimaryChecks.Any(c => c?["status"]?.GetValue<string>() == "fail"))
-        {
-            PrimaryStatus = "fail";
-        }
-        else if (PrimaryChecks.Count == 0)
-        {
-            PrimaryStatus = "unverified";
-        }
-        else if (PrimaryChecks.All(c => c?["status"]?.GetValue<string>() is "pass" or "diagnostic"))
-        {
-            PrimaryStatus = "pass";
-        }
-        else
-        {
-            PrimaryStatus = "fail";
-        }
-
         // Auxiliary status
         if (AuxiliaryChecks.Count > 0)
         {
@@ -398,21 +377,17 @@ internal sealed class OperationRecord
             RepresentationStatus = "none";
         }
 
-        Status = PrimaryStatus;
-
-        var isPass = PrimaryStatus == "pass";
-        var qualified = isPass && SameInput && GmMs.HasValue && PkMs.HasValue && GmMs.Value > 0 && PkMs.Value > 0;
-
-        Timing["boundary"] = "api-only";
-        Timing["measurementKind"] = "api-elapsed-wall";
-        Timing["gmMs"] = GmMs.HasValue ? JsonValue.Create(GmMs.Value) : null;
-        Timing["pkMs"] = PkMs.HasValue ? JsonValue.Create(PkMs.Value) : null;
-        Timing["coldKind"] = Ordinal == 0 ? "fresh-process-first-api" : "subsequent-in-process";
-        Timing["warmup"] = 0;
+        Timing["gmMs"] = OperationAcceptanceLedger.Finite(GmMs);
+        Timing["pkMs"] = OperationAcceptanceLedger.Finite(PkMs);
         Timing["samples"] = GmMs.HasValue && PkMs.HasValue ? 1 : 0;
-        Timing["correctnessQualified"] = qualified;
-        Timing["ratio"] = qualified ? JsonValue.Create(GmMs!.Value / PkMs!.Value) : null;
-        Timing["diagnosticRatio"] = GmMs.HasValue && PkMs.HasValue && PkMs.Value > 0 ? JsonValue.Create(GmMs.Value / PkMs.Value) : null;
+        Timing["invalidMeasurement"] = (GmMs.HasValue && (!double.IsFinite(GmMs.Value) || GmMs.Value <= 0)) || (PkMs.HasValue && (!double.IsFinite(PkMs.Value) || PkMs.Value <= 0));
+        var result = OperationAcceptanceRules.Evaluate(BuildJsonObject());
+        PrimaryStatus = result.PrimaryStatus;
+        Status = result.Status;
+        Timing["correctnessQualified"] = result.Qualified;
+        Timing["unqualifiedReasons"] = result.Reasons.DeepClone();
+        Timing["ratio"] = result.Qualified ? OperationAcceptanceLedger.Finite(GmMs!.Value / PkMs!.Value) : null;
+        Timing["diagnosticRatio"] = GmMs is > 0 && PkMs is > 0 && double.IsFinite(GmMs.Value) && double.IsFinite(PkMs.Value) ? OperationAcceptanceLedger.Finite(GmMs.Value / PkMs.Value) : null;
 
         return Status;
     }
@@ -420,6 +395,11 @@ internal sealed class OperationRecord
     public JsonObject ToJsonObject()
     {
         EvaluateStatus();
+        return BuildJsonObject();
+    }
+
+    private JsonObject BuildJsonObject()
+    {
         return new JsonObject
         {
             ["operationId"] = Id,
@@ -427,6 +407,9 @@ internal sealed class OperationRecord
             ["name"] = Name,
             ["role"] = Role,
             ["api"] = Api,
+            ["primaryContract"] = PrimaryContract,
+            ["terminalStatus"] = TerminalStatus ?? (Status == "not-run" ? "not-run" : null),
+            ["sameInput"] = SameInput,
             ["options"] = Options?.DeepClone(),
             ["parameterHash"] = ParameterHash,
             ["inputProvenance"] = InputProvenance?.DeepClone(),
