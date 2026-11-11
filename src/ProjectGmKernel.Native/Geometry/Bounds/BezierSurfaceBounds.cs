@@ -138,8 +138,9 @@ internal static class BezierSurfaceBounds
         var u1 = Normalize(box.U1, patch.Domain.U0, patch.Domain.U1);
         var v0 = Normalize(box.V0, patch.Domain.V0, patch.Domain.V1);
         var v1 = Normalize(box.V1, patch.Domain.V0, patch.Domain.V1);
-        Span<IntervalNumber> layer = stackalloc IntervalNumber[MaxScalars];
-        Span<IntervalNumber> input = stackalloc IntervalNumber[4 * 17]; Span<IntervalNumber> result = stackalloc IntervalNumber[4 * 17];
+        Span<IntervalNumber> layer = stackalloc IntervalNumber[Math.Min(MaxScalars,size)];
+        var width=4*(Math.Max(p,q)+1);
+        Span<IntervalNumber> input = stackalloc IntervalNumber[Math.Min(4*17,width)]; Span<IntervalNumber> result = stackalloc IntervalNumber[Math.Min(4*17,width)];
         for (var v = 0; v <= q; v++)
         {
             for (var u = 0; u <= p; u++) for (var d = 0; d < 4; d++) input[4 * u + d] = patch.Poles[4 * (u * (q + 1) + v) + d];
@@ -160,7 +161,7 @@ internal static class BezierSurfaceBounds
     private static void RestrictCurve(ReadOnlySpan<IntervalNumber> input, SplineDegree degree, IntervalNumber a,
         IntervalNumber b, Span<IntervalNumber> output)
     {
-        Span<IntervalNumber> work = stackalloc IntervalNumber[4 * 17];
+        Span<IntervalNumber> work = stackalloc IntervalNumber[Math.Min(4*17,4*(degree+1))];
         // Blossom evaluation: kth restricted pole has degree-k copies of a
         // and k copies of b. This also supports tiny certification extensions.
         for (var k = 0; k <= degree; k++)
@@ -182,7 +183,7 @@ internal static class BezierSurfaceBounds
     private static AlgorithmStatus Bound(in BezierSurfacePatch patch,in SurfaceParameterBox box,Span<IntervalNumber> output,Span<IntervalNumber> homogeneous)
     {
         if (output.Length < 9) return AlgorithmStatus.WorkspaceTooSmall;
-        Span<IntervalNumber> poles = stackalloc IntervalNumber[MaxScalars];
+        Span<IntervalNumber> poles = stackalloc IntervalNumber[Math.Min(MaxScalars,4*(patch.UDegree+1)*(patch.VDegree+1))];
         var status = Restrict(patch, box, poles); if (status != AlgorithmStatus.Success) return status;
         var p = patch.UDegree; var q = patch.VDegree;
         Span<IntervalNumber> h = stackalloc IntervalNumber[4]; Span<IntervalNumber> hu = stackalloc IntervalNumber[4]; Span<IntervalNumber> hv = stackalloc IntervalNumber[4];
@@ -213,9 +214,10 @@ internal static class BezierSurfaceBounds
         bool alongU, Span<IntervalNumber> hull)
     {
         if ((alongU ? patch.UDegree : patch.VDegree) == 0) { hull.Clear(); return; }
-        Span<IntervalNumber> derivatives = stackalloc IntervalNumber[MaxScalars];
-        Span<IntervalNumber> restricted = stackalloc IntervalNumber[MaxScalars];
         var p = patch.UDegree; var q = patch.VDegree; var dp = alongU ? p - 1 : p; var dq = alongU ? q : q - 1;
+        var size=Math.Min(MaxScalars,4*(dp+1)*(dq+1));
+        Span<IntervalNumber> derivatives = stackalloc IntervalNumber[size];
+        Span<IntervalNumber> restricted = stackalloc IntervalNumber[size];
         var scale = alongU ? p / (new IntervalNumber(patch.Domain.U1) - patch.Domain.U0) : q / (new IntervalNumber(patch.Domain.V1) - patch.Domain.V0);
         for (var u = 0; u <= dp; u++) for (var v = 0; v <= dq; v++) for (var d = 0; d < 4; d++)
         {
@@ -266,7 +268,8 @@ internal static class BezierSurfaceBounds
     private static void HomogeneousJetHull(in BezierSurfacePatch patch,in SurfaceParameterBox box,DerivativeOrder uOrder,DerivativeOrder vOrder,Span<IntervalNumber> hull)
     {
         if(uOrder>patch.UDegree||vOrder>patch.VDegree){hull.Clear();return;}
-        Span<IntervalNumber> a=stackalloc IntervalNumber[MaxScalars],b=stackalloc IntervalNumber[MaxScalars];patch.Poles.CopyTo(a);var p=patch.UDegree;var q=patch.VDegree;
+        var p=patch.UDegree;var q=patch.VDegree;var size=Math.Min(MaxScalars,4*(p+1)*(q+1));
+        Span<IntervalNumber> a=stackalloc IntervalNumber[size],b=stackalloc IntervalNumber[size];patch.Poles[..(4*(p+1)*(q+1))].CopyTo(a);
         for(var axis=0;axis<2;axis++)for(var k=0;k<(axis==0?uOrder:vOrder);k++)
         {
             var np=p-(axis==0?1:0);var nq=q-(axis==1?1:0);var scale=axis==0?p/(new IntervalNumber(patch.Domain.U1)-patch.Domain.U0):q/(new IntervalNumber(patch.Domain.V1)-patch.Domain.V0);
