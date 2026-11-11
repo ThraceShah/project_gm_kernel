@@ -1,0 +1,589 @@
+{
+  "candidate": "3c650671f30efad266531b0512ccfa600adffe38",
+  "productionTree": "6a433222da0775dcb5524d7751d94e8f096fe797",
+  "merge": "5a60104f358b21fcb2c978ba9d250407178ce61e",
+  "tools": "1b935972eff529e13b46cb9b08ad9550e0a6aeb5",
+  "retention": {
+    "candidate": "3c650671f30efad266531b0512ccfa600adffe38",
+    "tools": "1b935972eff529e13b46cb9b08ad9550e0a6aeb5",
+    "fixtureReviewPin": "0000000000000000000000000000000000000000",
+    "uiHash": "e0429cf28007de740018ebfc1898a630c1535be0bcdd668e4ed38b415a811ee4",
+    "firstBundleHash": "5f43710720d36735d1972666c4f80013fa00b8d3d58fc0a623b4ad2601c3c7e5",
+    "frozenUiFiles": 3,
+    "sameDataArgumentBothRounds": true,
+    "dataInput": "temp_docs/fusion-retention-repro/active-data",
+    "round1": {
+      "schemaVersion": 1,
+      "uiCommit": "3c650671f30efad266531b0512ccfa600adffe38",
+      "uiHash": "e0429cf28007de740018ebfc1898a630c1535be0bcdd668e4ed38b415a811ee4",
+      "review": "0000000000000000000000000000000000000000",
+      "fingerprint": "3c650671f30efad266531b0512ccfa600adffe38:e0429cf28007de740018ebfc1898a630c1535be0bcdd668e4ed38b415a811ee4:c83ba9269e589bd2d335aee35ea068e2b3fce0e3a8be564278f0f9b0d8b35e1f",
+      "bundle": "bundle-87d8e9d3920fe45b",
+      "files": 625,
+      "bytes": 28214664,
+      "dataIndexSha256": "117bb8e7ad20ea90aee004eb18428d2a220e5270795ab9ce81eff380843e3990",
+      "sourceIndexSha256": "117bb8e7ad20ea90aee004eb18428d2a220e5270795ab9ce81eff380843e3990",
+      "sourceDataTreeHash": "c83ba9269e589bd2d335aee35ea068e2b3fce0e3a8be564278f0f9b0d8b35e1f",
+      "baselineIndexReused": true
+    },
+    "round2": {
+      "schemaVersion": 1,
+      "uiCommit": "3c650671f30efad266531b0512ccfa600adffe38",
+      "uiHash": "e0429cf28007de740018ebfc1898a630c1535be0bcdd668e4ed38b415a811ee4",
+      "review": "0000000000000000000000000000000000000000",
+      "fingerprint": "3c650671f30efad266531b0512ccfa600adffe38:e0429cf28007de740018ebfc1898a630c1535be0bcdd668e4ed38b415a811ee4:fbb68a2aacd7eebb910f63a51a23954eec340e9bc3960e000448c699565d7390",
+      "bundle": "bundle-c8f9f9a7b74bc2de",
+      "files": 610,
+      "bytes": 28047496,
+      "dataIndexSha256": "117bb8e7ad20ea90aee004eb18428d2a220e5270795ab9ce81eff380843e3990",
+      "sourceIndexSha256": "117bb8e7ad20ea90aee004eb18428d2a220e5270795ab9ce81eff380843e3990",
+      "sourceDataTreeHash": "fbb68a2aacd7eebb910f63a51a23954eec340e9bc3960e000448c699565d7390",
+      "baselineIndexReused": false
+    },
+    "round2Bundle": "temp_docs/fusion-retention-repro/release/work/bundle-c8f9f9a7b74bc2de",
+    "round2BundleHash": "2aa48412fa6da242a7b987c0bf057068809dacf14f50645b388cb1f55adc0615",
+    "missingUvPaths": [
+      "data/display/real-uv/gm-after.iso.json",
+      "data/display/real-uv/manifest.json",
+      "data/display/real-uv/gm-before.iso.json",
+      "data/display/real-uv/display-manifest.json",
+      "data/display/real-uv/pk-after.iso.json",
+      "data/display/real-uv/pk-before.iso.json",
+      "data/display/real-uv/index.json",
+      "data/display/real-uv/display/snapshot-0.receipt.json",
+      "data/display/real-uv/display/snapshot-2.receipt.json",
+      "data/display/real-uv/display/snapshot-1.receipt.json",
+      "data/display/real-uv/display/snapshot-3.receipt.json",
+      "data/display/real-uv/meshes/pk-after.mesh.json",
+      "data/display/real-uv/meshes/gm-after.mesh.json",
+      "data/display/real-uv/meshes/gm-before.mesh.json",
+      "data/display/real-uv/meshes/pk-before.mesh.json"
+    ],
+    "historicalFilesUnchanged": 607,
+    "sourceFilesUnchanged": true,
+    "verdict": "BLOCKED: fresh producer refresh loses independent display namespace"
+  },
+  "finiteChecks": [
+    {
+      "name": "all 625 public files fetch with exact dispatched asset SHA/size",
+      "ok": true,
+      "detail": {
+        "count": 625,
+        "bytes": 28214664,
+        "failures": []
+      }
+    },
+    {
+      "name": "screenshot legacy case has real yellow edges at 25 percent and shared camera/legend",
+      "ok": true,
+      "detail": {
+        "legacyStats": [
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "gm:37",
+            "faceCount": "10",
+            "edgeCount": "20",
+            "triangleCount": "102",
+            "roleFaces": "{\"unchanged\":6,\"support\":4}",
+            "roleEdges": "{\"unchanged\":18,\"selected\":2}",
+            "hasIsoparametrics": "false",
+            "isoparametricsCount": "0",
+            "uLineCount": "0",
+            "vLineCount": "0",
+            "dimmedOpacity": "0.25",
+            "featureVisibility": "{\"samples\":48,\"visible\":48,\"visibleFraction\":1,\"projectedPixels\":675.3720828925162,\"projectionUnit\":\"length-px\",\"bounds\":{\"min\":[71.53183306779829,491.56988252784777],\"max\":[751.237405505571,492.4298255197544]},\"reason\":\"选中边 · 可见性采样\"}",
+            "cameraPos": "0.50,-1.25,2.17",
+            "cameraTarget": "0.50,0.00,1.00"
+          },
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "pk:51",
+            "faceCount": "10",
+            "edgeCount": "20",
+            "triangleCount": "102",
+            "roleFaces": "{\"unchanged\":6,\"support\":4}",
+            "roleEdges": "{\"unchanged\":16,\"deleted\":2,\"selected\":2}",
+            "hasIsoparametrics": "false",
+            "isoparametricsCount": "0",
+            "uLineCount": "0",
+            "vLineCount": "0",
+            "dimmedOpacity": "0.25",
+            "featureVisibility": "{\"samples\":48,\"visible\":48,\"visibleFraction\":1,\"projectedPixels\":675.3720828925162,\"projectionUnit\":\"length-px\",\"bounds\":{\"min\":[71.03183306779819,491.56988252784777],\"max\":[750.7374055055711,492.4298255197544]},\"reason\":\"选中边 · 可见性采样\"}",
+            "cameraPos": "0.50,-1.25,2.17",
+            "cameraTarget": "0.50,0.00,1.00"
+          }
+        ],
+        "yellow": [
+          1499,
+          1502
+        ],
+        "legend": {
+          "bottom": 157,
+          "canvasTop": 157,
+          "insideCanvas": false
+        }
+      }
+    },
+    {
+      "name": "finite yellow 25-percent stroke picks actual source selected edge both panes",
+      "ok": true,
+      "detail": [
+        {
+          "pane": 0,
+          "txt": "边 [gm:edge:107]\n角色:\n选中 / 关键面\n×",
+          "point": {
+            "x": 545.5,
+            "y": 649.5
+          },
+          "selectedIds": [
+            "gm:edge:106",
+            "gm:edge:107"
+          ],
+          "ok": true
+        },
+        {
+          "pane": 1,
+          "txt": "边 [pk:edge:148]\n角色:\n选中 / 关键面\n×",
+          "point": {
+            "x": 1369,
+            "y": 648.5
+          },
+          "selectedIds": [
+            "pk:edge:107",
+            "pk:edge:148"
+          ],
+          "ok": true
+        }
+      ]
+    },
+    {
+      "name": "merged evidence drawer overlays unchanged canvases and preserves original comparison",
+      "ok": true,
+      "detail": {
+        "beforeBox": {
+          "x": 320,
+          "y": 157,
+          "width": 822.5,
+          "height": 984
+        },
+        "afterBox": {
+          "x": 320,
+          "y": 157,
+          "width": 822.5,
+          "height": 984
+        },
+        "summaryText": "PK_DEBUG_BODY_compare · 原记录主比较通过 · 12 条表示诊断（n_cht_pts） ↗",
+        "details": "PK_DEBUG_BODY_compare · 原记录主比较通过 · 12 条表示诊断（n_cht_pts）\n\n展示已发布基线的原始比较与原验收状态；表示诊断不等于 raw 全零差异。facePairs 是原始配对记录数，不能作为全部面匹配成功数量。\n\n原始比较证据 ↗ cases/support-chain.asymmetric43-base/sample-0/evidence/compare-0.json\nglobal=21921 · local=21930 · facePairs=7\nmax_diffs=1024 · all_tests=false · num_tests=true · acc_dev_tests=false · tol_dev_tests=true · tol_tests=true · class_tests=true · sense_tests=true · missing_tests=true · non_match_tests=true\n诊断白名单（原记录）：n_cht_pts\nglobal / local 差异与 face/entity 原始明细"
+      }
+    },
+    {
+      "name": "run610 original collection/code remain separate from new UI",
+      "ok": true,
+      "detail": {
+        "run": {
+          "id": "20261110T195008Z-610e3ce8",
+          "commit": "610e3ce844bf99c85af6069905f9f3deaab08133",
+          "generatedAt": "2026-11-10T19:50:08.4502366+00:00",
+          "configuration": {
+            "build": "Release",
+            "nativeAot": false,
+            "timing": "Stopwatch elapsed wall time around API only",
+            "tieredCompilation": "0",
+            "cache": "oracle defaults, fresh process per sample",
+            "parallelism": "serial PK sessions",
+            "samplesRequested": 1,
+            "resourceLimits": "systemd CPUQuota=200%; MemoryMax=12G; serial oracle processes"
+          },
+          "scope": {
+            "registryVersion": "2026-11-11.default-recipes-v5",
+            "registered": 463,
+            "family": "all",
+            "suite": "all",
+            "case": "representatives",
+            "seconds": 1200,
+            "caseSeconds": 300,
+            "executed": 17
+          }
+        },
+        "version": "已发布基线 · 真实数据来源\n\n界面更新不表示结果已重新采集；此处展示 manifest 的原始运行数据，不将候选证明或未合并进度计为本 case 的新通过。\n\nRun\n20261110T195008Z-610e3ce8\n数据采集时间（run.generatedAt）\n2026-11-10T19:50:08.4502366+00:00\n采集代码（run.commit）\n610e3ce844bf99c85af6069905f9f3deaab08133\n范围（run.scope）\n{\"registryVersion\":\"2026-11-11.default-recipes-v5\",\"registered\":463,\"family\":\"all\",\"suite\":\"all\",\"case\":\"representatives\",\"seconds\":1200,\"caseSeconds\":300,\"executed\":17}\n配置 / samplesRequested（run.configuration）\n{\"build\":\"Release\",\"nativeAot\":false,\"timing\":\"Stopwatch elapsed wall time around API only\",\"tieredCompilation\":\"0\",\"cache\":\"oracle defaults, fresh process per sample\",\"parallelism\":\"serial PK sessions\",\"samplesRequested\":1,\"resourceLimits\":\"systemd CPUQuota=200%; MemoryMax=12G; serial oracle processes\"}\n原始 manifest ↗"
+      }
+    },
+    {
+      "name": "single-cold historical ratio only qualified inside details",
+      "ok": true,
+      "detail": "历史已发布采样 · 2026-11-10T19:50:08.4502366+00:00 · 此记录不作为本轮优化结论。\n\nGM Kernel 耗时\n实测\n2882.0 ms\n统计样本: 1 次 (预热: 0) · 单次冷启动实测 (single-cold-sample)，非稳态性能结论\nParasolid (PK) 耗时\n基准 Oracle\n4.47 ms\nParasolid 官方内核执行基线\nGM ÷ PK 耗时倍率\n数字越小 GM 越快\n644.54x\nPK 快 64354%\n仅此历史采样中 PK 耗时较小；不作为本轮优化结论\n正确性资格 (Correctness Qualified):已满足资格 (几何与拓扑所有强制验收项满足容差门限)；仅为正确性资格，非性能认证\n实测口径: samples=1 / warmup=0 / 测量类型: single-cold-sample / 稳态基准: false / operation-only; ratio = GM elapsed ms / PK elapsed ms; input construction, export, tessellation, comparison and I/O excluded（Current correctness gates only; no steady-state performance certification.）（单次冷启动测试，不能泛化为稳态性能结论）\n基准测试环境 (Host & Config)\n测试宿主机器:\nmodel name : AMD Ryzen 7 7840HS w/ Radeon 780M Graphics / X64 / Ubuntu 26.04.1 LTS / SDK 10.0.302\n编译/发布配置:\nRelease | Managed | Stopwatch elapsed wall time around API only\n基准测试范围 (Scope):\noperation-only; ratio = GM elapsed ms / PK elapsed ms; input construction, export, tessellation, comparison and I/O excluded\n性能分析与备注 (Performance Notes)\n\nAPI-only elapsed totals across captured steps; median of fresh-process samples, warmup=0. Cold JIT/cache effects remain; no stable throughput claim. Ratio withheld unless both sides succeeded and every current acceptance check passed."
+    },
+    {
+      "name": "fusion UV Before exact selected snapshots and counts",
+      "ok": true,
+      "detail": {
+        "stats": [
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "gm:27",
+            "faceCount": "6",
+            "edgeCount": "12",
+            "triangleCount": "96",
+            "roleFaces": "{\"unchanged\":4,\"support\":2}",
+            "roleEdges": "{\"unchanged\":11,\"selected\":1}",
+            "hasIsoparametrics": "true",
+            "isoparametricsCount": "10",
+            "uLineCount": "5",
+            "vLineCount": "5",
+            "dimmedOpacity": "0.25",
+            "featureVisibility": "{\"samples\":48,\"visible\":48,\"visibleFraction\":1,\"projectedPixels\":673.3488535222575,\"projectionUnit\":\"length-px\",\"bounds\":{\"min\":[72.22329609329206,479.5000000000001],\"max\":[750.776703906708,479.5000000000001]},\"reason\":\"选中边 · 可见性采样\"}",
+            "cameraPos": "0.50,-1.23,2.13",
+            "cameraTarget": "0.50,0.00,1.00"
+          },
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "pk:51",
+            "faceCount": "6",
+            "edgeCount": "12",
+            "triangleCount": "96",
+            "roleFaces": "{\"support\":2,\"unchanged\":4}",
+            "roleEdges": "{\"selected\":1,\"deleted\":1,\"unchanged\":10}",
+            "hasIsoparametrics": "true",
+            "isoparametricsCount": "10",
+            "uLineCount": "5",
+            "vLineCount": "5",
+            "dimmedOpacity": "0.25",
+            "featureVisibility": "{\"samples\":48,\"visible\":48,\"visibleFraction\":1,\"projectedPixels\":673.3488535222575,\"projectionUnit\":\"length-px\",\"bounds\":{\"min\":[71.723296093292,479.5000000000001],\"max\":[750.276703906708,479.5000000000001]},\"reason\":\"选中边 · 可见性采样\"}",
+            "cameraPos": "0.50,-1.23,2.13",
+            "cameraTarget": "0.50,0.00,1.00"
+          }
+        ],
+        "provenance": [
+          "U = 常数 u · V = 常数 v · snapshot-2 / before1 个非平面；仅精确矩形 trim；5 面未覆盖。采样弦差 ≤ 0.001，无解析全局界。来源 / 面参数 / trim / 误差证据 · mesh f19b18867e17",
+          "U = 常数 u · V = 常数 v · snapshot-0 / before1 个非平面；仅精确矩形 trim；5 面未覆盖。采样弦差 ≤ 0.001，无解析全局界。来源 / 面参数 / trim / 误差证据 · mesh 555d53765eb2"
+        ]
+      }
+    },
+    {
+      "name": "fusion UV After both genuine curved faces with shared framing",
+      "ok": true,
+      "detail": {
+        "stats": [
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "gm:27",
+            "faceCount": "7",
+            "edgeCount": "15",
+            "triangleCount": "220",
+            "roleFaces": "{\"unchanged\":4,\"modified\":2,\"newBlend\":1}",
+            "roleEdges": "{\"unchanged\":15}",
+            "hasIsoparametrics": "true",
+            "isoparametricsCount": "10",
+            "uLineCount": "5",
+            "vLineCount": "5",
+            "dimmedOpacity": "0.25",
+            "featureVisibility": "{\"samples\":48,\"visible\":48,\"visibleFraction\":1,\"projectedPixels\":56564.95702288952,\"projectionUnit\":\"area-px2\",\"bounds\":{\"min\":[85.89453673610785,448.42329422017986],\"max\":[736.8065811517185,512.4130126279927]},\"reason\":\"newBlend 面 · 可见性采样\"}",
+            "cameraPos": "0.50,-1.23,2.13",
+            "cameraTarget": "0.50,0.00,1.00"
+          },
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "pk:51",
+            "faceCount": "7",
+            "edgeCount": "15",
+            "triangleCount": "130",
+            "roleFaces": "{\"modified\":2,\"unchanged\":4,\"newBlend\":1}",
+            "roleEdges": "{\"unchanged\":15}",
+            "hasIsoparametrics": "true",
+            "isoparametricsCount": "10",
+            "uLineCount": "5",
+            "vLineCount": "5",
+            "dimmedOpacity": "0.25",
+            "featureVisibility": "{\"samples\":48,\"visible\":48,\"visibleFraction\":1,\"projectedPixels\":56646.406709590025,\"projectionUnit\":\"area-px2\",\"bounds\":{\"min\":[104.37393192121728,448.3139996011338],\"max\":[717.6259774037917,510.67941119250867]},\"reason\":\"newBlend 面 · 可见性采样\"}",
+            "cameraPos": "0.50,-1.23,2.13",
+            "cameraTarget": "0.50,0.00,1.00"
+          }
+        ],
+        "provenance": [
+          "U = 常数 u · V = 常数 v · snapshot-3 / after1 个非平面；仅精确矩形 trim；6 面未覆盖。采样弦差 ≤ 0.001，无解析全局界。来源 / 面参数 / trim / 误差证据 · mesh ee8ef5dbb75f",
+          "U = 常数 u · V = 常数 v · snapshot-1 / after1 个非平面；仅精确矩形 trim；6 面未覆盖。采样弦差 ≤ 0.001，无解析全局界。来源 / 面参数 / trim / 误差证据 · mesh 1024e741e3f4"
+        ]
+      }
+    },
+    {
+      "name": "merged camera actual UV colors toggle without pose change",
+      "ok": true,
+      "detail": [
+        {
+          "changed": 6648,
+          "cyan": 344,
+          "purple": 730,
+          "camera": "0.50,-1.24,2.11",
+          "triangles": "220"
+        },
+        {
+          "changed": 6613,
+          "cyan": 303,
+          "purple": 705,
+          "camera": "0.50,-1.24,2.11",
+          "triangles": "130"
+        }
+      ]
+    },
+    {
+      "name": "UV derived-package time and no-performance labels survive merge",
+      "ok": true,
+      "detail": {
+        "uvMeta": "已发布基线 · 真实数据来源\n\n界面更新不表示结果已重新采集；此处展示 manifest 的原始运行数据，不将候选证明或未合并进度计为本 case 的新通过。\n\nRun\nreal-uv-display\n显示包生成时间，非采集时间（run.generatedAt）\n2026-11-11T06:11:17.1986835+00:00\n原始来源代码（run.commit）\neecab6d51cae79a687fa459af512adc3e03895f5\n范围（run.scope）\n\"render-only; one case, before/after; no benchmark or acceptance\"\n配置 / samplesRequested（run.configuration）\n未记录\n原始 manifest ↗",
+        "uvPerf": "仅显示派生包，无性能采样或新增几何验收\n\n此用例尚未录入基准性能测试数据"
+      }
+    },
+    {
+      "name": "390px shared legend and drawer preserve finite UV canvases",
+      "ok": true,
+      "detail": [
+        {
+          "h": 205,
+          "w": 390,
+          "u": "5",
+          "v": "5"
+        },
+        {
+          "h": 204,
+          "w": 390,
+          "u": "5",
+          "v": "5"
+        }
+      ]
+    },
+    {
+      "name": "merged actual loader context validation rejects warm path reuse",
+      "ok": true,
+      "detail": [
+        {
+          "name": "warm before",
+          "data": true,
+          "error": null,
+          "uv": "available"
+        },
+        {
+          "name": "stage",
+          "data": false,
+          "error": "真实 U/V unavailable：当前选择的快照路径与独立阶段映射不匹配"
+        },
+        {
+          "name": "case",
+          "data": false,
+          "error": "真实 U/V unavailable：当前 run/case/step/kernel/stage 与独立显示源不匹配"
+        },
+        {
+          "name": "step",
+          "data": false,
+          "error": "真实 U/V unavailable：当前 run/case/step/kernel/stage 与独立显示源不匹配"
+        },
+        {
+          "name": "kernel",
+          "data": false,
+          "error": "真实 U/V unavailable：当前选择的快照路径与独立阶段映射不匹配"
+        },
+        {
+          "name": "legal after rejection",
+          "data": true,
+          "error": null,
+          "uv": "available"
+        }
+      ]
+    },
+    {
+      "name": "fused App rejects wrong-stage",
+      "ok": true,
+      "detail": [
+        {
+          "testid": "viewer-canvas-host",
+          "bodyId": "",
+          "faceCount": "0",
+          "edgeCount": "0",
+          "triangleCount": "0",
+          "roleFaces": "{}",
+          "roleEdges": "{}",
+          "hasIsoparametrics": "false",
+          "isoparametricsCount": "0",
+          "uLineCount": "0",
+          "vLineCount": "0",
+          "dimmedOpacity": "0.25",
+          "featureVisibility": "{\"samples\":0,\"visible\":0,\"visibleFraction\":null,\"projectedPixels\":0,\"projectionUnit\":\"area-px2\",\"bounds\":null,\"reason\":\"全模型：无几何\"}",
+          "cameraPos": "0.50,-1.00,1.92",
+          "cameraTarget": "0.50,0.00,1.00"
+        },
+        {
+          "testid": "viewer-canvas-host",
+          "bodyId": "pk:51",
+          "faceCount": "7",
+          "edgeCount": "15",
+          "triangleCount": "130",
+          "roleFaces": "{\"modified\":2,\"unchanged\":4,\"newBlend\":1}",
+          "roleEdges": "{\"unchanged\":15}",
+          "hasIsoparametrics": "true",
+          "isoparametricsCount": "10",
+          "uLineCount": "5",
+          "vLineCount": "5",
+          "dimmedOpacity": "0.25",
+          "featureVisibility": "{\"samples\":48,\"visible\":48,\"visibleFraction\":1,\"projectedPixels\":11333.82063262341,\"projectionUnit\":\"area-px2\",\"bounds\":{\"min\":[101.08636369532027,163.39089560267223],\"max\":[377.91358804792145,191.58353961952795]},\"reason\":\"newBlend 面 · 可见性采样\"}",
+          "cameraPos": "0.50,-1.00,1.92",
+          "cameraTarget": "0.50,0.00,1.00"
+        }
+      ]
+    },
+    {
+      "name": "fused App rejects wrong-case-step",
+      "ok": true,
+      "detail": [
+        {
+          "testid": "viewer-canvas-host",
+          "bodyId": "",
+          "faceCount": "0",
+          "edgeCount": "0",
+          "triangleCount": "0",
+          "roleFaces": "{}",
+          "roleEdges": "{}",
+          "hasIsoparametrics": "false",
+          "isoparametricsCount": "0",
+          "uLineCount": "0",
+          "vLineCount": "0",
+          "dimmedOpacity": "0.25",
+          "featureVisibility": "{\"samples\":0,\"visible\":0,\"visibleFraction\":null,\"projectedPixels\":0,\"projectionUnit\":\"area-px2\",\"bounds\":null,\"reason\":\"全模型：无几何\"}"
+        },
+        {
+          "testid": "viewer-canvas-host",
+          "bodyId": "",
+          "faceCount": "0",
+          "edgeCount": "0",
+          "triangleCount": "0",
+          "roleFaces": "{}",
+          "roleEdges": "{}",
+          "hasIsoparametrics": "false",
+          "isoparametricsCount": "0",
+          "uLineCount": "0",
+          "vLineCount": "0",
+          "dimmedOpacity": "0.25",
+          "featureVisibility": "{\"samples\":0,\"visible\":0,\"visibleFraction\":null,\"projectedPixels\":0,\"projectionUnit\":\"area-px2\",\"bounds\":null,\"reason\":\"全模型：无几何\"}"
+        }
+      ]
+    },
+    {
+      "name": "next frozen refresh visibly loses all UV paths",
+      "ok": true,
+      "detail": [
+        {
+          "path": "data/display/real-uv/gm-after.iso.json",
+          "status": 404
+        },
+        {
+          "path": "data/display/real-uv/manifest.json",
+          "status": 404
+        },
+        {
+          "path": "data/display/real-uv/gm-before.iso.json",
+          "status": 404
+        },
+        {
+          "path": "data/display/real-uv/display-manifest.json",
+          "status": 404
+        },
+        {
+          "path": "data/display/real-uv/pk-after.iso.json",
+          "status": 404
+        },
+        {
+          "path": "data/display/real-uv/pk-before.iso.json",
+          "status": 404
+        },
+        {
+          "path": "data/display/real-uv/index.json",
+          "status": 404
+        },
+        {
+          "path": "data/display/real-uv/display/snapshot-0.receipt.json",
+          "status": 404
+        },
+        {
+          "path": "data/display/real-uv/display/snapshot-2.receipt.json",
+          "status": 404
+        },
+        {
+          "path": "data/display/real-uv/display/snapshot-1.receipt.json",
+          "status": 404
+        },
+        {
+          "path": "data/display/real-uv/display/snapshot-3.receipt.json",
+          "status": 404
+        },
+        {
+          "path": "data/display/real-uv/meshes/pk-after.mesh.json",
+          "status": 404
+        },
+        {
+          "path": "data/display/real-uv/meshes/gm-after.mesh.json",
+          "status": 404
+        },
+        {
+          "path": "data/display/real-uv/meshes/gm-before.mesh.json",
+          "status": 404
+        },
+        {
+          "path": "data/display/real-uv/meshes/pk-before.mesh.json",
+          "status": 404
+        }
+      ]
+    },
+    {
+      "name": "next actual UV entry fails rather than silently substituting old meshes",
+      "ok": true,
+      "detail": "GM Kernel vs Parasolid 对比工作台\nPROD WORKBENCH\n独立真实 U/V 显示源 · 返回基线\n相机联动\n复位视角\n刷新\n真实 U/V · 独立显示源\nr2-curved-receipt-eecab6d · sample-0 · operation-1；无新增几何验收或性能结果\n返回 live17 基线\n未检测到生产基线数据\n\n当前无法加载 web/data/index.json。\n错误: HTTP 404 Not Found: 无法加载 data/index.json\n\n重新检测数据"
+    },
+    {
+      "name": "finite main page has no uncaught errors",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "name": "prepared public inventory contains no raw XT/vendor/private-path/credential content",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "name": "independently rebuilt source UI matches each prepared UI asset",
+      "ok": true,
+      "detail": [
+        {
+          "path": "assets/index-CNfCl7Uf.js",
+          "ok": true
+        },
+        {
+          "path": "assets/index-DrvXrYSu.css",
+          "ok": true
+        },
+        {
+          "path": "index.html",
+          "ok": true
+        }
+      ]
+    }
+  ],
+  "publicFiles": {
+    "count": 625,
+    "bytes": 28214664,
+    "allStatus200AndExactSha": true
+  },
+  "minorWordingGap": {
+    "path": "web/src/components/InspectionPanel.tsx:165",
+    "actualHeading": "已发布基线 · 真实数据来源",
+    "severity": "nonblocking wording discrepancy; derived generation time and no benchmark scope remain explicit"
+  },
+  "verdict": "BLOCK integrated publication: independent UV namespace lost on next normal producer refresh; finite merged UI behaviors pass",
+  "operations": "Only detached fixed sources, read-only source copies, production build, freeze and prepare modes, loopback HTTP; no service/portal/live/main/PK/capture",
+  "probeGateExit": 1,
+  "harnessEvidence": {
+    "firstSeparateArguments": "temp_docs/fusion-retention-separate-argv-evidence",
+    "firstLog": "temp_docs/fusion-retention.log",
+    "finalSameDataPathLog": "temp_docs/fusion-retention-same-path.log",
+    "sameDataArgumentBothRounds": true,
+    "allChildFreezePrepareExits": 0,
+    "expectationUnchanged": "15 UV resources must remain; missing remains 15"
+  }
+}

@@ -29,7 +29,9 @@ try
     var uv = original.Where(p => p.Key.StartsWith("data/display/real-uv/", StringComparison.Ordinal)).ToDictionary(p => p.Key, p => p.Value, StringComparer.Ordinal);
     Require(uv.Count == 15, "exact independent display package");
     var first = Path.Combine(work, "first-bundle"); var fresh = Path.Combine(work, "fresh-main610-data");
+    var activeData = Path.Combine(work, "active-data");
     Copy(supplied, first); Copy(producer, fresh);
+    Copy(Path.Combine(first, "data"), activeData);
     Require(!Directory.Exists(Path.Combine(fresh, "display")), "fresh producer has no UV overlay");
     var release = Path.Combine(work, "release");
     // All-zero review is an explicit local test fixture, never a release approval.
@@ -49,10 +51,14 @@ try
             "--ui-commit", candidate, "--dist-hash", uiHash, "--review", new string('0', 40));
         return JsonNode.Parse(File.ReadAllBytes(Path.Combine(releaseWork, "prepared.json")))!;
     }
-    var round1 = Prepare(Path.Combine(first, "data"));
+    var round1 = Prepare(activeData);
     var firstPrepared = Path.GetFullPath(round1["bundle"]!.GetValue<string>(), releaseWork);
     Require(TreeHash(Hashes(firstPrepared)) == bundleHash, "round one exact complete bundle");
-    var round2 = Prepare(fresh);
+    // Preserve the first input and simulate the next producer generation at the
+    // exact same --data path; neither the hook argv nor any real producer is changed.
+    Directory.Move(activeData, Path.Combine(work, "first-input-preserved"));
+    Copy(fresh, activeData);
+    var round2 = Prepare(activeData);
     var next = Path.GetFullPath(round2["bundle"]!.GetValue<string>(), releaseWork);
     var nextFiles = Hashes(next); var missing = uv.Keys.Where(p => !nextFiles.ContainsKey(p)).ToArray();
     Require(history.All(p => nextFiles["data/" + p.Key] == p.Value), "round two preserved original history/index");
@@ -61,6 +67,7 @@ try
     {
         ["candidate"] = candidate, ["tools"] = toolCommit, ["fixtureReviewPin"] = new string('0', 40),
         ["uiHash"] = uiHash, ["firstBundleHash"] = bundleHash, ["frozenUiFiles"] = frozenUi.Count,
+        ["sameDataArgumentBothRounds"] = true, ["dataInput"] = Rel(root, activeData),
         ["round1"] = round1, ["round2"] = round2, ["round2Bundle"] = Rel(root, next),
         ["round2BundleHash"] = TreeHash(nextFiles), ["missingUvPaths"] = new JsonArray(missing.Select(p => (JsonNode?)JsonValue.Create(p)).ToArray()),
         ["historicalFilesUnchanged"] = history.Count, ["sourceFilesUnchanged"] = true,
