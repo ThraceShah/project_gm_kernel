@@ -166,14 +166,14 @@ export const InspectionPanel: React.FC<InspectionPanelProps> = ({
             <p>界面更新不表示结果已重新采集；此处展示 manifest 的原始运行数据，不将候选证明或未合并进度计为本 case 的新通过。</p>
             <dl className="space-y-2 font-mono-code">
               <div><dt>Run</dt><dd>{runMeta?.id ?? '未记录'}</dd></div>
-              <div><dt>数据采集时间（run.generatedAt）</dt><dd>{runMeta?.generatedAt ?? '未记录'}</dd></div>
-              <div><dt>采集代码（run.commit）</dt><dd>{runMeta?.commit ?? '未记录'}</dd></div>
+              <div><dt>{manifestDir === 'display/real-uv' ? '显示包生成时间，非采集时间' : '数据采集时间'}（run.generatedAt）</dt><dd>{runMeta?.generatedAt ?? '未记录'}</dd></div>
+              <div><dt>{manifestDir === 'display/real-uv' ? '原始来源代码' : '采集代码'}（run.commit）</dt><dd>{runMeta?.commit ?? '未记录'}</dd></div>
               <div><dt>范围（run.scope）</dt><dd>{runMeta?.scope ? JSON.stringify(runMeta.scope) : '未记录'}</dd></div>
               <div><dt>配置 / samplesRequested（run.configuration）</dt><dd>{runMeta?.configuration ? JSON.stringify(runMeta.configuration) : '未记录'}</dd></div>
             </dl>
             <a href={`data/${manifestDir}/manifest.json`} className="text-sky-700 underline" target="_blank" rel="noopener noreferrer">原始 manifest ↗</a>
           </div>}
-          {activeTab === 'perf' && <><p className="p-3 text-xs bg-amber-50 text-amber-900">历史已发布采样 · {runMeta?.generatedAt ?? '采集时间未记录'} · 此记录不作为本轮优化结论。</p><PerformanceView perf={testCase.performance} /></>}
+          {activeTab === 'perf' && <><p className="p-3 text-xs bg-amber-50 text-amber-900">{manifestDir === 'display/real-uv' ? '仅显示派生包，无性能采样或新增几何验收' : `历史已发布采样 · ${runMeta?.generatedAt ?? '采集时间未记录'} · 此记录不作为本轮优化结论。`}</p><PerformanceView perf={testCase.performance} /></>}
           {activeTab === 'params' && (
             <ApiParamView
               parameters={testCase.parameters}

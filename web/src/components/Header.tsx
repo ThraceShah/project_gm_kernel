@@ -45,6 +45,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSidebar,
   onOpenData,
 }) => {
+  const isRenderOnly = new URLSearchParams(window.location.search).get('display') === 'real-uv';
   return (
     <header
       data-testid="app-header"
@@ -90,7 +91,7 @@ export const Header: React.FC<HeaderProps> = ({
             >
               {runs.map((r) => (
                 <option key={r.id} value={r.id}>
-                  已发布基线 · {r.id} ({r.commit.slice(0, 7)})
+                  {isRenderOnly ? '仅显示派生包' : '已发布基线'} · {r.id} ({r.commit.slice(0, 7)})
                   {latestRunId && r.id !== latestRunId ? ' ·历史' : ''}
                 </option>
               ))}
@@ -104,11 +105,11 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           onClick={onOpenData}
           className="flex items-center gap-1 text-[11px] px-2 py-1 rounded border border-slate-200 text-slate-600 hover:bg-slate-100 max-w-full"
-          title={`已发布数据 ${runMeta.id}；采集时间 ${runMeta.generatedAt}；代码 ${runMeta.commit}`}
+          title={`${isRenderOnly ? '仅显示派生包' : '已发布数据'} ${runMeta.id}；${isRenderOnly ? '包生成时间' : '采集时间'} ${runMeta.generatedAt}；源代码 ${runMeta.commit}`}
           data-testid="header-meta-toggle"
         >
           <Info className="w-3.5 h-3.5 text-slate-400" />
-          <span className="truncate">数据版本 {runMeta.commit.slice(0, 7)} · 采集 {formatDateTime(runMeta.generatedAt)} ↗</span>
+          <span className="truncate">{isRenderOnly ? '显示源' : '数据版本'} {runMeta.commit.slice(0, 7)} · {isRenderOnly ? '包生成' : '采集'} {formatDateTime(runMeta.generatedAt)} ↗</span>
         </button>
       )}
 
