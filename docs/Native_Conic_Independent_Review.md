@@ -97,3 +97,72 @@ git diff --check
 ```
 
 原交付 receipt 保持原字节，其中尚未独审的字段是历史提交状态；本报告和新增独审 receipt 记录本次接受，不篡改作者原回执。交付只包含报告、两份必要 C# 复核和派生回执；二进制、XT、原包、凭证与厂商内容不入 Git。首个有效原件审计提交已推送为 `c8aab2b2fee5934d6bc9c892aa9ee7028a62ca3f`；完整最终提交和远端 ref 由任务交付消息给出，不在报告中预写尚不存在的自身 SHA。
+
+## 接续：217fc 正式受控测量原件独审
+
+**接受交付 `217fc6f811e06cbeb936753f77bd65ae4156d8e8` 所记录的一轮同 Mac、五项固定独立完整操作的正式测量及其原质量。** 这是已审 G+Conic 合计相对 6616 的同窗口结果，不是 Conic 孤立贡献、跨历史窗口倍率相乘、一般速度保证或 PK 目标完成。planar 的显著相对回退及全部冷样本/离群值保留，不作未经测量的归因。前文数学/模型/质量接受仍固定在 `35e61e5e02e319d8f6b9eaba38f880e62f1bbf0c`，本节没有重新审签或扩大其范围。
+
+实际原包为 `temp_docs/incoming/mac-6616-gconic-controlled-original.zip`，31524200B，SHA256 `acf7b872cc941708eda0d6b87e45da97d00336adf5167dd2c3fed1e7dee53e0e`。新增 BCL-only `.NET10` 脚本 `scripts/ReviewGConicMeasurement.cs` 先检查全部安全路径、重复名及 symlink，再隔离解到当时全新的 `temp_docs/gconic-measurement-review/originals/`：665 文件、展开131859212B。后续重复只核已解文件与原包字节相同，不覆盖原件。作者 MD 和四份 JSON 均与 217fc Git 对象逐字相同；没有 cherry-pick/merge 测量包装源码进入本树，没有公开 DLL/PDB/XT。协调转输尚未结束时的一次核验失败不属于包失败或建模失败；本树实际核的是已完整到达且 SHA 匹配的原包。
+
+| 固定身份 | baseline | candidate |
+|---|---|---|
+| 计算源 | `6616cd60a55e50a5d8a5ada7274895c44609676b` | `74c29e0fc14cc40bc134a012b0eca3fecedc2947` |
+| 测量包装 | `5392a06ea07267f093461876d84fc575849f5ea5` | `34ffe46b7010b44c221fae24b2371597e46ede36` |
+| Native 项目树 | `5b4c6104c600b0194bb543e2dc11efa89e2f0f1f` | `58c1667b0155ec46b53be42b9750c8dbd78a75dd` |
+| 整个 src 树 | `41c8b597c54753ab394bc99a8b2e59bb3d83a756` | `397526ef55c3b0376f3e2fc353375ba7ca18395b` |
+
+原 report 和 operation-summary 的 `baselineNativeTree/candidateNativeTree` 字段实际装的是整个 src 树，不能把字段名当作 Native 项目树的证据；本节和新 evidence 明确分开这两个对象。receipt/loaded-identity 的分层 sourceTrees 与真实 Git 相符。两侧包装的 Native、整个 src 和构建配置没有变化；完整 wrapper/source diff 原字节也已核对。原 candidate wrapper diff 的起点是 b47（与 f9 同 runner），不是只含计算改动的74c；它与 `b47→34ffe -- scripts` 精确相同，native source diff 则是 `6616→74c -- src`。
+
+九份共同 oracle/Host/BodyCompare/Capture/runner 与两侧固定 Git hash 清单逐份相同。五份 oracle 去掉唯一新增 identity-only 入口及空行后与固定 a73 逐行相同；它们保留原270公共检查和 API 计时边界。Capture 新增静态启动/退出观察器，runner 仅新增退出记录、身份文件存在性检查和清除/设置 selector、来源说明；这些没有改变 API timer。实际正式 argv 都没有 identity-only：sphere/planar 为 `--bench-repeat=3 --bench-profile`，curved 加 `block-15902`，fillet 加 `plane-nurbs rounding-only`，shortedge 加 `--angle=1 --radius=0.5 --tolerance=1e-07`。前三项 selector 分别为 `equal-overlap-15902`、`overlap-two-axes-15902`、`block-15902`，后二项移除继承 selector。三个 Boolean 均 GM 后 PK，两个 fillet 均 PK 后 GM；capture 中120条 API 时序与此一致。
+
+20份实际 start/end observer 的 MVID、DLL/PDB字节数及 SHA、source owner、CodeView GUID/age 与原封存 PE/PDB逐份一致；PE CodeView GUID和stamp也实际对应 portable PDB `DebugMetadataHeader.ID`。PDB逐文档解析取得 algorithm/checksum，再从固定 clean wrapper Git 读取源字节比较，而不是信任作者 JSON 或 source tag；每进程 baseline328、candidate330份 tracked Native 文档全部匹配，两侧各3份 obj 生成文档单列未核。observer 的完整 source-hash 列表也逐份与实际 PDB 对照。窗口前后文件 hash 与各原进程封存文件一致，是额外层级；不以文件 hash 代替实际 loaded MVID，不宣称独立可重现编译、所有依赖全源绑定或密码学执行证明。
+
+| 实际加载 Native | baseline | candidate |
+|---|---|---|
+| MVID | `9f560ef3-d9d9-46b1-847c-bc8a866cfa06` | `60bd025d-a57b-46f6-8045-e576eb5c2396` |
+| DLL SHA256 | `ee3aafcbb8057aa9f0d607da7123dec87fd7c358b35c04b62a56fb644a5c0141` | `a7e8a3de21c92f7138a8af32da403a466134e6e2116543e45db87485c88050ea` |
+| PDB SHA256 | `9ccb70ce45362d518cc9b8c9232aa0fbf34a1cadd3b963193112c798e12fcae8` | `9b1cef83c5c7ae62e17b72e1b0348bf58f3a8888adb790820172b81070ad901e` |
+| CodeView GUID，age=1 | `b928f994-c0f6-4636-a9ee-4e1e4fa0f8b6` | `6468412f-2942-4ee8-83f2-62b8dd741d54` |
+
+原20个 log/capture/process.exit/report 独立交叉核对得到5组 ABBA、60对、120个实际 API 时间；没有只信 `qualified`。每项每侧两进程各 rep0 冷、rep1/2 暖，headline用全部四个暖样本，warmup=0并不等于丢弃冷值。重新排序求偶数中位数、min/max、逐对 GM/PK ratio median和 ratio of medians，与原 operation-summary逐字段一致。保留原数值精度，展示四舍五入如下。
+
+| 独立操作 | 暖 GM baseline→candidate ms | 变化 | baseline/candidate | candidate 配对 GM/PK 中位数 |
+|---|---:|---:|---:|---:|
+| sphere subtract | 0.08705→0.07725 | −11.26% | 1.1269× | 0.2805× |
+| planar subtract | 0.58500→0.96910 | **+65.66%** | 0.6037× | 0.8265× |
+| curved block subtract | 879.38740→137.37250 | −84.38% | 6.4015× | 75.6049× |
+| plane/NURBS 独立 fillet | 1530.22385→664.77630 | −56.56% | 2.3019× | 438.1989× |
+| shortedge FixBlends | 5610.23225→727.85000 | −87.03% | 7.7080× | 340.1703× |
+
+| 冷 GM ms | baseline 中位数 [min,max] | candidate 中位数 [min,max] |
+|---|---|---|
+| sphere | 24.24240 [23.1326,25.3522] | 24.23395 [22.7549,25.7130] |
+| planar | 50.08305 [49.7380,50.4281] | 59.41610 [56.8768,61.9554] |
+| curved | 1539.07705 [1529.3325,1548.8216] | 775.24480 [757.7590,792.7306] |
+| NURBS fillet | 2333.74965 [2216.3705,2451.1288] | 1263.37460 [1262.2428,1264.5064] |
+| shortedge | 6750.06925 [6742.4576,6757.6809] | 1843.53360 [1835.3882,1851.6790] |
+
+全部暖/冷 GM/PK min/max、中位数和60对原值另存新 evidence，未裁剪 cold PK12.033/17.4161ms 或 candidate shortedge暖601.4206–879.774ms等波动。配对比值中位数不等于中位时间之比：例如 shortedge分别340.1703与334.0140。不能用前者反算 headline 时间，也不能把亚毫秒样本差异推广为一般性能。
+
+窗口原记录为 UTC `2026-11-11T20:14:18.5205340Z` 至 `20:18:00.1129440Z`，Apple M4/macOS27.2 Arm64/.NET10.0.11/SDK10.0.400/PK38.0.150/PKToy d820。实际 runner 和预构建启动参数均为托管 Release、关闭共享编译/并行构建，无新条件编译或 AOT。20进程串行，各三次 fresh-input 操作；各 loadBefore/loadAfter 的一分钟负载复算为4.00–5.43。此为该机一个受控窗口，没有排他 CPU、热稳定或 thread-wall/GC采样归因资格；没有混入旧270/676/1887窗口或先前只读热点采样。
+
+原 harness raw0、20份子进程 raw0、十份 identity-only预构建 raw0，以及资格正例与六负例检查 raw0 分层保留。准备工具路径拼写错误127发生于正式操作前，不算建模失败。每对实际 timing.error=0，Boolean resultStatus21650、fillet18391；BODY_check 零fault、结果数量及五项拓扑数量匹配，原strict mask 的数量/类型/sense/容差/missing/matching及偏差门全保。实际60份 compare global21921，local只允许21931或具有21949（n_cht_pts）诊断的21930，总96条chart诊断；face_pairs并非匹配总数。900项原物性点值按 `abs(GM-PK)/(1+abs(PK))<1e-7` 复算通过；它们仍由PK对GM fresh XT/reference求值，不是GM原生mass API或新1887 modulus三态全Verified。原每次shortedge三有限ICurve和NURBS九section半径/双接触/切向门均保留，未用新统计替换原检查。
+
+312份真实mesh共34973060B与44份原XT，均从capture引用反向核对每file/process/step/kernel/source/hash与material-binding，没有以参考实体代替GM成品。44份XT只属于各进程最终rep2，不能用来声称每对均封存两侧XT；其他rep有自己的实际mesh和检查。mesh的geometryAuthor默认字符串不足以证明GM独立构造；shortedge确为PK seed→GM receive→GM FixBlends，curved tracking/roles的缺口不补签。
+
+shortedge每rep roots3518/SSI4956/winding196/budget0。baseline冷rep0 Jacobian526133、暖rep1 525315、暖rep2 525505，暖rep2 bound67166；其余对应bound67137。candidate每rep Jacobian16870/bound47246，rootcells均22371，对侧均220895。新evidence逐rep保留，未套用rep1覆盖其他样本；direction/record/新残差算术不同，工作量比不等于排他CPU比。原suite1944/1942/2/0 raw1、两个known失败，以及仅94f/b47镜像8 raw134且PK0的边界继续有效；原标准lifecycle及各Boolean步骤沿用前文已验范围。本窗口未执行下游组合、全家族、1887功能集成、main合并或门户发布。
+
+可交下一阶段的身份链为：measurement交付217fc；计算/包装/Native/src见本节表；原package SHA acf7…；原report `c5b2cbba1c05f10e109689aca25c283d33c33f6192815d576ae3086cd3657ec1`；material-binding `dd6738a8491540680e25545e8a12edd6c4eeae602bff5af34019745611e2665b`；loaded-identity `820418ac1b4a1f7ec0e556b7054ba3da3e3d4e9148683ce6d5be5bdf5542e6c6`；新独立数据 `docs/native-modeling-algorithm/conic-measurement-independent-evidence.json` SHA `1ac9334ba2bb176c4895ddad61b97b95b76daee56382a319d724ca758b172ebd`。原四JSON与新独立数据分开，不更改作者资格或历史证据。旧conic独审receipt中的报告hash对应35e原版本，本节追加后不拿旧hash冒充当前文件hash。
+
+新增脚本SHA `02407f0d8297edecd02969edb5f2fb4681d2abea638f8efa1a436c3318c213b8`，最终 `temp_docs/gconic-measurement-review/audit-final.exit` 为0，日志SHA `b2095e427b5222963ffed2eb60ee9dfd19fb157b367a4626afcc97e5ef49357f`。attempt1/2/3均raw134，分别是复核脚本选错candidate diff起点、误要求PK mesh也fresh receive、JsonNode Int32读取Double；三份日志SHA依次 `0092438e3112c85ee4dcada33af42eaf70b4b662d3c325fb96a6b1af90c43cf0`、`e2459140dd2e4b5b4f3e42821b4943984fb7e8ca0c92a1b43106bb7cde296e80`、`f20611e2e9e42b1d248aaa2d3259d3820bb228c4659f866e83f55c4e60a0a1e1`；原exit/log均保留。attempt4已raw0，最终扩充绑定元数据后再raw0；最终派生JSON取代本次开发中的attempt4派生JSON，原测量字节未变。
+
+接续消息读取前，新会话按旧任务先重跑过旧原件只读审计（raw0），并启动旧数学/成品脚本；收到新范围后仅终止本次owned PGID，raw143，输出只有构建警告，没有fixture/PK成功记录，不能计作本次验证。之后仅运行BCL-only原件审计，不再运行数学fixture、PK/GM建模、fullsuite、45/96或新ABBA，不登录Mac/Windows、不AOT、不清理他人进程。全部dotnet命令带 `MSBUILDDISABLENODEREUSE=1`；已无本次审计/旧复核进程残留。
+
+重复命令只读原件并生成派生证据，不执行建模或计时：
+
+```sh
+MSBUILDDISABLENODEREUSE=1 dotnet run scripts/ReviewGConicMeasurement.cs -p:UseSharedCompilation=false -p:BuildInParallel=false
+git diff --check
+```
+
+首笔原包核验提交为 `f8fba7c`，已推送本review分支。本节完整提交和远端SHA由任务交付给出；结论没有预签任何尚未发生的快照发布、功能集成或main合并。
