@@ -109,14 +109,30 @@ export const ViewportContainer: React.FC<ViewportContainerProps> = ({
   // Stable callbacks: camera sync must never recreate the scene lifecycle.
   const cameraSyncRef = useRef<boolean>(cameraSync);
   cameraSyncRef.current = cameraSync;
+  const latestGmCamera = useRef<CameraSyncState | null>(null);
+  const latestPkCamera = useRef<CameraSyncState | null>(null);
+  useEffect(() => {
+    latestGmCamera.current = null;
+    latestPkCamera.current = null;
+    setLeftSyncCam(null);
+    setRightSyncCam(null);
+  }, [caseId]);
+  useEffect(() => {
+    if (!cameraSync) return;
+    // Relinking adopts one current pose, never two frozen pre-unlink poses.
+    const pose = latestGmCamera.current ?? latestPkCamera.current;
+    if (pose) { setLeftSyncCam(pose); setRightSyncCam(pose); }
+  }, [cameraSync]);
 
   const handleGmCamChange = useCallback((state: CameraSyncState) => {
+    latestGmCamera.current = state;
     if (cameraSyncRef.current) {
       setRightSyncCam(state);
     }
   }, []);
 
   const handlePkCamChange = useCallback((state: CameraSyncState) => {
+    latestPkCamera.current = state;
     if (cameraSyncRef.current) {
       setLeftSyncCam(state);
     }
@@ -448,17 +464,17 @@ export const ViewportContainer: React.FC<ViewportContainerProps> = ({
       {selectedEntity && (
         <div
           data-testid="entity-inspector"
-          className="absolute top-14 left-1/2 -translate-x-1/2 z-20 bg-slate-900/95 backdrop-blur-xs border border-sky-600/80 rounded-md px-3 py-1.5 shadow-xl flex items-center gap-2 text-xs text-slate-200"
+          className="absolute top-14 left-1/2 -translate-x-1/2 z-20 max-w-[calc(100%-1rem)] whitespace-nowrap bg-slate-900/95 backdrop-blur-xs border border-sky-600/80 rounded-md px-2 py-1.5 shadow-xl flex items-center gap-1 sm:gap-2 text-[11px] text-slate-200"
         >
-          <Box className="w-3.5 h-3.5 text-sky-400" />
-          <span className="font-semibold">
+          <Box className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+          <span className="font-semibold truncate">
             {selectedEntity.type === 'face' ? '面' : '边'} [
             <span className="font-mono-code text-sky-300">{selectedEntity.id}</span>]
           </span>
           <span className="w-px h-3 bg-slate-700" />
-          <span className="text-[11px] text-slate-400">角色:</span>
+          <span className="hidden sm:inline text-[11px] text-slate-400">角色:</span>
           <span
-            className="px-1.5 py-0.5 rounded text-[11px] font-semibold text-white"
+            className="shrink-0 px-1.5 py-0.5 rounded text-[11px] font-semibold text-white"
             style={{
               backgroundColor:
                 (selectedEntity.type === 'face'
@@ -469,12 +485,13 @@ export const ViewportContainer: React.FC<ViewportContainerProps> = ({
             {ROLE_COLORS[selectedEntity.role]?.label || selectedEntity.role}
           </span>
           {selectedEntity.triangleCount !== undefined && (
-            <span className="text-[10px] text-slate-400 font-mono-code">
+            <span className="hidden sm:inline text-[10px] text-slate-400 font-mono-code">
               ({selectedEntity.triangleCount} 三角片)
             </span>
           )}
           <button
             onClick={() => setSelectedEntity(null)}
+            aria-label="清除实体选择"
             className="ml-2 text-slate-400 hover:text-white text-sm"
           >
             ×

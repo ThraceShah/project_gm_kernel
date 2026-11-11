@@ -90,17 +90,15 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
   }, [caseId]);
 
   // Latest-prop refs so the scene lifecycle never depends on callback identity.
-  const cameraSyncRef = useRef<boolean>(cameraSync);
   const onCameraChangeRef = useRef<((state: CameraSyncState) => void) | undefined>(onCameraChange);
   useEffect(() => {
-    cameraSyncRef.current = cameraSync;
     onCameraChangeRef.current = onCameraChange;
   });
 
   // Broadcasts current camera state to peer viewport
   const broadcastCamera = useCallback(() => {
     if (isSyncingFromExternal.current) return;
-    if (cameraSyncRef.current && onCameraChangeRef.current && cameraRef.current && controlsRef.current) {
+    if (onCameraChangeRef.current && cameraRef.current && controlsRef.current) {
       const c = cameraRef.current;
       const t = controlsRef.current.target;
       onCameraChangeRef.current({
