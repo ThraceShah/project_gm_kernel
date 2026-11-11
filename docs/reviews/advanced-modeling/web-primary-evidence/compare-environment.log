@@ -1,0 +1,4 @@
+constructor: version=1 max=0 all=True num=True acc_dev=True tol_dev=False tol=True class=True sense=True missing=True nonmatch=True
+capture/helper: version=1 max=1024 all=False num=True acc_dev=False tol_dev=True tol=True class=True sense=True missing=True nonmatch=True
+sessionPrecision=1E-08
+kernelVersion=38.0.150

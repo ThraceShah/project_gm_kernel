@@ -1,0 +1,28 @@
+constructor: version=1 max=0 all=True num=True acc_dev=True tol_dev=False tol=True class=True sense=True missing=True nonmatch=True
+capture/helper: version=1 max=1024 all=False num=True acc_dev=False tol_dev=True tol=True class=True sense=True missing=True nonmatch=True
+sessionPrecision=1E-08
+default wrong-height: global=21921 local=21931 pairs=0
+equal positive: global=21921 local=21931 face_pairs=0
+wrong-height negative: global=21921 local=21930 face_pairs=5
+  faces=106/280 diff=21952 entities=76/250 counts=0/0 values=0.010000000000000009/0
+  faces=106/280 diff=21952 entities=88/262 counts=0/0 values=0.010000000000000009/0
+  faces=106/280 diff=21951 entities=137/311 counts=0/0 values=0.010000000000000009/0
+  faces=101/275 diff=21952 entities=88/262 counts=0/0 values=0.010000000000000009/0
+  faces=101/275 diff=21952 entities=84/258 counts=0/0 values=0.010000000000000009/0
+  faces=101/275 diff=21951 entities=136/310 counts=0/0 values=0.010000000000000009/0
+  faces=96/270 diff=21952 entities=84/258 counts=0/0 values=0.010000000000000009/0
+  faces=96/270 diff=21952 entities=80/254 counts=0/0 values=0.010000000000000009/0
+  faces=96/270 diff=21951 entities=135/309 counts=0/0 values=0.010000000000000009/0
+  faces=56/230 diff=21952 entities=80/254 counts=0/0 values=0.010000000000000009/0
+  faces=56/230 diff=21952 entities=76/250 counts=0/0 values=0.010000000000000009/0
+  faces=56/230 diff=21951 entities=134/308 counts=0/0 values=0.010000000000000009/0
+  faces=111/285 diff=21950 entities=129/303 counts=0/0 values=0.010000000000000009/0
+  faces=111/285 diff=21952 entities=76/250 counts=0/0 values=0.010000000000000009/0
+  faces=111/285 diff=21951 entities=137/311 counts=0/0 values=0.010000000000000009/0
+  faces=111/285 diff=21952 entities=80/254 counts=0/0 values=0.010000000000000009/0
+  faces=111/285 diff=21951 entities=134/308 counts=0/0 values=0.010000000000000009/0
+  faces=111/285 diff=21952 entities=84/258 counts=0/0 values=0.010000000000000009/0
+  faces=111/285 diff=21951 entities=135/309 counts=0/0 values=0.010000000000000009/0
+  faces=111/285 diff=21952 entities=88/262 counts=0/0 values=0.010000000000000009/0
+  faces=111/285 diff=21951 entities=136/310 counts=0/0 values=0.010000000000000009/0
+PASS equal positive and wrong-height rejection with current helper; no GM assembly

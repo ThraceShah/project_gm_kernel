@@ -1,0 +1,54 @@
+#!/usr/bin/env dotnet run
+#:project ../third_party/PKToy/PskernelSharp/PskernelSharp.csproj
+#:property UsePskernelSharpUsings=true
+#:property UseParasolidScriptHost=true
+#:property AllowUnsafeBlocks=true
+
+using static parasolid;
+
+// Bounded pure-PK presentation audit; no GM reference or operation acceptance.
+unsafe
+{
+    if (!ParasolidScriptHost.TryStartSession("Presentation compare control", out var host, out var message))
+        throw new InvalidOperationException(message);
+    using (host)
+    {
+        var defaults = new PK_DEBUG_BODY_compare_o_t();
+        var effective = new PK_DEBUG_BODY_compare_o_t
+        {
+            max_diffs = 1024, all_tests = PK_LOGICAL_false,
+            acc_dev_tests = PK_LOGICAL_false, tol_dev_tests = PK_LOGICAL_true,
+            non_match_tests = PK_LOGICAL_true,
+        };
+        Print("constructor", defaults);
+        Print("capture/helper", effective);
+        double precision;
+        ParasolidScriptHost.Check(PK_SESSION_ask_precision(&precision), "precision");
+        Console.WriteLine($"sessionPrecision={precision:R}");
+        PK_SESSION_kernel_version_t version;
+        ParasolidScriptHost.Check(PK_SESSION_ask_kernel_version(&version), "kernel version");
+        Console.WriteLine($"kernelVersion={version.major_revision}.{version.minor_revision}.{version.build_number}");
+        if (args.Contains("--environment-only", StringComparer.Ordinal)) return;
+        PK_BODY_t reference, equal, wrong;
+        ParasolidScriptHost.Check(PK_BODY_create_solid_block(1, 1, 1, null, &reference), "reference");
+        ParasolidScriptHost.Check(PK_BODY_create_solid_block(1, 1, 1, null, &equal), "equal");
+        ParasolidScriptHost.Check(PK_BODY_create_solid_block(1, 1, 1.01, null, &wrong), "wrong height");
+        PK_DEBUG_BODY_compare_r_t result;
+        ParasolidScriptHost.Check(PK_DEBUG_BODY_compare(reference, wrong, &defaults, &result), "default comparison");
+        try { Console.WriteLine($"default wrong-height: global={result.global_result} local={result.local_result} pairs={result.n_face_pairs}"); }
+        finally { ParasolidScriptHost.Check(PK_DEBUG_BODY_compare_r_f(&result), "free"); }
+        ParasolidBodyCompare.AssertEquivalent(reference, equal, "equal positive");
+        try { ParasolidBodyCompare.AssertEquivalent(reference, wrong, "wrong-height negative"); }
+        catch (InvalidOperationException e) when (e.Message.Contains("body geometry/structure/sense/tolerance/matching differs", StringComparison.Ordinal))
+        {
+            if (AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name!.StartsWith("ProjectGmKernel", StringComparison.Ordinal)))
+                throw new InvalidOperationException("GM assembly loaded");
+            Console.WriteLine("PASS equal positive and wrong-height rejection with current helper; no GM assembly");
+            return;
+        }
+        throw new InvalidOperationException("Wrong-height body was accepted");
+    }
+}
+
+static void Print(string name, PK_DEBUG_BODY_compare_o_t o) => Console.WriteLine(
+    $"{name}: version={o.o_t_version} max={o.max_diffs} all={o.all_tests == PK_LOGICAL_true} num={o.num_tests == PK_LOGICAL_true} acc_dev={o.acc_dev_tests == PK_LOGICAL_true} tol_dev={o.tol_dev_tests == PK_LOGICAL_true} tol={o.tol_tests == PK_LOGICAL_true} class={o.class_tests == PK_LOGICAL_true} sense={o.sense_tests == PK_LOGICAL_true} missing={o.missing_tests == PK_LOGICAL_true} nonmatch={o.non_match_tests == PK_LOGICAL_true}");
