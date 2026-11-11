@@ -96,6 +96,13 @@ var researchPrecision=NumberOption(args,"--research-precision=",0);
 Require(researchPrecision==0||double.IsFinite(researchPrecision)&&researchPrecision>0&&args.Contains("--native-only")&&args.Contains("--diagnostics")&&!args.Contains("--record-fixtures"),
     "research precision requires native-only diagnostics and cannot update fixtures");
 var output=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs",researchPrecision==0?"short-edge-blend-oracle":"short-edge-native-research");
+var outputName=args.FirstOrDefault(x=>x.StartsWith("--output-name=",StringComparison.Ordinal));
+if(outputName!=null)
+{
+    var name=outputName["--output-name=".Length..];
+    Require(name.Length>0&&name.All(c=>char.IsAsciiLetterOrDigit(c)||c is '-' or '_'),"output name must be one local directory name");
+    output=Path.Combine(output,name);Require(!Directory.Exists(output),"existing execution artifacts are immutable");
+}
 var floor=NumberOption(args,"--seed-floor=",0);
 var phase=NumberOption(args,"--support-phase=",0);
 var splitRemote=args.Contains("--split-remote-edge");

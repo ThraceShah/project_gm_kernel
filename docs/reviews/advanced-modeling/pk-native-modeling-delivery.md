@@ -41,6 +41,7 @@ run uses a fresh name; historical measurements are not overwritten.
 | `baseline.log`, `baseline.exit` | clean `610e3ce` computation source, consumer oracle from fixed `3344c53` | exit 0; self Fix 0/two products; same-input GM/PK two-tool subtract both 0/success/one body; fresh receive/full checks 0 faults; strict compare passes; normalized15 mass `7.701450779942389e-11` |
 | `interval-source-root.log`, `.exit`, `.diff` | selected interval/source-root integration | exit 0, 27/27 certificate and finite source-root tests; original stationary endpoint and reload checks pass |
 | `consumer-forward.log`, `.exit` | selected integration and strengthened success qualifier | exit 0; self Fix 0/two products; both Boolean operations 0/success/one body; projected replacement reached; strict/full0; mass `7.701450779942389e-11` |
+| `native-chart.log`, `.exit` | integrated computation, explicit native seam/inverse probes | exit 0; F2/F3 native CHART evaluation/inverse agrees on both sides of closure; endpoints canonicalize to the first parameter in both implementations |
 
 The clean baseline Boolean success is a new observation, distinct from the
 reviewed failure on the old R3-based branch. Its actual target hash is
@@ -54,6 +55,19 @@ Boolean success result, exactly one non-null body and nonempty output XT before
 strict/full/mass checks. Failure-result, zero-body, API-error and null-body
 negative controls guard against vacuous success. The injected allocation failure
 remains a separate reached-callback/901/three-input byte rollback gate.
+
+The live nonuniform CHART control covers two distinct parameter scales. F2 has
+limits `[-0.25,9.152884599910056]`; genuine PK maps its closing point to `-0.25`,
+as does GM. F3 has limits `[0,0.0061216696613997775]` and both inverses return `0`
+at closure. Interior inverse parameters agree to rounding and position errors
+are at most `4.584e-15`. These are actual native calls, not a claim that their
+parameter spans can be used as additive periods for arbitrary closed ICurves.
+Terminator/high-order/BlendBound gates explicitly reported NotRun by the older
+evaluation oracle remain NotRun, not modeling acceptance.
+
+`ShortEdgeBlendOracle.cs --output-name=<new-name>` now isolates each execution's
+actual XT artifacts in a new subdirectory and refuses reuse of that directory.
+This prevents later variants from overwriting earlier execution evidence.
 
 ## Remaining work
 
