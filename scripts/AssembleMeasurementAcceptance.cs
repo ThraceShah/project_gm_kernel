@@ -76,6 +76,11 @@ ShipVerbatim(Path.Combine(docsDir,"measurement-receipt.json"),"docs/native-model
 ShipVerbatim(Path.Combine(docsDir,"material-binding.json"),"docs/native-modeling-algorithm/material-binding.json (03e original bytes)","material-binding.json");
 ShipVerbatim(Path.Combine(docsDir,"quality-receipt.json"),"docs/native-modeling-algorithm/quality-receipt.json (03e original bytes)","quality-receipt.json");
 ShipVerbatim(Path.Combine(measureRoot,"report.json"),"native-270-6616-controlled/report.json (raw report)","report.json");
+var previousRun=Path.Combine(Path.GetFullPath(Option("--previous-run","../../../../../code/project_gm_kernel-progress-publisher/temp_docs/web-progress-publish/data/runs/20261111T183127Z-alg6616"),scripts));
+Require(Hash(File.ReadAllBytes(Path.Combine(previousRun,"manifest.json")))=="41c7aecb93a27a9286255cbbfdbebb6a40475aa79fbaf450134a166a89a98193","pre-correction manifest identity");
+ShipVerbatim(Path.Combine(previousRun,"manifest.json"),"runs/20261111T183127Z-alg6616/manifest.json (pre-correction derived display)","pre-correction-manifest.json");
+ShipVerbatim(Path.Combine(previousRun,"validation.json"),"runs/20261111T183127Z-alg6616/validation.json (pre-correction)","pre-correction-validation.json");
+ShipVerbatim(Path.Combine(previousRun,"evidence","run-receipt.json"),"runs/20261111T183127Z-alg6616/evidence/run-receipt.json (pre-correction)","pre-correction-receipt.json");
 
 // ---- display import: material-bound rep-2 meshes of the first candidate process
 var displayBinding=new JsonArray();
@@ -123,7 +128,7 @@ var configuration=new JsonObject{["build"]="Release",["nativeAot"]=false,["proto
 JsonNode Perf(JsonObject op)
 {
     var warm=op["candidate"]!["warm"]!;
-    return new JsonObject{["gmMs"]=JsonValue.Create(warm["gmMedianMs"]!.GetValue<double>()),["pkMs"]=JsonValue.Create(warm["pkMedianMs"]!.GetValue<double>()),["ratioGmOverPk"]=JsonValue.Create(warm["ratioOfMedians"]!.GetValue<double>()),["samples"]=6,["warmup"]=0,["scope"]="同窗口 Mac ABBA，每源 2 冷 + 4 暖；gmMs/pkMs=候选暖中位数；ratioGmOverPk=中位数之比（与 gm/pk 一致）。配对 ratio 中位数为另一语义，见 checks，两者不能互换。",["correctnessQualified"]=true,["host"]=host.DeepClone(),["configuration"]=configuration.DeepClone(),["note"]="固定 270/6616 窗口单轮观测；不签排他 CPU、热稳定或 PK 总目标；物性资格仅 270 点值门（见 meas.mass-qualification）。",["measurementKind"]="fresh-process-cold-median",["stableBenchmark"]=false,["qualifiedScope"]="Five fixed successful operations, one window; not general-model or steady-state certification."};
+    return new JsonObject{["gmMs"]=JsonValue.Create(warm["gmMedianMs"]!.GetValue<double>()),["pkMs"]=JsonValue.Create(warm["pkMedianMs"]!.GetValue<double>()),["ratioGmOverPk"]=JsonValue.Create(warm["ratioOfMedians"]!.GetValue<double>()),["samples"]=4,["warmup"]=0,["scope"]="headline 中位数取候选 4 个暖样本（每源总 6=2 冷+4 暖全保留，冷 rep0 未丢弃）；gmMs/pkMs=候选暖中位数；ratioGmOverPk=中位数之比（与 gm/pk 一致）。配对 ratio 中位数为另一语义，见 checks，两者不能互换。",["correctnessQualified"]=true,["host"]=host.DeepClone(),["configuration"]=configuration.DeepClone(),["note"]="固定 270/6616 窗口单轮观测；不签排他 CPU、热稳定或 PK 总目标；物性资格仅 270 点值门（见 meas.mass-qualification）。",["measurementKind"]="controlled-abba-warm-median",["stableBenchmark"]=false,["qualifiedScope"]="Five fixed successful operations, one window; headline medians over the 4 warm samples per source; not general-model or steady-state certification."};
 }
 JsonNode NullPerf()=>new JsonObject{["gmMs"]=null,["pkMs"]=null,["ratioGmOverPk"]=null,["samples"]=0,["warmup"]=0,["scope"]="报表/计数/边界类：无耗时测量。",["correctnessQualified"]=false,["host"]=host.DeepClone(),["configuration"]=configuration.DeepClone(),["note"]="不由此推导倍率。",["measurementKind"]="not-run",["stableBenchmark"]=false,["qualifiedScope"]="Evidence/report scope only."};
 JsonObject Check(string id,string label,string status,double? gm,double? pk,double? threshold,string unit,string note,string? evidence=null)
@@ -215,7 +220,7 @@ var manifest=new JsonObject
             ["package"]=new JsonObject{["zip"]="mac-controlled-270-6616-original.zip",["sha256"]=ZipSha,["rawReportSha256"]=ReportSha,["materialBindingSha256"]=MaterialSha,["members"]=490,["expandedBytes"]=36430726},
             ["windowUtc"]="2026-11-11T17:42:47.315986Z .. 2026-11-11T17:50:06.660156Z",
             ["notIncluded"]="Experimental 241b rows; unaccepted functional 4794/60be; no AOT/Windows; no main integration or functionality claims.",
-            ["ratioSemantics"]="配对 ratio 中位数（ratioMedian）与中位数之比（ratioOfMedians）分列显示，不互换；performance.ratioGmOverPk=后者。",
+            ["metadataCorrection"]=new JsonObject{["of"]="20261111T183127Z-alg6616",["kind"]="derived-display metadata correction only (measurementKind fresh-process-cold-median→controlled-abba-warm-median, samples 6→4 headline)",["notANewMeasurement"]=true,["originalsUnchanged"]="raw report/capture/mesh/XT/review/03e 原件未改；60 pairs/120 时间/冷暖 min/max/双 ratio 不变",["preCorrectionEvidence"]="evidence/pre-correction-manifest.json 等（原字节+哈希）；纠错前 run 原样保留在历史"},["ratioSemantics"]="配对 ratio 中位数（ratioMedian）与中位数之比（ratioOfMedians）分列显示，不互换；performance.ratioGmOverPk=后者。",
             ["massQualification"]="仅 270 公共 Capture 的 15 项点值门（accuracy=.99999999）；无 modulus 字段；不称模量三态全 Verified。",
             ["provenanceCorrections"]="原 mesh geometryAuthor 默认字符串不是输入独立构造证明；shortedge GM 输入来自未改 PK seed XT（GM 执行倒圆/导出）；curved tracking/角色未知。",
             ["familyTaxonomyNote"]="family 为看板既有粗分类。",
@@ -225,7 +230,7 @@ var manifest=new JsonObject
     ["cases"]=cases
 };
 File.WriteAllText(Path.Combine(run,"manifest.json"),manifest.ToJsonString());
-var index=new JsonObject{["schemaVersion"]=1,["generatedAt"]=now.ToString("O"),["latestRunId"]=runId,["runs"]=new JsonArray((JsonNode)new JsonObject{["id"]=runId,["commit"]=Candidate,["generatedAt"]=now.ToString("O"),["label"]="6616 受控测量验收快照：270e2b6→6616cd6（单窗口，回退/边界照实，未签功能集成）",["manifest"]=$"runs/{runId}/manifest.json"})};
+var index=new JsonObject{["schemaVersion"]=1,["generatedAt"]=now.ToString("O"),["latestRunId"]=runId,["runs"]=new JsonArray((JsonNode)new JsonObject{["id"]=runId,["commit"]=Candidate,["generatedAt"]=now.ToString("O"),["label"]="6616 受控测量验收快照（元数据修正版）：270e2b6→6616cd6（单窗口，回退/边界照实，未签功能集成）",["manifest"]=$"runs/{runId}/manifest.json"})};
 File.WriteAllText(Path.Combine(output,"index.json"),index.ToJsonString());
 var runBytes=Directory.EnumerateFiles(run,"*",SearchOption.AllDirectories).Sum(f=>new FileInfo(f).Length);
 File.WriteAllText(Path.Combine(evidenceDir,"run-receipt.json"),new JsonObject
