@@ -72,3 +72,34 @@ MSBUILDDISABLENODEREUSE=1 dotnet run scripts/ReviewInspectionFusionRetention.cs
 ## 交接
 
 唯一阻断集成发布的发现是P1独立namespace持久来源缺失，已在报告完成前发送协调端。先固定最小补救，再以**同一fresh producer data第二轮**证明15资源仍可寻址且hash正确，并保留607历史/index原字节，然后才对新固定候选作窄融合复验。父分支的查看/来源接受保持分层有效；本轮审查完成且当前整合发布保持 **BLOCKED**，未改作者tree、历史、内核、Capture、live、unit、portal或main。
+
+## 追加：固定015 namespace窄复验及合体范围接受
+
+以上3c拒收已先独立提交并推送 **`ceeb898c2dfe0929f47f9e605aba3b2d7fdfb2b3`**，原报告、两轮失败现场、原探针均保留。本节是对新固定生产 **`015cd308e147356fecac96bb7354ab1e92c36a03`** 的明确追加，不撤销3c反例。结论为：**015修复通过，结合两parent接受和上述3c有限融合检查，可接受固定015的合体UI/有限显示及发布输入范围**；实际owned hook安装、backup/served核验、部署和host/proxy仍是另外的执行门，本轮没有执行。
+
+独立detached源码为 `temp_docs/fusion-015-source/`，不跟随作者后续docs或browser working diff。固定diff只包含15份资源从 `web/data/display/real-uv/` 到 `web/public/display/real-uv/` 的100%字节相同移动，以及三个文件的URL路由更改：`dataLoader.ts`、`realUvDisplay.ts`、`InspectionPanel.tsx`。新 `progressAssetUrl` 在app base下把可信显示namespace映射到 `display/real-uv/`，普通历史输入仍映射到 `data/`；缓存键含实际asset URL及原完整selection上下文。原descriptor来源/阶段/面映射、display-manifest内容SHA、mesh/ISO SHA、trim gate和未知parameterHash契约未改。未发现native、Capture、几何、布局/相机/拾取或607历史字节变化。
+
+新的独立复现为 `scripts/ReviewInspectionNamespace015.cs`，命令：
+
+```sh
+MSBUILDDISABLENODEREUSE=1 dotnet run scripts/ReviewInspectionNamespace015.cs
+```
+
+先在固定015源码tree按pnpm锁文件独立构建（exit0）。探针实际调用**相同固定1b Freeze**，再调用新release中的frozen Publish prepare；源码从固定Git对象提取，未改工具机制。两次均从原main610的607文件新复制输入，**均无display overlay**、同一data参数路径。首轮work整体移入保留目录，第二轮在原work路径独立重新装配，避免把复用已有bundle误称为独立第二轮。两个独立产物均625 files / **28214939B**，逐文件保持原607历史/index和原15份显示内容。新freeze真实包含18个非producer UI文件，显示15文件位于 `release/ui/display/real-uv/`，由UI hash覆盖；producer data只有原607文件。
+
+| 固定015身份 | 实核值 |
+|---|---|
+| 工具SHA | `1b935972eff529e13b46cb9b08ad9550e0a6aeb5` |
+| UI hash（固定1b口径，18文件） | **`f0593760ed1e22dd73e94f609e9e2353366370b542019a90cb8f486f796a4dd6`** |
+| 第一轮及独立第二轮整包hash | **`8dca4b3500652fe0ff5161a8a5943abdcc5a69d0a40b472de17e95b1ca583069`** |
+| 607文件producer data hash | `fbb68a2aacd7eebb910f63a51a23954eec340e9bc3960e000448c699565d7390` |
+| 原root index SHA（两轮均不变） | `117bb8e7ad20ea90aee004eb18428d2a220e5270795ab9ce81eff380843e3990` |
+| UI18 bytes / producer607 bytes / full625 bytes | 1072905 / 27142034 / 28214939 |
+
+625文件/28214939B低于5000文件、30MiB预算及32MiB硬门，无历史prune、参数/时间重标或新采集run。Prepare与外层probe均exit0，记录 `temp_docs/fusion-015-independent-retention.log`、`temp_docs/fusion-015-retention/retention-report.json`。先前使用同一work复用同fingerprint的检查现场另存 `temp_docs/fusion-015-cached-round-evidence/`，没有用它代替上述独立装配证明；3c的两个输入方案及日志仍原样保留。review pin仍为显式全零私有fixture标记，不是实际部署认可记录。
+
+真实browser仅追加10项定向检查，证据 `namespace-015-evidence.json`。服务**仅**提供 `/apps/gm-kernel-progress/` 子路径，prefix外404，未用根路径fallback掩盖错误。四UV快照仍为Before96/96、After220/130，每pane U5/V5且正确snapshot/stage；截图 `temp_docs/fusion-015-browser/uv-after-subpath.png` 已打开自看。新namespace的mesh/ISO/summary引用全部200且与原已签字节相同，index/manifest/descriptor请求也实际经过该app前缀；旧case仍102/102 triangles、UV unavailable、run610原采集时间。没有把这轮当作新的surface/几何验收或性能结果。
+
+负控明确匹配新URL并记录route触发次数，避免“旧pattern没有拦截却当成reject”：冷加载把GM Before指向真实After、warm Before后把GM After指向Before、错case/step，各实际拦截manifest **1次**；受影响pane清空，未影响的PK仍96或130 triangles。display-manifest附加空白字节实际拦截 **2次**，两pane均因独立pin拒绝。warm反例先实测Before两侧96、U5/V5再点击After，证明cache已热。没有改原f3 probe、断言或生产代码。初次请求分类把带query的document导航误算asset，产生一条harness false；已保留于 `harnessDiagnostics`，仅对同一批已记录request按pathname重分类，未重跑/放宽产品条件，实际所有asset路径均正确。有限主页面无uncaught error。
+
+因此原3c发布阻断在**固定015**中闭合：新资源属于freeze/UI copy的持久namespace，不再依赖本轮producer或手工overlay，也没有引入未审工具机制。前文已记录的非阻断共享标题文案遗漏保留；两parent的有限查看/来源范围和此轮namespace结果共同支持上述固定015合体范围接受，不能扩大为任意trim、全部case或实际已部署。未重跑作者14/57等全套、PK导出/建模、采集或AOT；未触及live/unit/systemctl/portal/main或作者tree。

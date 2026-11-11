@@ -1,0 +1,549 @@
+{
+  "candidate": "015cd308e147356fecac96bb7354ab1e92c36a03",
+  "prior3cBlockedReview": "ceeb898c2dfe0929f47f9e605aba3b2d7fdfb2b3",
+  "tools": "1b935972eff529e13b46cb9b08ad9550e0a6aeb5",
+  "retention": {
+    "candidate": "015cd308e147356fecac96bb7354ab1e92c36a03",
+    "tools": "1b935972eff529e13b46cb9b08ad9550e0a6aeb5",
+    "fixtureReviewPin": "0000000000000000000000000000000000000000",
+    "uiHash": "f0593760ed1e22dd73e94f609e9e2353366370b542019a90cb8f486f796a4dd6",
+    "frozenUiFiles": 18,
+    "sameDataArgumentBothRounds": true,
+    "freshInputsWithoutDisplayOverlay": true,
+    "independentWorkDirectories": true,
+    "rounds": [
+      {
+        "round": 1,
+        "metadata": {
+          "schemaVersion": 1,
+          "uiCommit": "015cd308e147356fecac96bb7354ab1e92c36a03",
+          "uiHash": "f0593760ed1e22dd73e94f609e9e2353366370b542019a90cb8f486f796a4dd6",
+          "review": "0000000000000000000000000000000000000000",
+          "fingerprint": "015cd308e147356fecac96bb7354ab1e92c36a03:f0593760ed1e22dd73e94f609e9e2353366370b542019a90cb8f486f796a4dd6:fbb68a2aacd7eebb910f63a51a23954eec340e9bc3960e000448c699565d7390",
+          "bundle": "bundle-2485083f33719217",
+          "files": 625,
+          "bytes": 28214939,
+          "dataIndexSha256": "117bb8e7ad20ea90aee004eb18428d2a220e5270795ab9ce81eff380843e3990",
+          "sourceIndexSha256": "117bb8e7ad20ea90aee004eb18428d2a220e5270795ab9ce81eff380843e3990",
+          "sourceDataTreeHash": "fbb68a2aacd7eebb910f63a51a23954eec340e9bc3960e000448c699565d7390",
+          "baselineIndexReused": false
+        },
+        "bundle": "temp_docs/fusion-015-retention/round-1-work-preserved/bundle-2485083f33719217",
+        "bundleHash": "8dca4b3500652fe0ff5161a8a5943abdcc5a69d0a40b472de17e95b1ca583069",
+        "displayFiles": 15,
+        "historicalFilesUnchanged": 607
+      },
+      {
+        "round": 2,
+        "metadata": {
+          "schemaVersion": 1,
+          "uiCommit": "015cd308e147356fecac96bb7354ab1e92c36a03",
+          "uiHash": "f0593760ed1e22dd73e94f609e9e2353366370b542019a90cb8f486f796a4dd6",
+          "review": "0000000000000000000000000000000000000000",
+          "fingerprint": "015cd308e147356fecac96bb7354ab1e92c36a03:f0593760ed1e22dd73e94f609e9e2353366370b542019a90cb8f486f796a4dd6:fbb68a2aacd7eebb910f63a51a23954eec340e9bc3960e000448c699565d7390",
+          "bundle": "bundle-2485083f33719217",
+          "files": 625,
+          "bytes": 28214939,
+          "dataIndexSha256": "117bb8e7ad20ea90aee004eb18428d2a220e5270795ab9ce81eff380843e3990",
+          "sourceIndexSha256": "117bb8e7ad20ea90aee004eb18428d2a220e5270795ab9ce81eff380843e3990",
+          "sourceDataTreeHash": "fbb68a2aacd7eebb910f63a51a23954eec340e9bc3960e000448c699565d7390",
+          "baselineIndexReused": false
+        },
+        "bundle": "temp_docs/fusion-015-retention/release/work/bundle-2485083f33719217",
+        "bundleHash": "8dca4b3500652fe0ff5161a8a5943abdcc5a69d0a40b472de17e95b1ca583069",
+        "displayFiles": 15,
+        "historicalFilesUnchanged": 607
+      }
+    ],
+    "verdict": "PASS fixed 015 namespace retention only"
+  },
+  "browserAppBase": "/apps/gm-kernel-progress/",
+  "browserChecks": [
+    {
+      "name": "actual app base four UV snapshots before",
+      "ok": true,
+      "detail": {
+        "stats": [
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "gm:27",
+            "faceCount": "6",
+            "edgeCount": "12",
+            "triangleCount": "96",
+            "roleFaces": "{\"unchanged\":4,\"support\":2}",
+            "roleEdges": "{\"unchanged\":11,\"selected\":1}",
+            "hasIsoparametrics": "true",
+            "isoparametricsCount": "10",
+            "uLineCount": "5",
+            "vLineCount": "5",
+            "dimmedOpacity": "0.25",
+            "featureVisibility": "{\"samples\":48,\"visible\":48,\"visibleFraction\":1,\"projectedPixels\":461.9766314368379,\"projectionUnit\":\"length-px\",\"bounds\":{\"min\":[48.51423839454904,365.5],\"max\":[511.485761605451,365.5]},\"reason\":\"选中边 · 可见性采样\"}",
+            "cameraPos": "0.50,-1.37,2.27",
+            "cameraTarget": "0.50,0.00,1.00"
+          },
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "pk:51",
+            "faceCount": "6",
+            "edgeCount": "12",
+            "triangleCount": "96",
+            "roleFaces": "{\"support\":2,\"unchanged\":4}",
+            "roleEdges": "{\"selected\":1,\"deleted\":1,\"unchanged\":10}",
+            "hasIsoparametrics": "true",
+            "isoparametricsCount": "10",
+            "uLineCount": "5",
+            "vLineCount": "5",
+            "dimmedOpacity": "0.25",
+            "featureVisibility": "{\"samples\":48,\"visible\":48,\"visibleFraction\":1,\"projectedPixels\":461.9766314368379,\"projectionUnit\":\"length-px\",\"bounds\":{\"min\":[48.014238394549,365.5],\"max\":[510.985761605451,365.5]},\"reason\":\"选中边 · 可见性采样\"}",
+            "cameraPos": "0.50,-1.37,2.27",
+            "cameraTarget": "0.50,0.00,1.00"
+          }
+        ],
+        "provenance": [
+          "U = 常数 u · V = 常数 v · snapshot-2 / before1 个非平面；仅精确矩形 trim；5 面未覆盖。采样弦差 ≤ 0.001，无解析全局界。来源 / 面参数 / trim / 误差证据 · mesh f19b18867e17",
+          "U = 常数 u · V = 常数 v · snapshot-0 / before1 个非平面；仅精确矩形 trim；5 面未覆盖。采样弦差 ≤ 0.001，无解析全局界。来源 / 面参数 / trim / 误差证据 · mesh 555d53765eb2"
+        ]
+      }
+    },
+    {
+      "name": "actual app base four UV snapshots after",
+      "ok": true,
+      "detail": {
+        "stats": [
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "gm:27",
+            "faceCount": "7",
+            "edgeCount": "15",
+            "triangleCount": "220",
+            "roleFaces": "{\"unchanged\":4,\"modified\":2,\"newBlend\":1}",
+            "roleEdges": "{\"unchanged\":15}",
+            "hasIsoparametrics": "true",
+            "isoparametricsCount": "10",
+            "uLineCount": "5",
+            "vLineCount": "5",
+            "dimmedOpacity": "0.25",
+            "featureVisibility": "{\"samples\":48,\"visible\":48,\"visibleFraction\":1,\"projectedPixels\":26729.905584636945,\"projectionUnit\":\"area-px2\",\"bounds\":{\"min\":[57.1623801468342,344.24177665407666],\"max\":[502.63307006768207,388.03647008023654]},\"reason\":\"newBlend 面 · 可见性采样\"}",
+            "cameraPos": "0.50,-1.37,2.27",
+            "cameraTarget": "0.50,0.00,1.00"
+          },
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "pk:51",
+            "faceCount": "7",
+            "edgeCount": "15",
+            "triangleCount": "130",
+            "roleFaces": "{\"modified\":2,\"unchanged\":4,\"newBlend\":1}",
+            "roleEdges": "{\"unchanged\":15}",
+            "hasIsoparametrics": "true",
+            "isoparametricsCount": "10",
+            "uLineCount": "5",
+            "vLineCount": "5",
+            "dimmedOpacity": "0.25",
+            "featureVisibility": "{\"samples\":48,\"visible\":48,\"visibleFraction\":1,\"projectedPixels\":26759.667168895663,\"projectionUnit\":\"area-px2\",\"bounds\":{\"min\":[69.52826256033863,344.16645952286336],\"max\":[489.4716804939122,386.8448340115216]},\"reason\":\"newBlend 面 · 可见性采样\"}",
+            "cameraPos": "0.50,-1.37,2.27",
+            "cameraTarget": "0.50,0.00,1.00"
+          }
+        ],
+        "provenance": [
+          "U = 常数 u · V = 常数 v · snapshot-3 / after1 个非平面；仅精确矩形 trim；6 面未覆盖。采样弦差 ≤ 0.001，无解析全局界。来源 / 面参数 / trim / 误差证据 · mesh ee8ef5dbb75f",
+          "U = 常数 u · V = 常数 v · snapshot-1 / after1 个非平面；仅精确矩形 trim；6 面未覆盖。采样弦差 ≤ 0.001，无解析全局界。来源 / 面参数 / trim / 误差证据 · mesh 1024e741e3f4"
+        ]
+      }
+    },
+    {
+      "name": "new non-producer public links exact original signed bytes",
+      "ok": true,
+      "detail": [
+        {
+          "path": "display/real-uv/meshes/pk-before.mesh.json",
+          "status": 200,
+          "sha": "555d53765eb2ef485d38c3e8da70b08f66b6e808da1ece1fc9a11b9b21d7b3b3",
+          "sameBytes": true
+        },
+        {
+          "path": "display/real-uv/pk-before.iso.json",
+          "status": 200,
+          "sha": "94cbcddfac053c4971a4dffa77ece2daeccecf0ddc95734620d3f3c3eee5a8fb",
+          "sameBytes": true
+        },
+        {
+          "path": "display/real-uv/display/snapshot-0.receipt.json",
+          "status": 200,
+          "sha": "d6e82fe0e9a08037ab8a733f41eb1a1f183b4a6236c92066dc6774c3dbfc223f",
+          "sameBytes": true
+        },
+        {
+          "path": "display/real-uv/meshes/pk-after.mesh.json",
+          "status": 200,
+          "sha": "1024e741e3f4c4daadbef671e43c3aa78a05966861e80a5d9cea41716f36baed",
+          "sameBytes": true
+        },
+        {
+          "path": "display/real-uv/pk-after.iso.json",
+          "status": 200,
+          "sha": "9fa3bb4313eb0cf98e9c8aadf54610697197de6a0c7d3c1d4b1f3bd231dbe6a3",
+          "sameBytes": true
+        },
+        {
+          "path": "display/real-uv/display/snapshot-1.receipt.json",
+          "status": 200,
+          "sha": "8a810b64401cf7a93a354f3d077be9058dfa80284d9b3cd39acd27b77d17ecf5",
+          "sameBytes": true
+        },
+        {
+          "path": "display/real-uv/meshes/gm-before.mesh.json",
+          "status": 200,
+          "sha": "f19b18867e17ae47fac8b2b2a0489b27f3049da6c3f03d9e87fcd5bbd0d06b22",
+          "sameBytes": true
+        },
+        {
+          "path": "display/real-uv/gm-before.iso.json",
+          "status": 200,
+          "sha": "6c36c4d940cf7d6178afe5f550a51f26561b27e4a2c6bb2ec7d537eaa685ec13",
+          "sameBytes": true
+        },
+        {
+          "path": "display/real-uv/display/snapshot-2.receipt.json",
+          "status": 200,
+          "sha": "9038b391a4f133a70b17bafde43fd01bb37026a8b26ecff1de3ed12cb00df962",
+          "sameBytes": true
+        },
+        {
+          "path": "display/real-uv/meshes/gm-after.mesh.json",
+          "status": 200,
+          "sha": "ee8ef5dbb75f97a7942c5647e315b942743550c71994ec62f0992fbcc3f495f1",
+          "sameBytes": true
+        },
+        {
+          "path": "display/real-uv/gm-after.iso.json",
+          "status": 200,
+          "sha": "d12092402e590ce680233bcddb1bb1fa528d99b44df5a3eeae59becb8b6a82a5",
+          "sameBytes": true
+        },
+        {
+          "path": "display/real-uv/display/snapshot-3.receipt.json",
+          "status": 200,
+          "sha": "e2dba548ee557cc39725b2908d6b1833e8f834a0906912f936af13c711f5697c",
+          "sameBytes": true
+        }
+      ]
+    },
+    {
+      "name": "actual asset requests stay in app-prefixed frozen UI namespace",
+      "ok": true,
+      "detail": {
+        "requests": [
+          "http://127.0.0.1:41305/apps/gm-kernel-progress/display/real-uv/index.json?_t=1794384611733",
+          "http://127.0.0.1:41305/apps/gm-kernel-progress/display/real-uv/manifest.json?_t=1794384611739",
+          "http://127.0.0.1:41305/apps/gm-kernel-progress/display/real-uv/meshes/gm-before.mesh.json?_t=1794384611802",
+          "http://127.0.0.1:41305/apps/gm-kernel-progress/display/real-uv/meshes/pk-before.mesh.json?_t=1794384611802",
+          "http://127.0.0.1:41305/apps/gm-kernel-progress/display/real-uv/display-manifest.json",
+          "http://127.0.0.1:41305/apps/gm-kernel-progress/display/real-uv/display-manifest.json",
+          "http://127.0.0.1:41305/apps/gm-kernel-progress/display/real-uv/gm-before.iso.json",
+          "http://127.0.0.1:41305/apps/gm-kernel-progress/display/real-uv/pk-before.iso.json",
+          "http://127.0.0.1:41305/apps/gm-kernel-progress/display/real-uv/meshes/gm-after.mesh.json?_t=1794384613361",
+          "http://127.0.0.1:41305/apps/gm-kernel-progress/display/real-uv/meshes/pk-after.mesh.json?_t=1794384613361",
+          "http://127.0.0.1:41305/apps/gm-kernel-progress/display/real-uv/display-manifest.json",
+          "http://127.0.0.1:41305/apps/gm-kernel-progress/display/real-uv/display-manifest.json",
+          "http://127.0.0.1:41305/apps/gm-kernel-progress/display/real-uv/pk-after.iso.json",
+          "http://127.0.0.1:41305/apps/gm-kernel-progress/display/real-uv/gm-after.iso.json"
+        ]
+      }
+    },
+    {
+      "name": "new route actual mutation and rejection cold-reverse-stage",
+      "ok": true,
+      "detail": {
+        "mutations": 1,
+        "stats": [
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "",
+            "faceCount": "0",
+            "edgeCount": "0",
+            "triangleCount": "0",
+            "roleFaces": "{}",
+            "roleEdges": "{}",
+            "hasIsoparametrics": "false",
+            "isoparametricsCount": "0",
+            "uLineCount": "0",
+            "vLineCount": "0",
+            "dimmedOpacity": "0.25",
+            "featureVisibility": "{\"samples\":0,\"visible\":0,\"visibleFraction\":null,\"projectedPixels\":0,\"projectionUnit\":\"area-px2\",\"bounds\":null,\"reason\":\"全模型：无几何\"}",
+            "cameraPos": "1.91,1.91,2.23",
+            "cameraTarget": "0.50,0.50,0.54"
+          },
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "pk:51",
+            "faceCount": "6",
+            "edgeCount": "12",
+            "triangleCount": "96",
+            "roleFaces": "{\"support\":2,\"unchanged\":4}",
+            "roleEdges": "{\"selected\":1,\"deleted\":1,\"unchanged\":10}",
+            "hasIsoparametrics": "true",
+            "isoparametricsCount": "10",
+            "uLineCount": "5",
+            "vLineCount": "5",
+            "dimmedOpacity": "0.25",
+            "featureVisibility": "{\"samples\":48,\"visible\":48,\"visibleFraction\":1,\"projectedPixels\":136.37450373939572,\"projectionUnit\":\"length-px\",\"bounds\":{\"min\":[138.3743750644802,244.24774909796724],\"max\":[254.27766353052687,321.84603085340757]},\"reason\":\"选中边 · 可见性采样\"}",
+            "cameraPos": "1.91,1.91,2.23",
+            "cameraTarget": "0.50,0.50,0.54"
+          }
+        ],
+        "error": [
+          "真实 U/V unavailable：当前选择的快照路径与独立阶段映射不匹配几何切片请求异常或网络错误，旧网格已被清除"
+        ]
+      }
+    },
+    {
+      "name": "new route actual mutation and rejection warm-original-stage",
+      "ok": true,
+      "detail": {
+        "mutations": 1,
+        "warmed": [
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "gm:27",
+            "faceCount": "6",
+            "edgeCount": "12",
+            "triangleCount": "96",
+            "roleFaces": "{\"unchanged\":4,\"support\":2}",
+            "roleEdges": "{\"unchanged\":11,\"selected\":1}",
+            "hasIsoparametrics": "true",
+            "isoparametricsCount": "10",
+            "uLineCount": "5",
+            "vLineCount": "5",
+            "dimmedOpacity": "0.25",
+            "featureVisibility": "{\"samples\":48,\"visible\":48,\"visibleFraction\":1,\"projectedPixels\":302.13907240370116,\"projectionUnit\":\"length-px\",\"bounds\":{\"min\":[85.63164449972336,177.50000000000003],\"max\":[394.3683555002766,177.50000000000003]},\"reason\":\"选中边 · 可见性采样\"}",
+            "cameraPos": "0.50,-1.00,1.92",
+            "cameraTarget": "0.50,0.00,1.00"
+          },
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "pk:51",
+            "faceCount": "6",
+            "edgeCount": "12",
+            "triangleCount": "96",
+            "roleFaces": "{\"support\":2,\"unchanged\":4}",
+            "roleEdges": "{\"selected\":1,\"deleted\":1,\"unchanged\":10}",
+            "hasIsoparametrics": "true",
+            "isoparametricsCount": "10",
+            "uLineCount": "5",
+            "vLineCount": "5",
+            "dimmedOpacity": "0.25",
+            "featureVisibility": "{\"samples\":48,\"visible\":48,\"visibleFraction\":1,\"projectedPixels\":302.13907240370116,\"projectionUnit\":\"length-px\",\"bounds\":{\"min\":[85.13164449972336,177.50000000000003],\"max\":[393.8683555002766,177.50000000000003]},\"reason\":\"选中边 · 可见性采样\"}",
+            "cameraPos": "0.50,-1.00,1.92",
+            "cameraTarget": "0.50,0.00,1.00"
+          }
+        ],
+        "stats": [
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "",
+            "faceCount": "0",
+            "edgeCount": "0",
+            "triangleCount": "0",
+            "roleFaces": "{}",
+            "roleEdges": "{}",
+            "hasIsoparametrics": "false",
+            "isoparametricsCount": "0",
+            "uLineCount": "0",
+            "vLineCount": "0",
+            "dimmedOpacity": "0.25",
+            "featureVisibility": "{\"samples\":0,\"visible\":0,\"visibleFraction\":null,\"projectedPixels\":0,\"projectionUnit\":\"area-px2\",\"bounds\":null,\"reason\":\"全模型：无几何\"}",
+            "cameraPos": "0.50,-1.00,1.92",
+            "cameraTarget": "0.50,0.00,1.00"
+          },
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "pk:51",
+            "faceCount": "7",
+            "edgeCount": "15",
+            "triangleCount": "130",
+            "roleFaces": "{\"modified\":2,\"unchanged\":4,\"newBlend\":1}",
+            "roleEdges": "{\"unchanged\":15}",
+            "hasIsoparametrics": "true",
+            "isoparametricsCount": "10",
+            "uLineCount": "5",
+            "vLineCount": "5",
+            "dimmedOpacity": "0.25",
+            "featureVisibility": "{\"samples\":48,\"visible\":48,\"visibleFraction\":1,\"projectedPixels\":11333.82063262341,\"projectionUnit\":\"area-px2\",\"bounds\":{\"min\":[101.08636369532027,163.39089560267223],\"max\":[377.91358804792145,191.58353961952795]},\"reason\":\"newBlend 面 · 可见性采样\"}",
+            "cameraPos": "0.50,-1.00,1.92",
+            "cameraTarget": "0.50,0.00,1.00"
+          }
+        ],
+        "error": [
+          "真实 U/V unavailable：当前选择的快照路径与独立阶段映射不匹配几何切片请求异常或网络错误，旧网格已被清除"
+        ]
+      }
+    },
+    {
+      "name": "new route actual mutation and rejection wrong-case-step",
+      "ok": true,
+      "detail": {
+        "mutations": 1,
+        "stats": [
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "",
+            "faceCount": "0",
+            "edgeCount": "0",
+            "triangleCount": "0",
+            "roleFaces": "{}",
+            "roleEdges": "{}",
+            "hasIsoparametrics": "false",
+            "isoparametricsCount": "0",
+            "uLineCount": "0",
+            "vLineCount": "0",
+            "dimmedOpacity": "0.25",
+            "featureVisibility": "{\"samples\":0,\"visible\":0,\"visibleFraction\":null,\"projectedPixels\":0,\"projectionUnit\":\"area-px2\",\"bounds\":null,\"reason\":\"全模型：无几何\"}"
+          },
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "",
+            "faceCount": "0",
+            "edgeCount": "0",
+            "triangleCount": "0",
+            "roleFaces": "{}",
+            "roleEdges": "{}",
+            "hasIsoparametrics": "false",
+            "isoparametricsCount": "0",
+            "uLineCount": "0",
+            "vLineCount": "0",
+            "dimmedOpacity": "0.25",
+            "featureVisibility": "{\"samples\":0,\"visible\":0,\"visibleFraction\":null,\"projectedPixels\":0,\"projectionUnit\":\"area-px2\",\"bounds\":null,\"reason\":\"全模型：无几何\"}"
+          }
+        ],
+        "error": [
+          "真实 U/V unavailable：当前 run/case/step/kernel/stage 与独立显示源不匹配几何切片请求异常或网络错误，旧网格已被清除",
+          "真实 U/V unavailable：当前 run/case/step/kernel/stage 与独立显示源不匹配几何切片请求异常或网络错误，旧网格已被清除"
+        ]
+      }
+    },
+    {
+      "name": "new route actual mutation and rejection manifest-hash",
+      "ok": true,
+      "detail": {
+        "mutations": 2,
+        "stats": [
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "",
+            "faceCount": "0",
+            "edgeCount": "0",
+            "triangleCount": "0",
+            "roleFaces": "{}",
+            "roleEdges": "{}",
+            "hasIsoparametrics": "false",
+            "isoparametricsCount": "0",
+            "uLineCount": "0",
+            "vLineCount": "0",
+            "dimmedOpacity": "0.25",
+            "featureVisibility": "{\"samples\":0,\"visible\":0,\"visibleFraction\":null,\"projectedPixels\":0,\"projectionUnit\":\"area-px2\",\"bounds\":null,\"reason\":\"全模型：无几何\"}"
+          },
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "",
+            "faceCount": "0",
+            "edgeCount": "0",
+            "triangleCount": "0",
+            "roleFaces": "{}",
+            "roleEdges": "{}",
+            "hasIsoparametrics": "false",
+            "isoparametricsCount": "0",
+            "uLineCount": "0",
+            "vLineCount": "0",
+            "dimmedOpacity": "0.25",
+            "featureVisibility": "{\"samples\":0,\"visible\":0,\"visibleFraction\":null,\"projectedPixels\":0,\"projectionUnit\":\"area-px2\",\"bounds\":null,\"reason\":\"全模型：无几何\"}"
+          }
+        ],
+        "error": [
+          "真实 U/V unavailable：显示包与独立来源描述符不匹配几何切片请求异常或网络错误，旧网格已被清除",
+          "真实 U/V unavailable：显示包与独立来源描述符不匹配几何切片请求异常或网络错误，旧网格已被清除"
+        ]
+      }
+    },
+    {
+      "name": "app subpath legacy607 case still draws without receipt-derived UV",
+      "ok": true,
+      "detail": {
+        "stats": [
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "gm:37",
+            "faceCount": "10",
+            "edgeCount": "20",
+            "triangleCount": "102",
+            "roleFaces": "{\"unchanged\":6,\"support\":4}",
+            "roleEdges": "{\"unchanged\":18,\"selected\":2}",
+            "hasIsoparametrics": "false",
+            "isoparametricsCount": "0",
+            "uLineCount": "0",
+            "vLineCount": "0",
+            "dimmedOpacity": "0.25",
+            "featureVisibility": "{\"samples\":48,\"visible\":48,\"visibleFraction\":1,\"projectedPixels\":463.4312238994548,\"projectionUnit\":\"length-px\",\"bounds\":{\"min\":[48.03903323382463,377.7065299802515],\"max\":[511.8211295317148,378.2932931018966]},\"reason\":\"选中边 · 可见性采样\"}",
+            "cameraPos": "0.50,-1.41,2.32",
+            "cameraTarget": "0.50,0.00,1.00"
+          },
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "pk:51",
+            "faceCount": "10",
+            "edgeCount": "20",
+            "triangleCount": "102",
+            "roleFaces": "{\"unchanged\":6,\"support\":4}",
+            "roleEdges": "{\"unchanged\":16,\"deleted\":2,\"selected\":2}",
+            "hasIsoparametrics": "false",
+            "isoparametricsCount": "0",
+            "uLineCount": "0",
+            "vLineCount": "0",
+            "dimmedOpacity": "0.25",
+            "featureVisibility": "{\"samples\":48,\"visible\":48,\"visibleFraction\":1,\"projectedPixels\":463.4312238994548,\"projectionUnit\":\"length-px\",\"bounds\":{\"min\":[47.539033233824654,377.7065299802515],\"max\":[511.32112953171475,378.2932931018966]},\"reason\":\"选中边 · 可见性采样\"}",
+            "cameraPos": "0.50,-1.41,2.32",
+            "cameraTarget": "0.50,0.00,1.00"
+          }
+        ],
+        "header": "数据版本 610e3ce · 采集 2026/11/11 03:50:08 ↗"
+      }
+    },
+    {
+      "name": "subpath narrow pages no uncaught errors",
+      "ok": true,
+      "detail": []
+    }
+  ],
+  "harnessDiagnostics": [
+    {
+      "name": "actual requests use app-prefixed frozen UI namespace",
+      "ok": false,
+      "detail": {
+        "displayRequests": [
+          "http://127.0.0.1:41305/apps/gm-kernel-progress/?display=real-uv",
+          "http://127.0.0.1:41305/apps/gm-kernel-progress/display/real-uv/index.json?_t=1794384611733",
+          "http://127.0.0.1:41305/apps/gm-kernel-progress/display/real-uv/manifest.json?_t=1794384611739",
+          "http://127.0.0.1:41305/apps/gm-kernel-progress/display/real-uv/meshes/gm-before.mesh.json?_t=1794384611802",
+          "http://127.0.0.1:41305/apps/gm-kernel-progress/display/real-uv/meshes/pk-before.mesh.json?_t=1794384611802",
+          "http://127.0.0.1:41305/apps/gm-kernel-progress/display/real-uv/display-manifest.json",
+          "http://127.0.0.1:41305/apps/gm-kernel-progress/display/real-uv/display-manifest.json",
+          "http://127.0.0.1:41305/apps/gm-kernel-progress/display/real-uv/gm-before.iso.json",
+          "http://127.0.0.1:41305/apps/gm-kernel-progress/display/real-uv/pk-before.iso.json",
+          "http://127.0.0.1:41305/apps/gm-kernel-progress/display/real-uv/meshes/gm-after.mesh.json?_t=1794384613361",
+          "http://127.0.0.1:41305/apps/gm-kernel-progress/display/real-uv/meshes/pk-after.mesh.json?_t=1794384613361",
+          "http://127.0.0.1:41305/apps/gm-kernel-progress/display/real-uv/display-manifest.json",
+          "http://127.0.0.1:41305/apps/gm-kernel-progress/display/real-uv/display-manifest.json",
+          "http://127.0.0.1:41305/apps/gm-kernel-progress/display/real-uv/pk-after.iso.json",
+          "http://127.0.0.1:41305/apps/gm-kernel-progress/display/real-uv/gm-after.iso.json"
+        ]
+      }
+    }
+  ],
+  "harnessDiagnosticExplanation": "Initial URL filter included the document navigation ?display=real-uv, which is not an asset request; classified the already recorded asset request paths separately without product changes or rerunning tests.",
+  "preservedCachedRoundEvidence": "temp_docs/fusion-015-cached-round-evidence",
+  "finalIndependentRoundLog": "temp_docs/fusion-015-independent-retention.log",
+  "all15OriginalBytesUnchanged": true,
+  "all607HistoryAndIndexBytesUnchanged": true,
+  "reviewFixtureOnly": true,
+  "verdict": "ACCEPT fixed 015 combined finite UI/publication input scope; deployment, owned hook install and host/proxy are separate"
+}
