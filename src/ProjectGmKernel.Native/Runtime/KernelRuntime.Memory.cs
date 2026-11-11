@@ -261,6 +261,10 @@ internal static unsafe partial class KernelRuntime
 
     internal static int SessionStopCore()
     {
+        // Diagnostic branch only: one boundary dump of the zero-clear
+        // attribution counters (raw lines). The oracle's finally always
+        // reaches session stop; no hot path and no algorithm is touched.
+        ProjectGmKernel.Native.Geometry.Evaluation.JointNestedBlendEvaluation.DumpAttribution();
         var session = State.Session;
         if (session == null || !session->IsStarted)
             return ParasolidConstants.PK_ERROR_not_in_PK;

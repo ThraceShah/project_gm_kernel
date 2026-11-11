@@ -64,6 +64,45 @@
 - 记录项：source/tree SHA、实际加载 DLL/PDB SHA256、SDK/runtime/tiering、
   准确参数、UTC 窗口、loadavg、process CPU/wall（运行时填写，见 §4）。
 
-## 4. 运行结果（待填）
+## 4. 运行结果（原 shortedge 最小代表，真实 UTC 2026-01-11 03:49:21–03:49:49Z）
 
-（运行后填写：计数、ticks、CPU-wall 边界、可否定假设、未证明事项。）
+编译 exit=0（AllocationBanCheck 原样通过、零例外）；smoke exit=0；
+运行 **exit=0**，primary 检查原样通过（FIX self error=0 faces=2
+fault=18391=PK_blend_fault_no_fault_c、FIX PK error=0、PASS cases=1）。
+墙钟 28s（含构建/会话/验证；GM 自身 FIX 23,340.6ms），load 4.6→4.2。
+
+### 计数（负载无关主交付）
+
+| 指标 | 值 | 校验 |
+| --- | ---: | --- |
+| jac-entered = clear-reached | **1,446,213** | 闭合 ✓ |
+| jac-succeeded + jac-failed | 1,446,093 + 120 | = entered ✓ |
+| bound-entered = evaluated | **224,299** | |
+| bound-succeeded / failed(派生) | 100,402 / 123,897 | 44.7% 成功 |
+| expansion / refinement iters | 843,699 / 602,514 | ≈3.76 / ≈2.69 每 BoundSegment |
+| Jac 每 BoundSegment | ≈6.45 | 在静态 1–12 边界内 |
+| out-of-range-n / foreign-thread-touches | 0 / 0 | owner=dump=thread 1 |
+
+### 分桶（n 与任意 FirstUv/SecondUv≥0）
+
+| 桶 | entered | clear-ticks | 成功/失败 |
+| --- | ---: | ---: | --- |
+| **n=7 uv=False** | **1,437,022（99.4%）** | 500,843,578 | 1,437,022 / 0 |
+| n=3 uv=False | 9,191（0.6%） | 3,029,297 | 9,071 / 120 |
+| **任何 uv=True 桶** | **0** | — | 本次 case 全程 cache 读集为空 |
+
+### clear 累计与旧 31s 的可否定假设
+
+- clear 累计 **503,872,875 ticks ≈ 503.9 ms**（首 clear 26µs 单列；
+  每次 ≈348 ns 清 22,176B ≈64 GB/s 有效带宽）；instrumentation 双时间戳
+  开销 ≈25 ns/次（smoke）≈36ms/总量，已含在 ticks 内为上界。
+- GM 操作墙 23,340.6 ms ⇒ **clear ≈ 2.2%**，显著小于旧 trace 显示归因的
+  31.46s/95%。**可否定假设成立**：旧“95% 时间在可删除清零”不成立——
+  旧数字是 Speedscope 合并显示区间 + CLR 采样在 QCall/安全点的挂起偏置 +
+  ZeroMemory wrapper（STOP_FOR_GC 等待）共同形成的显示归因，不是排他
+  memset CPU。本数据不再追加 profiler/OS 采样即可否定该占比解释。
+- ticks 为原始诊断（含 GC/调度暂停可能），wall 亦然；按指令不用作成本占比
+  或提速结论的进一步换算——唯一用途即上述量级否定。
+- 注意：计数扰动 wall（每次 entry 多 ~25ns 时间戳 + 计数），绝对 wall 与
+  历史值不可比；**计数与占比关系负载无关**。
+
