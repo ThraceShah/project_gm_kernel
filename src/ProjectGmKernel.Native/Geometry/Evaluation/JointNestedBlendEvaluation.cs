@@ -130,10 +130,10 @@ internal static partial class JointNestedBlendEvaluation
         var tolerance=ResidualAccuracy(program,rootSpine,first);if(!double.IsFinite(tolerance))return AlgorithmStatus.InvalidInput;
         var boundaryUv=boundary<0?-1:(boundary<2?nodes[0].FirstUv:nodes[0].SecondUv)+(boundary%2);
         if(boundary>=0){if(boundaryUv<3)return AlgorithmStatus.InvalidInput;state[boundaryUv]=boundaryValue;}
-        Span<TaylorJet> variables=stackalloc TaylorJet[MaxVariables],residual=stackalloc TaylorJet[MaxVariables];
-        Span<double> matrix=stackalloc double[MaxVariables*MaxVariables],rhs=stackalloc double[MaxVariables];
-        Span<double> scalarResidual=stackalloc double[MaxVariables];
-        Span<int> pivots=stackalloc int[MaxVariables];var converged=false;
+        Span<TaylorJet> variables=stackalloc TaylorJet[n],residual=stackalloc TaylorJet[n];
+        Span<double> matrix=stackalloc double[n*n],rhs=stackalloc double[n];
+        Span<double> scalarResidual=stackalloc double[n];
+        Span<int> pivots=stackalloc int[n];var converged=false;
         for(var iteration=0;iteration<20;iteration++)
         {
             var status=Assemble(program,nodes,state,u,scalarResidual[..n],matrix[..(n*n)],nearest,path.Value,boundaryUv,boundaryValue);if(status!=AlgorithmStatus.Success)return status;
@@ -240,9 +240,9 @@ internal static partial class JointNestedBlendEvaluation
     private static AlgorithmStatus ValidateNearest(in NestedBlendProgram program,ReadOnlySpan<Occurrence> nodes,
         ReadOnlySpan<double> state,ReadOnlySpan<double> matrix,bool nearest)
     {
-        Span<BufferOffset> map=stackalloc BufferOffset[MaxVariables];Span<bool> selected=stackalloc bool[MaxOccurrences];
-        Span<double> block=stackalloc double[MaxVariables*MaxVariables],rhs=stackalloc double[MaxVariables];Span<int> pivots=stackalloc int[MaxVariables];
         var n=state.Length;
+        Span<BufferOffset> map=stackalloc BufferOffset[n];Span<bool> selected=stackalloc bool[nodes.Length];
+        Span<double> block=stackalloc double[n*n],rhs=stackalloc double[n];Span<int> pivots=stackalloc int[n];
         for(var root=nearest?0:1;root<nodes.Length;root++)
         {
             selected.Clear();selected[root]=true;var count=0;var parameterIndex=-1;

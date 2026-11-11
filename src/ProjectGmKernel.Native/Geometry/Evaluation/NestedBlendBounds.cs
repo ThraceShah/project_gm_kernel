@@ -162,7 +162,7 @@ internal static partial class JointNestedBlendEvaluation
         var n=counts[0];var nodes=occurrences[..counts[1]];var t=new IntervalNumber(domain.U0,domain.U1);
         var cartesianSpline=captureWitness.IsEmpty&&requireWitness.IsEmpty&&CartesianSplineRows(program,nodes,n);
         var substitutedConic=captureWitness.IsEmpty&&requireWitness.IsEmpty&&ConicConstraintSubstitution(program,nodes,n);
-        Span<BufferOffset> fixedCharts=stackalloc BufferOffset[MaxOccurrences];
+        Span<BufferOffset> fixedCharts=stackalloc BufferOffset[nodes.Length];
         for(var i=0;i<nodes.Length;i++)
         {
             if(i==0&&rootChart>=0){fixedCharts[i]=rootChart;continue;}
@@ -181,10 +181,10 @@ internal static partial class JointNestedBlendEvaluation
             for(var i=1;i<nodes.Length;i++)
                 if(requireCharts[2*i]!=nodes[i].Spine||requireCharts[2*i+1]!=fixedCharts[i])return AlgorithmStatus.NotConverged;
         }
-        Span<double> state=stackalloc double[MaxVariables],jacobian=stackalloc double[MaxVariables*MaxVariables],inverse=stackalloc double[MaxVariables*MaxVariables],rhs=stackalloc double[MaxVariables],residual=stackalloc double[MaxVariables];Span<int> pivots=stackalloc int[MaxVariables];
-        Span<IntervalNumber> boxes=stackalloc IntervalNumber[MaxVariables],image=stackalloc IntervalNumber[MaxVariables],centerF=stackalloc IntervalNumber[MaxVariables];
-        Span<IntervalNumber> intervalJacobian=stackalloc IntervalNumber[MaxVariables*MaxVariables],remainder=stackalloc IntervalNumber[MaxVariables*MaxVariables];
-        Span<IntervalDual> variables=stackalloc IntervalDual[MaxVariables],equations=stackalloc IntervalDual[MaxVariables];
+        Span<double> state=stackalloc double[n],jacobian=stackalloc double[n*n],inverse=stackalloc double[n*n],rhs=stackalloc double[n],residual=stackalloc double[n];Span<int> pivots=stackalloc int[n];
+        Span<IntervalNumber> boxes=stackalloc IntervalNumber[n],image=stackalloc IntervalNumber[n],centerF=stackalloc IntervalNumber[n];
+        Span<IntervalNumber> intervalJacobian=stackalloc IntervalNumber[n*n],remainder=stackalloc IntervalNumber[n*n];
+        Span<IntervalDual> variables=stackalloc IntervalDual[n],equations=stackalloc IntervalDual[n];
         for(var i=0;i<n;i++){state[i]=snapshot[i][0];boxes[i]=state[i];}
         if(substitutedConic)
         {
@@ -203,11 +203,11 @@ internal static partial class JointNestedBlendEvaluation
             }
             if(cartesianSpline){status=CartesianSplineInverse(program,nodes,state[..n],inverse[..(n*n)]);if(status!=AlgorithmStatus.Success)return status;}
         }
-        Span<IntervalSplineContact> splineCache=stackalloc IntervalSplineContact[MaxVariables];
+        Span<IntervalSplineContact> splineCache=stackalloc IntervalSplineContact[n];
         var recordCapacity=!substitutedConic&&CanRecordJacobian(program,nodes,n)?64+512*nodes.Length:0;
         Span<IntervalExpressionNode> recordNodes=stackalloc IntervalExpressionNode[recordCapacity];
         Span<IntervalNumber> recordDerivatives=stackalloc IntervalNumber[recordCapacity*n];
-        Span<BufferOffset> recordOutputs=stackalloc BufferOffset[MaxVariables];
+        Span<BufferOffset> recordOutputs=stackalloc BufferOffset[n];
         var jacobianRecord=new IntervalJacobianRecord(recordNodes,recordDerivatives,recordOutputs[..n]);
         if(!substitutedConic)
         {
@@ -366,8 +366,8 @@ internal static partial class JointNestedBlendEvaluation
     private static AlgorithmStatus CertifyNearestBoxes(in NestedBlendProgram program,ReadOnlySpan<Occurrence> nodes,ReadOnlySpan<IntervalNumber> boxes,
         ReadOnlySpan<IntervalDual> variables,ReadOnlySpan<IntervalNumber> jacobian,ReadOnlySpan<BufferOffset> charts,ReadOnlySpan<IntervalSplineContact> cache)
     {
-        Span<BufferOffset> map=stackalloc BufferOffset[MaxVariables];Span<bool> selected=stackalloc bool[MaxOccurrences];Span<IntervalNumber> block=stackalloc IntervalNumber[MaxVariables*MaxVariables],rhs=stackalloc IntervalNumber[MaxVariables];
         var n=boxes.Length;
+        Span<BufferOffset> map=stackalloc BufferOffset[n];Span<bool> selected=stackalloc bool[nodes.Length];Span<IntervalNumber> block=stackalloc IntervalNumber[n*n],rhs=stackalloc IntervalNumber[n];
         for(var root=1;root<nodes.Length;root++)
         {
             selected.Clear();selected[root]=true;var count=0;var parameterIndex=-1;
