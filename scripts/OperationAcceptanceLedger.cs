@@ -86,7 +86,7 @@ internal sealed class OperationAcceptanceLedger
             foreach (var h in toolHashes) arr.Add((JsonNode?)JsonValue.Create(h));
             node["tools"] = arr;
         }
-        op.InputHashes[side] = node;
+        op.SetInputHashes(side, node);
     }
 
     public void RecordOutputHashes(string opId, string kernel, string[] bodyHashes)
@@ -98,7 +98,7 @@ internal sealed class OperationAcceptanceLedger
         var arr = new JsonArray();
         foreach (var h in bodyHashes) arr.Add((JsonNode?)JsonValue.Create(h));
         node["bodies"] = arr;
-        op.OutputHashes[side] = node;
+        op.SetOutputHashes(side, node);
     }
 
     public JsonObject RecordCheck(
@@ -159,6 +159,8 @@ internal sealed class OperationAcceptanceLedger
         if (op == null) return;
         if (!string.IsNullOrEmpty(statusOverride))
         {
+            if (statusOverride == "not-run" && (op.Returns.Any(p => p.Value != null) || op.PrimaryChecks.Count != 0 || op.GmMs.HasValue || op.PkMs.HasValue))
+                statusOverride = "fail";
             op.SetTerminalStatus(statusOverride);
             if (statusOverride is "fail" or "timeout")
                 RecordCheck(opId, "primary", opId + "-terminal", "Explicit operation termination", "fail", note: statusOverride);
@@ -290,9 +292,13 @@ internal sealed class OperationRecord
         if (TerminalStatus is not ("fail" or "timeout")) TerminalStatus = status;
     }
 
-    public JsonObject InputHashes { get; } = new() { ["gm"] = new JsonObject(), ["pk"] = new JsonObject() };
+    private readonly JsonObject _inputHashes = new() { ["gm"] = new JsonObject(), ["pk"] = new JsonObject() };
+    public JsonObject InputHashes => (JsonObject)_inputHashes.DeepClone();
+    internal void SetInputHashes(string side, JsonObject hashes) => _inputHashes[side] = hashes.DeepClone();
     public JsonArray Preconditions { get; } = [];
-    public JsonObject OutputHashes { get; } = new() { ["gm"] = new JsonObject(), ["pk"] = new JsonObject() };
+    private readonly JsonObject _outputHashes = new() { ["gm"] = new JsonObject(), ["pk"] = new JsonObject() };
+    public JsonObject OutputHashes => (JsonObject)_outputHashes.DeepClone();
+    internal void SetOutputHashes(string side, JsonObject hashes) => _outputHashes[side] = hashes.DeepClone();
     public JsonObject Returns { get; } = new() { ["gm"] = null, ["pk"] = null };
 
     public string Status { get; set; } = "unverified";

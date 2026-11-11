@@ -45,6 +45,15 @@ var frozen = ledger.BeginOperation("frozen", "snapshot", options: options, input
 options["nested"]!["value"] = 2; provenance["value"] = 2; frozen.Options!["nested"]!["value"] = 3;
 Assert(frozen.Options!["nested"]!["value"]!.GetValue<int>() == 1 && frozen.InputProvenance!["value"]!.GetValue<int>() == 1 && frozen.ParameterHash == OperationAcceptanceLedger.HashString(frozen.Options.ToJsonString()), "deep snapshots retain recomputable parameter hash");
 Assert(frozen.Returns["gm"] == null && frozen.Returns["pk"] == null, "unrecorded returns remain unknown");
+var borrowed = Complete(ledger,"borrowed");
+ledger.RecordOutputHashes(borrowed.Id,"gm",[new string('c',64)]);
+borrowed.InputHashes["gm"]!["target"]=new string('b',64);
+borrowed.OutputHashes["gm"]!["bodies"]![0]=new string('d',64);
+Assert(borrowed.InputHashes["gm"]!["target"]!.GetValue<string>()==new string('a',64)&&borrowed.OutputHashes["gm"]!["bodies"]![0]!.GetValue<string>()==new string('c',64),"input/output getter mutation cannot change recorded hashes");
+var rejectedNotRun=Complete(ledger,"executed-not-run");ledger.RecordReturn(rejectedNotRun.Id,"gm",901);ledger.EndOperation(rejectedNotRun.Id,"not-run");ledger.EndScenario(0);
+Assert(rejectedNotRun.Status=="fail"&&ledger.ScenarioStatus=="fail"&&ledger.FirstFailedOperationId!=null,"not-run cannot hide a known API failure");
+var failedNotRun=Complete(ledger,"primary-not-run");ledger.RecordCheck(failedNotRun.Id,"primary","failure","failure","fail");ledger.EndOperation(failedNotRun.Id,"not-run");
+Assert(failedNotRun.ToJsonObject()["status"]!.GetValue<string>()=="fail","not-run cannot hide an explicit primary failure");
 foreach (var value in new[] { 0d, -1d, double.NaN, double.PositiveInfinity, double.NegativeInfinity })
 {
     var timingLedger = new OperationAcceptanceLedger("timing", "timing");
@@ -81,6 +90,8 @@ Validate(true, "accepts complete fixture", _ => { });
 Validate(false, "rejects missing required check", o => o["primaryChecks"]!.AsArray().RemoveAt(0));
 Validate(false, "rejects primary failure with pass status", o => o["primaryChecks"]![0]!["status"] = "fail");
 Validate(false, "rejects terminal failure with pass status", o => o["terminalStatus"] = "fail");
+Validate(false,"rejects not-run with failed return",o=>{o["terminalStatus"]="not-run";o["status"]="not-run";o["returns"]!["gm"]=901;o["timing"]!["ratio"]=null;o["timing"]!["correctnessQualified"]=false;});
+Validate(false,"rejects not-run with failed primary",o=>{o["terminalStatus"]="not-run";o["status"]="not-run";o["primaryChecks"]![0]!["status"]="fail";o["timing"]!["ratio"]=null;o["timing"]!["correctnessQualified"]=false;});
 Validate(false, "rejects nonzero return", o => o["returns"]!["gm"] = 901);
 Validate(false, "rejects unknown return", o => o["returns"]!["pk"] = null);
 Validate(false, "rejects missing owner", o => o["primaryChecks"]![0]!.AsObject().Remove("owner"));

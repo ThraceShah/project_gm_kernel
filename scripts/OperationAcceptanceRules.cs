@@ -58,7 +58,9 @@ internal static class OperationAcceptanceRules
         else Reason("undeclared-or-unsupported-primary-contract");
         if (!complete) Reason("missing-required-primary");
         if (primary.Any(c => Text(c?["status"]) is not ("pass" or "diagnostic"))) complete = false;
-        var primaryStatus = terminal == "not-run" ? "not-run" : explicitFailure ? "fail" : complete && ownerValid && gmReturn && pkReturn ? "pass" : "unverified";
+        var hasExecution = gmReturn || pkReturn || primary.Count != 0 || Number(op["timing"]?["gmMs"]).HasValue || Number(op["timing"]?["pkMs"]).HasValue;
+        if (terminal == "not-run" && hasExecution) Reason("not-run-contradicts-execution");
+        var primaryStatus = explicitFailure ? "fail" : terminal == "not-run" && !hasExecution ? "not-run" : terminal != "not-run" && complete && ownerValid && gmReturn && pkReturn ? "pass" : "unverified";
         var status = terminal == "timeout" ? "timeout" : primaryStatus;
 
         var options = op["options"];

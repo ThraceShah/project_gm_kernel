@@ -127,6 +127,7 @@ internal static class WebProgressDataValidation
                         if(op is JsonObject operation)
                         {
                             var derived=OperationAcceptanceRules.Evaluate(operation);
+                            if(derived.Reasons.Any(r=>OperationAcceptanceRules.Text(r)=="not-run-contradicts-execution"))Error(caseId+" "+opId+": not-run contradicts recorded execution");
                             if(opStatus!=derived.Status)Error(caseId+" "+opId+": status disagrees with recorded facts; expected "+derived.Status);
                             if(op["primaryStatus"]!=null&&OperationAcceptanceRules.Text(op["primaryStatus"])!=derived.PrimaryStatus)Error(caseId+" "+opId+": primaryStatus disagrees with recorded facts");
                             if(OperationAcceptanceRules.IsTrue(timing?["correctnessQualified"])!=derived.Qualified)Error(caseId+" "+opId+": qualification disagrees with recorded facts "+derived.Reasons.ToJsonString());
