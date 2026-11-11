@@ -59,7 +59,7 @@ Require(summary["acceptedCandidateSource"]!.GetValue<string>()==Candidate&&summa
 var ops=summary["operations"]!.AsArray().OfType<JsonObject>().ToDictionary(o=>o["id"]!.GetValue<string>(),StringComparer.Ordinal);
 Require(ops.Count==5,"five measured operations");
 
-// ---- run directory and verbatim 03e sources
+// ---- run directory and verbatim 217fc sources
 var run=Path.Combine(output,"runs",runId);
 if(Directory.Exists(run))throw new IOException("Run already exists: immutable "+runId);
 var evidenceDir=Path.Combine(run,"evidence");Directory.CreateDirectory(evidenceDir);
@@ -138,8 +138,8 @@ void AddCase(string id,string title,string family,string status,JsonArray steps,
 {
     cases.Add((JsonNode)new JsonObject
     {
-        ["id"]=id,["title"]=title,["family"]=family,["operation"]="controlled measurement (270 vs 6616)",["status"]=status,
-        ["parameters"]=new JsonObject{{"baseline",Baseline},{"candidate",Candidate},{"measurementWrapper",CandidateWrapper},{"delivery",Delivery},{"acceptanceReview","../gm-performance-6616-review/docs/native-modeling-algorithm/independent-6616-review.md @ "+Review}},
+        ["id"]=id,["title"]=title,["family"]=family,["operation"]="controlled measurement (6616 vs G+Conic 74c29e0)",["status"]=status,
+        ["parameters"]=new JsonObject{{"baseline",Baseline},{"candidate",Candidate},{"measurementWrapper",CandidateWrapper},{"delivery",Delivery},{"acceptanceReview","../gm-conic-substitution-review/docs/Native_Conic_Independent_Review.md @ "+Review}},
         ["apis"]=new JsonObject{["gm"]=new JsonObject{["name"]="oracle APIs per operation-summary",["parameters"]=new JsonObject{{"candidateSrcTree",CandidateSrc},{"candidateNativeSubtree",CandidateNative}}},["pk"]=new JsonObject{["name"]="real PK 38.0.150 (Mac)",["parameters"]=new JsonObject{{"oracle","identical numeric parameters"}}}},
         ["steps"]=steps,["checks"]=checks,["performance"]=perf,["evidence"]=evidence,["notes"]=notes,
         ["source"]=new JsonObject{["path"]=sourcePath,["revision"]=Candidate},
@@ -150,7 +150,7 @@ JsonNode NoModelNote()=>JsonValue.Create("报表/诊断类：无实际模型显�
 JsonNode WindowNote()=>JsonValue.Create("单窗口 UTC 2026-11-11T20:14:18.520534Z..20:18:00.112944Z（Apple M4）；load 4.00–5.43；不签排他 CPU/热稳定/PK 总目标；G+Conic 合计收益不拆孤立贡献、不乘旧窗口。");
 JsonNode ScopeNote()=>JsonValue.Create("不含 1887/Bezier16aca，不签功能性能合体；旧快照字节原样保留；物性仅本窗口 900 项 PK 点值门（n_cht_pts 唯一诊断），无 modulus 不签 1887 三态/GM 原生 mass；本窗口无下游组合，各步接受范围单列。");
 string F(double v)=>v.ToString("G17",System.Globalization.CultureInfo.InvariantCulture);
-var evBasic=new JsonArray((JsonNode)new JsonObject{["label"]="03e 原 operation-summary（原字节）",["path"]="evidence/operation-summary.json"},(JsonNode)new JsonObject{["label"]="03e 原 measurement-receipt（原字节）",["path"]="evidence/measurement-receipt.json"},(JsonNode)new JsonObject{["label"]="03e 原 material-binding（原字节）",["path"]="evidence/material-binding.json"},(JsonNode)new JsonObject{["label"]="原 report（原字节，SHA fef5e9a8…）",["path"]="evidence/report.json"},(JsonNode)new JsonObject{["label"]="显示绑定（mesh 哈希/rep2 XT/来源纠正）",["path"]="evidence/display-binding.json"},(JsonNode)new JsonObject{["label"]="来源/收据回执",["path"]="evidence/run-receipt.json"});
+var evBasic=new JsonArray((JsonNode)new JsonObject{["label"]="217fc 原 operation-summary（原字节）",["path"]="evidence/operation-summary.json"},(JsonNode)new JsonObject{["label"]="217fc 原 measurement-receipt（原字节）",["path"]="evidence/measurement-receipt.json"},(JsonNode)new JsonObject{["label"]="217fc 原 material-binding（原字节）",["path"]="evidence/material-binding.json"},(JsonNode)new JsonObject{["label"]="217fc 原 report（原字节，全部 120 时间，SHA c5b2cbba…）",["path"]="evidence/report.json"},(JsonNode)new JsonObject{["label"]="显示绑定（mesh 哈希/rep2 XT/来源纠正）",["path"]="evidence/display-binding.json"},(JsonNode)new JsonObject{["label"]="来源/收据回执",["path"]="evidence/run-receipt.json"});
 foreach(var (opCase,title,family) in new[]{("sphere","gconic / sphere subtract（暖 −11.26% / 1.1269x，配对 PK 0.2805x）","boolean"),("planar","gconic / planar subtract（暖 +65.66% 回退、冷 +18.66% 回退，保留）","boolean"),("curved","gconic / curved block subtract（暖 −84.38% / 6.4015x，配对 75.6049x）","boolean"),("solidblend","gconic / plane-NURBS fillet（暖 −56.56% / 2.3019x，配对 438.1989x）","blend"),("shortedge","gconic / shortedge FixBlends（暖 −87.03% / 7.7080x，配对 340.1703x / 中位比 334.0140x）","blend")})
 {
     var op=ops[opCase];
@@ -225,7 +225,7 @@ var manifest=new JsonObject
             ["windowUtc"]="2026-11-11T20:14:18.520534Z .. 2026-11-11T20:18:00.112944Z",
             ["notIncluded"]="1887 functional integration; Bezier 16aca; downstream combinations; full family; main merge; universal speedup claims.",
             ["ratioSemantics"]="配对 ratio 中位数（ratioMedian）与中位数之比（ratioOfMedians）分列显示，不互换；performance.ratioGmOverPk=后者。",
-            ["massQualification"]="仅 270 公共 Capture 的 15 项点值门（accuracy=.99999999）；无 modulus 字段；不称模量三态全 Verified。",
+            ["massQualification"]="物性仅本窗口原 point gate（每 pair 900 项 PK 点值，accuracy=.99999999，abs(GM−PK)/(1+abs(PK))<1e-7；仅 n_cht_pts 可降级）；无 modulus 字段；不签 1887 三态/GM 原生 mass。",
             ["provenanceCorrections"]="原 mesh geometryAuthor 默认字符串不是输入独立构造证明；shortedge GM 输入来自未改 PK seed XT（GM 执行倒圆/导出）；curved tracking/角色未知。",
             ["familyTaxonomyNote"]="family 为看板既有粗分类。",
             ["caseStatusDefinitions"]=new JsonObject{["pass"]="该 case 现行必需检查通过，仅限所列范围。",["fail"]="存在必需检查失败；原 exit 独立记录。",["missing"]="缺失/未取得资格；不推断。",["diagnostic"]="诊断/观察项；不是验收通过。"}
