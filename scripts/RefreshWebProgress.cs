@@ -25,7 +25,10 @@ var commit=Command("git",["rev-parse","HEAD"]);var dirty=Command("git",["status"
 var now=DateTimeOffset.UtcNow;var id=Option("--run-id",now.ToString("yyyyMMddTHHmmssZ")+"-"+commit[..8]);
 if(id.IndexOfAny(Path.GetInvalidFileNameChars())>=0||id.Contains('/')||id.Contains('\\')||id is "." or "..")throw new ArgumentException("run-id must be one safe path component");
 var data=Path.GetFullPath(Option("--output","../temp_docs/web-progress/data"),Path.GetDirectoryName(ScriptPath())!);
-var run=Path.Combine(data,"runs",id);if(Directory.Exists(run))throw new IOException("Run already exists: choose a new --run-id; existing evidence is immutable.");Directory.CreateDirectory(run);
+var run=Path.Combine(data,"runs",id);
+foreach(var path in new[]{run,Path.Combine(data,"index.json"),Path.Combine(data,"index.json.tmp")})
+    if(!WebProgressSafePath.IsSafeChain(path,out var offender))throw new IOException("REFRESH_PATH_UNSAFE "+offender);
+if(Directory.Exists(run))throw new IOException("Run already exists: choose a new --run-id; existing evidence is immutable.");Directory.CreateDirectory(run);
 var host=new JsonObject{["os"]=RuntimeInformation.OSDescription,["architecture"]=RuntimeInformation.OSArchitecture.ToString(),["processArchitecture"]=RuntimeInformation.ProcessArchitecture.ToString(),["logicalProcessors"]=Environment.ProcessorCount,["cpu"]=OperatingSystem.IsMacOS()?Command("sysctl",["-n","machdep.cpu.brand_string"]):ReadCpu(),["memoryBytes"]=OperatingSystem.IsMacOS()?Command("sysctl",["-n","hw.memsize"]):null,["sdk"]=Command("dotnet",["--version"]),["runtime"]=RuntimeInformation.FrameworkDescription,["stopwatchFrequency"]=Stopwatch.Frequency};
 var configuration=new JsonObject{["build"]=config,["nativeAot"]=false,["timing"]="Stopwatch elapsed wall time around API only",["tieredCompilation"]=Environment.GetEnvironmentVariable("DOTNET_TieredCompilation")??"runtime-default",["cache"]="oracle defaults, fresh process per sample",["parallelism"]="serial PK sessions",["samplesRequested"]=samples,["resourceLimits"]=Environment.GetEnvironmentVariable("GM_WEB_RESOURCE_LIMITS")};
 var cases=new JsonArray();

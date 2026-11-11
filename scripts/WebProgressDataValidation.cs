@@ -19,8 +19,11 @@ internal static class WebProgressSafePath
         foreach (var segment in Path.GetRelativePath(volume, normalized).Split(new[] { '/', Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries))
         {
             current = Path.Combine(current, segment);
-            if (!File.Exists(current) && !Directory.Exists(current)) continue; // missing leaves are rejected by callers
-            if ((File.GetAttributes(current) & FileAttributes.ReparsePoint) != 0) { offending = current; return false; }
+            FileAttributes attributes;
+            try { attributes = File.GetAttributes(current); }
+            catch (FileNotFoundException) { continue; }
+            catch (DirectoryNotFoundException) { continue; }
+            if ((attributes & FileAttributes.ReparsePoint) != 0) { offending = current; return false; }
         }
         return true;
     }

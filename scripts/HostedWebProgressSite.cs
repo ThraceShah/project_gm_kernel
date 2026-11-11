@@ -55,8 +55,11 @@ internal static class HostedWebProgressSite
             if (i == full.Length || full[i] == Path.DirectorySeparatorChar)
             {
                 var segmentPath = full[..i];
-                if ((File.Exists(segmentPath) || Directory.Exists(segmentPath))
-                    && (File.GetAttributes(segmentPath) & FileAttributes.ReparsePoint) != 0) return false;
+                FileAttributes attributes;
+                try { attributes = File.GetAttributes(segmentPath); }
+                catch (FileNotFoundException) { continue; }
+                catch (DirectoryNotFoundException) { continue; }
+                if ((attributes & FileAttributes.ReparsePoint) != 0) return false;
             }
         }
         return true;
@@ -69,12 +72,46 @@ internal static class HostedWebProgressSite
         return false;
     }
 
+    internal static void RequireSafeTree(string path)
+    {
+        if (!IsChainSafe(path) || (Directory.Exists(path) && HasReparsePoint(path)))
+            throw new InvalidDataException("HOST_PATH_UNSAFE symlink/reparse path: " + path);
+    }
+
+    internal static void RequireSeparate(string left, string right)
+    {
+        static bool Within(string root, string path)
+        {
+            var relative = Path.GetRelativePath(Path.GetFullPath(root), Path.GetFullPath(path));
+            return !Path.IsPathRooted(relative) && relative != ".." && !relative.StartsWith("../", StringComparison.Ordinal);
+        }
+        if (Within(left, right) || Within(right, left))
+            throw new InvalidDataException("HOST_PATH_OVERLAP source, site and mirror must be separate: " + left + " / " + right);
+    }
+
+    private static void CheckMutationPaths(string siteRoot, string statePath, string? source = null)
+    {
+        RequireSeparate(siteRoot, statePath);
+        if (source is not null) { RequireSeparate(siteRoot, source); RequireSeparate(source, statePath); }
+        RequireSafeTree(siteRoot);
+        if (!IsChainSafe(statePath) || !IsChainSafe(statePath + ".tmp"))
+            throw new InvalidDataException("HOST_PATH_UNSAFE mirror path");
+        // A pre-existing state of another producer must never become our mirror.
+        if (File.Exists(statePath))
+        {
+            var mirror = ReadJsonObject(statePath);
+            if (mirror is not null && (mirror.ContainsKey("scheduler") || mirror.ContainsKey("fingerprint")
+                || mirror.ContainsKey("slug") || mirror.ContainsKey("uiRelease") || mirror.ContainsKey("runs")))
+                throw new InvalidDataException("HOST_MIRROR_SCHEMA_INVALID refusing unrelated state");
+        }
+    }
+
     // Closure gate over the validated data cache: index.json must register runs
     // whose manifests and every mesh/evidence reference (including cross-run
     // references) resolve inside runs/ and exist. This is the same gate the
     // publisher must satisfy before an atomic index switch; the host keeps it so
     // half-written or pruned trees never become client-visible.
-    internal static JsonObject CheckDataRoot(string data)
+    internal static JsonObject CheckDataRoot(string data, byte[]? indexSnapshot = null)
     {
         var errors = new JsonArray();
         var runCount = 0;
@@ -91,7 +128,7 @@ internal static class HostedWebProgressSite
         var indexPath = Path.Combine(data, "index.json");
         if (!File.Exists(indexPath)) { Error("index.json missing"); return Result(); }
         JsonNode? index;
-        try { index = JsonNode.Parse(File.ReadAllText(indexPath)); }
+        try { index = JsonNode.Parse(indexSnapshot ?? File.ReadAllBytes(indexPath)); }
         catch (Exception e) { Error("index.json: " + e.Message); return Result(); }
         if (index?["schemaVersion"]?.GetValue<int>() != 1) Error("index schemaVersion");
         latest = index?["latestRunId"]?.GetValue<string>();
@@ -170,6 +207,9 @@ internal static class HostedWebProgressSite
     // is content-derived, so preparing an unchanged build is a no-op.
     internal static JsonObject PrepareRelease(string siteRoot, string distDirectory)
     {
+        RequireSeparate(siteRoot, distDirectory);
+        RequireSafeTree(siteRoot);
+        RequireSafeTree(distDirectory);
         var releases = Path.Combine(siteRoot, "ui-releases");
         if (Directory.Exists(siteRoot) && !IsChainSafe(siteRoot)) throw new InvalidDataException("Site root chain contains symlinks; refusing to write: " + siteRoot);
         Directory.CreateDirectory(releases);
@@ -305,24 +345,30 @@ internal static class HostedWebProgressSite
     // because the activation itself committed, and is repaired on the next run
     // (skip-same never masks the repair). Two file renames are NOT claimed to
     // be one transaction; only the pointer is.
-    internal static JsonObject Activate(string siteRoot, string releaseId, string dataRoot, string statePath)
+    internal static JsonObject Activate(string siteRoot, string releaseId, string dataRoot, string statePath, byte[]? indexSnapshot = null)
     {
+        CheckMutationPaths(siteRoot, statePath, dataRoot);
+        RequireSafeTree(dataRoot);
         var release = VerifyRelease(siteRoot, releaseId);
         if (release["errors"]!.AsArray().Count > 0) return Refused("ACTIVATE_REFUSED_RELEASE_INVALID", release);
-        var data = CheckDataRoot(dataRoot);
+        var indexBytes = indexSnapshot ?? File.ReadAllBytes(Path.Combine(dataRoot, "index.json"));
+        var data = CheckDataRoot(dataRoot, indexBytes);
         if (data["errors"]!.AsArray().Count > 0) return Refused("ACTIVATE_REFUSED_DATA_INVALID", data);
         var contentHash = JsonNode.Parse(File.ReadAllText(Path.Combine(siteRoot, "ui-releases", releaseId + ".meta.json")))!["contentHash"]!.GetValue<string>();
         dataRoot = Path.GetFullPath(dataRoot);
-        var generation = EnsureGeneration(siteRoot, dataRoot, data);
+        var generation = EnsureGeneration(siteRoot, dataRoot, data, indexBytes);
+        if (!VerifyGenerationClosure(siteRoot, generation["id"]!.GetValue<string>(), out var closureErrors))
+            return Refused("ACTIVATE_REFUSED_GENERATION_CORRUPT", new JsonObject { ["errors"] = closureErrors });
         var pointerPath = Path.Combine(siteRoot, "site.json");
         var current = ReadJsonObject(pointerPath);
         var active = new JsonObject
         {
+            ["schemaVersion"] = 1,
             ["uiRelease"] = releaseId,
             ["uiHash"] = contentHash,
             ["generation"] = generation["id"]!.GetValue<string>(),
             ["dataRunId"] = data["latestRunId"]?.DeepClone(),
-            ["dataSha"] = JsonNode.Parse(File.ReadAllText(Path.Combine(dataRoot, "index.json")))!["runs"]!.AsArray()
+            ["dataSha"] = JsonNode.Parse(indexBytes)!["runs"]!.AsArray()
                 .First(r => r!["id"]!.GetValue<string>() == data["latestRunId"]!.GetValue<string>())!["commit"]!.GetValue<string>(),
             ["dataRoot"] = dataRoot, // informational: the import source, never served
             ["activatedAt"] = DateTimeOffset.UtcNow.ToString("O"),
@@ -356,8 +402,11 @@ internal static class HostedWebProgressSite
     // shared across generations; anything already stored is never modified or
     // re-read from the source. Only this script writes the store (single
     // trusted updater, tmp+rename, write-once).
-    internal static JsonObject EnsureGeneration(string siteRoot, string sourceDataRoot, JsonObject check)
+    internal static JsonObject EnsureGeneration(string siteRoot, string sourceDataRoot, JsonObject check, byte[]? indexSnapshot = null)
     {
+        RequireSeparate(siteRoot, sourceDataRoot);
+        RequireSafeTree(siteRoot);
+        RequireSafeTree(sourceDataRoot);
         var store = Path.Combine(siteRoot, "data-store");
         var objects = Path.Combine(store, "objects");
         var trees = Path.Combine(store, "trees");
@@ -384,8 +433,9 @@ internal static class HostedWebProgressSite
                 var relative = Path.GetRelativePath(sourceDir, file).Replace('\\', '/');
                 if (!IsSafeRelativePath(relative)) throw new InvalidDataException("unsafe run file name " + runId + "/" + relative);
                 if (Path.GetExtension(file) is not (".json" or ".log")) throw new InvalidDataException("non-public extension in run " + runId + ": " + relative);
-                var sha = HashHex(File.ReadAllBytes(file));
-                EnsureObject(objects, sha, file, verifiedObjects);
+                var bytes = File.ReadAllBytes(file);
+                var sha = HashHex(bytes);
+                EnsureObject(objects, sha, bytes, verifiedObjects);
                 map[relative] = sha;
             }
             using var tree = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
@@ -398,7 +448,7 @@ internal static class HostedWebProgressSite
             EnsureTreeRecord(trees, treeHash, map);
             runs[runId] = treeHash;
         }
-        var indexBytes = File.ReadAllBytes(Path.Combine(sourceDataRoot, "index.json"));
+        var indexBytes = indexSnapshot ?? File.ReadAllBytes(Path.Combine(sourceDataRoot, "index.json"));
         var indexSha = HashHex(indexBytes);
         var identity = string.Join(",", runs.Select(kv => kv.Key + ":" + kv.Value));
         var generationId = "gen-" + HashHex(System.Text.Encoding.UTF8.GetBytes(indexSha + "|" + identity))[..16];
@@ -448,7 +498,7 @@ internal static class HostedWebProgressSite
     // Content-verified object reuse: the object must hash to its content key.
     // A mismatch (controlled storage fault) is repaired atomically from the
     // verified source copy; existence alone is never accepted as integrity.
-    private static void EnsureObject(string objects, string sha, string sourceFile, HashSet<string> verified)
+    private static void EnsureObject(string objects, string sha, byte[] bytes, HashSet<string> verified)
     {
         var objectPath = Path.Combine(objects, sha);
         if (verified.Add(sha) || !File.Exists(objectPath))
@@ -460,7 +510,7 @@ internal static class HostedWebProgressSite
             }
             else Console.WriteLine("STORE_OBJECT_RESTORED " + sha);
             var tmp = objectPath + ".tmp-" + Guid.NewGuid().ToString("N");
-            File.Copy(sourceFile, tmp);
+            File.WriteAllBytes(tmp, bytes);
             File.Move(tmp, objectPath, true);
         }
     }
@@ -685,6 +735,7 @@ internal static class HostedWebProgressSite
     // when the derived state mirror is broken or missing.
     internal static JsonObject Rollback(string siteRoot, string statePath)
     {
+        CheckMutationPaths(siteRoot, statePath);
         var pointerPath = Path.Combine(siteRoot, "site.json");
         var current = ReadJsonObject(pointerPath);
         var previous = current?["previous"] as JsonObject;
@@ -709,6 +760,7 @@ internal static class HostedWebProgressSite
         }
         var restored = new JsonObject
         {
+            ["schemaVersion"] = 1,
             ["uiRelease"] = releaseId,
             ["uiHash"] = previous!["uiHash"]?.DeepClone(),
             ["generation"] = generationId,
@@ -788,6 +840,7 @@ internal static class HostedWebProgressSite
 
     internal static void WriteJsonAtomic(string path, JsonObject value)
     {
+        if (!IsChainSafe(path) || !IsChainSafe(path + ".tmp")) throw new InvalidDataException("HOST_PATH_UNSAFE write target");
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
         var tmp = path + ".tmp";
         File.WriteAllText(tmp, value.ToJsonString());

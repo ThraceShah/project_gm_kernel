@@ -19,6 +19,11 @@ internal static class WebProgressPublishing
     // are covered; any failure keeps the previous destination index untouched.
     internal static void PublishClosure(string data,IReadOnlyList<string> seedRunIds,string? latestRunId,string destination)
     {
+        if(WebProgressSafePath.IsWithin(data,destination)||WebProgressSafePath.IsWithin(destination,data))throw new IOException("PUBLISH_PATH_OVERLAP source and destination must be separate");
+        foreach(var path in new[]{destination,Path.Combine(destination,"index.json.tmp")})
+            if(!WebProgressSafePath.IsSafeChain(path,out var offender))throw new IOException("Symlinks are not static data: "+offender);
+        if(Directory.Exists(destination))foreach(var entry in Directory.EnumerateFileSystemEntries(destination,"*",SearchOption.AllDirectories))
+            if(!WebProgressSafePath.IsSafeChain(entry,out var offender))throw new IOException("Symlinks are not static data: "+offender);
         var validation=WebProgressDataValidation.Validate(data);
         if(validation["errors"]!.AsArray().Count>0)throw new InvalidDataException(validation.ToJsonString());
         if(!WebProgressSafePath.IsSafeChain(data,out var bad)||!WebProgressSafePath.IsSafeChain(destination,out bad))throw new IOException("Symlinks are not static data: "+bad);
@@ -59,6 +64,7 @@ internal static class WebProgressPublishing
             ?(JsonNode)JsonValue.Create(latestRunId)!
             :runs.Count>0?runs[0]!["id"]!.DeepClone()!:(JsonNode)JsonValue.Create("")!;
         var candidate=new JsonObject{["schemaVersion"]=1,["generatedAt"]=DateTimeOffset.UtcNow.ToString("O"),["latestRunId"]=latest,["runs"]=runs};
+        Directory.CreateDirectory(destination);
         File.WriteAllText(destIndexPath+".tmp",candidate.ToJsonString());
         var check=WebProgressDataValidation.Validate(destination,candidate);
         if(check["errors"]!.AsArray().Count>0)

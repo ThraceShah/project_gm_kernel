@@ -21,11 +21,17 @@ Directory.SetCurrentDirectory(root);
 var interval = int.Parse(Option("--poll-seconds", "60"));
 if (interval < 5) throw new ArgumentException("poll-seconds >= 5 required");
 var statePath = Path.GetFullPath(Option("--state", "../temp_docs/web-progress/watch-state.json"), scripts);
-Directory.CreateDirectory(Path.GetDirectoryName(statePath)!);
 var registryPath = Path.GetFullPath(Option("--registry", "web-progress-registry.json"), scripts);
 var data = Path.GetFullPath(Option("--output", "../temp_docs/web-progress/data"), scripts);
-Directory.CreateDirectory(data);
 var publishTo = Array.IndexOf(args, "--publish-data-to") >= 0 ? Path.GetFullPath(Option("--publish-data-to", "../web/data"), scripts) : null;
+foreach (var path in new[] { statePath, statePath + ".tmp", statePath + ".lock", registryPath, data, Path.Combine(data, "runs"), Path.Combine(data, "index.json.tmp") })
+    if (!WebProgressSafePath.IsSafeChain(path, out var offender)) { Console.Error.WriteLine("WATCH_PATH_UNSAFE " + offender); return 2; }
+if (WebProgressSafePath.IsWithin(data, statePath) || WebProgressSafePath.IsWithin(statePath, data)
+    || publishTo is not null && (WebProgressSafePath.IsWithin(publishTo, statePath) || WebProgressSafePath.IsWithin(statePath, publishTo)
+        || WebProgressSafePath.IsWithin(data, publishTo) || WebProgressSafePath.IsWithin(publishTo, data)))
+{ Console.Error.WriteLine("WATCH_PATH_OVERLAP state, output and publish cache must be separate"); return 2; }
+Directory.CreateDirectory(Path.GetDirectoryName(statePath)!);
+Directory.CreateDirectory(data);
 var once = args.Contains("--once");
 var batchSize = int.Parse(Option("--batch-size", "4"));
 if (batchSize < 1) throw new ArgumentException("batch-size >= 1 required");

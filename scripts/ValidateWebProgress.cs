@@ -22,9 +22,10 @@ if(args.Contains("--self-test"))
     c["performance"]!["correctnessQualified"]=false;Expect(false,"reject unqualified numeric ratio");c["performance"]!["correctnessQualified"]=true;
     c["checks"]![0]!["status"]="missing";Expect(false,"reject unknown acceptance as pass");c["checks"]![0]!["status"]="pass";
     mesh["faces"]![0]!["positions"]![0]="NaN";Expect(false,"reject non-numeric coordinates");mesh["faces"]![0]!["positions"]![0]=0;
-    WriteFixture();var destination=Path.Combine(root,"published");WebProgressPublishing.Publish(root,"test",destination);Console.WriteLine("PASS atomic safe-data publish");
+    WriteFixture();var destination=root+"-published";WebProgressPublishing.Publish(root,"test",destination);Console.WriteLine("PASS atomic safe-data publish");
+    try{WebProgressPublishing.Publish(root,"test",Path.Combine(root,"nested"));throw new Exception("Publisher accepted overlapping roots");}catch(IOException){Console.WriteLine("PASS reject overlapping source/destination");}
     File.WriteAllText(Path.Combine(runDirectory,"forbidden.dll"),"test-only");
-    try{WebProgressPublishing.Publish(root,"test",Path.Combine(root,"rejected"));throw new Exception("Publisher accepted binary extension");}catch(IOException){Console.WriteLine("PASS static allowlist rejects binaries");}finally{File.Delete(Path.Combine(runDirectory,"forbidden.dll"));}
+    try{WebProgressPublishing.Publish(root,"test",root+"-rejected");throw new Exception("Publisher accepted binary extension");}catch(IOException){Console.WriteLine("PASS static allowlist rejects binaries");}finally{File.Delete(Path.Combine(runDirectory,"forbidden.dll"));}
     // symlink/reparse escapes never validate and never enter static bundles
     var outside=Path.GetFullPath(Path.Combine(root,"..","validator-tests-outside.log"));File.WriteAllText(outside,"outside public root");
     File.CreateSymbolicLink(Path.Combine(runDirectory,"escape.log"),Path.GetRelativePath(runDirectory,outside));
@@ -33,7 +34,7 @@ if(args.Contains("--self-test"))
     File.WriteAllText(Path.Combine(root,"outside-link.log"),"outside public root");
     c["evidence"]=new JsonArray((JsonNode)new JsonObject{["label"]="escaped",["path"]="linked/validator-tests-outside.log"});Expect(false,"reject directory symlink escape at intermediate component");
     Directory.Delete(Path.Combine(runDirectory,"linked"));c["evidence"]=new JsonArray();WriteFixture();
-    try{WebProgressPublishing.Publish(root,"test",Path.Combine(root,"rejected-link"));throw new Exception("Publisher followed a symlink");}catch(IOException){Console.WriteLine("PASS static allowlist rejects symlinks");}
+    try{WebProgressPublishing.Publish(root,"test",root+"-rejected-link");throw new Exception("Publisher followed a symlink");}catch(IOException){Console.WriteLine("PASS static allowlist rejects symlinks");}
     File.Delete(Path.Combine(runDirectory,"escape.log"));File.Delete(outside);File.Delete(Path.Combine(root,"outside-link.log"));
     return 0;
 }

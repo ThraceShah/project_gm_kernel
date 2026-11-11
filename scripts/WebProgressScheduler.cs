@@ -139,7 +139,7 @@ internal static class WebProgressScheduler
 
     internal static void Save(string statePath, JsonObject state)
     {
-        if (!WebProgressSafePath.IsSafeChain(statePath, out var offending))
+        if (!WebProgressSafePath.IsSafeChain(statePath, out var offending) || !WebProgressSafePath.IsSafeChain(statePath + ".tmp", out offending))
             throw new IOException("Symlinks are not static data: " + offending);
         state["updatedAt"] = DateTimeOffset.UtcNow.ToString("O");
         File.WriteAllText(statePath + ".tmp", state.ToJsonString());
