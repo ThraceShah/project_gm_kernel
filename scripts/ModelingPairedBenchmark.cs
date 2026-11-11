@@ -115,8 +115,14 @@ foreach(var bench in selected)
 report["finishedAt"]=DateTimeOffset.UtcNow.ToString("O");
 host["loadAverageAtEnd"]=LoadAverage();
 Save(report,runDirectory);
-var summaryPath=Path.Combine(output,"paired-benchmark-latest.json");
-File.WriteAllText(summaryPath+".tmp",report.ToJsonString());File.Move(summaryPath+".tmp",summaryPath,true);
+if(mode=="measure")
+{
+    // The summary pointer is only advanced by full measure runs; profile and
+    // partial runs keep their immutable report under runs/<runId>/benchmark/.
+    report["immutableReport"]="runs/"+runId+"/benchmark/report.json";
+    var summaryPath=Path.Combine(output,"paired-benchmark-latest.json");
+    File.WriteAllText(summaryPath+".tmp",report.ToJsonString());File.Move(summaryPath+".tmp",summaryPath,true);
+}
 Console.WriteLine("REPORT "+Path.Combine("temp_docs","modeling-performance","paired-benchmark-latest.json"));
 Console.WriteLine("RUN "+Path.Combine("temp_docs","modeling-performance","runs",runId,"benchmark","report.json"));
 return 0;
