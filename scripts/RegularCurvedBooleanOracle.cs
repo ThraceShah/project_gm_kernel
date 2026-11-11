@@ -15,7 +15,9 @@ var benchRepeat=1;var benchOption=args.SingleOrDefault(x=>x.StartsWith("--bench-
 if(benchOption!=null)benchRepeat=int.Parse(benchOption["--bench-repeat=".Length..],System.Globalization.CultureInfo.InvariantCulture);
 Require(benchRepeat>=1&&benchRepeat<=64,"bench repeat must be in 1..64");
 ModelingPerformance.Enabled=args.Contains("--bench-profile",StringComparer.Ordinal);
-var directory=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","regular-curved-boolean-oracle");Directory.CreateDirectory(directory);
+var outputName=args.SingleOrDefault(x=>x.StartsWith("--output-name=",StringComparison.Ordinal));
+var directory=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","regular-curved-boolean-oracle");
+if(outputName!=null)directory=Path.Combine(directory,outputName["--output-name=".Length..]);Directory.CreateDirectory(directory);
 if(!ParasolidScriptHost.TryStartSession("Independent regular curved solid Booleans",out var host,out var message))throw new Exception(message);
 using(host)unsafe
 {

@@ -49,6 +49,14 @@
 
 曾试验从原 conic 全参数方程、滚动半径、支撑平面和原 CHART 方程构造必要约束超集。21 项测试和完整操作通过，但只排空 254 次，根单元由 220,895 降至 219,911，减量不足 0.5%。该候选已从生产改动撤下，源码与原始证据保留在 `temp_docs/pk-native-algorithm-work/rejected-global-tube/` 及相邻 `conic-exclusion-*` 文件，不将它描述为主要优化。
 
+真实 GM XT 的只读定义检查还确认，最长有限 ICurve 为椭圆 BLEND 与倾斜圆柱的交线，另两段才与平面相交；定义记录见 `temp_docs/pk-native-algorithm-work/native-root-definitions-ready.log`。不能把 conic 分类中的全部查询都当作 BLEND/plane 支撑组合。
+
+另试验用原生二阶 Taylor 系数选择空间 tube 的初始搜索盒，仍保留原六次扩张、Krawczyk、nearest 与有限根验收。45 项局部测试通过，但完整 shortedge 在 BoundaryIncidence 返回错误 157，根单元 274,568、预算失败 1；该失败操作没有性能成功资格。此候选已完全撤下，生产 Native 恢复本页固定子树，原始源码、diff、日志和退出码保留在 `temp_docs/pk-native-algorithm-work/rejected-quadratic-seed/` 及相邻 `quadratic-tube-seed-*` 文件。没有增加扩张/根预算来保留它，也没有增加双轨回退。
+
+也试验把完整范围求界统一接入已有实体缓存。99 项测试及完整 shortedge 通过，但 32K 表竞争使 Jacobian 从 526,133 增至 663,764；按新增请求上界试验 64K（13 MiB）后为 525,282，仅比检查点少 851 次（约 0.16%）。新增 16,717 次范围请求几乎全为不同参数盒，不值得翻倍缓存内存。这组范围接口/测试改动及扩容已撤下，保持检查点的 32K/6.5 MiB 配置；源 diff、各次日志、捕获、退出码保留为 `temp_docs/pk-native-algorithm-work/extent-command-*` 和 `rejected-extent-reuse.diff`。范围接入扩大了 BoundRequests/BoundEvaluations 的统计覆盖，不能直接混比这两项；内部 Jacobian 计数原本已覆盖该路径。
+
+在恢复检查点 Native 源码后，又串行执行 curved `block-15902`、该脚本同一筛选覆盖的 `reloaded-block-15902`，以及 `plane-nurbs rounding-only`。三个完整独立操作全部通过真实 PK 接收、结构/有限曲线/质量属性检查，各脚本原始退出码均为 0；开发记录为 `temp_docs/pk-native-algorithm-work/curved-command-reuse.log` 与 `nurbs-command-reuse.log`。NURBS 倒圆单独验收，未执行其下游 Boolean。这些冷进程诊断不签发新正式倍率。为保留原有默认输出字节，两个 oracle 增加了 `--output-name` 子目录选项，本次结果另存 `command-bound-reuse`。
+
 共同层 `7b0e5cb8e67dbe31c3cccabeae3f4d20ccb0a540` 当前为未最终接受的开发参考，本检查点未整合它，也未用其标签改写旧 Mac 证据。后续读取固定实际 diff 后按需要复用已有有限根 helper。
 
 剩余开销仍包括大量不同参数盒的通用 tube 证明及完整根隔离。后续继续共享计算热点优化，原生实体模型、参数化、有限分支和证明要求不变；功能语义由 qingyu2 对应负责人交付固定源码后再整合。最终固定源码的质量验证与正式 Mac 测量分时执行，测量中串行同 runner/输入的 GM 与真实 PK，不等待旧看板发布。

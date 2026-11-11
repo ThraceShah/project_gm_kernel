@@ -49,7 +49,9 @@ if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
         }
         Console.WriteLine($"BOUNDARY {trace.Stage} source={trace.Source} face={trace.Face} product={trace.Product} surface={trace.Surface} edge={trace.Edge} carrier={trace.Curve}/{trace.Generation} product_curve={trace.ProductCurve} t=[{trace.First:R},{trace.Last:R}] events={trace.StartEvent}->{trace.EndEvent} forward={trace.Forward} source_edge={trace.SourceEdge} source_fin={trace.SourceFin}");
     };
-var directory=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","regular-solid-blend-oracle");Directory.CreateDirectory(directory);
+var outputName=args.SingleOrDefault(x=>x.StartsWith("--output-name=",StringComparison.Ordinal));
+var directory=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","regular-solid-blend-oracle");
+if(outputName!=null)directory=Path.Combine(directory,outputName["--output-name=".Length..]);Directory.CreateDirectory(directory);
 var oracleStarted=Stopwatch.GetTimestamp();
 #if DEBUG
 Console.WriteLine("CONFIG Debug managed oracle/kernel; independent native PK runtime");
