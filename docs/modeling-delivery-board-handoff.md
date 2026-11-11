@@ -50,10 +50,8 @@
 
 ## 当前待交接
 
-awaiting 计算：固定接受的完整 M0–M5 候选、原执行及显示产物或准确补采命令。计算来源 `ctx_b6fbbccd3586` 继续执行中。
+**已交付（2026-11-11）**：计算线完整候选验收快照已实际上线，回执见 `docs/computation-acceptance-publish-receipt.md`（run `20261111T130936Z-f9c59201`，固定 f9c59201+review4c7646e，红项/原 exit 照实，M0–M5 未完成）。owned 发布已切换到新 release `ui-015-tools-1b93597-data-f9c59201`（回退基线=本次更新前 015 整包），自动入口已钉到 `d10c487`（pin 校验+快照验证），自动轮实跑无回退。
 
-awaiting 性能：固定接受候选及 Mac 同 host GM/PK raw 样本/工作量成果、口径与正确性证据。Mac 负责人已换为 `ctx_5d80758d2e0b`（Pi codex/gpt-6.1-sol high）；原 `ctx089` 已停止，不再联系。2026-11-11 协调者预告（**尚非发布事件，不据此发布**）：Native 固定 `03931f6`，runner HEAD `6761600fef20602342cd9dc81bd4f7e4fb85d939` 仅修 runner 根 capture 实际格式并保留最终 rep XT，Native 树 `01e03aa9ed10a8145556872e98fa1677e17a4cb7` 不变；基线 `ecfff3a`，Native 树 `e314cc2307c5e77ea6f2b7685ba17836ae4ef5c8`。五类操作同 Mac ABBA、每进程 3 fresh 输入正式采集仍在运行，report 位于 Mac 树 `temp_docs/pk-native-work-reduction/controlled-final/report.json`；当前仅首 sphere 控制 qualified，不能签完整性能交付。
+awaiting 性能：**发布已触发**（性能完整 review 已接受）；三原包已在 `temp_docs/incoming/mac-performance/`（mac-modeling-performance-6761600-raw.tar.gz SHA256 `85be8a3e…`、mac-modeling-quality-6761600.tar.gz `f51e1cde…`、mac-modeling-baseline-failures.tar.gz `0c93eb4e…`），最终 review 树 `../gm-pk-performance-final-review`。按序先完成计算回执后发布性能独立 run（与 f9 分源，不混签）。Mac 负责人 `ctx_5d80758d2e0b`；来源预告（Native 固定 03931f6 / runner 6761600f… / Native 树 01e03aa9…；基线 ecfff3a / e314cc23…）已由最终接受范围覆盖。
 
-收包方式（已与协调者约定）：最终包固定后由协调者经现有 SSH 拷入本树 `temp_docs/incoming/mac-performance/` 并核 SHA256，不搭新通道、不在接收前重测；联邦 worker 直发被 CLI 拒绝，统一经协调者转发。`temp_docs/` 为 gitignore，原包不入 Git。
-
-准备期间没有运行 PK、Refresh、性能测试或发布命令，没有修改线上状态；下一步由上述完整交付事件触发。
+收包约定（已执行）：原包由协调者经现有 SSH 拷入本树 `temp_docs/incoming/mac-performance/`（gitignore，原包不入 Git，不公开 XT/整归档）；统一经协调者转发，不搭新通道。
