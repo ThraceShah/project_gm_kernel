@@ -71,19 +71,23 @@ internal static class RollingSectionEvaluation
         for(var k=1;k<=terms;k++)
         {
             var denominator=(double)k*(2*k+1);term=term*((k*(double)k-IntervalDual.Square(v))/denominator)*q;value+=term;
+            if(k<4||(k&(k-1))!=0||v.Value.Magnitude>k)continue;
+            // For every remaining index, |v|<=k bounds the recurrence by
+            // r=q_max/2<1. Keep the complete value and differentiated tails.
+            IntervalNumber ratio=new IntervalNumber(q.Value.Upper)*.5;var denominatorTail=1-ratio;
+            var factorDerivative=new IntervalNumber(q.Derivative.Magnitude)*.5
+                +new IntervalNumber(q.Value.Upper)*(2*new IntervalNumber(v.Value.Magnitude)/((k+1.0)*(2*k+3)))*v.Derivative.Magnitude;
+            var tail=new IntervalNumber(term.Value.Magnitude)*ratio/denominatorTail;
+            var derivative=new IntervalNumber(term.Derivative.Magnitude)*ratio/denominatorTail
+                +new IntervalNumber(term.Value.Magnitude)*factorDerivative/IntervalNumber.Square(denominatorTail);
+            if(!tail.Finite||!derivative.Finite){if(k==terms)return AlgorithmStatus.NotConverged;continue;}
+            if(k!=terms&&(!BelowFloatingStep(tail.Upper,value.Value)||!BelowFloatingStep(derivative.Upper,value.Derivative)))continue;
+            value=new(value.Value+new IntervalNumber(-tail.Upper,tail.Upper),value.Derivative+new IntervalNumber(-derivative.Upper,derivative.Upper));
+            return value.Finite?AlgorithmStatus.Success:AlgorithmStatus.NotConverged;
         }
-        // Beyond the retained degree, |v|<=k implies that every recurrence
-        // factor has magnitude at most r=q_max/2<1. Bound the whole tail
-        // and its differentiated recurrence, including extension boxes used
-        // to certify roots at a finite section endpoint.
-        IntervalNumber ratio=new IntervalNumber(q.Value.Upper)*.5;var denominatorTail=1-ratio;
-        var factorDerivative=new IntervalNumber(q.Derivative.Magnitude)*.5
-            +new IntervalNumber(q.Value.Upper)*(2*new IntervalNumber(v.Value.Magnitude)/((terms+1.0)*(2*terms+3)))*v.Derivative.Magnitude;
-        var tail=new IntervalNumber(term.Value.Magnitude)*ratio/denominatorTail;
-        var derivative=new IntervalNumber(term.Derivative.Magnitude)*ratio/denominatorTail
-            +new IntervalNumber(term.Value.Magnitude)*factorDerivative/IntervalNumber.Square(denominatorTail);
-        if(!tail.Finite||!derivative.Finite)return AlgorithmStatus.NotConverged;
-        value=new(value.Value+new IntervalNumber(-tail.Upper,tail.Upper),value.Derivative+new IntervalNumber(-derivative.Upper,derivative.Upper));
-        return value.Finite?AlgorithmStatus.Success:AlgorithmStatus.NotConverged;
+        return AlgorithmStatus.NotConverged;
     }
+
+    private static bool BelowFloatingStep(double error,IntervalNumber value)
+        =>value.Finite&&error<=Math.Min(value.Lower-Math.BitDecrement(value.Lower),Math.BitIncrement(value.Upper)-value.Upper);
 }
