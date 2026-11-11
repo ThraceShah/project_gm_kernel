@@ -55,6 +55,9 @@
 1. 计算线：run `20261111T130936Z-f9c59201`（f9c59201+review4c7646e）已上线并经协调者独立核验接受；红项/原 exit 照实、M0–M5 未完成。回执 `docs/computation-acceptance-publish-receipt.md`。
 2. 性能线：run `20261111T133805Z-perf6761600`（6761600+review80bde347）已上线（latest）；shortedge -37.2420%/1.59342x/9465.56563x、planar +30.334% 保留、1875/1877+2 既有失败+exit 1、work 计数全部显示；与计算 run 分源不混签。容量方案 A（协调者批准）：两个重复中间 main610 快照已归档至 release `retired-data-archive/`（404 文件/18,094,468B 哈希一致冻结）后移出 served 根。回执 `docs/performance-acceptance-publish-receipt.md`。
 3. 性能显示补齐：run `20261111T142551Z-perf6761600`（latest）为性能成品：五操作各 1 step 真实 GM/PK before/after/tool 模型（85be 原包 rep-2 字节副本，与 rep2 XT 对应），`evidence/display-binding.json` 全绑定，step 标题明示显示单样本≠60 pairs 统计；三报表 case 明示无模型；浏览器 9/9 真实模型像素验收。
+5. 6616 测量线：run `20261111T183127Z-alg6616`（270e2b6→6616cd6 + 独审 1806fd58）已上线（latest）：五操作 rep2 真实模型（material-binding 原字节、shortedge 来源纠正=PK seed XT）、冷暖全值双 ratio 语义分列、回退/离群照实、点值门物性边界（无模量三态）、1912/1914 红保留、不签功能集成。owned release 切至 `ui-015-tools-1b93597-alg6616`（回退基线=本次前 served 整包），producer 钉 e80ae2b；浏览器 13/13、自动轮无回退。回执 `docs/measurement-6616-publish-receipt.md`。
+
+待未来事件：功能整合（dfc5defe/1887e30d 当前 Capture 合同，功能 owner 单管）验证通过后按当前格式接 run；性能总目标继续推进。
 4. Blend 线：run `20261111T174315Z-blend60be`（60be7216+独审 54f1b309）已上线（latest）：六显示 case 同实例补采模型、查询缺口红（20 点全 5000）、mass/510/FaceAttach 未决照实、不签 Boolean/性能/总目标。owned release 切至 `ui-015-tools-1b93597-blend60be`（回退基线=本次前 served 整包），producer 钉 86e1716；浏览器 11/11、自动轮无回退。回执 `docs/blend-60be-acceptance-publish-receipt.md`。Boolean 4794 已独审接受但集成固定产物未到，待交接。
 
 owned 发布/release `ui-015-tools-1b93597-data-f9c59201` 与自动入口钉定（producer d10c487+快照验证）不变；两轮自动轮均 UI_SKIP_SAME 无回退；浏览器验收 12/12+11/11 真实像素通过。
