@@ -22,7 +22,108 @@ if(args.Contains("--self-test"))
     c["performance"]!["correctnessQualified"]=false;Expect(false,"reject unqualified numeric ratio");c["performance"]!["correctnessQualified"]=true;
     c["checks"]![0]!["status"]="missing";Expect(false,"reject unknown acceptance as pass");c["checks"]![0]!["status"]="pass";
     mesh["faces"]![0]!["positions"]![0]="NaN";Expect(false,"reject non-numeric coordinates");mesh["faces"]![0]!["positions"]![0]=0;
-    WriteFixture();var destination=Path.Combine(root,"published");WebProgressPublishing.Publish(root,"test",destination);Console.WriteLine("PASS atomic safe-data publish");
+
+    // Operation-layered contracts and negative tests
+    var op1=new JsonObject{
+        ["operationId"]="op-1",
+        ["ordinal"]=0,
+        ["name"]="PK_BODY_fix_blends",
+        ["role"]="primary",
+        ["api"]="PK_BODY_fix_blends",
+        ["status"]="pass",
+        ["primaryChecks"]=new JsonArray((JsonNode)new JsonObject{["id"]="0-compare",["owner"]="op-1",["category"]="primary",["label"]="compare",["status"]="pass"}),
+        ["auxiliaryChecks"]=new JsonArray(),
+        ["representationContracts"]=new JsonArray(),
+        ["timing"]=new JsonObject{["boundary"]="api-only",["gmMs"]=2.0,["pkMs"]=1.0,["coldKind"]="fresh-process",["warmup"]=0,["samples"]=1,["correctnessQualified"]=true,["ratio"]=2.0}
+    };
+    c["operations"]=new JsonArray((JsonNode)op1);
+    c["operationSchemaVersion"]="operation-layered-v1";
+    c["scenarioId"]="case";
+    c["scenarioStatus"]="pass";
+    c["performance"]!["kind"]="single-operation";
+    Expect(true,"valid operation-layered single-operation contract");
+
+    // Negative: check owner mismatch
+    op1["primaryChecks"]![0]!["owner"]="different-op";Expect(false,"reject check owner mismatch");op1["primaryChecks"]![0]!["owner"]="op-1";
+
+    // Negative: failed operation with qualified ratio
+    op1["status"]="fail";Expect(false,"reject failed operation with qualified ratio");op1["status"]="pass";
+
+    // Negative: unverified operation with qualified ratio
+    op1["status"]="unverified";Expect(false,"reject unverified operation with qualified ratio");op1["status"]="pass";
+
+    // Negative: correctnessQualified true without ratio
+    op1["timing"]!["ratio"]=null;Expect(false,"reject correctnessQualified without ratio");op1["timing"]!["ratio"]=2.0;
+
+    // Negative: multi-step scenario-aggregate with case ratioGmOverPk
+    var op2=new JsonObject{
+        ["operationId"]="op-2",
+        ["ordinal"]=1,
+        ["name"]="PK_BODY_boolean",
+        ["role"]="primary",
+        ["api"]="PK_BODY_boolean",
+        ["status"]="fail",
+        ["primaryChecks"]=new JsonArray((JsonNode)new JsonObject{["id"]="1-compare",["owner"]="op-2",["category"]="primary",["label"]="compare",["status"]="fail"}),
+        ["auxiliaryChecks"]=new JsonArray(),
+        ["representationContracts"]=new JsonArray(),
+        ["timing"]=new JsonObject{["boundary"]="api-only",["gmMs"]=3.0,["pkMs"]=1.0,["coldKind"]="fresh-process",["warmup"]=0,["samples"]=1,["correctnessQualified"]=false,["ratio"]=null}
+    };
+    c["operations"]!.AsArray().Add((JsonNode)op2);
+    c["performance"]!["kind"]="scenario-aggregate";
+    Expect(false,"reject scenario-aggregate with case ratioGmOverPk");
+
+    // Positive: valid multi-step scenario-aggregate (case ratio is null, status fail, step 0 pass retained, step 1 fail)
+    c["performance"]!["ratioGmOverPk"]=null;
+    c["performance"]!["correctnessQualified"]=false;
+    c["status"]="fail";
+    c["scenarioStatus"]="fail";
+    c["firstFailedOperationId"]="op-2";
+    c["checks"]![0]!["status"]="fail";
+    Expect(true,"valid multi-step scenario-aggregate with prior step pass retained");
+
+    // Positive: unreached step with status not-run
+    var op3=new JsonObject{
+        ["operationId"]="unreached-2",
+        ["ordinal"]=2,
+        ["name"]="PK_BODY_boolean",
+        ["role"]="lifecycle",
+        ["api"]="PK_BODY_boolean",
+        ["status"]="not-run",
+        ["primaryChecks"]=new JsonArray(),
+        ["auxiliaryChecks"]=new JsonArray(),
+        ["representationContracts"]=new JsonArray(),
+        ["timing"]=new JsonObject{["boundary"]="api-only",["gmMs"]=null,["pkMs"]=null,["coldKind"]="fresh-process",["warmup"]=0,["samples"]=0,["correctnessQualified"]=false,["ratio"]=null}
+    };
+    c["operations"]!.AsArray().Add((JsonNode)op3);
+    Expect(true,"valid unreached step marked not-run");
+
+    // Positive: multiple same-name APIs with unique stable IDs
+    var op4=new JsonObject{
+        ["operationId"]="boolean-cut-2",
+        ["ordinal"]=3,
+        ["name"]="PK_BODY_boolean",
+        ["role"]="lifecycle",
+        ["api"]="PK_BODY_boolean",
+        ["status"]="not-run",
+        ["primaryChecks"]=new JsonArray(),
+        ["auxiliaryChecks"]=new JsonArray(),
+        ["representationContracts"]=new JsonArray(),
+        ["timing"]=new JsonObject{["boundary"]="api-only",["gmMs"]=null,["pkMs"]=null,["coldKind"]="fresh-process",["warmup"]=0,["samples"]=0,["correctnessQualified"]=false,["ratio"]=null}
+    };
+    c["operations"]!.AsArray().Add((JsonNode)op4);
+    Expect(true,"valid multiple same-name APIs with unique stable operation IDs");
+
+    // Cleanup for publish tests
+    c["operations"]=new JsonArray();
+    c["performance"]!["kind"]="single-operation";
+    c["performance"]!["gmMs"]=2;
+    c["performance"]!["pkMs"]=1;
+    c["performance"]!["ratioGmOverPk"]=2;
+    c["performance"]!["correctnessQualified"]=true;
+    c["status"]="pass";
+    c["scenarioStatus"]="pass";
+    c["checks"]![0]!["status"]="pass";
+    WriteFixture();var destination=Path.Combine(root,"published");if(Directory.Exists(destination))Directory.Delete(destination,true);WebProgressPublishing.Publish(root,"test",destination);Console.WriteLine("PASS atomic safe-data publish");
     File.WriteAllText(Path.Combine(runDirectory,"forbidden.dll"),"test-only");
     try{WebProgressPublishing.Publish(root,"test",Path.Combine(root,"rejected"));throw new Exception("Publisher accepted binary extension");}catch(IOException){Console.WriteLine("PASS static allowlist rejects binaries");}finally{File.Delete(Path.Combine(runDirectory,"forbidden.dll"));}
     return 0;

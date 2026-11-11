@@ -25,7 +25,9 @@ internal static unsafe class WebProgressCapture
     internal static string Context="";
     private static readonly Dictionary<(bool,string),int> ContextCounts=[];
     private static readonly Dictionary<string,int> ContextSteps=[];
+    private static readonly Dictionary<int,OperationRecord> OperationsByOrdinal=[];
     private const double ChordTolerance=.01;
+    private static string SanitizeOpId(string s)=>new string(s.Select(c=>char.IsLetterOrDigit(c)?char.ToLowerInvariant(c):'-').ToArray()).Trim('-');
     internal static void Before(bool own,BodyTag body,EntityTag[]? selected=null,string operation="PK_BODY_fix_blends",BodyTag[]? tools=null,bool supportBody=false)
     {
         if(!Enabled)return;
@@ -33,12 +35,21 @@ internal static unsafe class WebProgressCapture
         {
             Directory.CreateDirectory(Output!);
             var ordinal=Ordinals[own]++;var side=own?"gm":"pk";
+            var contextKey=(own,Context+":"+operation);var occurrence=ContextCounts.GetValueOrDefault(contextKey);ContextCounts[contextKey]=occurrence+1;
+            var logicalKey=Context+":"+operation+":"+occurrence;
+            if(!ContextSteps.TryGetValue(logicalKey,out ordinal)){ordinal=Steps.Count;ContextSteps.Add(logicalKey,ordinal);}
+            Ordinals[own]=ordinal+1;
+
+            var opId=Context.Length>0?$"op-{ordinal+1}-{SanitizeOpId(Context)}-{operation.Replace("PK_","").Replace("BODY_","").ToLowerInvariant()}":$"op-{ordinal+1}";
+            if(!OperationsByOrdinal.TryGetValue(ordinal,out var opRecord))
             {
-                var contextKey=(own,Context+":"+operation);var occurrence=ContextCounts.GetValueOrDefault(contextKey);ContextCounts[contextKey]=occurrence+1;
-                var logicalKey=Context+":"+operation+":"+occurrence;
-                if(!ContextSteps.TryGetValue(logicalKey,out ordinal)){ordinal=Steps.Count;ContextSteps.Add(logicalKey,ordinal);}
-                Ordinals[own]=ordinal+1;
+                var role=Context.Contains("lifecycle",StringComparison.OrdinalIgnoreCase)||Context.Contains("cut",StringComparison.OrdinalIgnoreCase)?"lifecycle":"primary";
+                var prov=new JsonObject{["target"]=Environment.GetEnvironmentVariable("GM_WEB_GEOMETRY_AUTHOR")??"independent GM and PK construction, identical numeric parameters",["context"]=Context};
+                opRecord=new OperationRecord(opId,ordinal,(Context.Length>0?Context+" / ":"")+operation,role,operation,null,prov,true){StepRef=ordinal};
+                OperationsByOrdinal[ordinal]=opRecord;
             }
+            opRecord.InputHashes[side]=new JsonObject{["bodyTag"]=body};
+
             while(Steps.Count<=ordinal)Steps.Add((JsonNode)new JsonObject{["id"]=$"operation-{Steps.Count+1}",["title"]=(Context.Length>0?Context+" / ":"")+operation,["gm"]=new JsonObject{["before"]=null,["after"]=null},["pk"]=new JsonObject{["before"]=null,["after"]=null}});
             var support=new HashSet<int>();
             foreach(var edge in selected??[])
@@ -77,7 +88,7 @@ internal static unsafe class WebProgressCapture
                 records.Add((JsonNode)new JsonObject{["newBlendFace"]=made[i],["replacedTopol"]=topols==null?null:JsonValue.Create(topols[i]),["underlyingEntities"]=support});
             }
             Steps[ordinal]![own?"gm":"pk"]!["blendTracking"]=records;
-            AddCheck($"{ordinal}-{own}-blend-fault","Blend fault "+(own?"GM":"PK"),fault==PK_blend_fault_no_fault_c?"pass":"fail",own?fault:null,own?null:fault,PK_blend_fault_no_fault_c,"enum","PK_blend_fault_no_fault_c required");Flush();
+            AddCheck($"{ordinal}-{own}-blend-fault","Blend fault "+(own?"GM":"PK"),fault==PK_blend_fault_no_fault_c?"pass":"fail",own?fault:null,own?null:fault,PK_blend_fault_no_fault_c,"enum","PK_blend_fault_no_fault_c required",ordinal:ordinal,category:"auxiliary");Flush();
         });
     }
     internal static void BooleanAfter(bool own,BodyTag[] bodies,double ms,int error,int status,PK_TOPOL_track_r_t* tracking)
@@ -89,7 +100,12 @@ internal static unsafe class WebProgressCapture
         {
             var ordinal=Ordinals[own]-1;var side=own?"gm":"pk";
             Timings.Add((JsonNode)new JsonObject{["step"]=ordinal,["kernel"]=side,["ms"]=ms,["error"]=error,["resultStatus"]=status});
-            AddCheck($"{side}-{ordinal}-api",side+" API error",error==0?"pass":"fail",own?error:null,own?null:error,0,"code","API error, zero means success");
+            if(OperationsByOrdinal.TryGetValue(ordinal,out var opRec))
+            {
+                if(own){opRec.GmMs=ms;opRec.Returns["gm"]=error;}
+                else{opRec.PkMs=ms;opRec.Returns["pk"]=error;}
+            }
+            AddCheck($"{side}-{ordinal}-api",side+" API error",error==0?"pass":"fail",own?error:null,own?null:error,0,"code","API error, zero means success",ordinal:ordinal,category:"auxiliary");
             var tracks=new JsonArray();var products=new HashSet<int>();var deleted=new HashSet<int>();
             if(tracking!=null)for(var i=0;i<tracking->n_track_records;i++)
             {
@@ -172,18 +188,23 @@ internal static unsafe class WebProgressCapture
     private static void Compare(int ordinal)
     {
         var a=AfterBodies[(true,ordinal)];var b=AfterBodies[(false,ordinal)];
-        AddCheck($"{ordinal}-body-count","Result body count",a.Length==b.Length?"pass":"fail",a.Length,b.Length,0,"count","");
+        if(OperationsByOrdinal.TryGetValue(ordinal,out var opOut))
+        {
+            if(a.Length>0)opOut.OutputHashes["gm"]=new JsonObject{["bodyTag"]=a[0]};
+            if(b.Length>0)opOut.OutputHashes["pk"]=new JsonObject{["bodyTag"]=b[0]};
+        }
+        AddCheck($"{ordinal}-body-count","Result body count",a.Length==b.Length?"pass":"fail",a.Length,b.Length,0,"count","",ordinal:ordinal,category:"primary");
         if(a.Length!=1||b.Length!=1)
-        {AddCheck($"{ordinal}-correspondence","Multi-body correspondence","missing",null,null,null,"","No guessed body pairing; oracle log retains its own matching checks.");return;}
+        {AddCheck($"{ordinal}-correspondence","Multi-body correspondence","missing",null,null,null,"","No guessed body pairing; oracle log retains its own matching checks.",ordinal:ordinal,category:"primary");return;}
         var received=a[0];var reference=b[0];
         foreach(var pair in new[]{(Body:received,Own:true),(Body:reference,Own:false)})
         {
             var options=new PK_BODY_check_o_t{max_faults=100};int n=0;PK_check_fault_t* faults=null;Guard(PK_BODY_check(pair.Body,&options,&n,&faults),"BODY_check");
             var detail=new JsonArray();try{for(var i=0;i<n;i++)detail.Add((JsonNode)new JsonObject{["state"]=faults[i].state,["entity1"]=faults[i].entity_1,["entity2"]=faults[i].entity_2});}finally{Free(false,faults);}
-            AddCheck($"{ordinal}-{pair.Own}-body-check","Full BODY_check "+(pair.Own?"GM fresh XT":"PK"),n==0?"pass":"fail",pair.Own?n:null,pair.Own?null:n,0,"faults",detail.ToJsonString());
+            AddCheck($"{ordinal}-{pair.Own}-body-check","Full BODY_check "+(pair.Own?"GM fresh XT":"PK"),n==0?"pass":"fail",pair.Own?n:null,pair.Own?null:n,0,"faults",detail.ToJsonString(),ordinal:ordinal,category:"primary");
         }
         for(var kind=0;kind<5;kind++)
-        {var x=Count(received,kind);var y=Count(reference,kind);AddCheck($"{ordinal}-count-{kind}",new[]{"Regions","Shells","Faces","Edges","Vertices"}[kind],x==y?"pass":"fail",x,y,0,"count","");}
+        {var x=Count(received,kind);var y=Count(reference,kind);AddCheck($"{ordinal}-count-{kind}",new[]{"Regions","Shells","Faces","Edges","Vertices"}[kind],x==y?"pass":"fail",x,y,0,"count","",ordinal:ordinal,category:"primary");}
         var mask=new PK_DEBUG_BODY_compare_o_t{max_diffs=1024,all_tests=PK_LOGICAL_false,acc_dev_tests=PK_LOGICAL_false,tol_dev_tests=PK_LOGICAL_true,non_match_tests=PK_LOGICAL_true};PK_DEBUG_BODY_compare_r_t result=default;
         Guard(PK_DEBUG_BODY_compare(reference,received,&mask,&result),"raw compare");
         var diffs=new JsonArray();var globals=new JsonArray();
@@ -195,22 +216,36 @@ internal static unsafe class WebProgressCapture
             Write($"evidence/compare-{ordinal}.json",new JsonObject{["globalResult"]=result.global_result,["localResult"]=result.local_result,["facePairs"]=result.n_face_pairs,["globalDiffs"]=globals,["localDiffs"]=diffs,["mask"]=new JsonObject{["max_diffs"]=mask.max_diffs,["all_tests"]=false,["num_tests"]=mask.num_tests==PK_LOGICAL_true,["acc_dev_tests"]=false,["tol_dev_tests"]=true,["tol_tests"]=mask.tol_tests==PK_LOGICAL_true,["class_tests"]=mask.class_tests==PK_LOGICAL_true,["sense_tests"]=mask.sense_tests==PK_LOGICAL_true,["missing_tests"]=mask.missing_tests==PK_LOGICAL_true,["non_match_tests"]=true},["diagnosticWhitelist"]=new JsonArray("n_cht_pts")});
         }
         finally{PK_DEBUG_BODY_compare_r_f(&result);}
-        try{ParasolidBodyCompare.AssertEquivalent(reference,received,"web strict fresh XT");AddCheck($"{ordinal}-equivalence","Type, regions and strict BODY_compare","pass",null,null,null,"","Only n_cht_pts is diagnostic.");}
-        catch(Exception e){AddCheck($"{ordinal}-equivalence","Type, regions and strict BODY_compare","fail",null,null,null,"",e.Message);}
+        try{ParasolidBodyCompare.AssertEquivalent(reference,received,"web strict fresh XT");AddCheck($"{ordinal}-equivalence","Type, regions and strict BODY_compare","pass",null,null,null,"","Only n_cht_pts is diagnostic.",ordinal:ordinal,category:"primary",evidence:$"evidence/compare-{ordinal}.json");}
+        catch(Exception e){AddCheck($"{ordinal}-equivalence","Type, regions and strict BODY_compare","fail",null,null,null,"",e.Message,ordinal:ordinal,category:"primary",evidence:$"evidence/compare-{ordinal}.json");}
         var mass=new PK_TOPOL_eval_mass_props_o_t();double* xMass=stackalloc double[15];double* yMass=stackalloc double[15];
         Guard(PK_TOPOL_eval_mass_props(1,&received,.99999999,&mass,xMass,xMass+1,xMass+2,xMass+5,xMass+14),"GM mass");
         Guard(PK_TOPOL_eval_mass_props(1,&reference,.99999999,&mass,yMass,yMass+1,yMass+2,yMass+5,yMass+14),"PK mass");
         for(var i=0;i<15;i++)
-        {var delta=Math.Abs(xMass[i]-yMass[i])/(1+Math.Abs(yMass[i]));AddCheck($"{ordinal}-mass-{i}",new[]{"Volume","Mass","Centroid X","Centroid Y","Centroid Z","Inertia XX","Inertia XY","Inertia XZ","Inertia YX","Inertia YY","Inertia YZ","Inertia ZX","Inertia ZY","Inertia ZZ","Area"}[i],double.IsFinite(delta)&&delta<1e-7?"pass":"fail",xMass[i],yMass[i],1e-7,i<2?"model³":i<5?"model":i<14?"model⁵":"model²","abs(GM-PK)/(1+abs(PK)) < threshold; accuracy=.99999999");}
+        {var delta=Math.Abs(xMass[i]-yMass[i])/(1+Math.Abs(yMass[i]));AddCheck($"{ordinal}-mass-{i}",new[]{"Volume","Mass","Centroid X","Centroid Y","Centroid Z","Inertia XX","Inertia XY","Inertia XZ","Inertia YX","Inertia YY","Inertia YZ","Inertia ZX","Inertia ZY","Inertia ZZ","Area"}[i],double.IsFinite(delta)&&delta<1e-7?"pass":"fail",xMass[i],yMass[i],1e-7,i<2?"model³":i<5?"model":i<14?"model⁵":"model²","abs(GM-PK)/(1+abs(PK)) < threshold; accuracy=.99999999",ordinal:ordinal,category:"primary");}
     }
     private static int Count(BodyTag body,int kind)
     {int n=0;int* tags=null;Guard(kind switch{0=>PK_BODY_ask_regions(body,&n,&tags),1=>PK_BODY_ask_shells(body,&n,&tags),2=>PK_BODY_ask_faces(body,&n,&tags),3=>PK_BODY_ask_edges(body,&n,&tags),_=>PK_BODY_ask_vertices(body,&n,&tags)},"topology counts");Free(false,tags);return n;}
-    private static void AddCheck(string id,string label,string status,double? gm,double? pk,double? threshold,string unit,string note)
-        =>Checks.Add((JsonNode)new JsonObject{["id"]=id,["label"]=label,["status"]=status,["gm"]=Finite(gm),["pk"]=Finite(pk),["absDelta"]=gm.HasValue&&pk.HasValue?Finite(Math.Abs(gm.Value-pk.Value)):null,["normalizedDelta"]=gm.HasValue&&pk.HasValue?Finite(Math.Abs(gm.Value-pk.Value)/(1+Math.Abs(pk.Value))):null,["threshold"]=threshold,["unit"]=unit,["evidence"]=null,["note"]=note});
+    private static void AddCheck(string id,string label,string status,double? gm,double? pk,double? threshold,string unit,string note,int? ordinal=null,string category="primary",string? evidence=null)
+    {
+        string? owner=null;
+        if(ordinal.HasValue&&OperationsByOrdinal.TryGetValue(ordinal.Value,out var op))owner=op.Id;
+        else if(int.TryParse(id.Split('-')[0],out var parsedOrdinal)&&OperationsByOrdinal.TryGetValue(parsedOrdinal,out var op2))owner=op2.Id;
+
+        var checkObj=new JsonObject{["id"]=id,["owner"]=owner,["category"]=category,["label"]=label,["status"]=status,["gm"]=Finite(gm),["pk"]=Finite(pk),["absDelta"]=gm.HasValue&&pk.HasValue?Finite(Math.Abs(gm.Value-pk.Value)):null,["normalizedDelta"]=gm.HasValue&&pk.HasValue?Finite(Math.Abs(gm.Value-pk.Value)/(1+Math.Abs(pk.Value))):null,["threshold"]=threshold,["unit"]=unit,["evidence"]=evidence,["note"]=note};
+        Checks.Add((JsonNode)checkObj);
+        if(owner!=null){var targetOp=OperationsByOrdinal.Values.FirstOrDefault(o=>o.Id==owner);targetOp?.AddCheck(category,checkObj);}
+    }
     private static void Flush()
     {
         var version=new PK_SESSION_kernel_version_t();Guard(PK_SESSION_ask_kernel_version(&version),"PK version");double precision=0;Guard(PK_SESSION_ask_precision(&precision),"PK precision");
-        Write("capture.json",new JsonObject{["steps"]=Steps.DeepClone(),["checks"]=Checks.DeepClone(),["timings"]=Timings.DeepClone(),["captureErrors"]=Errors.DeepClone(),["pkVersion"]=$"{version.major_revision}.{version.minor_revision}.{version.build_number}",["sessionPrecision"]=precision});
+        var ops=new JsonArray();
+        foreach(var kvp in OperationsByOrdinal.OrderBy(k=>k.Key))
+        {
+            kvp.Value.EvaluateStatus();
+            ops.Add((JsonNode)kvp.Value.ToJsonObject());
+        }
+        Write("capture.json",new JsonObject{["operationSchemaVersion"]="operation-layered-v1",["operations"]=ops,["steps"]=Steps.DeepClone(),["checks"]=Checks.DeepClone(),["timings"]=Timings.DeepClone(),["captureErrors"]=Errors.DeepClone(),["pkVersion"]=$"{version.major_revision}.{version.minor_revision}.{version.build_number}",["sessionPrecision"]=precision});
     }
     private static void Observe(Action action)
     {try{action();}catch(Exception e){Errors.Add((JsonNode?)JsonValue.Create(e.ToString()));Console.Error.WriteLine("WEB_EXPORT_ERROR "+e);Directory.CreateDirectory(Output!);File.WriteAllText(Path.Combine(Output!,"capture-errors.json"),Sanitize(Errors.ToJsonString()));
@@ -229,12 +264,22 @@ internal static unsafe class WebProgressCapture
     internal static void BlendParameters(bool own,PK_BODY_fix_blends_o_t fix,double radius,double markTolerance,string markApi="PK_EDGE_set_blend_constant",double? secondRange=null,EntityTag? designatedFace=null)
     {
         if(!Enabled)return;
-        Observe(()=>{Steps[Ordinals[own]-1]![own?"gm":"pk"]!["apiParameters"]=new JsonObject{["mark"]=new JsonObject{["name"]=markApi,["radius"]=markApi=="PK_EDGE_set_blend_constant"?JsonValue.Create(radius):null,["range0"]=markApi=="PK_EDGE_set_blend_constant"?null:JsonValue.Create(radius),["range1"]=secondRange,["designatedFace"]=designatedFace,["tolerance"]=markTolerance},["operation"]=new JsonObject{["name"]="PK_BODY_fix_blends",["o_t_version"]=fix.o_t_version,["update"]=fix.update,["tolerance"]=fix.tolerance,["local_check"]=fix.local_check==PK_LOGICAL_true},["otherOptions"]="Unmodified defaults of the pinned PskernelSharp option constructor; see source hash and binding revision."};Flush();});
+        Observe(()=>{
+            var paramsObj=new JsonObject{["mark"]=new JsonObject{["name"]=markApi,["radius"]=markApi=="PK_EDGE_set_blend_constant"?JsonValue.Create(radius):null,["range0"]=markApi=="PK_EDGE_set_blend_constant"?null:JsonValue.Create(radius),["range1"]=secondRange,["designatedFace"]=designatedFace,["tolerance"]=markTolerance},["operation"]=new JsonObject{["name"]="PK_BODY_fix_blends",["o_t_version"]=fix.o_t_version,["update"]=fix.update,["tolerance"]=fix.tolerance,["local_check"]=fix.local_check==PK_LOGICAL_true},["otherOptions"]="Unmodified defaults of the pinned PskernelSharp option constructor; see source hash and binding revision."};
+            Steps[Ordinals[own]-1]![own?"gm":"pk"]!["apiParameters"]=paramsObj.DeepClone();
+            if(OperationsByOrdinal.TryGetValue(Ordinals[own]-1,out var opRec))opRec.Options=(JsonObject)paramsObj.DeepClone();
+            Flush();
+        });
     }
     internal static void BooleanParameters(bool own,PK_BODY_boolean_o_t options)
     {
         if(!Enabled)return;
-        Observe(()=>{Steps[Ordinals[own]-1]![own?"gm":"pk"]!["apiParameters"]=new JsonObject{["o_t_version"]=options.o_t_version,["function"]=options.function,["default_tol"]=options.default_tol,["max_tol"]=options.max_tol,["tracking"]=options.tracking==PK_LOGICAL_true,["tracking_type"]=options.tracking_type,["track_regions"]=options.track_regions,["merge_imprinted"]=options.merge_imprinted==PK_LOGICAL_true,["allow_disjoint"]=options.allow_disjoint==PK_LOGICAL_true,["fence"]=options.fence,["target_material_side"]=options.target_material_side,["tool_material_side"]=options.tool_material_side,["update"]=options.update,["otherOptions"]="Unmodified defaults of the pinned PskernelSharp option constructor."};Flush();});
+        Observe(()=>{
+            var paramsObj=new JsonObject{["o_t_version"]=options.o_t_version,["function"]=options.function,["default_tol"]=options.default_tol,["max_tol"]=options.max_tol,["tracking"]=options.tracking==PK_LOGICAL_true,["tracking_type"]=options.tracking_type,["track_regions"]=options.track_regions,["merge_imprinted"]=options.merge_imprinted==PK_LOGICAL_true,["allow_disjoint"]=options.allow_disjoint==PK_LOGICAL_true,["fence"]=options.fence,["target_material_side"]=options.target_material_side,["tool_material_side"]=options.tool_material_side,["update"]=options.update,["otherOptions"]="Unmodified defaults of the pinned PskernelSharp option constructor."};
+            Steps[Ordinals[own]-1]![own?"gm":"pk"]!["apiParameters"]=paramsObj.DeepClone();
+            if(OperationsByOrdinal.TryGetValue(Ordinals[own]-1,out var opRec))opRec.Options=(JsonObject)paramsObj.DeepClone();
+            Flush();
+        });
     }
     internal static void BeforeSurfaces(bool own,EntityTag first,EntityTag second)
     {
@@ -277,7 +322,7 @@ internal static unsafe class WebProgressCapture
                 if(cls==PK_CLASS_face&&PK_FACE_ask_surf(faults[i].entity_1,&support)==0)PK_ENTITY_ask_class(support,&supportClass);
                 details.Add((JsonNode)new JsonObject{["state"]=faults[i].state,["entity1"]=faults[i].entity_1,["entity2"]=faults[i].entity_2,["entityClass"]=cls,["support"]=support,["supportClass"]=supportClass});
             }
-            AddCheck("original-body-"+Checks.Count,stage+" full BODY_check",count==0?"pass":"fail",null,null,0,"faults",details.ToJsonString());
+            AddCheck("original-body-"+Checks.Count,stage+" full BODY_check",count==0?"pass":"fail",null,null,0,"faults",details.ToJsonString(),category:"auxiliary");
             Checks[^1]!["stage"]=stage;Checks[^1]!["evaluatedKernel"]="PK";Checks[^1]!["faultCount"]=count;Checks[^1]!["faults"]=details;Flush();
         });
     }
@@ -289,7 +334,7 @@ internal static unsafe class WebProgressCapture
             for(var i=0;i<15;i++)
             {
                 var delta=Math.Abs(actual[i]-reference[i])/(1+Math.Abs(reference[i]));
-                AddCheck("original-mass-"+Checks.Count,stage+" mass["+i+"]",double.IsFinite(delta)&&delta<1e-7?"pass":"fail",actual[i],reference[i],1e-7,i<2?"model³":i<5?"model":i<14?"model⁵":"model²","Original final point gate; accuracy="+accuracy.ToString("R",System.Globalization.CultureInfo.InvariantCulture));
+                AddCheck("original-mass-"+Checks.Count,stage+" mass["+i+"]",double.IsFinite(delta)&&delta<1e-7?"pass":"fail",actual[i],reference[i],1e-7,i<2?"model³":i<5?"model":i<14?"model⁵":"model²","Original final point gate; accuracy="+accuracy.ToString("R",System.Globalization.CultureInfo.InvariantCulture),category:"auxiliary");
                 Checks[^1]!["stage"]=stage;
             }
             Flush();

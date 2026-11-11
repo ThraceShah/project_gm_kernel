@@ -29,7 +29,7 @@ var run=Path.Combine(data,"runs",id);if(Directory.Exists(run))throw new IOExcept
 var host=new JsonObject{["os"]=RuntimeInformation.OSDescription,["architecture"]=RuntimeInformation.OSArchitecture.ToString(),["processArchitecture"]=RuntimeInformation.ProcessArchitecture.ToString(),["logicalProcessors"]=Environment.ProcessorCount,["cpu"]=OperatingSystem.IsMacOS()?Command("sysctl",["-n","machdep.cpu.brand_string"]):ReadCpu(),["memoryBytes"]=OperatingSystem.IsMacOS()?Command("sysctl",["-n","hw.memsize"]):null,["sdk"]=Command("dotnet",["--version"]),["runtime"]=RuntimeInformation.FrameworkDescription,["stopwatchFrequency"]=Stopwatch.Frequency};
 var configuration=new JsonObject{["build"]=config,["nativeAot"]=false,["timing"]="Stopwatch elapsed wall time around API only",["tieredCompilation"]=Environment.GetEnvironmentVariable("DOTNET_TieredCompilation")??"runtime-default",["cache"]="oracle defaults, fresh process per sample",["parallelism"]="serial PK sessions",["samplesRequested"]=samples,["resourceLimits"]=Environment.GetEnvironmentVariable("GM_WEB_RESOURCE_LIMITS")};
 var cases=new JsonArray();
-var manifest=new JsonObject{["schemaVersion"]=1,["run"]=new JsonObject{["id"]=id,["commit"]=commit,["generatedAt"]=now.ToString("O"),["pkVersion"]=null,["host"]=host.DeepClone(),["configuration"]=configuration.DeepClone(),["scope"]=new JsonObject{["registryVersion"]=registry["version"]!.DeepClone(),["registered"]=registry["cases"]!.AsArray().Count,["family"]=Option("--family","all"),["suite"]=Option("--suite","all"),["case"]=Option("--case","representatives"),["seconds"]=budget,["caseSeconds"]=caseBudget},["provenance"]=new JsonObject{["pkToyCommit"]=Command("git",["-C","third_party/PKToy","rev-parse","HEAD"]),["dirtyAtStart"]=dirty.Length>0,["sourceHashes"]=SourceHashes(),["registryHash"]=Hash(File.ReadAllBytes(registryPath)),["workingDiffSha256"]=Hash(Encoding.UTF8.GetBytes(Command("git",["diff","--no-ext-diff"]))),["sourceMode"]="direct managed KernelRuntime plus independent PskernelSharp real PK",["registry"]= "registry.json",["reviewSources"]=registry["reviewSources"]?.DeepClone(),["implementationTree"]=Command("git",["rev-parse","HEAD:src"]),["limitations"]=registry["limitations"]!.DeepClone()}},["cases"]=cases};
+var manifest=new JsonObject{["schemaVersion"]=1,["operationSchemaVersion"]="operation-layered-v1",["run"]=new JsonObject{["id"]=id,["commit"]=commit,["generatedAt"]=now.ToString("O"),["pkVersion"]=null,["host"]=host.DeepClone(),["configuration"]=configuration.DeepClone(),["scope"]=new JsonObject{["registryVersion"]=registry["version"]!.DeepClone(),["registered"]=registry["cases"]!.AsArray().Count,["family"]=Option("--family","all"),["suite"]=Option("--suite","all"),["case"]=Option("--case","representatives"),["seconds"]=budget,["caseSeconds"]=caseBudget},["provenance"]=new JsonObject{["pkToyCommit"]=Command("git",["-C","third_party/PKToy","rev-parse","HEAD"]),["dirtyAtStart"]=dirty.Length>0,["sourceHashes"]=SourceHashes(),["registryHash"]=Hash(File.ReadAllBytes(registryPath)),["workingDiffSha256"]=Hash(Encoding.UTF8.GetBytes(Command("git",["diff","--no-ext-diff"]))),["sourceMode"]="direct managed KernelRuntime plus independent PskernelSharp real PK",["registry"]= "registry.json",["reviewSources"]=registry["reviewSources"]?.DeepClone(),["implementationTree"]=Command("git",["rev-parse","HEAD:src"]),["limitations"]=registry["limitations"]!.DeepClone()}},["cases"]=cases};
 File.WriteAllText(Path.Combine(run,"registry.json"),registry.ToJsonString());
 var clock=Stopwatch.StartNew();var exporterBroken=false;var executed=0;var completed=false;
 foreach(var entry in registry["cases"]!.AsArray().OfType<JsonObject>())
@@ -38,7 +38,7 @@ foreach(var entry in registry["cases"]!.AsArray().OfType<JsonObject>())
     var requested=Option("--case","representatives");var selected=(Option("--family","all") is "all"||Option("--family","all")==family)&&(Option("--suite","all") is "all"||Option("--suite","all")==suite)&&(requested=="all"||requested=="representatives"&&entry["representative"]?.GetValue<bool>()==true||requested.Split(',').Contains(caseId,StringComparer.Ordinal));
     var parameters=entry["parameters"]!.DeepClone();var api=entry["api"]!.GetValue<string>();
     var checks=new JsonArray();var evidence=new JsonArray();var notes=new JsonArray();
-    var c=new JsonObject{["id"]=caseId,["title"]=entry["title"]?.DeepClone()??JsonValue.Create(caseId),["family"]=family,["operation"]=entry["operation"]!.DeepClone(),["status"]="missing",["parameters"]=parameters,["parameterHash"]=Hash(Encoding.UTF8.GetBytes(parameters.ToJsonString())),["apis"]=new JsonObject{["gm"]=new JsonObject{["name"]=api,["parameters"]=parameters.DeepClone()},["pk"]=new JsonObject{["name"]=api,["parameters"]=parameters.DeepClone()}},["steps"]=new JsonArray(),["checks"]=checks,["performance"]=new JsonObject{["gmMs"]=null,["pkMs"]=null,["ratioGmOverPk"]=null,["samples"]=0,["warmup"]=0,["scope"]="operation-only; ratio = GM elapsed ms / PK elapsed ms; input construction, export, tessellation, comparison and I/O excluded",["correctnessQualified"]=false,["host"]=host.DeepClone(),["configuration"]=configuration.DeepClone(),["note"]="Not executed"},["evidence"]=evidence,["notes"]=notes,["source"]=new JsonObject{["path"]=entry["source"]!.DeepClone(),["revision"]=commit},["suite"]=suite,["execution"]=new JsonObject{["selected"]=selected,["attempted"]=false,["exitCode"]=null}};
+    var c=new JsonObject{["id"]=caseId,["title"]=entry["title"]?.DeepClone()??JsonValue.Create(caseId),["family"]=family,["operation"]=entry["operation"]!.DeepClone(),["status"]="missing",["operationSchemaVersion"]="operation-layered-v1",["scenarioId"]=caseId,["scenarioStatus"]="missing",["scenarioElapsedMs"]=null,["firstFailedOperationId"]=null,["legacyExitCode"]=null,["checkVersion"]="operation-layered-v1",["parameters"]=parameters,["parameterHash"]=Hash(Encoding.UTF8.GetBytes(parameters.ToJsonString())),["apis"]=new JsonObject{["gm"]=new JsonObject{["name"]=api,["parameters"]=parameters.DeepClone()},["pk"]=new JsonObject{["name"]=api,["parameters"]=parameters.DeepClone()}},["operations"]=new JsonArray(),["steps"]=new JsonArray(),["checks"]=checks,["performance"]=new JsonObject{["kind"]="single-operation",["gmMs"]=null,["pkMs"]=null,["ratioGmOverPk"]=null,["samples"]=0,["warmup"]=0,["scope"]="operation-only; ratio = GM elapsed ms / PK elapsed ms; input construction, export, tessellation, comparison and I/O excluded",["correctnessQualified"]=false,["host"]=host.DeepClone(),["configuration"]=configuration.DeepClone(),["note"]="Not executed"},["evidence"]=evidence,["notes"]=notes,["source"]=new JsonObject{["path"]=entry["source"]!.DeepClone(),["revision"]=commit},["suite"]=suite,["execution"]=new JsonObject{["selected"]=selected,["attempted"]=false,["exitCode"]=null}};
     cases.Add((JsonNode)c);
  }
 Save();
@@ -84,6 +84,7 @@ foreach(var entry in registry["cases"]!.AsArray().OfType<JsonObject>())
             c["sessionPrecision"]=capture["sessionPrecision"]!.DeepClone();
             if(sample==0)
             {
+                c["operations"]=capture["operations"]?.DeepClone().AsArray()??new JsonArray();
                 var steps=capture["steps"]!.DeepClone().AsArray();
                 foreach(var step in steps)foreach(var side in new[]{"gm","pk"})
                 {
@@ -111,22 +112,64 @@ foreach(var entry in registry["cases"]!.AsArray().OfType<JsonObject>())
     }
     if(entry["expectedStepCount"] is JsonValue expectedValue)
     {
-        var expected=expectedValue.GetValue<int>();var steps=c["steps"]!.AsArray();
+        var expected=expectedValue.GetValue<int>();var steps=c["steps"]!.AsArray();var ops=c["operations"]!.AsArray();
         while(steps.Count<expected)
         {
             var ordinal=steps.Count;steps.Add((JsonNode)new JsonObject{["id"]="unreached-"+ordinal,["title"]="Downstream operation not reached; see stage evidence",["gm"]=new JsonObject{["before"]=null,["after"]=null},["pk"]=new JsonObject{["before"]=null,["after"]=null}});
-            checks.Add((JsonNode)new JsonObject{["id"]="unreached-"+ordinal,["label"]="Downstream operation evidence",["status"]="missing",["gm"]=null,["pk"]=null,["absDelta"]=null,["normalizedDelta"]=null,["threshold"]=null,["unit"]="",["evidence"]=null,["note"]="Execution did not reach this registered operation; no success inferred."});allValid=false;
+            checks.Add((JsonNode)new JsonObject{["id"]="unreached-"+ordinal,["owner"]=$"unreached-{ordinal}",["category"]="primary",["label"]="Downstream operation evidence",["status"]="missing",["gm"]=null,["pk"]=null,["absDelta"]=null,["normalizedDelta"]=null,["threshold"]=null,["unit"]="",["evidence"]=null,["note"]="Execution did not reach this registered operation; no success inferred."});allValid=false;
+        }
+        while(ops.Count<expected)
+        {
+            var ordinal=ops.Count;
+            ops.Add((JsonNode)new JsonObject{
+                ["operationId"]=$"unreached-{ordinal}",
+                ["ordinal"]=ordinal,
+                ["name"]=$"Unreached step {ordinal}",
+                ["role"]="primary",
+                ["api"]="unknown",
+                ["status"]="not-run",
+                ["returns"]=new JsonObject{["gm"]=null,["pk"]=null},
+                ["primaryChecks"]=new JsonArray(),
+                ["auxiliaryChecks"]=new JsonArray(),
+                ["representationContracts"]=new JsonArray(),
+                ["timing"]=new JsonObject{["boundary"]="api-only",["gmMs"]=null,["pkMs"]=null,["coldKind"]="fresh-process",["warmup"]=0,["samples"]=0,["correctnessQualified"]=false,["ratio"]=null}
+            });
         }
     }
     c["execution"]!["exitCodes"]=exitCodes;c["execution"]!["timedOut"]=anyTimeout;
-    checks.Add((JsonNode)new JsonObject{["id"]="oracle-exit",["label"]="Original oracle exit code and acceptance",["status"]=anyTimeout?"timeout":oraclePassed?"pass":"fail",["gm"]=null,["pk"]=null,["absDelta"]=null,["normalizedDelta"]=null,["threshold"]=0,["unit"]="exit code",["evidence"]=evidence[0]!["path"]!.DeepClone(),["note"]="Original process exit codes are retained in execution.exitCodes; oracle failure is result data, not exporter success."});
-    c["status"]=anyTimeout?"timeout":anyExportError||!anyCapture?"missing":allValid?"pass":"fail";
+    checks.Add((JsonNode)new JsonObject{["id"]="oracle-exit",["owner"]="scenario",["category"]="auxiliary",["label"]="Original oracle exit code and acceptance",["status"]=anyTimeout?"timeout":oraclePassed?"pass":"fail",["gm"]=null,["pk"]=null,["absDelta"]=null,["normalizedDelta"]=null,["threshold"]=0,["unit"]="exit code",["evidence"]=evidence[0]!["path"]!.DeepClone(),["note"]="Original process exit codes are retained in execution.exitCodes; oracle failure is result data, not exporter success."});
+    var scenarioStatus=anyTimeout?"timeout":anyExportError||!anyCapture?"missing":allValid?"pass":"fail";
+    c["status"]=scenarioStatus;
+    c["scenarioStatus"]=scenarioStatus;
+    c["scenarioId"]=caseId;
+    c["legacyExitCode"]=c["execution"]?["exitCode"]?.GetValue<int?>();
+
+    var opsList=c["operations"]!.AsArray();
+    var firstFail=opsList.FirstOrDefault(o=>o?["status"]?.GetValue<string>()=="fail");
+    c["firstFailedOperationId"]=firstFail?["operationId"]?.GetValue<string>();
+
     exporterBroken|=anyExportError;
     var perf=c["performance"]!;perf["samples"]=durationsGm.Count;
     if(durationsGm.Count>0){perf["gmMs"]=Median(durationsGm);perf["pkMs"]=Median(durationsPk);}
-    perf["correctnessQualified"]=allValid&&!anyExportError;
-    if(allValid&&!anyExportError&&durationsPk.Count>0&&Median(durationsPk)>0)perf["ratioGmOverPk"]=Median(durationsGm)/Median(durationsPk);
-    perf["note"]="API-only elapsed totals across captured steps; median of fresh-process samples, warmup=0. Cold JIT/cache effects remain; no stable throughput claim. Ratio withheld unless both sides succeeded and every current acceptance check passed.";
+    if(opsList.Count==1)
+    {
+        var singleOp=opsList[0]!.AsObject();
+        var singleQualified=singleOp["timing"]?["correctnessQualified"]?.GetValue<bool>()==true&&allValid&&!anyExportError;
+        perf["kind"]="single-operation";
+        perf["correctnessQualified"]=singleQualified;
+        if(singleQualified&&durationsPk.Count>0&&Median(durationsPk)>0)
+            perf["ratioGmOverPk"]=Median(durationsGm)/Median(durationsPk);
+        else
+            perf["ratioGmOverPk"]=null;
+        perf["note"]="Single operation API-only elapsed time; median of fresh-process samples, warmup=0. Ratio withheld unless operation is pass and both sides succeeded.";
+    }
+    else
+    {
+        perf["kind"]="scenario-aggregate";
+        perf["correctnessQualified"]=false;
+        perf["ratioGmOverPk"]=null;
+        perf["note"]=$"Scenario-aggregate across {opsList.Count} operations; sum of API-only elapsed times across steps. Ratio is withheld at scenario level; see individual operation timings in operations[].";
+    }
     Console.WriteLine($"RESULT {caseId}: {c["status"]}, exits={exitCodes.ToJsonString()}");Save();
 }
 manifest["run"]!["scope"]!["executed"]=executed;manifest["run"]!["finishedAt"]=DateTimeOffset.UtcNow.ToString("O");manifest["run"]!["collectionElapsedSeconds"]=clock.Elapsed.TotalSeconds;completed=true;Save();
@@ -155,6 +198,7 @@ void Save()
     var indexPath=Path.Combine(data,"index.json");var index=File.Exists(indexPath)?JsonNode.Parse(File.ReadAllText(indexPath))!.AsObject():new JsonObject{["schemaVersion"]=1,["runs"]=new JsonArray()};
     index["generatedAt"]=DateTimeOffset.UtcNow.ToString("O");index["latestRunId"]=id;
     var runs=index["runs"]!.AsArray();var existing=runs.FirstOrDefault(r=>r!["id"]!.GetValue<string>()==id);if(existing!=null)runs.Remove(existing);
+    for(var i=runs.Count-1;i>=0;i--){var rel=runs[i]!["manifest"]?.GetValue<string>();if(rel!=null&&!File.Exists(Path.Combine(data,rel)))runs.RemoveAt(i);}
     runs.Insert(0,new JsonObject{["id"]=id,["commit"]=commit,["generatedAt"]=now.ToString("O"),["label"]="Current GM / real PK oracle data",["manifest"]=$"runs/{id}/manifest.json"});
     File.WriteAllText(indexPath+".tmp",index.ToJsonString());File.Move(indexPath+".tmp",indexPath,true);
 }

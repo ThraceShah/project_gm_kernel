@@ -30,4 +30,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)WebProgressPublishing.cs" Link="WebProgressPublishing.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebProgressMetadata.cs" Link="WebProgressMetadata.cs" />
   </ItemGroup>
+  <ItemGroup Condition="'$(UseOperationAcceptanceLedger)' == 'true' or '$(UseWebProgressCapture)' == 'true' or '$(UseWebProgressValidation)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)OperationAcceptanceLedger.cs" Link="OperationAcceptanceLedger.cs" />
+  </ItemGroup>
 </Project>

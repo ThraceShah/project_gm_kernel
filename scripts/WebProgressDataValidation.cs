@@ -3,6 +3,8 @@ using System.Text.Json.Nodes;
 internal static class WebProgressDataValidation
 {
     private static readonly HashSet<string> Statuses=["pass","fail","missing","unsupported","timeout","diagnostic"];
+    private static readonly HashSet<string> OperationStatuses=["pass","fail","not-run","unverified","timeout"];
+    private static readonly HashSet<string> OperationRoles=["primary","precondition","lifecycle","auxiliary"];
     private static readonly HashSet<string> Roles=["unchanged","selected","support","newBlend","modified","deleted"];
     internal static JsonObject Validate(string data)
     {
@@ -91,8 +93,52 @@ internal static class WebProgressDataValidation
                 }
                 if(status=="pass"&&checks.Count==0)Error(caseId+": pass without acceptance evidence");
                 foreach(var evidence in c["evidence"]?.AsArray()??[]){Fields(evidence,"label path",caseId+" evidence");Resolve(runRoot,evidence?["path"],caseId+" evidence");}
+                if(c["operations"] is JsonArray operations)
+                {
+                    var opIds=new HashSet<string>();
+                    foreach(var op in operations)
+                    {
+                        Fields(op,"operationId ordinal role api status primaryChecks auxiliaryChecks representationContracts timing",caseId+" operation");
+                        var opId=op?["operationId"]?.GetValue<string>()??"unknown";
+                        if(opId=="unknown"||!opIds.Add(opId))Error(caseId+": duplicate/invalid operation ID");
+                        var opStatus=op?["status"]?.GetValue<string>();
+                        if(opStatus==null||!OperationStatuses.Contains(opStatus))Error(caseId+" "+opId+": invalid operation status "+opStatus);
+                        var opRole=op?["role"]?.GetValue<string>();
+                        if(opRole==null||!OperationRoles.Contains(opRole))Error(caseId+" "+opId+": invalid operation role "+opRole);
+                        foreach(var cat in new[]{"primaryChecks","auxiliaryChecks","representationContracts"})
+                        {
+                            if(op?[cat] is not JsonArray checkArr){Error(caseId+" "+opId+": missing "+cat);continue;}
+                            foreach(var ch in checkArr)
+                            {
+                                Fields(ch,"id label status",caseId+" "+opId+" check");
+                                var chOwner=ch?["owner"]?.GetValue<string>();
+                                if(chOwner!=null&&chOwner!=opId)Error(caseId+" "+opId+": check owner mismatch "+chOwner);
+                                var chStatus=ch?["status"]?.GetValue<string>();
+                                if(chStatus==null||!Statuses.Contains(chStatus))Error(caseId+" "+opId+": invalid check status "+chStatus);
+                            }
+                        }
+                        var timing=op?["timing"];
+                        Fields(timing,"boundary gmMs pkMs coldKind warmup samples correctnessQualified ratio",caseId+" "+opId+" timing");
+                        if(timing?["ratio"]!=null)
+                        {
+                            var gm=timing["gmMs"]?.GetValue<double>();var pk=timing["pkMs"]?.GetValue<double>();var ratio=timing["ratio"]!.GetValue<double>();
+                            var qualified=timing["correctnessQualified"]?.GetValue<bool>()==true;
+                            if(opStatus!="pass"||!qualified||gm is null||pk is not >0||!double.IsFinite(ratio)||Math.Abs(ratio-gm.Value/pk.Value)>1e-6*Math.Max(1,ratio))Error(caseId+" "+opId+": invalid/unqualified operation ratio");
+                        }
+                        else if(timing?["correctnessQualified"]?.GetValue<bool>()==true)
+                        {
+                            Error(caseId+" "+opId+": correctnessQualified without ratio");
+                        }
+                    }
+                }
                 var perf=c["performance"];Fields(perf,"gmMs pkMs ratioGmOverPk samples warmup scope correctnessQualified host configuration note",caseId+" performance");
-                if(perf?["ratioGmOverPk"]!=null)
+                var perfKind=perf?["kind"]?.GetValue<string>();
+                if(perfKind=="scenario-aggregate")
+                {
+                    if(perf?["ratioGmOverPk"]!=null)Error(caseId+": scenario-aggregate must not specify ratioGmOverPk");
+                    if(perf?["correctnessQualified"]?.GetValue<bool>()==true)Error(caseId+": scenario-aggregate must not be correctnessQualified");
+                }
+                else if(perf?["ratioGmOverPk"]!=null)
                 {
                     var gm=perf["gmMs"]?.GetValue<double>();var pk=perf["pkMs"]?.GetValue<double>();var ratio=perf["ratioGmOverPk"]!.GetValue<double>();
                     if(status!="pass"||perf["correctnessQualified"]?.GetValue<bool>()!=true||gm is null||pk is not >0||!double.IsFinite(ratio)||Math.Abs(ratio-gm.Value/pk.Value)>1e-12*Math.Max(1,ratio))Error(caseId+": invalid/unqualified ratio");

@@ -256,24 +256,27 @@ using(host)unsafe
                 catch(Exception ex){failures++;Console.WriteLine("FAIL native editable roundtrip: "+ex.Message);}
                 if(!args.Contains("--native-only")&&!args.Contains("--import-only"))
                 {
+                    var filletOp=OperationAcceptanceLedger.Current.BeginOperation($"op-{name}-fillet",$"{name} fillet","primary","PK_BODY_fix_blends");
                     Check(Fillet(true,own,angle,radius*inputScale,tolerance*inputScale,reverse,procedural,mappedInput?&inputTransform:null,inputScale,splitSelected,splitEllipse,splitFraction,(int)rotateMarks),"managed fix");
                     var ownResult=Transmit(true,own);File.WriteAllBytes(Path.Combine(output,name+"-self.x_t"),ownResult);
                     var received=Receive(false,ownResult);CheckBody(received,"managed fillet");
                     if(args.Contains("--diagnostics")){ProductEdges(reference,"reference");ProductEdges(received,"self-constructed-product");}
                     ParasolidBodyCompare.AssertEquivalent(reference,received,"independent fillet");
+                    OperationAcceptanceLedger.Current.RecordCheck(filletOp.Id,"primary",$"{filletOp.Id}-compare","BODY_compare","pass",evidence:Path.Combine(output,name+"-self.x_t"));
                     CompareFiniteIntersections(reference,received,"independent fillet",inputScale);
                     if(requireNativeFinBoxes)CompareNativeBlendFinBoxes(reference,received,"independent fillet",required:true);
                     if(requireNativeFaceDomains)CompareNativeFaceDomains(reference,received,"independent fillet",inputScale);
                     if(selfSavedProbes)
                     {
                         Console.WriteLine("SAVED PROBE PRODUCT self-constructed-product");
-                        try{SavedProbes(reference,own,received,result,args.Contains("--diagnostics"));}
-                        catch(Exception ex){failures++;Console.WriteLine("FAIL self-constructed-product fixed probes: "+ex.Message);}
+                        try{SavedProbes(reference,own,received,result,args.Contains("--diagnostics"));OperationAcceptanceLedger.Current.RecordCheck(filletOp.Id,"auxiliary",$"{filletOp.Id}-probes","Fixed probes classification","pass");}
+                        catch(Exception ex){failures++;OperationAcceptanceLedger.Current.RecordCheck(filletOp.Id,"auxiliary",$"{filletOp.Id}-probes","Fixed probes classification","fail",note:ex.Message);Console.WriteLine("FAIL self-constructed-product fixed probes: "+ex.Message);}
                     }
                     if(materialOwnership)CompareShortEdgeMaterial(reference,own,received,"self-constructed-product",inputScale);
                     if(args.Contains("--geometry")){CheckSelfNativeTrims(own,"self-constructed-product",inputScale);SelfGeometry(own,reference);}
-                    try{Mass(reference,received,"self-constructed-product");}
-                    catch(Exception ex){failures++;Console.WriteLine("FAIL self-constructed-product mass: "+ex.Message);}
+                    try{Mass(reference,received,"self-constructed-product");OperationAcceptanceLedger.Current.RecordCheck(filletOp.Id,"primary",$"{filletOp.Id}-mass","Mass props","pass");}
+                    catch(Exception ex){failures++;OperationAcceptanceLedger.Current.RecordCheck(filletOp.Id,"primary",$"{filletOp.Id}-mass","Mass props","fail",note:ex.Message);Console.WriteLine("FAIL self-constructed-product mass: "+ex.Message);}
+                    OperationAcceptanceLedger.Current.EndOperation(filletOp.Id);
                     if(overlappingTools)failures+=OverlappingToolJunctions(own,reference,output,name+"-overlapping-tools",false);
                     if(singleToolJunction)failures+=OverlappingToolJunctions(own,reference,output,name+"-overlapping-tools-single",true);
                     if(args.Contains("--lifecycle"))failures+=Lifecycle(ref own,reference,output,name+"-self-constructed-product",mappedInput?&inputTransform:null,inputScale,localCut,transverseCut,transversePlaneDifference,materialOwnership,requireNativeCutWitness,reloadBeforeLocalCut,args.Contains("--geometry"),proofOnlyLifecycle,requireCutterChartWitness,requireNativeFinBoxes,requireNativeFaceDomains);
@@ -285,6 +288,9 @@ using(host)unsafe
         }
     }
     finally{Check(KernelRuntime.SessionStop(),"managed stop");}
+    OperationAcceptanceLedger.Current.EndScenario(failures==0?0:1);
+    OperationAcceptanceLedger.Current.SaveSidecar(Path.Combine(output,"ledger.json"));
+    OperationAcceptanceLedger.Current.PrintConsoleSummary();
     Require(failures==0,$"{failures} short-edge acceptance checks failed");
     Console.WriteLine($"PASS cases={cases} mode={(args.Contains("--native-only")?"native-only":args.Contains("--import-only")?"import-only":"independent-construction")}");
 }
@@ -612,6 +618,8 @@ static unsafe int Cut(bool own,int body,int tool)
 static unsafe int CompareFresh(int own,int reference,string directory,string name,double unitScale,bool materialOwnership,bool checkNativeTrims,bool requireNativeFinBoxes,bool requireNativeFaceDomains,
     KernelRuntime.BoundaryTrace? projected=null)
 {
+    var opId=$"op-{name.ToLowerInvariant().Replace(' ','-')}";
+    var op=OperationAcceptanceLedger.Current.BeginOperation(opId,name,"lifecycle","PK_BODY_boolean");
     var fresh=Transmit(true,own);File.WriteAllBytes(Path.Combine(directory,name+".x_t"),fresh);var received=Receive(false,fresh);
     var referenceBytes=Transmit(false,reference);File.WriteAllBytes(Path.Combine(directory,name+"-native.x_t"),referenceBytes);
     var referenceReload=Receive(false,referenceBytes);
@@ -619,7 +627,8 @@ static unsafe int CompareFresh(int own,int reference,string directory,string nam
     {
         CheckBody(reference,name+" native");
         CheckBody(referenceReload,name+" native own roundtrip");
-        try{ParasolidBodyCompare.AssertEquivalent(reference,received,name);}catch(Exception ex){Console.WriteLine("COMPARE DIAGNOSTIC "+ex.Message);throw;}
+        try{ParasolidBodyCompare.AssertEquivalent(reference,received,name);OperationAcceptanceLedger.Current.RecordCheck(opId,"primary",$"{name}-compare","BODY_compare","pass",evidence:Path.Combine(directory,name+".x_t"));}
+        catch(Exception ex){OperationAcceptanceLedger.Current.RecordCheck(opId,"primary",$"{name}-compare","BODY_compare","fail",note:ex.Message);Console.WriteLine("COMPARE DIAGNOSTIC "+ex.Message);throw;}
         CheckBody(received,name);
         CompareFiniteIntersections(reference,received,name,unitScale);
         if(requireNativeFaceDomains)CompareNativeFaceDomains(reference,received,name,unitScale);
@@ -627,12 +636,15 @@ static unsafe int CompareFresh(int own,int reference,string directory,string nam
         if(materialOwnership)CompareShortEdgeMaterial(reference,own,received,name,unitScale);
         if(projected.HasValue)CheckProjectedMaterial(reference,own,received,projected.Value,name);
         var failures=0;
-        try{Mass(reference,received,name);}
-        catch(Exception ex){Console.WriteLine("FAIL "+name+" mass: "+ex.Message);failures++;}
+        try{Mass(reference,received,name);OperationAcceptanceLedger.Current.RecordCheck(opId,"primary",$"{name}-mass","Mass props","pass");}
+        catch(Exception ex){Console.WriteLine("FAIL "+name+" mass: "+ex.Message);failures++;OperationAcceptanceLedger.Current.RecordCheck(opId,"primary",$"{name}-mass","Mass props","fail",note:ex.Message);}
         if(requireNativeFinBoxes)CompareNativeBlendFinBoxes(reference,received,name);
         return failures;
     }
-    finally{Check(PK_ENTITY_delete(1,&received),"delete lifecycle reload");Check(PK_ENTITY_delete(1,&referenceReload),"delete native lifecycle reload");}
+    finally{
+        OperationAcceptanceLedger.Current.EndOperation(opId);
+        Check(PK_ENTITY_delete(1,&received),"delete lifecycle reload");Check(PK_ENTITY_delete(1,&referenceReload),"delete native lifecycle reload");
+    }
 }
 
 static unsafe int OverlappingToolJunctions(int selfSource,int nativeSource,string directory,string name,bool projectedCell)
