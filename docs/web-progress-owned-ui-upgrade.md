@@ -16,7 +16,7 @@
 
 操作入口为 `scripts/FreezeReviewedWebProgressUi.cs`、`scripts/PublishReviewedWebProgressUi.cs`、`scripts/ConfigureReviewedWebProgressUiHook.cs` 的 `--help`。所有路径参数相对于运行脚本目录。私有 Tailnet HTTP 校验仅该 HttpClient 使用 `UseProxy=false`，保留系统 TLS 证书校验，不改全局代理。
 
-基础验证：`MSBUILDDISABLENODEREUSE=1 dotnet run --file scripts/VerifyReviewedWebProgressUiHook.cs` 原 31 项通过；`MSBUILDDISABLENODEREUSE=1 dotnet run --file scripts/VerifyReviewedWebProgressUiBackup.cs` 原 14 项通过。两者均无真实 systemctl/portal 操作；升级完整链 fixture 和最终固定 SHA 将在后续验证记录追加。没有 Kernel/PK/AOT/build/benchmark 验证。
+验证入口：`MSBUILDDISABLENODEREUSE=1 dotnet run --file scripts/VerifyReviewedWebProgressUiHook.cs`；`MSBUILDDISABLENODEREUSE=1 dotnet run --file scripts/VerifyReviewedWebProgressUiBackup.cs`。两者均无真实 systemctl/portal 操作；最终结果见下。没有 Kernel/PK/AOT/build/benchmark 验证。
 
 ## UI424 只读事后核验
 
@@ -46,3 +46,22 @@ MSBUILDDISABLENODEREUSE=1 dotnet run --file NEW_RELEASE/tools/scripts/ConfigureR
 ```
 
 rollback 前必须暂停该 timer、核 writer inactive/failed、dead/failed、MainPID=0、无 job/tasks；发布脚本不替代 writer 管理。两条 CLI 原 exit 必须分别留存，不用后一个成功掩盖前一个失败。只有显式 publish 成功、完整 HTTPS 校验与独立浏览器接受后，才运行同一新 release 的 Configure `--mode resume --execute`；工具再次核 publication fingerprint、served 全包、当前 hook/effective argv、完整回退备份及原 enabled 偏好。此次范围不含 zz-hosted 排序或 hostproxy 部署。
+
+## 最终固定工具与结果
+
+工具固定 Git SHA：`d9fd0605f9beb3e23630c6b54fed3642b2d842da`，分支 `fix/reviewed-ui-owned-upgrade`，已推送。冻结下一轮时传此值作为 `--tools-commit`；文档追加不改变该工具对象。入口仍为三份同名脚本，`--help` 可只读核参数。本轮没有创建真实下一 UI release、执行未接受 UI 或改动当前 live。
+
+| 验证 | 原 exit / 结果 | 证据 |
+| --- | --- | --- |
+| 完整 hook/upgrade fixture | 0；173/173 | `temp_docs/owned-upgrade-reviewed-rerun.log` |
+| 备份 fixture | 0；15/15 | `temp_docs/owned-backup-reviewed.log` |
+| 固定最终 Git 工具 freeze→prepare | 0 / 0；7 源码逐字节等于固定 Git 对象，无 published.json | `temp_docs/fixed-tools-smoke.log`、`temp_docs/fixed-tools-freeze.log`、`temp_docs/fixed-tools-prepare.log` |
+| live 只读整包身份 | 0；610 files exact HTTPS | `temp_docs/owned-live-readonly.log`、`temp_docs/owned-live-readonly.json` |
+
+173 项包含原 31 项、原检查数断言、active/enabled、inactive/disabled、inactive/enabled 的 owned upgrade→publicationmatch→resume→rollback→restore，坏 publication、完整备份才 skip/rollback/resume、外部编辑/未知 record/坏 pin/工具修改/有效 argv 修改/queued job/activating/tasks、source symlink/overlap、缺 metadata/asset/错误 UI 同 index、切换前及 HTTPS 校验期间被外部修改、完整 hook 备份和中断 staging 保留，以及真实冻结 CLI 的固定源码/独立 prepare/覆盖与 source drift 拒绝。fixture 的 UI424/下一 UI 是合成标记数据，旧六工具来自真实 `35498ac` Git 对象；真实 live UI 身份另由上面的只读核验支持，不把 fixture 宣称为实际发布。
+
+系统调用仅子进程有限 PATH 下的 BCL stub；publication 仅 loopback HTTP 与 stub portal。只有临时工具副本替换 HTTP origin，生产脚本没有 endpoint override/fixture 后门。固定最终工具的额外冻结冒烟为 `temp_docs/publishing-integration/ui-hook-c73ab32f25d440baae724facd78b082b/frozen-final-tools`，清单 SHA `4cf969ca23cdc0d9dfc4e0e7124df94fb1410724844b0c6db034f35c16789cf9`；它只是合成 UI 的只读测试产物，不能用作实际 UI 发布候选。
+
+预期拒绝 CLI 原 exit134 保留在每条 case log；故意让 portal stub 返回的原 exit23 保留在 `active-publish-fail.log` 等（外层 CLI exit134），没有成功 publication 记录。完整 case 日志在 `temp_docs/publishing-integration/ui-hook-c73ab32f25d440baae724facd78b082b`；备份日志在 `temp_docs/publishing-integration/ui-backup-9c400dde9e094db39f8c9233e571457a`。首次扩展 harness 的 stub 编译曾 exit1、外层 exit134（JsonNode.Remove 使用错误），修正后完整重跑；失败原日志仍在 `temp_docs/owned-upgrade-reviewed.log` 及其 `ui-hook-8a554ffd2ab64dc284603a6eafdfe9f3/stub-build.log`，未伪记首轮全过。
+
+`--verify-served` 必须在新 work 的首次 backup 使用；已有未核验/legacy metadata 明确拒绝原地补 `servedVerified`，要求新 work，不发网络请求也不改旧记录。后续已核验备份可以只读重核。新发布前仍需独立接受实际 UI、核新 manifest pin、按上述 writer-idle/runbook 执行；本任务不代替这个实际发布决策。
