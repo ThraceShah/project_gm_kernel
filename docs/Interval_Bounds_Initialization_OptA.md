@@ -227,33 +227,84 @@ ratio=100，真实 rep1 应为 100/10=10，rep0cold 归属也被位置破坏。c
 透明记录两个中间 bug：自检 JsonNode 双 parent 崩溃、旧 report 字段缺失 NRE。
 S1 仍等 v4 独立 gate，未启动任何正式计时。
 
-## 11. S1 短 ABBA 实测（v4 独立 gate 通过后，2026-01-11 02:27:54–02:32:49Z）
+## 11. S1 短 ABBA 实测与收束（correctness-gate-passed / benefit-inconclusive(contaminated)）
 
 v4 关键门由独立 GPT（ctx_c56d93eb0f69）通过后按授权直接执行；序列化保护
-独立小提交 b9c3f3c（非有限 pair 存 null+reason，qualification 逻辑未动），
-其余实现保持 1d341a4e 冻结。顺序为**跨 case AB/BA**（A-short→B-short→
-B-solid→A-solid；非每 case 自身对称，单 warm 样本局限如实保留）。
+独立小提交 b9c3f3c（非有限 pair 存 null+reason，qualification 逻辑未动）。
+窗口真实 UTC **2026-01-11 02:27:54–02:32:49Z**（~5min，10min 上限内）。
+顺序为**跨 case AB/BA**（A-short→B-short→B-solid→A-solid；非每 case 自身
+对称），每侧每 case `--cold 1 --warm 1`。
 
-| step | 侧/进程 | cold rep0 GM/PK ms | warm rep1 GM/PK ms | load 变化 |
-| --- | --- | ---: | ---: | --- |
-| A-short | base 04c | 25500.5 / 24.67 | **24434.9** / 1.57 | 2.7→3.8 |
-| B-short | cand b9c3f3c | 24120.7 / 25.11 | **23277.2** / 1.60 | 4.0→7.7（突变） |
-| B-solid | cand b9c3f3c | 2179.7 / 2.90 | **1617.9** / 2.11 | 5.5→5.3 |
-| A-solid | base 04c | 2119.0 / 21.44 | **1463.5** / 1.58 | 5.1→4.9 |
+### 样本统计（勿混称 8 与 12）
 
-- **严格成功门通过**：4/4 runner exit 0、overallQualified=True、每样本产物齐备、
-  base/candidate 全部 check 数值（status/gm/pk）**逐项相等 0 差异**（负载无关）。
-- **窗口受污染**（标受干扰）：load 2.7→7.7 突变（B-short warm 处于峰值），
-  四个 warm 绝对值均高于干净窗口（历史 shortedge 16.0s/solidblend 0.98s vs
-  本轮 23–24s/1.46–1.62s）；单 warm 样本/跨 case AB/BA 不足以分离优化效应。
-- 观测差：shortedge −4.7%（B 在更差负载下更快，方向与删零预期一致但不严格）、
-  solidblend +10.6%（成对相邻、负载相近，但该 case 预期效应 ~1% 低于 n=1
-  噪声底）；方向不一致 → **未建立可测收益，按规则不进 S2**，不抽好样本。
-- raw 全保留：`temp_docs/modeling-performance/opta/s1-run.log`、两侧
-  `runs/20261111T0227*|0229*|0232*/benchmark/report.json`（A 侧在 base 树）。
-- 结论：严格门过、收益**受干扰未定**；待自然回到可比负载（≤~2.5）后允许
-  同 S1 一次干净复跑（同 4 进程，非 S2）以定收益与否，否则以
-  “gate-passed/benefit-inconclusive（污染）”收尾。
+| 口径 | 数量 | 明细 |
+| --- | ---: | --- |
+| requested case-side 运行 | 4 | 2 case × 2 侧（另有 1 次 shell 路径错误的作废尝试，0 进程 0 样本） |
+| runner 进程 | 4 | 每侧每 case 1 次 |
+| oracle 进程 | 8 | 每 case-side 1 cold + 1 warm 进程 |
+| report 样本条目 | 8 | 4×cold-0 + 4×warm（进程级） |
+| **测量 API 配对 rep** | **12** | 每 case-side 3 rep（cold 进程 1 + warm 进程 rep0+rep1 2）；其中 cold 类 8、warm 类 4 |
+
+### 逐 rep 原始值（capture-only ms；load=该样本结束时 loadavg）
+
+| step | 侧 | cold 进程 rep | warm rep0（cold 类） | warm rep1（warm 类） | load |
+| --- | --- | ---: | ---: | ---: | --- |
+| A-short | base 04c | 25500.5 / 24.67 | 25545.2 / 2.60 | **24434.9 / 1.57** | 2.7→3.8 |
+| B-short | cand b9c3f3c | 24120.7 / 25.11 | 24402.0 / 2.20 | **23277.2 / 1.60** | 4.0→7.7（突变） |
+| B-solid | cand b9c3f3c | 2179.7 / 2.90 | 2430.2 / 2.11 | **1617.9 / 2.11** | 5.5→5.3 |
+| A-solid | base 04c | 2119.0 / 21.44 | 2241.4 / 1.91 | **1463.5 / 1.58** | 5.1→4.9 |
+
+（格式 GM / PK ms。）
+
+### 严格成功门（全部通过）
+
+- 4/4 runner exit 0、`runSummary.overallQualified=true`、8/8 样本 qualified、
+  产物齐备；raw 未改。
+- **base/candidate 无数值差异**：逐样本读 capture.json 构造
+  `check-id → (status, gm, pk)` 字典并做精确相等比较，4 对样本（8 个 capture、
+  1521+ 项检查值含 15 项物性）**0 差异**（负载无关硬门）。
+
+### Provenance（含一处如实披露的协议偏差与补救）
+
+| 项 | A 侧（base） | B 侧（candidate） |
+| --- | --- | --- |
+| worktree | gm-modeling-perf-baseline | gm-modeling-performance |
+| HEAD | 04c7ed00f39c09cb10faad132d77e50a6a669f07 | b9c3f3ce1979dacebd0cfc62ca07672647bbd530 |
+| HEAD:src / HEAD:tests | 7d516f6c… / 8693efcd… | f1dc65ce… / b24f6cef… |
+| 内核 | 04c 原内核 | candidate（39c1dc8c 仅 BoundSegment SkipLocalsInit） |
+| **runner@run** | **40e747a2…（gateVersion v2，协议偏差**：S0 时复制的旧 runner 未随后续 v3/v4 更新） | ce87eff0…（gateVersion v4） |
+| dirtyAtStart | true（唯一工作树差异=runner 文件，记录如实） | false |
+| 补救 | v4 runner（ce87eff0）重拷后对 4 个 A 侧样本 `--revalidate-report` **full-run 复验全部 qualified=True**（process exit/timeout 取自 immutable report） | 不需要 |
+
+`diffSha(base)=43909e3f…`（重拷后）；窗口日志 `opta/s1-run.log`
+（sha a31975af…）；86 件 raw 清单+hash：`opta/s1-artifacts.sha256`
+（sha a36aad30…）。
+
+### 结论（按授权收束，不夸大）
+
+- **correctness-gate-passed**：39 源码安全独立接受 + 本次 base/candidate
+  全部验收数值逐项一致 + v4 资格链路端到端成立。
+- **benefit-inconclusive(contaminated)**：窗口 load 2.7→7.7 窗内突变，四个
+  warm 绝对值均高于干净窗口（历史 16.0s/0.98s vs 本轮 23–24s/1.46–1.62s）；
+  单 warm 样本 + 跨 case AB/BA 不足以分离优化效应。shortedge −4.7%（B 在更差
+  负载下更快）**不作收益证实**；solidblend +10.6% **不作性能退化断言**（预期
+  效应 ~1% 低于 n=1 噪声底）。**既非已证收益、也非已证 no-benefit**；
+  "优化性能目标达成"未成立。
+- 未进 S2（无可测收益按停止规则）；不抽好样本、不改 raw、不采 partial stats。
+  未来若自然安静窗口有定位价值，可另授权一次干净 S1（非本轮阻断）。
+
+### 未解项（不在本报告宣称已验证）
+
+1. **OptA 收益幅度未知**（污染窗口）；S2 未跑。
+2. **热点归因准备（非计时，待另派）**：现有 trace 中
+   `IntervalJacobian→ZeroMemoryInternal` 直接约 31.229s/33s，而**显式**
+   `Span<IntervalSplineContact>.Clear` 帧仅约 0.228s；IntervalJacobian 内
+   唯一显式清零点=`cache.Clear()`（63×352B=22,176B/次，成功路径 ≥7 次/BoundSegment）。
+   二者可能是同一 cache.Clear 的内联/外联两种帧形态——**尚未用新
+   JIT/inline/callsite 证据确认**，不能因 caller 已删 226KB 隐式 init 就假定
+   主热点已消除，也未盲目转 cache.Clear 优化；后续范围另派，OptB/OptC 均未验证。
+3. v2 runner A 侧样本已由 v4 full-run 复验合格（补救完成）；该偏差已在上表
+   如实披露，不追改历史 report 文本。
 
 ## 12. 复现
 
@@ -266,6 +317,13 @@ MSBUILDDISABLENODEREUSE=1 dotnet test tests/KernelTests -c Release -p:UseSharedC
 DOTNET_JitDisasm="*BoundSegment*" DOTNET_JitStdOutFile=.../jit-candidate-disasm.txt \
 DOTNET_TieredCompilation=0 MSBUILDDISABLENODEREUSE=1 dotnet test tests/KernelTests -c Release \
   -p:UseSharedCompilation=false --filter "FullyQualifiedName~CertifiedTubeEnclosesPositionsAndFirstDerivatives"
+```
+
+```sh
+# S1 同款（每侧每 case；A 侧在 04c 临时树、B 侧在 candidate 树，同 v4 runner）
+MSBUILDDISABLENODEREUSE=1 dotnet run --file scripts/ModelingPairedBenchmark.cs -c Release -p:UseSharedCompilation=false -- --cases shortedge --cold 1 --warm 1
+# A 侧样本 v4 full-run 复验（补救）
+MSBUILDDISABLENODEREUSE=1 dotnet run --file scripts/ModelingPairedBenchmark.cs -c Release -p:UseSharedCompilation=false -- --revalidate-report <report.json> <caseId> <label>
 ```
 
 产物（`temp_docs/modeling-performance/`，gitignored）：`opta/dump-base.txt`、
