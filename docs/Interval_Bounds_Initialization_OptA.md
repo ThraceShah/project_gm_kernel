@@ -200,7 +200,34 @@ S2（仅 S1 有收益且全主检查合格）：受影响 2 case 做足样本或
 （~10min），主表引用 immutable base run + 同 v3 runner after run，raw/顺序/hostload
 存档。
 
-## 10. 复现
+## 10. 资格器 v4：端到端身份合同（换序反例）
+
+GPT 反例：2rep 合法 capture（rep0=(gm10,pk1)、rep1=(gm100,pk10)）仅交换
+pk timings 数组行序，v3 判 qualified=True（合法）但 summary 按数组位置 zip 得
+ratio=100，真实 rep1 应为 100/10=10，rep0cold 归属也被位置破坏。capture 合同
+本不保证行序，故身份合同必须端到端闭合：
+
+- `FinishSample` 按 rep owner（timing.step）join 出 `pairsByRep`；raw gmMs/pkMs
+  保留 capture 原行序供逐字追溯。
+- `Summarize` 只消费 owner 配对；cold/warm 归属取稳定 rep 身份（warm 进程 rep0
+  = 该进程冷样本），与行序无关。
+- 全入口（Qualify→FinishSample→Summarize）自检 24 fixtures 0 WRONG：原 4+2
+  新负控（duplicate-check-id/orphan-owner）全拒、旧件期望未改；原换序 capture
+  逐字节入库（`tests/KernelTests/Fixtures/qualifier/reordered-timings.capture.json`，
+  sha256 133cfb50…，来自 review 分支 588af88）判 qualified 且 warm/cold ratio
+  均=10；identity/gm-first/pk-first/reversed 四种行序 summary 逐字节一致。
+- `--revalidate` 诚实分层：capture-contract-only（明示 process 状态未验，失败
+  exit 5）与 `--revalidate-report` full-run（从 immutable report 取真实
+  processExit/timedOut/oracle.log，失败 exit 6）；45pair 重放两模式各 20/20
+  qualified、0 误杀。
+- `GateVersion`=`modeling-paired-benchmark-qualification-v4`（此前 label 滞后已正）。
+
+小步提交：e6b17358（v4 身份合同+fixture+全入口自检）、1d341a4e（旧 report
+`expectedRepetitions`→`repetitions` 回退，使 full-run 重验覆盖历史样本）。
+透明记录两个中间 bug：自检 JsonNode 双 parent 崩溃、旧 report 字段缺失 NRE。
+S1 仍等 v4 独立 gate，未启动任何正式计时。
+
+## 11. 复现
 
 ```sh
 # 合同测试 + 逐位 dump（base/candidate 各一次，diff 为空）
