@@ -138,6 +138,19 @@ internal static unsafe partial class KernelRuntime
                 }
                 var curveClass=Curves[GetCurveSlotByTag(edge.Curve)].Class;
                 var surfaceSlot=GetSurfaceSlotByTag(surface);var surfaceClass=Surfaces[surfaceSlot].Class;var cylinder=surfaceClass==SurfaceClass.Cylinder;
+                var splineContact=!known&&certificates.IsEmpty&&!originals.IsEmpty&&ExactNativeSplineBoundaryContact(edge,surfaceSlot);
+                if(splineContact)
+                {
+                    known=true;n=2;proof.Relation=SurfacePairRelation.CurveContact;
+                    var firstEvent=NativeLineEnd(edge,edge.Start);var lastEvent=NativeLineEnd(edge,edge.End);
+                    if(firstEvent<0||lastEvent<0||originals[firstEvent]<0||originals[lastEvent]<0)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                    var firstError=SheetOriginalVertex(originals[firstEvent],out var firstPoint);if(firstError!=0)return firstError;
+                    var lastError=SheetOriginalVertex(originals[lastEvent],out var lastPoint);if(lastError!=0)return lastError;
+                    proof.FirstRoot=new(){Vertex=originals[firstEvent],Point=firstPoint,Parameter=edge.Start,Lower=edge.Start,Upper=edge.Start,Kind=IntersectionVectorKind.Start,NativeEnd=FiniteNativeEnd.First};
+                    proof.SecondRoot=new(){Vertex=originals[lastEvent],Point=lastPoint,Parameter=edge.End,Lower=edge.End,Upper=edge.End,Kind=IntersectionVectorKind.End,NativeEnd=FiniteNativeEnd.Last};
+                    roots[0]=new(){Point=firstPoint,First=edge.Start,Kind=IntersectionVectorKind.Start};
+                    roots[1]=new(){Point=lastPoint,First=edge.End,Kind=IntersectionVectorKind.End};
+                }
                 var conicProof=!known&&rollingSurface&&curveClass==CurveClass.Ellipse&&cylinder;
                 var lineProof=false;var planePairLine=false;var planePairCylinder=false;byte exactPositionAxes=0;
                 if(!known&&certificates.IsEmpty&&curveClass==CurveClass.Line&&cylinder)
@@ -210,7 +223,7 @@ internal static unsafe partial class KernelRuntime
                         {
                             witness.Lower=nativeRoots[r].Root.Lower;witness.Upper=nativeRoots[r].Root.Upper;witness.SpatialError=spatialErrors[r];
                         }
-                        if((linePlane||conicPlaneProof)&&witness.Lower==witness.Upper
+                        if((linePlane||conicPlaneProof||lineProof&&roots[r].Kind is (IntersectionVectorKind.Start or IntersectionVectorKind.End))&&witness.Lower==witness.Upper
                             &&(witness.Parameter==edge.Start||witness.Parameter==edge.End))
                         {
                             var upper=witness.Parameter==edge.End;var positive=LocalSenseSign(Curves[GetCurveSlotByTag(edge.Curve)].Sense)>0;
@@ -230,7 +243,7 @@ internal static unsafe partial class KernelRuntime
                                 :lineProof?LineSurfaceCertificate:known||conicProof?(byte)1:(byte)0,Root=witness,
                             BlendStation=planePairLine?blendStations[r]:default,
                             ExactPositionAxes=exactPositionAxes,
-                            Witness=cached||conicProof||lineProof||linePlane||conicPlaneProof||nativeProof?1+inputEdge*IntersectionPointCapacity+r:0};
+                            Witness=cached||splineContact||conicProof||lineProof||linePlane||conicPlaneProof||nativeProof?1+inputEdge*IntersectionPointCapacity+r:0};
                     }
                 }
             }
@@ -309,9 +322,13 @@ internal static unsafe partial class KernelRuntime
         result=default;
         if(!double.IsFinite(edge.Start)||!double.IsFinite(edge.End)||edge.Start>=edge.End)return false;
         var record=Curves[GetCurveSlotByTag(edge.Curve)];var planeSlot=GetSurfaceSlotByTag(surface);
-        if(record.Class!=CurveClass.Line||!TryReadExplicitSpineCurve(record,out var line)
+        if(!TryExactNativeAffineCurve(record,out var line)
             ||!TryBoundaryPlane(planeSlot,out var plane))return false;
-        if(!TryLinePlaneRatio(line,plane,out var numerator,out var denominator))return false;
+        if(!TryLinePlaneRatio(line,plane,out var numerator,out var denominator))
+        {
+            if(!denominator.Finite||denominator.Magnitude!=0||!numerator.Finite||numerator.ContainsZero)return false;
+            result=NewFiniteEventResult(edge,inputEdge,surface);result.State=FiniteIntersectionState.Empty;result.Relation=SurfacePairRelation.Empty;return true;
+        }
         var axis=new IntervalVector(line.First);
         var t=numerator/denominator;if(!t.Finite)return false;
         result=NewFiniteEventResult(edge,inputEdge,surface);

@@ -44,6 +44,45 @@ internal static unsafe partial class KernelRuntime
         return TryExactFiniteLineRoots(la,a.Start,a.End,lb,b.Start,b.End,roots,out count);
     }
 
+    // An operation-local affine view must equal every native coefficient.
+    // It does not replace or reparameterize the persistent BCurve.
+    private static bool TryExactNativeAffineCurve(in CurveRecord curve,out ParametricSpineCurve line)
+    {
+        if(curve.Class==CurveClass.Line)return TryReadExplicitSpineCurve(curve,out line);
+        line=default;if(curve.Class!=CurveClass.BCurve)return false;
+        var view=GetBCurveView(BCurveDataStore[curve.DataIndex]);var degree=view.Degree;
+        if(degree<1||view.VertexCount!=degree+1||view.Dimension!=(view.Rational?4:3)||!(view.End>view.Start))return false;
+        for(var i=0;i<=degree;i++)if(view.Knots[i]!=view.Start||view.Knots[view.Knots.Length-1-i]!=view.End)return false;
+        var p=view.Vertices;var dim=view.Dimension;var weight=view.Rational?p[3]:1;
+        if(!(weight>0))return false;
+        Span<double> origin=stackalloc double[3],axis=stackalloc double[3];
+        for(var d=0;d<3;d++)
+        {
+            var first=new IntervalNumber(p[d])/weight;var last=new IntervalNumber(p[degree*dim+d])/weight;
+            var direction=(last-first)/(new IntervalNumber(view.End)-view.Start);var at=first-direction*view.Start;
+            if(!Singleton(direction)||!Singleton(at))return false;
+            for(var i=0;i<=degree;i++)
+            {
+                if(view.Rational&&p[i*dim+3]!=weight)return false;
+                var coefficient=new IntervalNumber(p[i*dim+d])/weight*degree-first*(degree-i)-last*i;
+                if(coefficient.Magnitude!=0)return false;
+            }
+            origin[d]=at.Lower;axis[d]=direction.Lower;
+        }
+        line=new(){Kind=CurveClass.Line,Origin=Vector(origin[0],origin[1],origin[2]),First=Vector(axis[0],axis[1],axis[2])};
+        return axis[0]!=0||axis[1]!=0||axis[2]!=0;
+        static bool Singleton(IntervalNumber value)=>value.Finite&&value.Lower==value.Upper;
+    }
+
+    private static bool TryExactFiniteBoundaryRoots(in ModelingEdge first,in ModelingEdge second,
+        Span<OperationIntersectionPoint> roots,out BufferCount count)
+    {
+        count=0;
+        return TryExactNativeAffineCurve(Curves[GetCurveSlotByTag(first.Curve)],out var a)
+            &&TryExactNativeAffineCurve(Curves[GetCurveSlotByTag(second.Curve)],out var b)
+            &&TryExactFiniteLineRoots(a,first.Start,first.End,b,second.Start,second.End,roots,out count);
+    }
+
     private static BufferOffset FiniteLineBoundarySource(in RegularBoundaryView input,BufferOffset face,in SheetCutCurve cut)
     {
         if(Curves[GetCurveSlotByTag(cut.Curve)].Class!=CurveClass.Line)return -1;
@@ -68,7 +107,7 @@ internal static unsafe partial class KernelRuntime
     {
         firstOnSource=lastOnSource=default;increasing=false;
         var a=Curves[GetCurveSlotByTag(cut)];var b=Curves[GetCurveSlotByTag(source)];
-        if(a.Class!=CurveClass.Line||b.Class!=CurveClass.Line||!TryReadExplicitSpineCurve(a,out var from)||!TryReadExplicitSpineCurve(b,out var to)
+        if(!TryExactNativeAffineCurve(a,out var from)||!TryExactNativeAffineCurve(b,out var to)
             ||!ExactParallelSupportAxes(from.First,to.First))return false;
         var axis=to.First;
         if(!ExactProjectionEqual(from.Origin,to.Origin,Vector(0,axis.Z,-axis.Y))
@@ -174,15 +213,16 @@ internal static unsafe partial class KernelRuntime
     {
         LastSheetPartitionStage=SheetPartitionStage.BoundaryAssociation;
         Span<BoundaryEventId> ends=stackalloc BoundaryEventId[2];
-        ends[0]=NativeLineEnd(a,root.First);ends[1]=NativeLineEnd(b,root.Second);
+        ends[0]=model.CanonicalEvent(NativeLineEnd(a,root.First));ends[1]=model.CanonicalEvent(NativeLineEnd(b,root.Second));
+        var mergeOriginals=!model.EventAliases.IsEmpty&&!model.InputEdges.IsEmpty;
         BoundaryEventId original=-1;
         foreach(var end in ends)
             if(end>=0&&model.OriginalVertices[end]>=0)
             {
-                if(original>=0&&original!=end)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                if(original>=0&&original!=end){if(!mergeOriginals)return ParasolidConstants.PK_ERROR_cant_do_intersect;continue;}
                 original=end;
             }
-        var error=JoinProvenBoundaryEndpoints(input,cuts,ends,root.Point,ref model,out var endpoint,original);
+        var error=JoinProvenBoundaryEndpoints(input,cuts,ends,root.Point,ref model,out var endpoint,original,mergeOriginals);
         if(error!=0)return error;
         for(var j=0;j<model.NP;j++)
         {
@@ -191,7 +231,7 @@ internal static unsafe partial class KernelRuntime
             if(!(ProfileDistance(model.Points[j],root.Point)<=model.Tolerance))return ParasolidConstants.PK_ERROR_cant_do_intersect;
             if(endpoint<0){endpoint=j;continue;}
             ends[0]=endpoint;ends[1]=j;
-            var joined=JoinProvenBoundaryEndpoints(input,cuts,ends,root.Point,ref model,out endpoint,original);
+            var joined=JoinProvenBoundaryEndpoints(input,cuts,ends,root.Point,ref model,out endpoint,original,mergeOriginals);
             if(joined!=0)return joined;
         }
         if(endpoint<0)
@@ -255,7 +295,7 @@ internal static unsafe partial class KernelRuntime
             if(first.Cut.KeepImprint==0&&second.Cut.KeepImprint==0
                 ||first.First!=second.First&&first.First!=second.Second&&first.Second!=second.First&&first.Second!=second.Second)
                 continue;
-            if(!TryExactCoincidentLineRoots(LineCutUse(first.Cut),LineCutUse(second.Cut),roots,out var count)||count!=2)continue;
+            if(!TryExactFiniteBoundaryRoots(LineCutUse(first.Cut),LineCutUse(second.Cut),roots,out var count)||count!=2)continue;
             // The positive interval occurs on the same face. Align both
             // native endpoints before halfedges and source fragments exist.
             for(var r=0;r<count;r++)
@@ -418,7 +458,7 @@ internal static unsafe partial class KernelRuntime
         out BufferCount count,out double lastFirst,out double lastSecond)
     {
         Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[2];
-        var exact=TryExactCoincidentLineRoots(new(){Curve=first,Start=0,End=end},new(){Curve=second,Start=0,End=length},roots,out count);
+        var exact=TryExactFiniteBoundaryRoots(new(){Curve=first,Start=0,End=end},new(){Curve=second,Start=0,End=length},roots,out count);
         lastFirst=count==0?0:roots[count-1].First;lastSecond=count==0?0:roots[count-1].Second;
         return exact;
     }

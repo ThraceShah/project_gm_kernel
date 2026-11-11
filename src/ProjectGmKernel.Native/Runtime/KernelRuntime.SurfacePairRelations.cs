@@ -144,7 +144,7 @@ internal static unsafe partial class KernelRuntime
                     {
                         var indexB=input.Coedges[loopB.FirstCoedge+bi].Edge;
                         var edgeB=input.Edges[indexB];
-                        if(TryExactCoincidentLineRoots(edgeA,edgeB,roots,out var exactCount))
+                        if(TryExactFiniteBoundaryRoots(edgeA,edgeB,roots,out var exactCount))
                         {
                             for(var r=0;r<exactCount;r++)
                             {
@@ -156,6 +156,8 @@ internal static unsafe partial class KernelRuntime
                         if(TryFiniteCarrierExtent(new(){Curve=edgeA.Curve,First=edgeA.Start,Last=edgeA.End},Curves[GetCurveSlotByTag(edgeA.Curve)],out var extentA)
                             &&TryFiniteCarrierExtent(new(){Curve=edgeB.Curve,First=edgeB.Start,Last=edgeB.End},Curves[GetCurveSlotByTag(edgeB.Curve)],out var extentB)
                             &&ThirdFaceBoxesDisjoint(extentA,extentB,precision))continue;
+                        var pairError=AssociateNativeSplineBoundaryPair(input,cuts[..cutCount],indexA,indexB,a.Surface,ref model,out var handled);
+                        if(pairError!=0)return pairError;if(handled)continue;
                         return ParasolidConstants.PK_ERROR_not_implemented;
                     }
                 }
@@ -173,7 +175,7 @@ internal static unsafe partial class KernelRuntime
                     var edge=input.Edges[edgeIndex];
                     if(cutCount==cuts.Length)return ParasolidConstants.PK_ERROR_not_implemented;
                     var cut=new SheetCutCurve{Curve=edge.Curve,First=edge.Start,Last=edge.End,Closed=edge.StartVertex<0?(byte)1:(byte)0,KeepImprint=1};
-                    if(Curves[GetCurveSlotByTag(edge.Curve)].Class==CurveClass.Line)
+                    if(edge.StartVertex>=0&&edge.EndVertex>=0)
                     {
                         var lower=NativeLineEnd(edge,edge.Start);var upper=NativeLineEnd(edge,edge.End);
                         cut.LowerEvent=lower+1;cut.UpperEvent=upper+1;
@@ -214,7 +216,7 @@ internal static unsafe partial class KernelRuntime
         var ia=new PK_INTERVAL_s();ia.value[0]=edge.Start;ia.value[1]=edge.End;
         var ib=new PK_INTERVAL_s();ib.value[0]=previous.Start;ib.value[1]=previous.End;
         var aFirst=edge.Start;var aLast=edge.End;var bFirst=previous.Start;var bLast=previous.End;
-        var exact=TryExactCoincidentLineRoots(edge,previous,roots,out var n);
+        var exact=TryExactFiniteBoundaryRoots(edge,previous,roots,out var n);
         if(!exact)
         {
             if(ResolveIntersectionCurve(edge.Curve,ia,out var a)!=0||ResolveIntersectionCurve(previous.Curve,ib,out var b)!=0)return 0;

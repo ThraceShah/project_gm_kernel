@@ -258,7 +258,8 @@ internal static unsafe partial class KernelRuntime
                     while(at>0&&interval.Lower<parameters[at-1].Root.Lower)
                     {accepted[at]=accepted[at-1];parameters[at]=parameters[at-1];output[at]=output[at-1];errors[at]=errors[at-1];at--;}
                     accepted[at]=proof;parameters[at]=new(){Root=interval,Certified=true};errors[at]=error;
-                    output[at]=new(){Point=point[0],First=t,U=roots[r].U,V=roots[r].V,Kind=IntersectionVectorKind.Simple};
+                    output[at]=new(){Point=point[0],First=t,U=roots[r].U,V=roots[r].V,Kind=interval.Lower==interval.Upper&&t==edge.Start?IntersectionVectorKind.Start
+                        :interval.Lower==interval.Upper&&t==edge.End?IntersectionVectorKind.End:IntersectionVectorKind.Simple};
                 }
             }
         }

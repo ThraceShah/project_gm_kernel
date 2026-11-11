@@ -72,8 +72,11 @@ internal static unsafe partial class KernelRuntime
             {
                 var view = GetBCurveView(in BCurveDataStore[record.DataIndex]);
                 if (view.Dimension < 3) return AlgorithmStatus.Unsupported;    // planar (u, v) B-curves only feed SP-curves
-                var bCurveStatus = BCurveEvaluation.Evaluate(in view, t, Math.Min(Math.Max(order, 1), view.Degree), values, CommandScratch.Current.AvailableSpanOfDoubles(), out direction);
-                if (bCurveStatus == AlgorithmStatus.Success && values[1].X * values[1].X + values[1].Y * values[1].Y + values[1].Z * values[1].Z <= 1e-22)
+                Span<KernelVector3> positionJet=stackalloc KernelVector3[2];
+                var curveValues=order==0&&values.Length==1?positionJet:values;
+                var bCurveStatus = BCurveEvaluation.Evaluate(in view, t, Math.Min(Math.Max(order, 1), view.Degree), curveValues, CommandScratch.Current.AvailableSpanOfDoubles(), out direction);
+                if(bCurveStatus==AlgorithmStatus.Success&&values.Length==1)values[0]=curveValues[0];
+                if (bCurveStatus == AlgorithmStatus.Success && curveValues[1].X * curveValues[1].X + curveValues[1].Y * curveValues[1].Y + curveValues[1].Z * curveValues[1].Z <= 1e-22)
                     direction = default;
                 // PK_CURVE_eval V38 zero-fills orders above the spline degree, including rational curves.
                 // The numerical evaluator retains the full rational derivative recurrence for internal use.

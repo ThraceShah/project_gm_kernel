@@ -73,3 +73,17 @@ Block single fillet 的旧 oracle 将 curve_sense 差异降级后在重附着的
 planar single fillet 接触 line 直接克隆原生父 line 并平移原点，保留方向系数和参数 gauge，不再次归一化。`LocalOperationOracle.cs --output-name=native-parent-gauge-single-v1` 实际 block-single-fillet 严格比较零差异、mass Verified，原 exit 0，见 `local-parent-gauge.*`。
 
 完整固定 `0e67b6b` regular oracle 的 45 项实际为 24 项几何拓扑通过、21 项真实建模失败，原 exit 134，见 `temp_docs/pk-native-acceptance-audit/final-0e67b6b/regular.*`。本修复关闭其中 NURBS 三项；continuous/reloaded 六项与 same-domain 系列十二项尚待修复，不能把本节视作 M0–M5 完成。相同固定源的完整横向 shortedge 默认生命周期实际几何拓扑通过，mass 八项未决、原 exit 2，见该目录 `transverse.*`。two-tools 始终表示 target 加两个 tool，共三个输入。
+
+## 同支持面有限身份的共同层增量
+
+原生 affine BCurve 只在完整 clamped knot 与每个定义系数都证明线性时取得数学直线视图，保留原 native t，不创建另一种持久几何。新增控制中 native 区间 `[0,1]` 对应实际线段 `[0,.5]`；中间系数偏离 1e-13 则不取得该证明。恒定且正的 rational 权重同样按原齐次系数核验。有限原生边之间的关系可以据此证明相交、重合或严格分离；平行且常量水平非零单独记录为 Empty。
+
+操作内事件别名保留双方真实原顶点及来源参数行；只有完整有限载体关系证明后才归并。临时 input edge 的事件索引同步更新，持久输入 B-rep 在发布前不变。ICurve 端点的传递使用同一原生 loop 中相邻 coedge 对该端点的共同拥有关系，以及来源边之间的有限系数对应证明，不以 XYZ 近邻或 CHART 反求后的近似参数替换其原 trim。
+
+隔离器仍要求原收缩条件。在向外舍入的盒跨过有限域时，只有原始 Bezier 齐次系数在原生 corner 精确相等、且该 corner 严格落在已证明的唯一域中，才能把它认作原生边界根。控制中的正负 1e-13 附近情形仍返回 NotConverged，不将它们吸附为该 corner，也不声称已经证明无交。内部 BCurve 的 D0 单位置槽调用使用局部两向量 jet 保持现有 D1/tangent 计算，不改变 native 位置或导数定义。
+
+共享 affine 参数传递明确区分「已证明在此有限 trim 外」和「尚未证明」。后者继续走其适用的提供器或拒绝，前者不会再次进入不适用的反求。传递到目标的站位保留真实方程或真实目标输入边 occurrence；不伪造来源索引。
+
+`default-native-qualified-affine.*` 实际 142/142、原 exit 0；包含同支持面不同裁剪环的六个 Boolean/XT reload 生命周期、相邻分支及有限域负例。进一步 `default-overlay-regression.*` 实际 **189/189，原 exit 0**，覆盖 RegularCurvedBoolean、BCurveEvaluation、FinitePlaneSeparation、IntersectionEventBoolean 与 ParametricSurfaceIntersection；allocation IL guard 2952 方法 CLEAN。本节是共同层增量验证，完整真实 PK 45 项的 `qualified-overlay` 执行尚待汇总，不能由 managed 测试签署完整建模质量或 M0–M5 完成。
+
+`default-boundary-closure.*` 的较早完整执行实际为 33 项几何拓扑通过、12 项建模失败，原 exit 134，加载 GM assembly 为 `4804cab877124e8895bb74f9d9713f5bf83c079e0c73fcd2ddd303318e0b4879`。它已独立关闭最初 21 项中的 NURBS 三项及 same-domain/reloaded 六项；当时 continuous/reloaded 六项与 partial/reloaded 六项仍失败。开发执行与后续源快照分开；`qualified-overlay` 的 source 快照在加载后包含仅测试 hook 的后续改动，不作为最终固定 SHA 验收源绑定，最终候选仍需干净固定提交统一执行。

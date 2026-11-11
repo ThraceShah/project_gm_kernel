@@ -41,6 +41,36 @@ public class ParametricSurfaceIntersectionTests
         }
     }
 
+    [Theory]
+    [InlineData(0,1)] [InlineData(1e-13,1)] [InlineData(-1e-13,0)]
+    public void OnlyAnExactlyProvenNativeCornerSuppliesAFiniteBoundaryRoot(double shift,int expected)
+    {
+        Span<IntervalNumber> poles=stackalloc IntervalNumber[36],line=stackalloc IntervalNumber[8];
+        for(var i=0;i<3;i++)for(var j=0;j<3;j++)
+        {
+            var at=4*(3*i+j);poles[at]=i*.5;poles[at+1]=j*.5;
+            poles[at+2]=i==1&&j==1?.8:0;poles[at+3]=1;
+        }
+        line.Clear();line[2]=-shift;line[3]=1;line[6]=1-shift;line[7]=1;
+        var surface=new SurfaceIntersectionPatch(new BezierSurfacePatch(poles,2,2,new(0,1,0,1)));
+        var curve=new SurfaceIntersectionPatch(new BezierSurfacePatch(line,1,0,new(0,1,0,1)));
+        var finite=new ParameterCell{Upper=new(){U=1,V=1,S=1}};
+        Span<SurfaceIntersectionNode> roots=stackalloc SurfaceIntersectionNode[4];
+        Span<IsolatedRootCertificate> proofs=stackalloc IsolatedRootCertificate[4];
+        var status=ParametricSurfaceIntersection.Isolate(surface,curve,finite,3,roots,out var count,proofs);
+        // The near-corner cases remain unresolved, rather than acquiring
+        // the exact corner's existence proof through a small distance.
+        if(shift!=0){Assert.Equal(AlgorithmStatus.NotConverged,status);Assert.Equal(0,count);return;}
+        Assert.Equal(AlgorithmStatus.Success,status);Assert.Equal(expected,count);
+        if(count!=0)
+        {
+            Assert.True(IsolatedRootCertificate.Contains(finite.First,proofs[0].First));
+            Assert.True(IsolatedRootCertificate.Contains(finite.Second,proofs[0].Second));
+            if(shift==0)Assert.Equal(0,proofs[0].Second.U0);
+            else Assert.True(proofs[0].Second.U0>0);
+        }
+    }
+
     private static (SurfaceIntersectionNode[] Nodes, SurfaceIntersectionSegment[] Segments, int Count, int Edges)
         Intersect(double[] a, int p, double[] b, int q)
     {

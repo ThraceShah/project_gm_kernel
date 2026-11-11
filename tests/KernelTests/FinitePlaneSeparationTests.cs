@@ -1047,5 +1047,20 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
         Assert.Equal(expectedCount==2,lower);Assert.True(upper);
         if(count==2)Assert.False(proofs[0].MayShareRoot(proofs[1]));
     }
+    [Theory]
+    [InlineData(0,true)] [InlineData(1e-13,false)]
+    public void NativeSplineAffineViewRetainsItsGaugeAndRequiresEveryCoefficient(double deviation,bool exact)
+    {
+        double* poles=stackalloc double[9]{0,0,0,.5,0,deviation,1,0,0};
+        double* knots=stackalloc double[2]{0,2};int* multiplicity=stackalloc int[2]{3,3};
+        var definition=new PK_BCURVE_sf_s{degree=2,n_vertices=3,vertex_dim=3,vertex=poles,n_knots=2,knot=knots,knot_mult=multiplicity,
+            form=ParasolidConstants.PK_BCURVE_form_unset_c,knot_type=ParasolidConstants.PK_knot_unset_c,self_intersecting=ParasolidConstants.PK_self_intersect_unset_c};
+        CurveTag curve,line;Assert.Equal(0,KernelRuntime.BCurveCreate(&definition,&curve));
+        var straight=new PK_LINE_sf_s();straight.basis_set.axis.coord[0]=1;Assert.Equal(0,KernelRuntime.LineCreate(&straight,&line));
+        Assert.Equal(exact,KernelRuntime.TestExactCoincidentLineOverlap(curve,line,1,1,out var count,out var native,out var onLine));
+        if(exact){Assert.Equal(2,count);Assert.Equal(1,native);Assert.Equal(.5,onLine);}
+        else Assert.Equal(0,count);
+    }
+
     private static void Write(PK_VECTOR_s* target,KernelVector3 value){target->coord[0]=value.X;target->coord[1]=value.Y;target->coord[2]=value.Z;}
 }

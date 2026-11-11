@@ -194,6 +194,11 @@ internal static unsafe partial class KernelRuntime
         associated=false;SurfTag firstSupport=0;var independent=false;
         AnalyticSurface plane=default,cylinder=default;
         ref readonly var record=ref Curves[GetCurveSlotByTag(curve)];
+        if(TryExactNativeAffineCurve(record,out _))
+        {
+            var shared=AssociateExactAffineBoundaryEvent(ref model,endpoint,curve,first,last,out var handled,out associated);
+            if(shared!=0||handled)return shared;
+        }
         if(record.Class==CurveClass.ICurve)
         {
             var data=ICurveDataPool[record.DataIndex];firstSupport=data.Surface0Tag;independent=!SameSheetSupport(firstSupport,data.Surface1Tag);
@@ -267,6 +272,35 @@ internal static unsafe partial class KernelRuntime
             if(OperationIntersection.Norm(Sub(point,value[0]))>tolerance)return ParasolidConstants.PK_ERROR_cant_do_intersect;
         }
         var added=model.AssociateParameter(endpoint,curve,parameter);if(added!=0)return added;associated=true;return 0;
+    }
+
+    private static int AssociateExactAffineBoundaryEvent(ref SheetArrangement model,BoundaryEventId endpoint,CurveTag target,
+        double first,double last,out bool handled,out bool associated)
+    {
+        handled=associated=false;var station=UncertifiedStation;var representative=0.0;SurfTag equation=0;
+        foreach(ref readonly var anchor in model.Parameters[..model.ParameterCount])
+        {
+            if(anchor.Event!=endpoint||anchor.SourceOccurrence<0||anchor.Carrier==target||!HasBoundedStation(anchor))continue;
+            var slot=GetCurveSlotByTag(anchor.Carrier);
+            if(slot<0||Curves[slot].Header.Generation!=anchor.Generation
+                ||!BoundCoincidentLineStations(anchor.Carrier,target,anchor.Lower,anchor.Upper,out var a,out var b,out _))continue;
+            var next=new IntervalNumber(Math.Min(a.Lower,b.Lower),Math.Max(a.Upper,b.Upper));
+            if(station.Finite)
+            {
+                next=IntersectStationBounds(station,next);
+                if(!next.Finite)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+            }
+            station=next;representative=station.Midpoint;if(equation==0)equation=anchor.Surface;
+        }
+        if(!station.Finite)return 0;handled=true;
+        if(station.Upper<first||station.Lower>last)return 0;
+        if(station.Lower<first||station.Upper>last)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+        BufferOffset occurrence=-1;
+        for(var i=0;i<model.InputEdges.Length;i++)if(model.InputEdges[i].Curve==target&&model.InputEdges[i].Start<=first&&model.InputEdges[i].End>=last)
+        {if(occurrence>=0){occurrence=-1;break;}occurrence=i;}
+        if(equation==0&&occurrence<0){handled=false;return 0;}
+        var error=model.AssociateParameter(endpoint,target,representative,station.Lower,station.Upper,equation,lineOccurrence:occurrence);
+        associated=error==0;return error;
     }
 
     private static int AssociateExactCylinderPlaneBranch(ref SheetArrangement model,BoundaryEventId endpoint,CurveTag curve,

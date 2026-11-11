@@ -30,8 +30,11 @@ internal static unsafe partial class KernelRuntime
 
     private static int JoinProvenBoundaryEndpoints(in RegularBoundaryView input,scoped Span<RegularFaceCut> cuts,
         scoped ReadOnlySpan<BoundaryEventId> ends,in KernelVector3 point,ref SheetArrangement model,out BoundaryEventId endpoint,
-        BoundaryEventId original=-1)
+        BoundaryEventId original=-1,bool mergeOriginals=false)
     {
+        Span<BoundaryEventId> canonical=stackalloc BoundaryEventId[ends.Length];
+        for(var i=0;i<ends.Length;i++)canonical[i]=model.CanonicalEvent(ends[i]);
+        ends=canonical;original=model.CanonicalEvent(original);
         endpoint=-1;var separate=false;
         foreach(var end in ends)if(end>=0)
         {
@@ -46,9 +49,9 @@ internal static unsafe partial class KernelRuntime
             if(end<0)continue;
             // Only synthetic endpoints can be retired. A provider can
             // retain one explicitly named source endpoint.
-            if(end!=original&&model.OriginalVertices[end]>=0||!model.LiveBoundaryPoint(end)||!(ProfileDistance(model.Points[end],point)<=model.Tolerance))
+            if(!mergeOriginals&&end!=original&&model.OriginalVertices[end]>=0||!model.LiveBoundaryPoint(end)||!(ProfileDistance(model.Points[end],point)<=model.Tolerance))
                 return ParasolidConstants.PK_ERROR_cant_do_intersect;
-            if(end!=original)
+            if(end!=original&&!mergeOriginals)
                 foreach(ref readonly var edge in input.Edges)if(edge.StartVertex==end||edge.EndVertex==end)
                     return ParasolidConstants.PK_ERROR_cant_do_intersect;
         }
@@ -83,7 +86,18 @@ internal static unsafe partial class KernelRuntime
             foreach(ref var row in parameters)if(row.Event==end)row.Event=endpoint;
             foreach(ref var tangency in model.Tangencies[..model.TangencyCount])if(tangency.Event==end)tangency.Event=endpoint;
             foreach(ref var contact in model.SurfaceContacts[..model.SurfaceContactCount])if(contact.Event==end)contact.Event=endpoint;
-            model.OriginalVertices[end]=RetiredBoundaryVertex;
+            if(mergeOriginals)
+            {
+                if(model.EventAliases.IsEmpty||model.InputEdges.IsEmpty)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                model.EventAliases[end]=endpoint;
+                foreach(ref var source in model.InputEdges)
+                {
+                    if(source.StartVertex==end)source.StartVertex=endpoint;
+                    if(source.EndVertex==end)source.EndVertex=endpoint;
+                }
+                if(!model.VertexPrecisions.IsEmpty)model.VertexPrecisions[endpoint]=Math.Max(model.VertexPrecisions[endpoint],model.VertexPrecisions[end]);
+            }
+            else model.OriginalVertices[end]=RetiredBoundaryVertex;
         }
         return 0;
     }

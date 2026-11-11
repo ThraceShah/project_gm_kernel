@@ -24,6 +24,11 @@ using(host)unsafe
     try
     {
         if(args.Contains("--precision-evidence",StringComparer.Ordinal)){CharacterizeImprintPrecision();return;}
+        if(args.Contains("--trace",StringComparer.Ordinal))KernelRuntime.TraceFiniteBoundary=t=>
+        {
+            if(t.Stage is KernelRuntime.BoundaryTraceStage.UnresolvedOrder or KernelRuntime.BoundaryTraceStage.Successor)
+                Console.WriteLine($"BOUNDARY_TRACE stage={t.Stage} surface={t.Surface} curve={t.Curve} other={t.ProductCurve} edge={t.Edge} next={t.NextEdge} events={t.StartEvent}/{t.EndEvent} angles={t.StartAngle:R}/{t.EndAngle:R}");
+        };
         var passed=0;var failures=0;
         foreach(var kind in new[]{"block","nurbs","closed-cut","disjoint","enclosed-tool","enclosed-target","two-tools","mixed-disjoint","continuous","reloaded","reloaded-block","same-domain","same-domain-reloaded","same-domain-partial","same-domain-partial-reloaded"})
         foreach(var function in new[]{PK_boolean_unite_c,PK_boolean_intersect_c,PK_boolean_subtract_c})
@@ -49,7 +54,7 @@ using(host)unsafe
         Require(failures==0,$"{failures} regular curved Boolean cases failed");Console.WriteLine($"GEOMETRY_TOPOLOGY_PASS all {passed} regular curved Boolean cases mass_unresolved={ParasolidMassProperties.UnresolvedCount}");
         if(ParasolidMassProperties.UnresolvedCount!=0)Environment.ExitCode=2;
     }
-    finally{Check(KernelRuntime.SessionStop(),"own session stop");}
+    finally{KernelRuntime.TraceFiniteBoundary=null;Check(KernelRuntime.SessionStop(),"own session stop");}
 }
 
 static unsafe int[] Produce(bool own,string kind,int function,double tolerance=1e-5,double scale=1)

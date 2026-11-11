@@ -55,6 +55,16 @@ internal readonly ref struct SurfaceIntersectionPatch
     {this=curve;sweepAxis=(byte)(axis+1);Domain=new(curve.Domain.U0,curve.Domain.U1,-height,height);cache=default;}
     internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,double u,double v,double du,double dv,double lower,double upper)
     {this=source;parameterLine=true;lineU=u;lineV=v;lineDU=du;lineDV=dv;Domain=new(lower,upper,0,1);cache=default;}
+    internal bool ExactCorner(double u,double v,Span<IntervalNumber> homogeneous)
+    {
+        if(isBlend||normalOffset!=0||isoAxis!=0||sweepAxis!=0||parameterLine||supportParameterSide!=0)return false;
+        var i=bezier.UDegree==0||u==bezier.Domain.U0?0:u==bezier.Domain.U1?bezier.UDegree:-1;
+        var j=bezier.VDegree==0||v==bezier.Domain.V0?0:v==bezier.Domain.V1?bezier.VDegree:-1;
+        if(i<0||j<0)return false;
+        bezier.Poles.Slice(4*(i*(bezier.VDegree+1)+j),4).CopyTo(homogeneous);
+        return homogeneous[3].Finite&&homogeneous[3].Lower>0;
+    }
+
     internal AlgorithmStatus Bound(in SurfaceParameterBox box,Span<IntervalNumber> output)
     {
         ModelingPerformance.BoundRequest();

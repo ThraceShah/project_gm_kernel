@@ -301,10 +301,17 @@ internal static class ParametricSurfaceIntersection
                         // A root certified on a mathematical extension is
                         // not automatically in either finite input domain.
                         if(!IsolatedRootCertificate.Overlaps(domain.First,enclosure.First)||!IsolatedRootCertificate.Overlaps(domain.Second,enclosure.Second))continue;
-                        if(!IsolatedRootCertificate.Contains(domain.First,enclosure.First)||!IsolatedRootCertificate.Contains(domain.Second,enclosure.Second)
-                            ||Contraction(jac,axes,inverse,expanded)>=1)goto Subdivide;
-                        status=RefineIsolatedRoot(first,second,point,axes,inverse,centerF,ref enclosure,f,jac);
-                        if(status!=AlgorithmStatus.Success)return status;
+                        if(Contraction(jac,axes,inverse,expanded)>=1)goto Subdivide;
+                        if(!IsolatedRootCertificate.Contains(domain.First,enclosure.First)||!IsolatedRootCertificate.Contains(domain.Second,enclosure.Second))
+                        {
+                            if(!ExactFiniteCornerRoot(first,second,domain,expanded,axes,out var corner))goto Subdivide;
+                            point=corner;anchor=enclosure=new(){Lower=corner,Upper=corner};
+                        }
+                        else
+                        {
+                            status=RefineIsolatedRoot(first,second,point,axes,inverse,centerF,ref enclosure,f,jac);
+                            if(status!=AlgorithmStatus.Success)return status;
+                        }
                         certificate=new(){First=enclosure.First,Second=enclosure.Second,FirstDomain=expanded.First,SecondDomain=expanded.Second};
                     }
                     status = first.Bound(anchor.First, position); if (status != AlgorithmStatus.Success) return status;
@@ -370,6 +377,27 @@ internal static class ParametricSurfaceIntersection
             pending[count++] = right; pending[count++] = cell;
         }
         return AlgorithmStatus.Success;
+    }
+
+    private static bool ExactFiniteCornerRoot(in SurfaceIntersectionPatch first,in SurfaceIntersectionPatch second,
+        in ParameterCell finite,in ParameterCell uniqueness,ReadOnlySpan<BufferOffset> axes,out SurfaceIntersectionNode root)
+    {
+        root=default;var found=false;
+        Span<IntervalNumber> a=stackalloc IntervalNumber[4],b=stackalloc IntervalNumber[4];
+        for(var mask=0;mask<8;mask++)
+        {
+            var point=finite.Lower;var inside=true;
+            for(var i=0;i<3;i++)
+            {
+                var axis=axes[i];var t=(mask&(1<<i))==0?finite.Lower.Parameter(axis):finite.Upper.Parameter(axis);
+                inside&=t>uniqueness.Lower.Parameter(axis)&&t<uniqueness.Upper.Parameter(axis);point.SetParameter(axis,t);
+            }
+            if(!inside||!first.ExactCorner(point.U,point.V,a)||!second.ExactCorner(point.S,point.T,b))continue;
+            var exact=true;for(var d=0;d<3;d++)exact&=(a[d]*b[3]-b[d]*a[3]).Magnitude==0;
+            if(!exact)continue;
+            if(found)return false;root=point;found=true;
+        }
+        return found;
     }
 
     private static AlgorithmStatus RefineIsolatedRoot(in SurfaceIntersectionPatch first,in SurfaceIntersectionPatch second,

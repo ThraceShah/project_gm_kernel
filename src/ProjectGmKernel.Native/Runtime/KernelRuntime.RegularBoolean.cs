@@ -36,6 +36,9 @@ internal static unsafe partial class KernelRuntime
                 Parameters=ModelSpan<BoundaryParameter>(bytes,ref cursor,2*SheetPointLimit),
                 Tangencies=ModelSpan<BoundaryTangency>(bytes,ref cursor,SheetPointLimit),RequireBoundaryAssociations=true,
             };
+            Span<BoundaryEventId> aliases=stackalloc BoundaryEventId[SheetPointLimit];
+            for(var i=0;i<aliases.Length;i++)aliases[i]=i;
+            model.EventAliases=aliases;
             var inputEdges=ModelSpan<ModelingEdge>(bytes,ref cursor,RegularInputEdges);var originalEdges=ModelSpan<EdgeSlot>(bytes,ref cursor,RegularInputEdges);
             var inputCoedges=ModelSpan<ModelingCoedge>(bytes,ref cursor,RegularInputCoedges);var inputLoops=ModelSpan<ModelingLoop>(bytes,ref cursor,RegularInputLoops);
             var inputFaces=ModelSpan<ModelingFace>(bytes,ref cursor,RegularInputFaces);var sources=ModelSpan<FaceSlot>(bytes,ref cursor,RegularInputFaces);
@@ -49,7 +52,7 @@ internal static unsafe partial class KernelRuntime
             var cycles=ModelSpan<SheetCycle>(bytes,ref cursor,SheetLoopLimit);if(cursor>bytes.Length)return ParasolidConstants.PK_ERROR_memory_full;
             var error=ReadRegularBoundaries(inputs,model.Points,model.OriginalVertices,inputEdges,originalEdges,inputCoedges,inputLoops,inputFaces,sources,owners,offsets,
                 out model.NP,out var ne,out var nc,out var nl,out var nf,model.VertexPrecisions);if(error!=0)return error;
-            model.VertexMergeCandidates[..model.NP].Clear();
+            model.VertexMergeCandidates[..model.NP].Clear();model.InputEdges=inputEdges[..ne];
             var input=new RegularBoundaryView(inputEdges[..ne],inputCoedges[..nc],inputLoops[..nl],inputFaces[..nf]);
             error=ReadRegularBoundaryAssociations(input,ref model);if(error!=0)return error;
             Span<SheetCutCurve> supportCuts=stackalloc SheetCutCurve[GeneralIntersectionBranchLimit];var familyCount=0;var cutCount=0;

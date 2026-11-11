@@ -37,6 +37,8 @@ internal static unsafe partial class KernelRuntime
     private ref struct SheetArrangement
     {
         internal Span<KernelVector3> Points;
+        internal Span<BoundaryEventId> EventAliases;
+        internal Span<ModelingEdge> InputEdges;
         internal Span<VertexSlot> OriginalVertices;
         internal Span<double> VertexPrecisions;
         internal Span<byte> VertexMergeCandidates;
@@ -62,7 +64,12 @@ internal static unsafe partial class KernelRuntime
         internal BufferCount NP,NE,NC,NL,NF;
         internal double Tolerance;
 
-        internal bool LiveBoundaryPoint(BoundaryEventId point)=>OriginalVertices.IsEmpty||OriginalVertices[point]!=RetiredBoundaryVertex;
+        internal BoundaryEventId CanonicalEvent(BoundaryEventId point)
+        {
+            if(!EventAliases.IsEmpty)while(point>=0&&EventAliases[point]!=point)point=EventAliases[point];
+            return point;
+        }
+        internal bool LiveBoundaryPoint(BoundaryEventId point)=>CanonicalEvent(point)==point&&(OriginalVertices.IsEmpty||OriginalVertices[point]!=RetiredBoundaryVertex);
 
         internal int AssociateParameter(BoundaryEventId endpoint,CurveTag curve,double parameter,double lower=double.NaN,double upper=double.NaN,
             SurfTag equation=0,BoundaryRootWitnessId witness=0,BufferOffset lineOccurrence=-1)
@@ -186,6 +193,8 @@ internal static unsafe partial class KernelRuntime
         {
             requireProof|=RequireBoundaryAssociations;
             reusedByPosition=false;
+            if(original>=0&&!EventAliases.IsEmpty)
+                for(var i=0;i<NP;i++)if(OriginalVertices[i]==original){index=CanonicalEvent(i);return 0;}
             index=-1;BoundaryEventId proven=-1;
             // The witness identifies a root on one finite input use of one
             // equation. Neither a disjoint box nor an unexpectedly far XYZ
@@ -232,7 +241,7 @@ internal static unsafe partial class KernelRuntime
             if(ambiguous||unresolved){LastSheetPartitionStage=SheetPartitionStage.BoundaryAssociation;return ParasolidConstants.PK_ERROR_cant_do_intersect;}
             if(index>=0){reusedByPosition=true;return 0;}
             if(NP==Points.Length)return ParasolidConstants.PK_ERROR_not_implemented;
-            index=NP;OriginalVertices[NP]=original;if(!VertexPrecisions.IsEmpty)VertexPrecisions[NP]=original>=0?Vertices[original].Tolerance:0;if(!VertexMergeCandidates.IsEmpty)VertexMergeCandidates[NP]=0;Points[NP++]=point;return 0;
+            index=NP;if(!EventAliases.IsEmpty)EventAliases[NP]=NP;OriginalVertices[NP]=original;if(!VertexPrecisions.IsEmpty)VertexPrecisions[NP]=original>=0?Vertices[original].Tolerance:0;if(!VertexMergeCandidates.IsEmpty)VertexMergeCandidates[NP]=0;Points[NP++]=point;return 0;
         }
         private bool ConflictingBoundaryAnchor(BoundaryEventId endpoint,scoped ReadOnlySpan<BoundaryParameter> anchors,
             out bool same,out bool shared,out bool certified)
