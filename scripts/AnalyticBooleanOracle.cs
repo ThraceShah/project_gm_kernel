@@ -13,6 +13,10 @@ using ProjectGmKernel.Native.Runtime;
 using M=ProjectGmKernel.Native.Generated;
 using static parasolid;
 
+var benchRepeat=1;var benchOption=args.SingleOrDefault(x=>x.StartsWith("--bench-repeat=",StringComparison.Ordinal));
+if(benchOption!=null)benchRepeat=int.Parse(benchOption["--bench-repeat=".Length..],System.Globalization.CultureInfo.InvariantCulture);
+Require(benchRepeat>=1&&benchRepeat<=64,"bench repeat must be in 1..64");
+ModelingPerformance.Enabled=args.Contains("--bench-profile",StringComparer.Ordinal);
 var output=Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","analytic-boolean-oracle"));Directory.CreateDirectory(output);
 var report=new StringBuilder();void Log(string line){Console.WriteLine(line);report.AppendLine(line);}
 try
@@ -30,9 +34,17 @@ try
             foreach(var function in new[]{PK_boolean_unite_c,PK_boolean_intersect_c,PK_boolean_subtract_c})foreach(var fixture in cases)
             {
                 var label=fixture.Name+"-"+function;if(!WebProgressCapture.Select(label))continue;count++;
+                for(var benchRep=0;benchRep<benchRepeat;benchRep++)
+                {
+                var benchStart=System.Diagnostics.Stopwatch.GetTimestamp();
                 try
                 {
-                    var own=Produce(true,fixture,function,out var ownStatus,out var ownIdentity);var expected=Produce(false,fixture,function,out var pkStatus,out var pkIdentity);
+                    var gmProduceStart=System.Diagnostics.Stopwatch.GetTimestamp();
+                    var own=Produce(true,fixture,function,out var ownStatus,out var ownIdentity);
+                    var gmProduceMs=System.Diagnostics.Stopwatch.GetElapsedTime(gmProduceStart).TotalMilliseconds;
+                    var pkProduceStart=System.Diagnostics.Stopwatch.GetTimestamp();
+                    var expected=Produce(false,fixture,function,out var pkStatus,out var pkIdentity);
+                    var pkProduceMs=System.Diagnostics.Stopwatch.GetElapsedTime(pkProduceStart).TotalMilliseconds;
                     Require(ownStatus==pkStatus,$"status {ownStatus}/{pkStatus}");Require(own.Length==expected.Length,$"body count {own.Length}/{expected.Length}");
                     Require(ownIdentity==pkIdentity,$"entity lifetime/tracking signature {ownIdentity}/{pkIdentity}");
                     for(var i=0;i<own.Length;i++)
@@ -46,8 +58,10 @@ try
                         CompareBodies(expected[i],received,label,Log);CompareMass(expected[i],received,label,Log);
                     }
                     Log("PASS "+label);
+                    Console.WriteLine($"BENCH case={label} rep={benchRep} gm-produce-ms={gmProduceMs:F3} pk-produce-ms={pkProduceMs:F3} verify-ms={System.Diagnostics.Stopwatch.GetElapsedTime(benchStart).TotalMilliseconds-gmProduceMs-pkProduceMs:F3} case-ms={System.Diagnostics.Stopwatch.GetElapsedTime(benchStart).TotalMilliseconds:F3}");
                 }
                 catch(Exception ex){failures++;Log("FAIL "+label+": "+ex.Message);}
+                }
             }
             Require(failures==0,$"{failures}/{count} analytic Boolean fixtures failed");Log($"PASS all {count} independent analytic Boolean fixtures, point classifications, entity lifetimes, tracking and strict XT body comparison.");
         }
@@ -57,6 +71,13 @@ try
 catch(Exception ex){Log("FAIL: "+ex.Message);Environment.ExitCode=1;}
 finally{File.WriteAllText(Path.Combine(output,"report.txt"),report.ToString());}
 
+static void PrintProfile(string operation,double apiMs)
+{
+    var p=ModelingPerformance.Last;var milliseconds=1000.0/System.Diagnostics.Stopwatch.Frequency;
+    Console.WriteLine($"PROFILE operation={operation} api-ms={apiMs:F3} elapsed-ms={p.ElapsedTicks*milliseconds:F3} pairs={p.SurfacePairs} ssi-cells={p.SsiCells} root-cells={p.RootCells} roots={p.Roots} budget-failures={p.BudgetFailures} winding={p.WindingCalls} bound-requests={p.BoundRequests} bound-evaluations={p.BoundEvaluations} cache-hits={p.BoundCacheHits} bound-ms={p.BoundTicks*milliseconds:F3}");
+    Console.WriteLine($"WORK jacobians={p.JacobianCalls} directions={p.JacobianDirections} residual-directions={p.ResidualDirections} record-builds={p.JacobianRecordBuilds} record-nodes={p.JacobianRecordNodes} record-rebinds={p.JacobianRecordRebinds}");
+    foreach(var stage in Enum.GetValues<KernelRuntime.RegularBooleanStage>())if(p.Stages[(int)stage]!=0)Console.WriteLine($"PROFILE stage={stage} ms={p.Stages[(int)stage]*milliseconds:F3}");
+}
 static unsafe int[] Produce(bool managed,Fixture fixture,int function,out int status,out string identity)
 {
     var target=Sphere(managed,fixture,false);var tool=Sphere(managed,fixture,true);var fa=FirstFace(managed,target);var fb=FirstFace(managed,tool);
@@ -71,6 +92,7 @@ static unsafe int[] Produce(bool managed,Fixture fixture,int function,out int st
         var webMs=System.Diagnostics.Stopwatch.GetElapsedTime(webStarted).TotalMilliseconds;
         WebProgressCapture.BooleanAfter(true,webError==0?new ReadOnlySpan<int>(result.bodies,result.n_bodies).ToArray():[],webMs,webError,result.result,(PK_TOPOL_track_r_t*)&tr);
         Check(webError,"self sphere Boolean");
+        if(ModelingPerformance.Enabled)PrintProfile($"Boolean {fixture.Name}-{function}",webMs);
         try
         {
             status=result.result;bodies=new ReadOnlySpan<int>(result.bodies,result.n_bodies).ToArray();signature.Append(tr.n_track_records);

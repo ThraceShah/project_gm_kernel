@@ -12,6 +12,7 @@ internal struct ModelingProfile
 {
     internal long ElapsedTicks,SsiCells,RootCells,Roots,BudgetFailures,SurfacePairs,WindingCalls;
     internal long BoundRequests,BoundEvaluations,BoundCacheHits,BoundTicks;
+    internal long JacobianCalls,JacobianDirections,ResidualDirections,JacobianRecordBuilds,JacobianRecordNodes,JacobianRecordRebinds;
     internal ModelingStageTicks Stages;
 }
 
@@ -76,6 +77,8 @@ internal static unsafe class ModelingPerformance
                     parent.BudgetFailures+=child.BudgetFailures;parent.SurfacePairs+=child.SurfacePairs;parent.WindingCalls+=child.WindingCalls;
                     parent.BoundRequests+=child.BoundRequests;parent.BoundEvaluations+=child.BoundEvaluations;
                     parent.BoundCacheHits+=child.BoundCacheHits;parent.BoundTicks+=child.BoundTicks;
+                    parent.JacobianCalls+=child.JacobianCalls;parent.JacobianDirections+=child.JacobianDirections;parent.ResidualDirections+=child.ResidualDirections;
+                    parent.JacobianRecordBuilds+=child.JacobianRecordBuilds;parent.JacobianRecordNodes+=child.JacobianRecordNodes;parent.JacobianRecordRebinds+=child.JacobianRecordRebinds;
                 }
             }
             else Last=default;
@@ -96,6 +99,12 @@ internal static unsafe class ModelingPerformance
     internal static void BudgetFailure(){if(current!=null&&current->Capture)current->Profile.BudgetFailures++;}
     internal static void Pair(){if(current!=null&&current->Capture)current->Profile.SurfacePairs++;}
     internal static void Winding(){if(current!=null&&current->Capture)current->Profile.WindingCalls++;}
+    internal static void Jacobian(BufferCount variables)
+    {if(current!=null&&current->Capture){current->Profile.JacobianCalls++;current->Profile.JacobianDirections+=variables;}}
+    internal static void ResidualDirection()
+    {if(current!=null&&current->Capture)current->Profile.ResidualDirections++;}
+    internal static void JacobianRecord(BufferCount nodes,bool rebind)
+    {if(current!=null&&current->Capture){if(rebind)current->Profile.JacobianRecordRebinds++;else{current->Profile.JacobianRecordBuilds++;current->Profile.JacobianRecordNodes+=nodes;}}}
     internal static void BoundRequest(){if(current!=null&&current->Capture)current->Profile.BoundRequests++;}
     internal static long StartBound()=>current!=null&&current->Capture?Stopwatch.GetTimestamp():0;
     internal static void EndBound(long started)

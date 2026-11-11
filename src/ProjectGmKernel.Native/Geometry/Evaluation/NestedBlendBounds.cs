@@ -2,6 +2,7 @@ using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Geometry.Bounds;
 using ProjectGmKernel.Native.Runtime;
+using System.Runtime.CompilerServices;
 
 namespace ProjectGmKernel.Native.Geometry.Evaluation;
 
@@ -140,6 +141,13 @@ internal static partial class JointNestedBlendEvaluation
         output[6]=frame.X.Derivative;output[7]=frame.Y.Derivative;output[8]=frame.Z.Derivative;return AlgorithmStatus.Success;
     }
 
+    // SkipLocalsInit contract: every scratch below is active only on its
+    // written prefix [0..n) (or [0..n*n)); all reads are write-dominated on
+    // success and unreachable on failure, per the inventory in
+    // docs/Pk_Native_Modeling_Work_Reduction.md. The explicit rhs.Clear,
+    // Assemble's matrix.Clear and IntervalJacobian's cache.Clear keep their
+    // load-bearing semantics and are NOT removed by this attribute.
+    [SkipLocalsInit]
     private static AlgorithmStatus BoundSegment(in NestedBlendProgram program,BlendSurfaceIndex surface,BlendSpineIndex spine,in SurfaceParameterBox domain,Span<IntervalNumber> output,Span<BufferCount> reachBudget=default,
         Span<IntervalNumber> curvature=default,BufferOffset curvatureSide=0,Span<IntervalNumber> supportParameter=default,BufferOffset parameterSide=0,
         Span<IntervalNumber> captureWitness=default,ReadOnlySpan<IntervalNumber> requireWitness=default,BufferOffset rootChart=-1,
@@ -356,8 +364,8 @@ internal static partial class JointNestedBlendEvaluation
     private static AlgorithmStatus IntervalJacobian(in NestedBlendProgram program,ReadOnlySpan<Occurrence> nodes,ReadOnlySpan<IntervalNumber> boxes,
         IntervalNumber parameter,Span<IntervalNumber> matrix,Span<IntervalDual> variables,Span<IntervalDual> equations,ReadOnlySpan<BufferOffset> fixedCharts,Span<IntervalSplineContact> cache)
     {
-        var n=boxes.Length;for(var i=0;i<n;i++)variables[i]=new(boxes[i],0);
-        cache.Clear();
+        var n=boxes.Length;ModelingPerformance.Jacobian(n);for(var i=0;i<n;i++)variables[i]=new(boxes[i],0);
+        if(HasAnyUv(nodes))cache.Clear();
         foreach(var node in nodes)for(var side=0;side<2;side++)
         {
             var uv=side==0?node.FirstUv:node.SecondUv;if(uv<0)continue;var spine=program.Spines[node.Spine];var source=program.Surfaces[side==0?spine.First:spine.Second];
@@ -366,10 +374,16 @@ internal static partial class JointNestedBlendEvaluation
         }
         for(var column=0;column<n;column++)
         {
+            ModelingPerformance.ResidualDirection();
             variables[column]=new(boxes[column],1);var status=IntervalResidual(program,nodes,variables[..n],parameter,equations[..n],fixedCharts,cache);if(status!=AlgorithmStatus.Success)return status;
             for(var row=0;row<n;row++)matrix[row*n+column]=equations[row].Derivative;variables[column]=new(boxes[column],0);
         }
         return AlgorithmStatus.Success;
+    }
+    private static bool HasAnyUv(ReadOnlySpan<Occurrence> nodes)
+    {
+        foreach(var node in nodes)if(node.FirstUv>=0||node.SecondUv>=0)return true;
+        return false;
     }
     private static void Precondition(ReadOnlySpan<double> inverse,ReadOnlySpan<IntervalNumber> jacobian,BufferCount n,Span<IntervalNumber> result)
     {
