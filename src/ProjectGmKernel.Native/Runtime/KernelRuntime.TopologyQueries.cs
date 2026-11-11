@@ -161,7 +161,12 @@ internal static unsafe partial class KernelRuntime
             return ParasolidConstants.PK_ERROR_unknown_class;
         ref var record = ref Faces[TagRec(face).Slot];
         *surface = record.SurfTag;
-        *orientation = (byte)(record.Orientation == ParasolidConstants.PK_TOPOL_sense_negative_c ? 0 : 1);
+        // XT stores the face/natural-surface orientation in both sense fields.
+        // The public query reports their composition, without changing either.
+        var positive = record.Orientation != ParasolidConstants.PK_TOPOL_sense_negative_c;
+        var surfaceSlot = GetSurfaceSlotByTag(record.SurfTag);
+        if (surfaceSlot >= 0 && Surfaces[surfaceSlot].Sense == ParasolidConstants.PK_TOPOL_sense_negative_c) positive = !positive;
+        *orientation = (byte)(positive ? 1 : 0);
         return 0;
     }
 

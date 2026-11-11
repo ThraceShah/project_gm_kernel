@@ -35,6 +35,8 @@ try
         var start=new M.PK_SESSION_start_o_s{o_t_version=1};Check(KernelRuntime.SessionStart(&start),"managed session start");
         try
         {
+            var faceQueryControls=args.Contains("--face-query-controls",StringComparer.Ordinal);
+            if(faceQueryControls)RunFaceQueryControls(directory,Log);
             var cases=new (string Name,string Shape,string Operation,double Amount,string Selection,bool Oriented)[]
             {
                 ("block-offset-out","block","offset",.4,"",false),("block-offset-in","block","offset",-.4,"",false),
@@ -62,6 +64,7 @@ try
             var failures=0;var executed=0;
             foreach(var c in cases)
             {
+                if(faceQueryControls)continue;
                 if(!WebProgressCapture.Select(c.Name))continue;
                 if(trace!=null&&(c.Operation is not ("fillet" or "chamfer" or "unequal-chamfer")||axialArrangement&&c.Shape!="cylinder"))continue;
                 executed++;
@@ -108,10 +111,11 @@ try
                     for(var kind=0;kind<5;kind++){var actual=Count(received,kind);var expected=Count(reference,kind);Require(actual==expected,$"{c.Name} topology kind {kind}: {actual}/{expected}");}
                     CheckBody(reference,c.Name+" independent",Log);CheckBody(received,c.Name+" received",Log);CompareMass(reference,received,c.Name,Log);
                     CompareMaterialSense(reference,received,c.Name);
+                    CompareManagedPlaneOrientations(managed,received,c.Name,Log,args.Contains("--managed-material",StringComparer.Ordinal));
                     try{ParasolidBodyCompare.AssertEquivalent(reference,received,c.Name+" strict");}
                     catch{RecordFiniteSurfaces(reference,c.Name+" native",Log);RecordFiniteSurfaces(received,c.Name+" GM fresh",Log);RecordFiniteCurves(reference,c.Name+" native",Log);RecordFiniteCurves(received,c.Name+" GM fresh",Log);throw;}
                     if(args.Contains("--lifecycle",StringComparer.Ordinal))
-                        (managed,reference)=VerifyLifecycle(managed,reference,c.Name,directory,Log);
+                        (managed,reference)=VerifyLifecycle(managed,reference,c.Name,directory,Log,args.Contains("--managed-material",StringComparer.Ordinal));
                     Check(KernelRuntime.EntityDelete(1,&managed),"delete managed result");Check(PK_ENTITY_delete(1,&reference),"delete reference");Check(PK_ENTITY_delete(1,&received),"delete received");
                     var ownedAfter=(KernelRuntime.Bodies.AliveCount,KernelRuntime.Curves.AliveCount,KernelRuntime.Surfaces.AliveCount,KernelRuntime.Points.AliveCount,KernelRuntime.ReturnOutstandingBlocks);
                     Require(ownedBefore==ownedAfter,$"Blend product geometry/return memory ownership cleanup before={ownedBefore} after={ownedAfter}");
@@ -127,7 +131,8 @@ try
                     }
                 }
             }
-            Log($"Local operation geometry: {executed-failures} passed, {failures} failed, mass_unresolved={ParasolidMassProperties.UnresolvedCount}.");Require(failures==0,"Local operation oracle failed.");
+            if(faceQueryControls)Log("FACE_QUERY_CONTROLS_PASS cases=4; query fixtures, no Blend construction qualified");
+            else Log($"Local operation geometry: {executed-failures} passed, {failures} failed, mass_unresolved={ParasolidMassProperties.UnresolvedCount}.");Require(failures==0,"Local operation oracle failed.");
             if(ParasolidMassProperties.UnresolvedCount!=0)Environment.ExitCode=2;
         }
         finally{Check(KernelRuntime.SessionStop(),"managed session stop");}
@@ -136,6 +141,26 @@ try
 catch(Exception ex){Log("FAIL: "+ex.Message);Environment.ExitCode=1;}
 finally{File.WriteAllText(Path.Combine(directory,"report.txt"),report.ToString());}
 
+static unsafe void RunFaceQueryControls(string directory,Action<string> log)
+{
+    foreach(var negativeFace in new[]{false,true})foreach(var negativeSurface in new[]{false,true})
+    {
+        var own=Create(true,"block",false);var face=Tags(true,own,false)[0];ref var record=ref KernelRuntime.Faces[KernelRuntime.ResolveTagRecord(face).Slot];
+        ref var surface=ref KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(record.SurfTag)];
+        record.Orientation=negativeFace?M.ParasolidConstants.PK_TOPOL_sense_negative_c:M.ParasolidConstants.PK_TOPOL_sense_positive_c;
+        surface.Sense=negativeSurface?M.ParasolidConstants.PK_TOPOL_sense_negative_c:M.ParasolidConstants.PK_TOPOL_sense_positive_c;
+        var label=$"face-{negativeFace}-surface-{negativeSurface}";var bytes=TransmitManaged(own);File.WriteAllBytes(Path.Combine(directory,label+".x_t"),bytes);var fresh=Receive(bytes);
+        try
+        {
+            CompareManagedPlaneOrientations(own,fresh,label,log,false);
+            int queried=0;byte orientation=0;Check(KernelRuntime.FaceAskOrientedSurf(face,&queried,&orientation),"control face query");
+            if(negativeFace==negativeSurface)CheckBody(fresh,label+" geometry-preserving fixture",log);
+            log($"FACE_SIGN_QUERY_CONTROL face_negative={negativeFace} surface_negative={negativeSurface} GM_PK_orientation={orientation!=0} query_only=True");
+        }
+        finally{Check(KernelRuntime.EntityDelete(1,&own),"delete GM face-query fixture");Check(PK_ENTITY_delete(1,&fresh),"delete PK face-query fixture");}
+        Require(KernelRuntime.Bodies.AliveCount==0&&KernelRuntime.Curves.AliveCount==0&&KernelRuntime.Surfaces.AliveCount==0&&KernelRuntime.Points.AliveCount==0,"face-query fixture cleanup");
+    }
+}
 static unsafe int Create(bool managed,string shape,bool oriented)
 {
     var basis=new PK_AXIS2_sf_t(new PK_VECTOR_t(oriented?7:0,oriented?-4:0,oriented?2:0),
@@ -397,7 +422,7 @@ static unsafe int ReceiveManaged(byte[] bytes)
         try{Require(count==1,"GM seed receive part count");return parts[0];}finally{Free(true,parts);}
     }
 }
-static unsafe (PK_BODY_t Managed,PK_BODY_t Reference) VerifyLifecycle(PK_BODY_t managed,PK_BODY_t reference,string label,string directory,Action<string> log)
+static unsafe (PK_BODY_t Managed,PK_BODY_t Reference) VerifyLifecycle(PK_BODY_t managed,PK_BODY_t reference,string label,string directory,Action<string> log,bool checkManagedMaterial)
 {
     int copy=0,nativeCopy=0;
     Check(KernelRuntime.EntityCopy(managed,&copy),"copy GM Blend product");Check(PK_ENTITY_copy(reference,&nativeCopy),"copy independent PK product");
@@ -416,6 +441,7 @@ static unsafe (PK_BODY_t Managed,PK_BODY_t Reference) VerifyLifecycle(PK_BODY_t 
     {
         CheckBody(nativeCopy,label+" lifecycle reference",log);CheckBody(received,label+" lifecycle received",log);
         CompareMaterialSense(nativeCopy,received,label+" lifecycle");ParasolidBodyCompare.AssertEquivalent(nativeCopy,received,label+" lifecycle strict");
+        CompareManagedPlaneOrientations(reloaded,received,label+" lifecycle",log,checkManagedMaterial);
         CompareMass(nativeCopy,received,label+" lifecycle",log);log("GEOMETRY_TOPOLOGY_PASS "+label+" lifecycle copy/delete source/mirror-scale/GM reload");
     }
     finally{Check(PK_ENTITY_delete(1,&received),"delete lifecycle receive");}
@@ -437,6 +463,46 @@ static unsafe void CompareMass(int reference,int actual,string label,Action<stri
     Require(status!=MassAgreement.Different,label+" mass intervals prove a difference");
 }
 
+static unsafe void CompareManagedPlaneOrientations(int own,int fresh,string label,Action<string> log,bool checkManagedMaterial)
+{
+    var candidates=Tags(false,fresh,false);var used=new HashSet<PK_FACE_t>();var count=0;
+    foreach(var face in Tags(true,own,false))
+    {
+        PK_SURF_t surface=0;byte orientation=0;PK_CLASS_t kind=0;
+        Check(KernelRuntime.FaceAskOrientedSurf(face,&surface,&orientation),"GM oriented surface query");Check(KernelRuntime.EntityAskClass(surface,&kind),"GM queried surface class");
+        if(kind!=PK_CLASS_plane)continue;
+        var basis=new PK_PLANE_sf_t();Check(KernelRuntime.PlaneAsk(surface,(M.PK_PLANE_sf_s*)&basis),"GM queried plane frame");PK_FACE_t matched=0;PK_LOGICAL_t expected=default;
+        foreach(var candidate in candidates)
+        {
+            PK_SURF_t other=0;PK_LOGICAL_t sense=default;Check(PK_FACE_ask_oriented_surf(candidate,&other,&sense),"PK same-product oriented surface query");
+            Check(PK_ENTITY_ask_class(other,&kind),"PK queried surface class");if(kind!=PK_CLASS_plane)continue;
+            var target=new PK_PLANE_sf_t();Check(PK_PLANE_ask(other,&target),"PK same-product plane frame");
+            double normalDot=0,referenceDot=0,separation=0;
+            for(var axis=0;axis<3;axis++)
+            {
+                normalDot+=basis.basis_set.axis.coord[axis]*target.basis_set.axis.coord[axis];
+                referenceDot+=basis.basis_set.ref_direction.coord[axis]*target.basis_set.ref_direction.coord[axis];
+                separation+=(basis.basis_set.location.coord[axis]-target.basis_set.location.coord[axis])*basis.basis_set.axis.coord[axis];
+            }
+            if(normalDot<1-1e-12||referenceDot<1-1e-12||Math.Abs(separation)>1e-9)continue;
+            Require(matched==0,label+" ambiguous same-product plane correspondence");matched=candidate;expected=sense;
+        }
+        Require(matched!=0&&used.Add(matched),label+" same-product plane correspondence");
+        Require((orientation!=0)==(expected==PK_LOGICAL_true),$"{label} managed FaceAskOrientedSurf differs from same actual XT in PK: faces={face}/{matched} GM={orientation!=0} PK={expected==PK_LOGICAL_true}");count++;
+        if(!checkManagedMaterial)continue;
+        var interior=new PK_FACE_find_interior_vec_o_t();PK_VECTOR_t point;PK_UV_t uv;
+        Check(PK_FACE_find_interior_vec(matched,&interior,&point,&uv),"native finite plane material witness");
+        foreach(var side in new[]{-1,1})
+        {
+            var query=point;for(var axis=0;axis<3;axis++)query.coord[axis]+=side*1e-5*(expected==PK_LOGICAL_true?1:-1)*basis.basis_set.axis.coord[axis];
+            int actual=0,native=0,topology=0;Check(KernelRuntime.BodyContainsVector(own,*(M.PK_VECTOR_s*)&query,&actual,&topology),"GM finite plane material side");
+            Check(PK_BODY_contains_vector(fresh,query,&native,&topology),"PK finite plane material side");
+            Require(native==(side<0?PK_enclosure_inside_c:PK_enclosure_outside_c),label+" native finite plane material witness must be separated");
+            Require(actual==native,$"{label} managed material differs at actual finite plane face={face}/{matched} side={side}: GM={actual} PK={native}");
+        }
+    }
+    log($"MANAGED_FACE_ORIENTATION_PASS {label} same_product_planes={count} separated_material_probes={(checkManagedMaterial?2*count:0)}");
+}
 static unsafe void CompareMaterialSense(int reference,int actual,string label)
 {
     var targets=Tags(false,actual,false);var seenFaces=new HashSet<int>();

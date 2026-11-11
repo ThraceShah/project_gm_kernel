@@ -14,6 +14,21 @@ public unsafe class LocalOperationTests:IDisposable
     public void Dispose(){KernelRuntime.InjectAllocationFailure(-1);KernelRuntime.SessionStop();}
 
     [Theory]
+    [InlineData(false,false,true)] [InlineData(false,true,false)]
+    [InlineData(true,false,false)] [InlineData(true,true,true)]
+    public void OrientedSurfaceQueryComposesXtFaceAndSurfaceSensesWithoutMutation(bool negativeFace,bool negativeSurface,bool expected)
+    {
+        var body=Block();var face=Record(body).FirstFaceBody;ref var record=ref KernelRuntime.Faces[face];
+        ref var geometry=ref KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(record.SurfTag)];
+        record.Orientation=negativeFace?ParasolidConstants.PK_TOPOL_sense_negative_c:ParasolidConstants.PK_TOPOL_sense_positive_c;
+        geometry.Sense=negativeSurface?ParasolidConstants.PK_TOPOL_sense_negative_c:ParasolidConstants.PK_TOPOL_sense_positive_c;
+        var beforeFace=record.Orientation;var beforeSurface=geometry.Sense;int surface=0;byte orientation=0;
+        Assert.Equal(0,KernelRuntime.FaceAskOrientedSurf(record.Header.Tag,&surface,&orientation));
+        Assert.Equal(record.SurfTag,surface);Assert.Equal(expected,orientation!=0);
+        Assert.Equal(beforeFace,record.Orientation);Assert.Equal(beforeSurface,geometry.Sense);
+    }
+
+    [Theory]
     [InlineData(.5)] [InlineData(-.5)]
     public void ConvexOffsetMovesPlanesAndRetainsEveryBoundaryHandle(double distance)
     {
