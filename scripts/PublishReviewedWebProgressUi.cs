@@ -129,7 +129,7 @@ async Task Publish(string bundle)
     foreach (var arg in new[] { "static", "--slug", "gm-kernel-progress", "--name", "GM Kernel vs Parasolid 对比工作台", "--dir", bundle }) info.ArgumentList.Add(arg);
     using var process = Process.Start(info)!; await process.WaitForExitAsync();
     if (process.ExitCode != 0) throw new IOException("portalctl original exit=" + process.ExitCode);
-    using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(20) };
+    using var http = new HttpClient(new HttpClientHandler { UseProxy = false }) { Timeout = TimeSpan.FromSeconds(20) };
     const string origin = "https://qingyu1-linux.tail77e06.ts.net/apps/gm-kernel-progress/";
     foreach (var relative in new[] { "index.html", "data/index.json" })
         if (!Enumerable.SequenceEqual(File.ReadAllBytes(Path.Combine(bundle, relative)), await http.GetByteArrayAsync(origin + relative))) throw new IOException("served bytes differ: " + relative);
@@ -200,7 +200,7 @@ var published = ReadObject(Path.Combine(work, "published.json"));
 if (ExistingBackup() is null)
 {
     SafeTree(previous); Separate(work, previous);
-    using var http = new HttpClient();
+    using var http = new HttpClient(new HttpClientHandler { UseProxy = false }) { Timeout = TimeSpan.FromSeconds(20) };
     foreach (var path in new[] { "index.html", "data/index.json" })
         if (!Enumerable.SequenceEqual(File.ReadAllBytes(Path.Combine(previous, path)), await http.GetByteArrayAsync("https://qingyu1-linux.tail77e06.ts.net/apps/gm-kernel-progress/" + path))) throw new IOException("previous bundle does not match served slug");
     EnsureBackup();
