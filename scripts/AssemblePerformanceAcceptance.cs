@@ -29,6 +29,7 @@ var rawReport=Path.Combine(incoming,"extracted/temp_docs/pk-native-work-reductio
 var qualityDir=Path.GetFullPath(Option("--quality","../temp_docs/incoming/mac-performance/extracted-quality"),scripts);
 var baselineDir=Path.GetFullPath(Option("--baseline","../temp_docs/incoming/mac-performance/extracted-baseline"),scripts);
 var reviewTree=Path.GetFullPath(Option("--review","../../gm-pk-performance-final-review"),scripts);
+var displayRoot=Path.GetFullPath(Option("--display-root","../temp_docs/incoming/mac-performance/extracted/temp_docs/pk-native-work-reduction/controlled-final"),scripts);
 var output=Path.GetFullPath(Option("--output","../temp_docs/web-progress-performance/data"),scripts);
 var now=DateTimeOffset.UtcNow;
 var runId=Option("--run-id",now.ToString("yyyyMMddTHHmmssZ")+"-perf6761600");
@@ -115,19 +116,21 @@ JsonNode NullPerf(string note)=>new JsonObject{["gmMs"]=null,["pkMs"]=null,["rat
 JsonObject Check(string id,string label,string status,double? gm,double? pk,double? threshold,string unit,string note,string? evidence=null)
     =>new JsonObject{["id"]=id,["label"]=label,["status"]=status,["gm"]=gm,["pk"]=pk,["absDelta"]=gm.HasValue&&pk.HasValue?Math.Abs(gm.Value-pk.Value):null,["normalizedDelta"]=gm.HasValue&&pk.HasValue?Math.Abs(gm.Value-pk.Value)/(1+Math.Abs(pk.Value)):null,["threshold"]=threshold,["unit"]=unit,["evidence"]=evidence,["note"]=note};
 var cases=new JsonArray();
-void AddCase(string id,string title,string family,string operation,string status,JsonArray checks,JsonArray evidence,JsonArray notes,JsonNode perf,string sourcePath,int[] exits,int? exitCode)
+void AddCase(string id,string title,string family,string operation,string status,JsonArray steps,JsonArray checks,JsonArray evidence,JsonArray notes,JsonNode perf,string sourcePath,int[] exits,int? exitCode)
 {
     cases.Add((JsonNode)new JsonObject
     {
         ["id"]=id,["title"]=title,["family"]=family,["operation"]=operation,["status"]=status,
         ["parameters"]=new JsonObject{{"candidate",Candidate},{"candidateSrc",CandidateSrc},{"baseline",Baseline},{"acceptanceReview","../gm-pk-performance-final-review/docs/Pk_Performance_6761600_Independent_Review.md @ "+Review}},
         ["apis"]=new JsonObject{["gm"]=new JsonObject{["name"]=operation,["parameters"]=new JsonObject{{"sourceTree","gm-pk-performance-delivery @ "+Candidate},{"nativeTree",CandidateNative}}},["pk"]=new JsonObject{["name"]=operation,["parameters"]=new JsonObject{{"oracle","real Parasolid 38.0.150 (Mac), identical numeric parameters"}}}},
-        ["steps"]=new JsonArray(),["checks"]=checks,["performance"]=perf,["evidence"]=evidence,["notes"]=notes,
+        ["steps"]=steps,["checks"]=checks,["performance"]=perf,["evidence"]=evidence,["notes"]=notes,
         ["source"]=new JsonObject{["path"]=sourcePath,["revision"]=Candidate},
         ["execution"]=new JsonObject{["selected"]=true,["attempted"]=true,["exitCode"]=exitCode,["exitCodes"]=new JsonArray(exits.Select(c=>(JsonNode?)JsonValue.Create(c)).ToArray()),["timedOut"]=false}
     });
 }
 var ev=new JsonArray((JsonNode)new JsonObject{["label"]="Mac 原 report.json（20 进程/60 pairs 全部原值与 work 行，原字节）",["path"]="evidence/mac-report.json"},(JsonNode)new JsonObject{["label"]="原件哈希锚定",["path"]="evidence/run-receipt.json"});
+var displayProcess=new Dictionary<string,string>(StringComparer.Ordinal){["sphere"]="01-sphere-candidate",["planar"]="05-planar-candidate",["curved"]="09-curved-candidate",["solidblend"]="13-solidblend-candidate",["shortedge"]="17-shortedge-candidate"};
+var displayBinding=new JsonArray();
 string F(double v)=>v.ToString("G17",System.Globalization.CultureInfo.InvariantCulture);
 foreach(var (op,caseId,title,family) in new[]{("sphere","perf.sphere-subtract","perf / sphere subtract（冷/暖全值）","boolean"),("planar","perf.planar-subtract","perf / planar subtract（+30.334% 回归未归因，保留）","boolean"),("curved","perf.curved-block-subtract","perf / curved block subtract（小变化不计实质收益）","boolean"),("solidblend","perf.plane-nurbs-solidblend","perf / plane-NURBS fillet solidblend（小变化不计实质收益）","blend"),("shortedge","perf.shortedge-fillet","perf / shortedge fillet（-37.2420% / 1.59342x，仍 9465.56563x PK）","blend")})
 {
@@ -143,11 +146,50 @@ foreach(var (op,caseId,title,family) in new[]{("sphere","perf.sphere-subtract","
         (JsonNode?)JsonValue.Create("rep0 为进程冷（非整机冷/同 JIT 状态）；XT 仅最终 rep2 保留原字节，不把 rep2 XT 签给其它 reps。"));
     if(op=="planar")notes.Add((JsonNode?)JsonValue.Create("回归 +30.334% 为真实观察：候选暖区间与基线区间重叠、zero Jacobians、原因未归因；不做重复 ABBA 选窗，保留观察不隐藏。"));
     if(op=="shortedge")notes.Add((JsonNode?)JsonValue.Create("工作量收益（residual-directions 约 1.01e7→2.78e4 等）见 perf.work-reduction-counters；不得表述为 99.7% 算术/CPU 删除。"));
-    AddCase(caseId,title,family,"PK_BODY_boolean (fixed successful operation)","pass",checks,(JsonArray)ev.DeepClone(),notes,Perf(op),"scripts/NativeModelingWorkComparison.cs",new[]{0,0,0,0},0);
+    // same-artifact display sample: rep 2 of one explicit candidate process, wired into steps
+    try{
+    var processDir=displayProcess[op];
+    var srcMesh=Path.Combine(displayRoot,processDir,"meshes");
+    var prefix=$"cases/{caseId}/sample-0/meshes";
+    var meshOut=Path.Combine(run,prefix);Directory.CreateDirectory(meshOut);
+    var shipped=new JsonArray();
+    foreach(var (name,stage) in new[]{("gm-2-before.json","gm/before"),("gm-2-after-0.json","gm/after"),("gm-2-tool-0.json","gm/tool"),("pk-2-before.json","pk/before"),("pk-2-after-0.json","pk/after"),("pk-2-tool-0.json","pk/tool")})
+    {
+        var source=Path.Combine(srcMesh,name);if(!File.Exists(source))continue;
+        var bytes=File.ReadAllBytes(source);File.WriteAllBytes(Path.Combine(meshOut,name),bytes);
+        var mesh=JsonNode.Parse(bytes)!.AsObject();
+        shipped.Add((JsonNode)new JsonObject{["file"]=$"cases/{caseId}/sample-0/meshes/{name}",["stage"]=stage,["kernel"]=mesh["source"]!["kernel"]!.GetValue<string>(),["sha256"]=Hash(bytes),["bytes"]=bytes.Length,["faces"]=mesh["faces"]!.AsArray().Count,["edges"]=mesh["edges"]!.AsArray().Count,["bodyId"]=mesh["bodyId"]!.GetValue<string>()});
+    }
+    var step=new JsonObject{["id"]="rep2-display",["title"]=$"{op} 显示样本：{processDir} rep 2（同包真实 DisplayBody；表格统计为全部 2 冷+4 暖，本显示仅为单样本，不代表 60 pairs）",["gm"]=new JsonObject{["before"]=$"{prefix}/gm-2-before.json",["after"]=$"{prefix}/gm-2-after-0.json",["tools"]=File.Exists(Path.Combine(srcMesh,"gm-2-tool-0.json"))?new JsonArray((JsonNode?)JsonValue.Create($"{prefix}/gm-2-tool-0.json")):new JsonArray()},["pk"]=new JsonObject{["before"]=$"{prefix}/pk-2-before.json",["after"]=$"{prefix}/pk-2-after-0.json",["tools"]=File.Exists(Path.Combine(srcMesh,"pk-2-tool-0.json"))?new JsonArray((JsonNode?)JsonValue.Create($"{prefix}/pk-2-tool-0.json")):new JsonArray()}};
+    var steps=new JsonArray((JsonNode)step);
+    var procCapture=JsonNode.Parse(File.ReadAllText(Path.Combine(displayRoot,processDir,"capture.json")))!.AsObject();
+    var repCounts=new JsonArray();
+    foreach(var ch in procCapture["checks"]!.AsArray().Where(ch=>ch!["id"]!.GetValue<string>().StartsWith("2-count-",StringComparison.Ordinal)||ch["id"]!.GetValue<string>()=="2-body-count"))
+        repCounts.Add((JsonNode)new JsonObject{["id"]=ch!["id"]!.DeepClone(),["label"]=ch["label"]!.DeepClone(),["gm"]=ch["gm"]!.DeepClone(),["pk"]=ch["pk"]!.DeepClone(),["status"]=ch["status"]!.DeepClone()});
+    var repCompare=JsonNode.Parse(File.ReadAllText(Path.Combine(displayRoot,processDir,"evidence/compare-2.json")))!.AsObject();
+    var repSample=samples.Single(s=>s["directory"]!.GetValue<string>().EndsWith("/"+processDir,StringComparison.Ordinal));
+    displayBinding.Add((JsonNode)new JsonObject
+    {
+        ["case"]=caseId,["process"]=processDir,["rep"]=2,["captureStepIndex"]=2,
+        ["callOrder"]=repSample["callOrder"]?.DeepClone(),["selector"]=repSample["selector"]?.DeepClone(),["arguments"]=repSample["arguments"]?.DeepClone(),
+        ["pair"]=repSample["pairs"]!.AsArray().First(p=>p!["rep"]!.GetValue<int>()==2)!.DeepClone(),
+        ["meshes"]=shipped,
+        ["originalCounts"]=repCounts,
+        ["compare"]=(JsonNode?)new JsonObject{["globalResult"]=repCompare["globalResult"]!.DeepClone(),["localResult"]=repCompare["localResult"]!.DeepClone(),["facePairs"]=repCompare["facePairs"]!.DeepClone()},
+        ["xtArtifactsLastRepetition"]=repSample["xtArtifactsLastRepetition"]?.DeepClone(),
+        ["captureSha256"]=Hash(File.ReadAllBytes(Path.Combine(displayRoot,processDir,"capture.json"))),
+        ["note"]="显示样本 = 该 candidate 进程 rep 2 的真实 DisplayBody（geometry 数组与包原件字节一致）；rep2 XT 仅归属自身；不冒签全部 60 pairs，不代表 f9c59201 event-arrangement 或整体 PK 目标。"
+    });
+    notes.Add((JsonNode?)JsonValue.Create("显示样本绑定（process/rep/kernel/stage/mesh sha256/原 counts/rep2 XT）见 evidence/display-binding.json；表格统计（2 冷+4 暖）与本显示样本分别说明，rep2 显示不冒签全部 60 pairs。"));
+    var opEv=(JsonArray)ev.DeepClone();
+    opEv.Add((JsonNode)new JsonObject{["label"]="显示样本绑定（mesh 哈希/原 counts/rep2 XT）",["path"]="evidence/display-binding.json"});
+    AddCase(caseId,title,family,"PK_BODY_boolean (fixed successful operation)","pass",steps,checks,opEv,notes,Perf(op),"scripts/NativeModelingWorkComparison.cs",new[]{0,0,0,0},0);
+    }catch(Exception e){Console.Error.WriteLine("DISPLAY FAIL op="+op+" "+e);throw;}
 }
 
 // work reduction counters
 AddCase("perf.work-reduction-counters","perf / 工作量收益计数（建图/节点/rebind 与 residual 调用对照）","blend","interval-evaluation work reduction counters","pass",
+    new JsonArray(),
     new JsonArray(
         Check("work-audit","计数与原始 log/report 一致（独立审计 exit 0）","pass",null,null,null,"","审计脚本按同 repetition 对齐核对；warm/cold 缓存历史会改变不同 rep 计数","evidence/mac-report.json"),
         Check("work-residual","shortedge warm rep1 residual-directions：基线 10,113,178 → 候选 27,774","diagnostic",27774,10113178,null,"calls","接受报告 rep-1 对照值；各进程各行原值见 evidence/mac-report.json work 行","evidence/mac-report.json"),
@@ -155,11 +197,13 @@ AddCase("perf.work-reduction-counters","perf / 工作量收益计数（建图/�
         Check("work-retained","两源保留：SSI cells 4,956 / root cells 220,895 / roots 3,518 / winding 196 / bound requests 275,525 / bound evaluations 223,331 / hits 30,727 / budget failures 0","diagnostic",null,null,null,"counts","",null)),
     new JsonArray((JsonNode)new JsonObject{["label"]="Mac 原 report.json work 行（原字节）",["path"]="evidence/mac-report.json"}),
     new JsonArray((JsonNode?)JsonValue.Create("工作量收益独立于耗时结论显示；load average（约 3.51–11.09）不证明排他 API CPU。"),
-        (JsonNode?)JsonValue.Create("显示建图/节点/rebind 等工作量变化，不是 99.7% CPU 或算术删除结论。")),
+        (JsonNode?)JsonValue.Create("显示建图/节点/rebind 等工作量变化，不是 99.7% CPU 或算术删除结论。"),
+        (JsonNode?)JsonValue.Create("报表类（report-only）：无模型显示，不造模型。")),
     NullPerf("计数类证据，无耗时测量；不得由此推导倍率。"),"scripts/NativeModelingWorkComparison.cs",new int[0],null);
 
 // quality settlement
 AddCase("quality.full-suite-1877","quality / Mac 全量 suite 1875/1877（2 既有失败，原 exit 1）","blend","tests/KernelTests complete suite","fail",
+    new JsonArray(),
     new JsonArray(
         Check("suite-total","TRX 执行数","pass",1877,1877,0,"tests","unique executions","evidence/suite-receipt.json"),
         Check("suite-passed","通过数","pass",1875,1875,0,"tests","",null),
@@ -170,11 +214,13 @@ AddCase("quality.full-suite-1877","quality / Mac 全量 suite 1875/1877（2 既�
         Check("suite-record-tests","12 记录算术/支撑测试在 suite 内通过；最大容量测试为独立一次通过（原 exit 0），未并入 1877","pass",12,12,0,"tests","",null)),
     new JsonArray((JsonNode)new JsonObject{["label"]="原 complete-suite.log（原字节）",["path"]="evidence/complete-suite.log"},(JsonNode)new JsonObject{["label"]="原 suite 结算收据（原字节）",["path"]="evidence/suite-receipt.json"},(JsonNode)new JsonObject{["label"]="同 Mac 基线失败对照（原字节）",["path"]="evidence/baseline-failure-comparison.json"},(JsonNode)new JsonObject{["label"]="TRX 原件（未内联，2.75MB）：temp_docs/incoming/mac-performance/extracted-quality/temp_docs/pk-native-work-reduction/test-results/complete-suite.trx sha256=fce633b02e4d9cdd6654a29a2eb3904150a65cb95ac45650cc4788f099a9769d",["path"]="evidence/run-receipt.json"}),
     new JsonArray((JsonNode?)JsonValue.Create("不写全 suite 过；两项失败为同 Mac 基线既有失败（同一 supporting-blend 检查），不是本次优化新增回归，但保持红不消失。"),
-        (JsonNode?)JsonValue.Create("Linux 1885 与本 Mac 1877 不是同一套/来源，互不代签。")),
+        (JsonNode?)JsonValue.Create("Linux 1885 与本 Mac 1877 不是同一套/来源，互不代签。"),
+        (JsonNode?)JsonValue.Create("报表类（report-only）：无模型显示，不造模型。")),
     NullPerf("质量结算，无耗时测量。"),"tests/KernelTests/KernelTests.csproj",new[]{1},1);
 
 // overall PK target / cross-cutting
 AddCase("perf.overall-pk-target","overall / PK 性能目标未达成；planar 回归未归因；范围限定","boolean","overall performance target","fail",
+    new JsonArray(),
     new JsonArray(
         Check("target-pk","PK 性能目标（GM/PK ≤ 1）","fail",9465.56563,1,1,"x","未达：curved 488.26694x、solidblend 1064.27179x、shortedge 9465.56563x（配对中位数）","evidence/mac-report.json"),
         Check("target-planar","planar GM 耗时回归 +30.334%","fail",30.334,0,0,"%","区间重叠、zero Jacobians、原因未归因；保留观察",null),
@@ -183,10 +229,12 @@ AddCase("perf.overall-pk-target","overall / PK 性能目标未达成；planar �
         Check("target-work","工作量收益证据已独立显示（非 CPU 结论）","pass",null,null,null,"","见 perf.work-reduction-counters",null)),
     new JsonArray((JsonNode)new JsonObject{["label"]="全部原值与样本范围",["path"]="evidence/mac-report.json"},(JsonNode)new JsonObject{["label"]="来源/哈希/容量回执",["path"]="evidence/run-receipt.json"}),
     new JsonArray((JsonNode?)JsonValue.Create("不签一般模型加速、下游组合成功、f9c59201 计算接受、PK 达标、全绿 suite、合 main 或产品部署；与计算 run 20261111T130936Z-f9c59201 分源（不同源码），不构成同一 kernel 集成。"),
-        (JsonNode?)JsonValue.Create("family 为看板既有粗分类（blend|boolean）；准确类别以标题/operation/notes 为准。")),
+        (JsonNode?)JsonValue.Create("family 为看板既有粗分类（blend|boolean）；准确类别以标题/operation/notes 为准。"),
+        (JsonNode?)JsonValue.Create("报表类（report-only）：无模型显示，不造模型。")),
     NullPerf("整体结论，无新耗时测量。"),"docs/Pk_Performance_6761600_Independent_Review.md",new int[0],null);
 
 // ---- manifest
+File.WriteAllText(Path.Combine(evidenceDir,"display-binding.json"),new JsonObject{["schemaVersion"]=1,["note"]="Rep-2 same-artifact display binding for the five performance operations; shipped mesh geometry arrays are byte-identical to the accepted 85be package originals. Display sample = one explicit candidate process rep 2; table statistics cover all 2 cold + 4 warm pairs and are reported separately; rep-2 display is not signed to all 60 pairs.",["samples"]=displayBinding}.ToJsonString());
 var manifest=new JsonObject
 {
     ["schemaVersion"]=1,
@@ -203,6 +251,8 @@ var manifest=new JsonObject
             ["packages"]=new JsonObject{["mac-modeling-performance-6761600-raw.tar.gz"]=PerfTarSha,["mac-modeling-quality-6761600.tar.gz"]=QualityTarSha,["mac-modeling-baseline-failures.tar.gz"]=BaselineTarSha,["rawReportSha256"]=RawReportSha},
             ["rawReport"]="evidence/mac-report.json",
             ["xtScope"]="Oracle 输出文件名每 rep 覆盖；保留原字节的 XT 仅最终 rep2，未签给其它 reps；XT 正文与原归档不公开。",
+            ["displaySample"]="五操作各取 01/05/09/13/17-*candidate 进程 rep 2（capture step 2，与保留 rep2 XT 对应）作为同包真实 DisplayBody 显示样本；绑定（process/rep/kernel/stage/mesh sha256/原 counts/rep2 XT）见 evidence/display-binding.json；显示单样本与表格多样本统计分别说明。",
+            ["supersedes"]="20261111T133805Z-perf6761600（纯数值快照，保持历史）；本 run 同值并补齐同包真实模型显示。",
             ["suiteExit"]="complete-suite 原外部 exit 1（1875/1877）；审计/对比 exit 不代签。",
             ["integrationNote"]="与计算 run 20261111T130936Z-f9c59201 为不同源码、不同 run；不合并标签冒称同一 kernel 集成；不签 f9c59201 event-arrangement 或整体 PK 目标。",
             ["performanceScope"]="同 host 合格样本的限定观察；配对中位数与中位数之比分别标注；planar 回归未归因保留；非全绿 suite 保留。",
@@ -213,7 +263,7 @@ var manifest=new JsonObject
     ["cases"]=cases
 };
 File.WriteAllText(Path.Combine(run,"manifest.json"),manifest.ToJsonString());
-var index=new JsonObject{["schemaVersion"]=1,["generatedAt"]=now.ToString("O"),["latestRunId"]=runId,["runs"]=new JsonArray((JsonNode)new JsonObject{["id"]=runId,["commit"]=Candidate,["generatedAt"]=now.ToString("O"),["label"]="性能交付验收快照：6761600 工作量优化（限定范围，与 f9c59201 分源未集成）",["manifest"]=$"runs/{runId}/manifest.json"})};
+var index=new JsonObject{["schemaVersion"]=1,["generatedAt"]=now.ToString("O"),["latestRunId"]=runId,["runs"]=new JsonArray((JsonNode)new JsonObject{["id"]=runId,["commit"]=Candidate,["generatedAt"]=now.ToString("O"),["label"]="性能交付验收快照（含真实模型显示）：6761600 工作量优化（限定范围，与 f9c59201 分源未集成）",["manifest"]=$"runs/{runId}/manifest.json"})};
 File.WriteAllText(Path.Combine(output,"index.json"),index.ToJsonString());
 var referenceBytes=trxBytes.Length;
 File.WriteAllText(Path.Combine(evidenceDir,"run-receipt.json"),new JsonObject
