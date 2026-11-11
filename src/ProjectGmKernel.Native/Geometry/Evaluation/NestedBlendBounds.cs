@@ -182,29 +182,39 @@ internal static partial class JointNestedBlendEvaluation
                 if(requireCharts[2*i]!=nodes[i].Spine||requireCharts[2*i+1]!=fixedCharts[i])return AlgorithmStatus.NotConverged;
         }
         Span<double> state=stackalloc double[MaxVariables],jacobian=stackalloc double[MaxVariables*MaxVariables],inverse=stackalloc double[MaxVariables*MaxVariables],rhs=stackalloc double[MaxVariables],residual=stackalloc double[MaxVariables];Span<int> pivots=stackalloc int[MaxVariables];
-        for(var i=0;i<n;i++)state[i]=snapshot[i][0];
-        status=Assemble(program,nodes,state[..n],u,residual[..n],jacobian[..(n*n)],false,default);if(status!=AlgorithmStatus.Success)return status;
-        status=SmallLinearSolve.LuFactorize(jacobian[..(n*n)],n,pivots);if(status!=AlgorithmStatus.Success)return AlgorithmStatus.NotConverged;
-        for(var column=0;column<n;column++)
-        {
-            rhs[..n].Clear();rhs[column]=1;status=SmallLinearSolve.LuSolveInPlace(jacobian,n,pivots,rhs[..n]);if(status!=AlgorithmStatus.Success)return status;
-            for(var row=0;row<n;row++)inverse[row*n+column]=rhs[row];
-        }
-        if(cartesianSpline){status=CartesianSplineInverse(program,nodes,state[..n],inverse[..(n*n)]);if(status!=AlgorithmStatus.Success)return status;}
-        if(substitutedConic){status=ConicSubstitutionInverse(program,nodes,state[..n],inverse[..(n*n)]);if(status!=AlgorithmStatus.Success)return status;}
         Span<IntervalNumber> boxes=stackalloc IntervalNumber[MaxVariables],image=stackalloc IntervalNumber[MaxVariables],centerF=stackalloc IntervalNumber[MaxVariables];
         Span<IntervalNumber> intervalJacobian=stackalloc IntervalNumber[MaxVariables*MaxVariables],remainder=stackalloc IntervalNumber[MaxVariables*MaxVariables];
         Span<IntervalDual> variables=stackalloc IntervalDual[MaxVariables],equations=stackalloc IntervalDual[MaxVariables];
+        for(var i=0;i<n;i++){state[i]=snapshot[i][0];boxes[i]=state[i];}
+        if(substitutedConic)
+        {
+            status=ConicSubstitutionJacobian(program,nodes,boxes[..n],t,intervalJacobian[..(n*n)],variables,equations,fixedCharts);
+            if(status!=AlgorithmStatus.Success)return status;
+            status=ConicBlockInverse(intervalJacobian[..(n*n)],inverse[..(n*n)]);if(status!=AlgorithmStatus.Success)return status;
+        }
+        else
+        {
+            status=Assemble(program,nodes,state[..n],u,residual[..n],jacobian[..(n*n)],false,default);if(status!=AlgorithmStatus.Success)return status;
+            status=SmallLinearSolve.LuFactorize(jacobian[..(n*n)],n,pivots);if(status!=AlgorithmStatus.Success)return AlgorithmStatus.NotConverged;
+            for(var column=0;column<n;column++)
+            {
+                rhs[..n].Clear();rhs[column]=1;status=SmallLinearSolve.LuSolveInPlace(jacobian,n,pivots,rhs[..n]);if(status!=AlgorithmStatus.Success)return status;
+                for(var row=0;row<n;row++)inverse[row*n+column]=rhs[row];
+            }
+            if(cartesianSpline){status=CartesianSplineInverse(program,nodes,state[..n],inverse[..(n*n)]);if(status!=AlgorithmStatus.Success)return status;}
+        }
         Span<IntervalSplineContact> splineCache=stackalloc IntervalSplineContact[MaxVariables];
         var recordCapacity=!substitutedConic&&CanRecordJacobian(program,nodes,n)?64+512*nodes.Length:0;
         Span<IntervalExpressionNode> recordNodes=stackalloc IntervalExpressionNode[recordCapacity];
         Span<IntervalNumber> recordDerivatives=stackalloc IntervalNumber[recordCapacity*n];
         Span<BufferOffset> recordOutputs=stackalloc BufferOffset[MaxVariables];
         var jacobianRecord=new IntervalJacobianRecord(recordNodes,recordDerivatives,recordOutputs[..n]);
-        for(var i=0;i<n;i++)variables[i]=new(state[i],0);
-        status=substitutedConic?ConicSubstitutionResidual(program,nodes,variables[..n],t,equations[..n],fixedCharts,out _,out _,out _)
-            :cartesianSpline?CartesianSplineResidual(program,nodes,variables[..n],t,equations[..n],fixedCharts,default)
-            :IntervalResidual(program,nodes,variables[..n],t,equations[..n],fixedCharts);if(status!=AlgorithmStatus.Success)return status;
+        if(!substitutedConic)
+        {
+            for(var i=0;i<n;i++)variables[i]=new(state[i],0);
+            status=cartesianSpline?CartesianSplineResidual(program,nodes,variables[..n],t,equations[..n],fixedCharts,default)
+                :IntervalResidual(program,nodes,variables[..n],t,equations[..n],fixedCharts);if(status!=AlgorithmStatus.Success)return status;
+        }
         for(var i=0;i<n;i++)centerF[i]=equations[i].Value;
         var certified=false;var derivativeScale=0.0;for(var i=0;i<n;i++)derivativeScale=Math.Max(derivativeScale,Math.Abs(snapshot[i][1]));
         for(var expansion=0;expansion<6&&!certified;expansion++)
@@ -216,7 +226,8 @@ internal static partial class JointNestedBlendEvaluation
                 boxes[i]=new(Math.BitDecrement(state[i]-radius),Math.BitIncrement(state[i]+radius));
             }
             status=IntervalJacobianWithRecord(program,nodes,boxes[..n],t,intervalJacobian[..(n*n)],variables,equations,fixedCharts,splineCache,ref jacobianRecord,cartesianSpline,substitutedConic);if(status!=AlgorithmStatus.Success)continue;
-            Precondition(inverse[..(n*n)],intervalJacobian[..(n*n)],n,remainder);
+            if(substitutedConic)ConicBlockPrecondition(inverse[..(n*n)],intervalJacobian[..(n*n)],remainder[..(n*n)]);
+            else Precondition(inverse[..(n*n)],intervalJacobian[..(n*n)],n,remainder);
             certified=true;
             for(var row=0;row<n;row++)
             {
@@ -238,7 +249,8 @@ internal static partial class JointNestedBlendEvaluation
         {
             for(var i=0;i<n;i++)boxes[i]=new(Math.Max(boxes[i].Lower,image[i].Lower),Math.Min(boxes[i].Upper,image[i].Upper));
             status=IntervalJacobianWithRecord(program,nodes,boxes[..n],t,intervalJacobian[..(n*n)],variables,equations,fixedCharts,splineCache,ref jacobianRecord,cartesianSpline,substitutedConic);if(status!=AlgorithmStatus.Success)return status;
-            Precondition(inverse[..(n*n)],intervalJacobian[..(n*n)],n,remainder);
+            if(substitutedConic)ConicBlockPrecondition(inverse[..(n*n)],intervalJacobian[..(n*n)],remainder[..(n*n)]);
+            else Precondition(inverse[..(n*n)],intervalJacobian[..(n*n)],n,remainder);
             for(var row=0;row<n;row++)
             {
                 IntervalNumber value=state[row];for(var k=0;k<n;k++)value-=inverse[row*n+k]*centerF[k];
@@ -247,7 +259,8 @@ internal static partial class JointNestedBlendEvaluation
         }
         if(!ReuseSplineContactBounds)splineCache.Clear();
         for(var i=0;i<n;i++)variables[i]=new(boxes[i],0);
-        status=CertifyNearestBoxes(program,nodes,boxes[..n],variables[..n],intervalJacobian[..(n*n)],fixedCharts,splineCache);if(status!=AlgorithmStatus.Success)return status;
+        status=substitutedConic?ConicBlockNearest(intervalJacobian[..(n*n)])
+            :CertifyNearestBoxes(program,nodes,boxes[..n],variables[..n],intervalJacobian[..(n*n)],fixedCharts,splineCache);if(status!=AlgorithmStatus.Success)return status;
         if(!captureWitness.IsEmpty)
         {
             if(n!=captureWitness.Length)return AlgorithmStatus.Unsupported;
@@ -282,7 +295,8 @@ internal static partial class JointNestedBlendEvaluation
             :cartesianSpline?CartesianSplineResidual(program,nodes,variables[..n],new(t,1),equations[..n],fixedCharts,splineCache)
             :IntervalResidual(program,nodes,variables[..n],new(t,1),equations[..n],fixedCharts,splineCache);if(status!=AlgorithmStatus.Success)return status;
         for(var i=0;i<n;i++)image[i]=-equations[i].Derivative;
-        status=SolveIntervals(intervalJacobian[..(n*n)],image[..n],n);if(status!=AlgorithmStatus.Success)return status;
+        status=substitutedConic?ConicBlockSolve(intervalJacobian[..(n*n)],image[..n])
+            :SolveIntervals(intervalJacobian[..(n*n)],image[..n],n);if(status!=AlgorithmStatus.Success)return status;
         if(parameterIndex>=0)
         {
             supportParameter[1]=image[parameterIndex];
