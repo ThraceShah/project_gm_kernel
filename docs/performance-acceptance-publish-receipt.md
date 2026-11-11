@@ -32,6 +32,15 @@
 5. timer 恢复原 active+enabled（未 enable/disable）。
 6. **实际自动轮**（2026-11-11 22:10:13 CST）：ExecStartPre pin 校验 exit 0、ExecStart 快照验证 exit 0（489 case/0 错误）、ExecStartPost 输出 `UI_PREPARED files=287 bytes=13494421` → `UI_SKIP_SAME includes UI identity`，无回退；线上抽查 index/性能 run manifest/mac-report/suite-receipt/计算 run 回执/历史 main610 manifest/display-manifest 全部字节一致或 200。
 
+## 补齐：五操作真实模型显示（2026-11-11 同日续）
+
+协调者指出原性能快照五操作 steps 全空、无模型可看；已用已接受 85be 原包现成 capture/mesh 补齐并实际上线（run `20261111T142551Z-perf6761600`，collector `4a8120d40bdbf0df8186bcda01b13d0fcc011762`，与纯数值快照 `20261111T133805Z-perf6761600` 分列，后者保历史）：
+
+- 五操作各接入 1 个显示 step：GM/PK before/after/tool 模型来自包原件字节副本（capture step 2 = rep 2，已用 timing 逐值验证 step N ≡ rep N），与保留 rep2 XT 身份对应；选定 candidate 进程：01-sphere / 05-planar / 09-curved / 13-solidblend / 17-shortedge。
+- 绑定 `evidence/display-binding.json`：process/rep/kernel/stage/mesh SHA256（=包原件）/原 counts（2-count-* 与 compare-2 global/local）/rep2 XT 哈希/capture 哈希；step 标题明示“显示样本仅为单样本，表格统计为全部 2 冷+4 暖，不代表 60 pairs”。
+- work/suite/overall 三报表 case 保持报表类（notes 明示无模型不造模型）；未混 f9、未由 PK 代 GM、未新增 Capture/建模/导出/测速。
+- 发布同 owned 流程：UI_PREPARED 322 files / 16,575,936 B ≤ 30MiB，原 exit 0；浏览器 9/9 真实验收（五操作双侧模型三角形+非背景像素、绑定/分离说明可见、report-only 标注、计算 run 模型仍可看、390px 无溢出、无 JS 错误）；自动轮（22:30:25 CST）UI_PREPARED→UI_SKIP_SAME 无回退。
+
 ## 限制（如实）
 
 - 合格倍率为同 host 配对中位数（接受口径）与中位数之比两种语义并存显示；两者均真实，字段级倍率=中位数之比，接受值 9465.56563x 在标题/检查项。
