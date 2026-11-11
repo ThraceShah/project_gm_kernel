@@ -1,0 +1,355 @@
+[
+  {
+    "cachePath": "ValidateWebProgress-1d004c62b499994cead6de171ff514ef3678566a15aaf723089d8f63f213af6f/bin/release/ValidateWebProgress.pdb",
+    "pdbSha256": "0d9ab9872f0c614a4632e3c87476b00ad030d233ac9b7eac77359d88902a8fdb",
+    "dllSha256": "96e72d4cf95d2e93e08ae7317c8a4e8de51450d4dfa46a14ead45c05722c7cfc",
+    "pdbGuidMatchesDll": true,
+    "documents": [
+      {
+        "path": "scripts/WebProgressDataValidation.cs",
+        "pdbChecksum": "d600bef75107ba2f947aa9a201507dc92bfe6113d2214363ae1d56b8094f8979",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "scripts/WebProgressPublishing.cs",
+        "pdbChecksum": "99844f1b42543f4e099325af5dcef4d37fa981e43a0d52c101ee0652cc78aa25",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "scripts/WebProgressMetadata.cs",
+        "pdbChecksum": "be9c13609deec59311ff005d543fb931433a7b8bb3f18d4591acbfdcde981cc1",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "scripts/OperationAcceptanceLedger.cs",
+        "pdbChecksum": "a780760600aa775daa44bd9725ca771d7363d53333c3edc6e749274a13930f05",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "scripts/OperationAcceptanceRules.cs",
+        "pdbChecksum": "9ba16afa7e0bac18c86167aac8cdcf71fab14b7e2861033b20818d9823cf0a66",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "scripts/ValidateWebProgress.cs",
+        "pdbChecksum": "ed966b7a14447fb05433061db0983d5cd162328f8afcdf2be491fdd3eb421420",
+        "currentBytesMatch": true
+      }
+    ]
+  },
+  {
+    "cachePath": "FreeformModelingOracle-5680af739ece9dde7cb6d6b387844c6c5cebdba049851148cf2cb1b875b0ef87/bin/release/FreeformModelingOracle.pdb",
+    "pdbSha256": "1923f142c2235087aa980d1ca314c36bce768a4bc94fd23af66c4b11bbd5484b",
+    "dllSha256": "9d93cb897090ef9e18cd39a0f2222a6823b32f0079d99195a7755c88602671a7",
+    "pdbGuidMatchesDll": true,
+    "documents": [
+      {
+        "path": "../gm-operation-recording-r2/third_party/PKToy/PskernelSharp/Using.cs",
+        "pdbChecksum": "11b93d9a90ba11f1522e61ed67e1a06ba0b48a54a6daef028d5c047091f58567",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "../gm-operation-recording-r2/scripts/ParasolidScriptHost.cs",
+        "pdbChecksum": "62687b1f71d64b0255035a48885bf0718bd8787e6bf489ffe43f8707c49a3670",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "../gm-operation-recording-r2/scripts/ParasolidBodyCompare.cs",
+        "pdbChecksum": "38fdcac891ba99221bb778af8848761daf1b847d74db0bf6de12d714c290635e",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "../gm-operation-recording-r2/scripts/OperationAcceptanceLedger.cs",
+        "pdbChecksum": "a780760600aa775daa44bd9725ca771d7363d53333c3edc6e749274a13930f05",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "../gm-operation-recording-r2/scripts/OperationAcceptanceRules.cs",
+        "pdbChecksum": "abee84dce4be77776b4d16cc3718bd127e7402c1b9f8c603cf68f1dc97ab16e8",
+        "currentBytesMatch": false
+      },
+      {
+        "path": "../gm-operation-recording-r2/scripts/FreeformModelingOracle.cs",
+        "pdbChecksum": "4d7de8812d0ad0c926567499a209b1e50a4d30b52de1122079ad0e6ad7f8e712",
+        "currentBytesMatch": false
+      }
+    ]
+  },
+  {
+    "cachePath": "LocalTopologyChangeOracle-c064cf3201c063e9139df484756ebcd08a502773535400fdcb53fefcafc6fd5e/bin/release/LocalTopologyChangeOracle.pdb",
+    "pdbSha256": "f104042ffdfc90dcda9788dccac77d95716af4ae4c09e1fef1c33a693de17037",
+    "dllSha256": "0d02cf0f827cee95cce21d735a1c15ceee5aedf85d6fdab0738da7b1daaaedc8",
+    "pdbGuidMatchesDll": true,
+    "documents": [
+      {
+        "path": "../gm-operation-recording-r2/third_party/PKToy/PskernelSharp/Using.cs",
+        "pdbChecksum": "11b93d9a90ba11f1522e61ed67e1a06ba0b48a54a6daef028d5c047091f58567",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "../gm-operation-recording-r2/scripts/ParasolidScriptHost.cs",
+        "pdbChecksum": "62687b1f71d64b0255035a48885bf0718bd8787e6bf489ffe43f8707c49a3670",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "../gm-operation-recording-r2/scripts/ParasolidBodyCompare.cs",
+        "pdbChecksum": "38fdcac891ba99221bb778af8848761daf1b847d74db0bf6de12d714c290635e",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "../gm-operation-recording-r2/scripts/OperationAcceptanceLedger.cs",
+        "pdbChecksum": "a780760600aa775daa44bd9725ca771d7363d53333c3edc6e749274a13930f05",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "../gm-operation-recording-r2/scripts/OperationAcceptanceRules.cs",
+        "pdbChecksum": "abee84dce4be77776b4d16cc3718bd127e7402c1b9f8c603cf68f1dc97ab16e8",
+        "currentBytesMatch": false
+      },
+      {
+        "path": "../gm-operation-recording-r2/scripts/LocalTopologyChangeOracle.cs",
+        "pdbChecksum": "6c10b891f9ce0909d1c5233f9c0972c64c0eeb8feb29fe76cc22603d3b17ef79",
+        "currentBytesMatch": true
+      }
+    ]
+  },
+  {
+    "cachePath": "GeometryTransformOracle-13ec5d7a051b99e5dd256bb9efca09a3fa4a37bbf2c6c7726804a04a9f11664a/bin/release/GeometryTransformOracle.pdb",
+    "pdbSha256": "5373425e7e44b1cc8a8699e91c0f1454e062708f2ab30c7ce3e716436473e24e",
+    "dllSha256": "d052b54cbb153aefaa831dbc49929a8161343f867f7d984efcdf75e0d1b906b8",
+    "pdbGuidMatchesDll": true,
+    "documents": [
+      {
+        "path": "../gm-operation-recording-r2/third_party/PKToy/PskernelSharp/Using.cs",
+        "pdbChecksum": "11b93d9a90ba11f1522e61ed67e1a06ba0b48a54a6daef028d5c047091f58567",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "../gm-operation-recording-r2/scripts/ParasolidScriptHost.cs",
+        "pdbChecksum": "62687b1f71d64b0255035a48885bf0718bd8787e6bf489ffe43f8707c49a3670",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "../gm-operation-recording-r2/scripts/ParasolidBodyCompare.cs",
+        "pdbChecksum": "38fdcac891ba99221bb778af8848761daf1b847d74db0bf6de12d714c290635e",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "../gm-operation-recording-r2/scripts/OperationAcceptanceLedger.cs",
+        "pdbChecksum": "a780760600aa775daa44bd9725ca771d7363d53333c3edc6e749274a13930f05",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "../gm-operation-recording-r2/scripts/OperationAcceptanceRules.cs",
+        "pdbChecksum": "9ba16afa7e0bac18c86167aac8cdcf71fab14b7e2861033b20818d9823cf0a66",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "../gm-operation-recording-r2/scripts/GeometryTransformOracle.cs",
+        "pdbChecksum": "6fda1d0a2ca41e163b687176ef9d9884ac46d5e5ef9fd301fc062e5462e98ead",
+        "currentBytesMatch": true
+      }
+    ]
+  },
+  {
+    "cachePath": "FirstFailureProbe-33fb6359b5a6f9fe4f5bd6784f195e6b416064eb00c237cc6aa041c43a94a7bf/bin/debug/FirstFailureProbe.pdb",
+    "pdbSha256": "006d2305b223798854d495c647c2b8df95a23854deecd83daf5bed1f6a653e93",
+    "dllSha256": "b462a2cdbdd8a8b30a92dd842b099d13b1ba18d3be802d44710a107f898d7900",
+    "pdbGuidMatchesDll": true,
+    "documents": [
+      {
+        "path": "scripts/OperationAcceptanceLedger.cs",
+        "pdbChecksum": "a780760600aa775daa44bd9725ca771d7363d53333c3edc6e749274a13930f05",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "scripts/OperationAcceptanceRules.cs",
+        "pdbChecksum": "9ba16afa7e0bac18c86167aac8cdcf71fab14b7e2861033b20818d9823cf0a66",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "docs/reviews/advanced-modeling/operation-2c06-evidence/FirstFailureProbe.cs",
+        "pdbChecksum": "8ee9dc3e339c90164128a18bdc7b218bdac4e3b49451270f0579aed7d304b48c",
+        "currentBytesMatch": true
+      }
+    ]
+  },
+  {
+    "cachePath": "ParasolidEvaluationOracle-4d69f28f19a097cb3b9b718bce14e37b631cca034677bf37e5426938b521f943/bin/release/ParasolidEvaluationOracle.pdb",
+    "pdbSha256": "561c9f42ea395e71539d66c7a03de36590b56fb44d69f4aef24efc5f8b7e76f0",
+    "dllSha256": "bb75d62ca08de30304291544f732e87e5858b8136b7c638af94049c6e02e75f7",
+    "pdbGuidMatchesDll": true,
+    "documents": [
+      {
+        "path": "../gm-operation-recording-r2/third_party/PKToy/PskernelSharp/Using.cs",
+        "pdbChecksum": "11b93d9a90ba11f1522e61ed67e1a06ba0b48a54a6daef028d5c047091f58567",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "../gm-operation-recording-r2/scripts/ParasolidScriptHost.cs",
+        "pdbChecksum": "62687b1f71d64b0255035a48885bf0718bd8787e6bf489ffe43f8707c49a3670",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "../gm-operation-recording-r2/scripts/ParasolidBodyCompare.cs",
+        "pdbChecksum": "38fdcac891ba99221bb778af8848761daf1b847d74db0bf6de12d714c290635e",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "../gm-operation-recording-r2/scripts/ParasolidMarkOracleStorage.cs",
+        "pdbChecksum": "c8b6def2157e761621554212d647b3dcce3df244629a3afc810361fee1f94d36",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "../gm-operation-recording-r2/scripts/OperationAcceptanceLedger.cs",
+        "pdbChecksum": "a780760600aa775daa44bd9725ca771d7363d53333c3edc6e749274a13930f05",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "../gm-operation-recording-r2/scripts/OperationAcceptanceRules.cs",
+        "pdbChecksum": "9ba16afa7e0bac18c86167aac8cdcf71fab14b7e2861033b20818d9823cf0a66",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "../gm-operation-recording-r2/scripts/ParasolidEvaluationOracle.cs",
+        "pdbChecksum": "5b97b24cc0c2a61640f9d4794b32b943e5e00f13d139996736f9a0f12dca2bba",
+        "currentBytesMatch": true
+      }
+    ]
+  },
+  {
+    "cachePath": "DiskProbe-61ccb41de810408311b24bc8dc00900c4d493227b92ba52dd376dbbcd7f4709f/bin/debug/DiskProbe.pdb",
+    "pdbSha256": "7bb47a3bde31155b39b93e8ebcf5edb09672f231a2195a6850e112478420effc",
+    "dllSha256": "8563734103995d28369a559d1e2d3025114111757b4562d23305103370c33bef",
+    "pdbGuidMatchesDll": true,
+    "documents": [
+      {
+        "path": "docs/reviews/advanced-modeling/operation-2c06-evidence/DiskProbe.cs",
+        "pdbChecksum": "f68f9a1ef3358d4ed7a9f5c5e1f5952075ce17605f7c6b8ec2fc636d173bb6c1",
+        "currentBytesMatch": true
+      }
+    ]
+  },
+  {
+    "cachePath": "ScopeProbe-bdcc4bc36aa76fa362e5c67b7c56e75941353a9a9d9682bf346803f55c6338d9/bin/debug/ScopeProbe.pdb",
+    "pdbSha256": "bb65453035662a501041884be367b25ceb781b119dcf26be5be2cc4cf9ee00a6",
+    "dllSha256": "7a5457af930c8b12674887cd1a4a9c30d1c7b51efd6191fb69bdcf807bedc829",
+    "pdbGuidMatchesDll": true,
+    "documents": [
+      {
+        "path": "scripts/OperationAcceptanceLedger.cs",
+        "pdbChecksum": "a780760600aa775daa44bd9725ca771d7363d53333c3edc6e749274a13930f05",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "scripts/OperationAcceptanceRules.cs",
+        "pdbChecksum": "9ba16afa7e0bac18c86167aac8cdcf71fab14b7e2861033b20818d9823cf0a66",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "docs/reviews/advanced-modeling/operation-2c06-evidence/ScopeProbe.cs",
+        "pdbChecksum": "c4b60fea138ac6b79cb27c034d98bec7f2b3593db0225ea6ca184b2c31063966",
+        "currentBytesMatch": true
+      }
+    ]
+  },
+  {
+    "cachePath": "ArtifactAudit-8d71db3258d2bb6a9a1e67823669bb67c8cb814022ef7710388c72a7da407e24/bin/debug/ArtifactAudit.pdb",
+    "pdbSha256": "8c3304c4b68c2d4ee9d38c18a1cbd9c23de14fb6a6049e8f8dcf04600638f3d4",
+    "dllSha256": "f4456e6147810cf95a3fe8dfda01dc7c0900c40c02f0435e09aea92350dfccfa",
+    "pdbGuidMatchesDll": true,
+    "documents": [
+      {
+        "path": "docs/reviews/advanced-modeling/operation-2c06-evidence/ArtifactAudit.cs",
+        "pdbChecksum": "e2888e2d3b0f509f3542ccee172ffe849a36c295408bed23918a68daa48309f7",
+        "currentBytesMatch": true
+      }
+    ]
+  },
+  {
+    "cachePath": "ValidateWebProgress-15cfa9cef0ef71adab02ef8a2bf4db71dccfdb0f3d8e7294c01eee58e59bd351/bin/release/ValidateWebProgress.pdb",
+    "pdbSha256": "d8148e020833377d7a62cf15567f027fa3d17455e0d884f76e57a518ac91c349",
+    "dllSha256": "93513728dbe0cbad769ebc7a5d184ed3288da1ccda6b23b32816ca0f3326dc91",
+    "pdbGuidMatchesDll": true,
+    "documents": [
+      {
+        "path": "../gm-operation-recording-r2/scripts/WebProgressDataValidation.cs",
+        "pdbChecksum": "d600bef75107ba2f947aa9a201507dc92bfe6113d2214363ae1d56b8094f8979",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "../gm-operation-recording-r2/scripts/WebProgressPublishing.cs",
+        "pdbChecksum": "99844f1b42543f4e099325af5dcef4d37fa981e43a0d52c101ee0652cc78aa25",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "../gm-operation-recording-r2/scripts/WebProgressMetadata.cs",
+        "pdbChecksum": "be9c13609deec59311ff005d543fb931433a7b8bb3f18d4591acbfdcde981cc1",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "../gm-operation-recording-r2/scripts/OperationAcceptanceLedger.cs",
+        "pdbChecksum": "a780760600aa775daa44bd9725ca771d7363d53333c3edc6e749274a13930f05",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "../gm-operation-recording-r2/scripts/OperationAcceptanceRules.cs",
+        "pdbChecksum": "9ba16afa7e0bac18c86167aac8cdcf71fab14b7e2861033b20818d9823cf0a66",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "../gm-operation-recording-r2/scripts/ValidateWebProgress.cs",
+        "pdbChecksum": "ed966b7a14447fb05433061db0983d5cd162328f8afcdf2be491fdd3eb421420",
+        "currentBytesMatch": true
+      }
+    ]
+  },
+  {
+    "cachePath": "ShortEdgeBlendOracle-6c86b7ceb6c48949c267de65553324ca943e332110405e08da43af741d00e33d/bin/release/BooleanOperationOracle.pdb",
+    "pdbSha256": "27ea64e405341fbbb7a6cd7615ee6c94d9dbcaf85a947aacbd0bb0cf768c8cc0",
+    "dllSha256": "65856977da1954612bdfb12d0bc51f4944b4821288c4b62227e66230d6ee4b10",
+    "pdbGuidMatchesDll": true,
+    "documents": [
+      {
+        "path": "../gm-operation-recording-r2/third_party/PKToy/PskernelSharp/Using.cs",
+        "pdbChecksum": "11b93d9a90ba11f1522e61ed67e1a06ba0b48a54a6daef028d5c047091f58567",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "../gm-operation-recording-r2/scripts/ParasolidScriptHost.cs",
+        "pdbChecksum": "62687b1f71d64b0255035a48885bf0718bd8787e6bf489ffe43f8707c49a3670",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "../gm-operation-recording-r2/scripts/ParasolidBodyCompare.cs",
+        "pdbChecksum": "38fdcac891ba99221bb778af8848761daf1b847d74db0bf6de12d714c290635e",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "../gm-operation-recording-r2/scripts/WebProgressCapture.cs",
+        "pdbChecksum": "ebcfc41afbcc52d82308be52335413f437952f3900e2bf7c0441be61e9a3ac7e",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "../gm-operation-recording-r2/scripts/WebProgressDisplayReceipts.cs",
+        "pdbChecksum": "76e44ab354d31a9f80fcc28ac2afb2f5fa4f54eee044b8f64b0a94bd939e4204",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "../gm-operation-recording-r2/scripts/OperationAcceptanceLedger.cs",
+        "pdbChecksum": "a780760600aa775daa44bd9725ca771d7363d53333c3edc6e749274a13930f05",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "../gm-operation-recording-r2/scripts/OperationAcceptanceRules.cs",
+        "pdbChecksum": "9ba16afa7e0bac18c86167aac8cdcf71fab14b7e2861033b20818d9823cf0a66",
+        "currentBytesMatch": true
+      },
+      {
+        "path": "../gm-operation-recording-r2/scripts/ShortEdgeBlendOracle.cs",
+        "pdbChecksum": "082cd5a829092bc96751fcbd6b40ad58716dce8c9629366e4545508cf520bece",
+        "currentBytesMatch": true
+      }
+    ]
+  }
+]

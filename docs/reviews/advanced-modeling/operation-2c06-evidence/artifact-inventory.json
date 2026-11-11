@@ -1,0 +1,286 @@
+[
+  {
+    "path": "temp_docs/operation-leaf-r2/freeform-final/ledger.json",
+    "sha256": "c9e843d6d789b5c04a8e57566379eeda5d59118d0a23f3d3b98d7e282f7e5511"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/freeform-final/execution.json",
+    "sha256": "d2deb0101bebd52cfb24e3ead5df0a1ce3811eaacfb028dc9dc99f0cefd7bc72"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/freeform-final/ledger.in-process.json",
+    "sha256": "4154f2d6ba1433840a3034e6a88dceab7bfd1ea9d0f0795efb17fd4eb8ec420a"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/freeform-final/parallel-nurbs-path-solid-reference.x_t",
+    "sha256": "e71d20c9c87624ca4d1aaf7d94db498e8e48a4d1ea3b03ab5172acfe7396c7e8"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/freeform-final/parallel-nurbs-path-solid-self.x_t",
+    "sha256": "75e099d44be21c53cee8deee1dbfec9e01c21b538f2de294a44a06942fae2db3"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/freeform-final/oracle.log",
+    "sha256": "35075c2aab10fef548b8d73d8cb5c32dfbd070cc570634750cfd25383f17b6a2"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/freeform-final/report.txt",
+    "sha256": "56b8758bd2ed286ced767965f6d02ecd9cd7b947e8c7afb093bcf864fa505c28"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/local-import/ledger.json",
+    "sha256": "a110b69b685b12b78f4e032f5cfbfc1d084c3701e53b506a4b64b6fd73024b76"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/local-import/native-import-face-elimination-own.x_t",
+    "sha256": "649249cfcf34dadfd09deae2960e76e0ee0726f009633eee40655f376c8d31fd"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/local-import/native-import-face-elimination-native.x_t",
+    "sha256": "73ac0f50c8f2ff8a07d72658fb7d42f66e3f8be058ef8418bb13eb90e679f1e3"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/local-import/native-import-face-elimination-lifecycle-own.x_t",
+    "sha256": "77811c7aab0ffd19060295d6391b4f65acbb6380c8a141b9c1965307f742b54f"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/local-import/report.txt",
+    "sha256": "f5b41d8902ad25797d3aa697713c1b3816fcaaf702e139441010a0badde55f81"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/local-analytic/ledger.json",
+    "sha256": "a82f7bbfc72e5d574003c27db9c5957658846420dc3d4095533ef056c8635918"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/local-analytic/sphere-outward-hollow-identities-own.x_t",
+    "sha256": "aff8723d1528c3be59b64c1201f1d876c9e226477362b5941154f901671c30e0"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/local-analytic/sphere-outward-hollow-identities-native.x_t",
+    "sha256": "ee9bea41f000514f0d20afe03749ed8b05e00f6e6149cabec3ab8e4604eb1082"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/local-analytic/report.txt",
+    "sha256": "59f53a98c6566c3998c28d9d7abd0efcf8b9896fe89a1744f249c2b40d9e4f3b"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/local-final-rejection/ledger.json",
+    "sha256": "883338910ab3a357773e0e1e93e27415d4960eb75183e278abff5809b4fe8edb"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/local-final-rejection/execution.json",
+    "sha256": "33293f81adec74b584acf1101697f0aa37b9262a777a1342cda2cdb143a5d6cb"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/local-final-rejection/ledger.in-process.json",
+    "sha256": "29659a41b960018e15d383fd007454f8066115d817949f9521fba6a5f1d004a9"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/local-final-rejection/separated-walls-in-own.x_t",
+    "sha256": "53006d9666ac67c9b84cc246d20449cba4a66ac5835ab95fa504e2025803dd06"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/local-final-rejection/separated-walls-in-native.x_t",
+    "sha256": "23db3f91e62371cb59630ee46240187521f8d6498959a4b3c101c7a7aafd133b"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/local-final-rejection/oracle.log",
+    "sha256": "dd25e995e07699b81bc043a22ded6e3b013b1288ffb037678d1cbbed72a95345"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/local-final-rejection/report.txt",
+    "sha256": "90fb85e81a2deab6bf832ba23bc249f51203602467ed98f0d6ea4fc27af2c08a"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/geometry-body/ledger.json",
+    "sha256": "57708df03eec8cd6a16f7e7eef049bb944199be53dc7201d1f40b5cc8b34a141"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/geometry-body/execution.json",
+    "sha256": "fb8f80bbadfb4867b1b7dd1415ba5d6f659edcf974fdab316f23e08bf083a443"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/geometry-body/ledger.in-process.json",
+    "sha256": "bd0bf5937254b25bf629a11848f47e216cee4c149addd42cde428d7854cd7135"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/geometry-body/translation-body-block.x_t",
+    "sha256": "2ac2daadf8d2e5d24fef1a17978335307e4fc2da093987610481461abbfdf43b"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/geometry-body/translation-body-block-reference.x_t",
+    "sha256": "12399a78c1214b1d5f318e0bd0dc2bcc32fcd38e29538f94a30856a995568415"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/geometry-body/oracle.log",
+    "sha256": "af8d2f62f915dec6c54634d5bf9d5540be0c03f196afac65658da47781144f71"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/geometry-body/report.txt",
+    "sha256": "20c7e72b96523b597ed5b44f3537dd7e359f7296bd6f4c7a24f98dac7369d53e"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/geometry-body-final/ledger.json",
+    "sha256": "bd0bf5937254b25bf629a11848f47e216cee4c149addd42cde428d7854cd7135"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/geometry-body-final/translation-body-block.x_t",
+    "sha256": "2ac2daadf8d2e5d24fef1a17978335307e4fc2da093987610481461abbfdf43b"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/geometry-body-final/translation-body-block-reference.x_t",
+    "sha256": "12399a78c1214b1d5f318e0bd0dc2bcc32fcd38e29538f94a30856a995568415"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/geometry-body-final/report.txt",
+    "sha256": "20c7e72b96523b597ed5b44f3537dd7e359f7296bd6f4c7a24f98dac7369d53e"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/evaluation-offset/ledger.json",
+    "sha256": "b850daf39237739f2b8107e5488ed358170e9df33a02908a811903d6ca94fcf3"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/evaluation-offset/execution.json",
+    "sha256": "bdbc7ab7d5f6caac6ad5dc05e40c34fb33cf3d7f54e0ea9b3fb1732b91f7ee94"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/evaluation-offset/ledger.in-process.json",
+    "sha256": "3e1a5866ecc956fee5c9796ea52024c34b5ec72962dd6c51f1265f349b127e80"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/evaluation-offset/oracle.log",
+    "sha256": "cbaaec5f2f87e74bbff04b5a60dbd05aa37b54706a69733e1923701469ede702"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/evaluation-offset-final/ledger.json",
+    "sha256": "c580a20f349a55ef40e72c41aae375d388fc9376769bacfc0b86a6363a806e1f"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/evaluation-offset-final/execution.json",
+    "sha256": "841f0596c92966a8d7f624e3d043b1fd31a5f0e555e5f51b4200f5d374fd79ba"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/evaluation-offset-final/ledger.in-process.json",
+    "sha256": "033b0c12e564b63bb026656e1737e5166eacbae648e1d2ece390038df270b3e1"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/evaluation-offset-final/oracle.log",
+    "sha256": "f50f2dabdb5394278326ca8603b3c1870b8478b74d17a98aeb81a084a2d17a36"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/evaluation-offset-provenance/ledger.json",
+    "sha256": "26aac4b5284c8847955d3b7184b91f72e2eb5160f3f8a7a6e323a1eddc7680ad"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/evaluation-offset-provenance/execution.json",
+    "sha256": "6e32594c60dd84e973eb0431ad3d7542083a202b4d83ccbc565e553f39f4f136"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/evaluation-offset-provenance/ledger.in-process.json",
+    "sha256": "cf8b8842ad2d7a985f41be9ce01bbafaaef58d0a0a013876e80f9bf77d583fa3"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/evaluation-offset-provenance/oracle.log",
+    "sha256": "f859acad13c32798e7a8a5165541963a103b1f2ada5f5bb501a0d80167f55635"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/short-edge-final/ledger.json",
+    "sha256": "13a9bcceece2b3699eaeec400d2bac53c1a071d78c80db4d919dc2114f49ba31"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/short-edge-final/execution.json",
+    "sha256": "acc24a3b63b5de98252636a5cfed18db80f10038a3ddb6ee4fb569318a144c73"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/short-edge-final/ledger.in-process.json",
+    "sha256": "28249070c9ea05ac0c271426d2790c14bf28a2e9427700ec25d4ad63d29686cf"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/short-edge-final/a1-r0.5-t1E-07-reverseFalse-default-self.x_t",
+    "sha256": "49e7796c2bd9ac5c89dd82b278751892d8454284520db43a13ec4c273d4ecf7c"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/short-edge-final/a1-r0.5-t1E-07-reverseFalse-default-native-fresh.x_t",
+    "sha256": "f40cb59d40da89562198984850ed47910d6dac25f51c76342c9fd865bc3b5da3"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/short-edge-final/a1-r0.5-t1E-07-reverseFalse-default-native.x_t",
+    "sha256": "bd75b7926956c1506e00c172816a0bfc1bb07db1660d74da65aaf1734f219ef1"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/short-edge-final/a1-r0.5-t1E-07-reverseFalse-default-input.x_t",
+    "sha256": "262963ce0b899972272970ace0eff5da8b9161dbf007bd01f20a9d3037a8d1a2"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/short-edge-final/a1-r0.5-t1E-07-reverseFalse-default-input-fresh.x_t",
+    "sha256": "4f1bbeecd440662f01321103c93a529973fce0b69c77dc97f22533a58e20093a"
+  },
+  {
+    "path": "temp_docs/operation-leaf-r2/short-edge-final/oracle.log",
+    "sha256": "8e3e29a3a3140b2ca160cb4c0963aeb80d5f89a02be4aec37444d92d4cf0ffbe"
+  },
+  {
+    "path": "temp_docs/operation-short-case-final/data/runs/r2-short-edge-case-scope-final/manifest.json",
+    "sha256": "25cd62488a5c1c8d9cb98eb701b5f747d9273d467c9a642741857e745200c4ed"
+  },
+  {
+    "path": "temp_docs/operation-short-case-final/data/runs/r2-short-edge-case-scope-final/validation.json",
+    "sha256": "cc8a10d94767046d2f50aaf42c17ab210f8b6083bcc61c8f1e49f7434ff980e4"
+  },
+  {
+    "path": "temp_docs/operation-short-case-final/data/runs/r2-short-edge-case-scope-final/cases/short-edge.a1-r0.5-t1e-07-reversefalse-default/sample-0/capture.json",
+    "sha256": "0e56d54a13961694dbb0517f1dbec2193162c4a8f1db91fa286d835ee2e28b17"
+  },
+  {
+    "path": "temp_docs/operation-short-case-final/data/runs/r2-short-edge-case-scope-final/cases/short-edge.a1-r0.5-t1e-07-reversefalse-default/sample-0/execution.json",
+    "sha256": "603f529acbeeff693104f293a93ddfd16796ec02b692d51237b29ef34758e8f6"
+  },
+  {
+    "path": "temp_docs/operation-short-capture-final/data/runs/r2-short-edge-owner-final/manifest.json",
+    "sha256": "dafb1292c72e6a8768effbc99b3e1727c865ddbe839d2066c0546ea3c38b001c"
+  },
+  {
+    "path": "temp_docs/operation-short-capture-final/data/runs/r2-short-edge-owner-final/validation.json",
+    "sha256": "cc8a10d94767046d2f50aaf42c17ab210f8b6083bcc61c8f1e49f7434ff980e4"
+  },
+  {
+    "path": "temp_docs/operation-short-capture-final/data/runs/r2-short-edge-owner-final/cases/short-edge.a1-r0.5-t1e-07-reversefalse-default/sample-0/capture.json",
+    "sha256": "422bfd814e498ae4df75a0d330f98c85e76d7e99f31f2393bbc93b7edec97f20"
+  },
+  {
+    "path": "temp_docs/operation-short-capture-final/data/runs/r2-short-edge-owner-final/cases/short-edge.a1-r0.5-t1e-07-reversefalse-default/sample-0/execution.json",
+    "sha256": "22c1f2e80338c0050b2b2e093d4d1b9981e163c733767230799d07f16c8235e3"
+  },
+  {
+    "path": "temp_docs/operation-short-scenario-owner/data/runs/r2-short-edge-scenario-owner/manifest.json",
+    "sha256": "20240e2e26d5bf20791b290815d8b06e959999430e9110025409ace66a3b5b49"
+  },
+  {
+    "path": "temp_docs/operation-short-scenario-owner/data/runs/r2-short-edge-scenario-owner/validation.json",
+    "sha256": "cc8a10d94767046d2f50aaf42c17ab210f8b6083bcc61c8f1e49f7434ff980e4"
+  },
+  {
+    "path": "temp_docs/operation-short-scenario-owner/data/runs/r2-short-edge-scenario-owner/cases/short-edge.a1-r0.5-t1e-07-reversefalse-default/sample-0/capture.json",
+    "sha256": "3af94bdca1cfeb101ee16d07e9b6699b30ab73fdb2061e48058e1297f75347ff"
+  },
+  {
+    "path": "temp_docs/operation-short-scenario-owner/data/runs/r2-short-edge-scenario-owner/cases/short-edge.a1-r0.5-t1e-07-reversefalse-default/sample-0/execution.json",
+    "sha256": "a443ab6b4b2dd11928b3dc563c393b071b8c4cab58d8cf60824af1523a7fd441"
+  },
+  {
+    "path": "temp_docs/operation-final-capture/data/runs/r2-capture-shared-returns-final/manifest.json",
+    "sha256": "df90b64f1df6204adb269a7d3719a519c5784d90c15de09bae8306d8fe47e218"
+  },
+  {
+    "path": "temp_docs/operation-final-capture/data/runs/r2-capture-shared-returns-final/validation.json",
+    "sha256": "8f67752b3ccfa2b2e149c1d5c2d13f7ceb548e1aae7dcb2c1f0476793227f554"
+  },
+  {
+    "path": "temp_docs/operation-final-capture/data/runs/r2-capture-shared-returns-final/cases/analytic-boolean.equal-overlap-subtract/sample-0/capture.json",
+    "sha256": "143a07d8a1bcf1fdccf769e44240720cd579635c157ebaf9e800bef2f845b81f"
+  },
+  {
+    "path": "temp_docs/operation-final-capture/data/runs/r2-capture-shared-returns-final/cases/analytic-boolean.equal-overlap-subtract/sample-0/execution.json",
+    "sha256": "4e654402e65dcc8df789d33904e5c9b978f4bb379c2a4126c517d14556042fc8"
+  }
+]
