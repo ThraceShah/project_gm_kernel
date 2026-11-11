@@ -177,7 +177,30 @@ capture（15 cold rep + 5×6 warm rep = 45 个操作 pair，1521 项检查）逐
 `diagnostic:true`），不在 check 状态层——empty `DiagnosticCheckIds` 不会误杀
 真实旧数据，未来若有状态级 diagnostic 须逐 case 白名单准入。
 
-## 9. 复现
+## 9. S0 诊断 smoke（已授权，非验收）与 S1 配方
+
+**S0（2026-01-11 01:45–01:48Z，ABBA：base-sphere → cand-sphere →
+cand-planar → base-planar，每侧每 case `--cold 1 --warm 1`）**：
+4 进程 × 2 case × 2 侧，8/8 样本 qualified（v2→v3 门都过），pipeline 与资格链路
+打通；但采样中 Mac 负载从 ~3 飙至 ~12（另一重负载任务出现），PK 分母出现
+11–14ms 异常值、GM/墙钟同步膨胀（如 sphere cold 墙钟 28.6–78.5s 含首编译），
+**全部数值仅诊断、不作任何速度/验收结论**，raw 存
+`runs/20261111T014538Z-04c7ed0|20261111T014611Z-f2a258b|20261111T014734Z-f2a258b|20261111T014746Z-04c7ed0`，
+不删除受干扰样本。base 侧 provenance：同一 v2/v3 runner（SHA256
+40e747a2…）以未跟踪文件置于 04c 临时树，唯一工作树差异即该 runner
+（diffSha f076f9ed…），kernel/oracle src/test tree 与 04c 核对一致
+（7d516f6c…/8693efcd…）；candidate 侧 f2a258b7/a8cae045 树干净。
+
+**S1 配方（条件：v3 独立 gate 通过 + 负载与 before 窗口可比；自动触发不再请示）**：
+同窗口 ABBA（base-shortedge → cand-shortedge → cand-solidblend → base-solidblend），
+每侧每 case `--cold 1 --warm 1`（1 fresh 进程 + 1 进程内 rep0+rep1 = 3 测量 rep，
+无未计数 warmup），全程记录 hostload/原计时/qualification；负载突变即标受干扰
+暂停转非计时工作；无可测收益或任何 primary/数值差异立即停、不进 S2。
+S2（仅 S1 有收益且全主检查合格）：受影响 2 case 做足样本或全量 5 case 双侧
+（~10min），主表引用 immutable base run + 同 v3 runner after run，raw/顺序/hostload
+存档。
+
+## 10. 复现
 
 ```sh
 # 合同测试 + 逐位 dump（base/candidate 各一次，diff 为空）
