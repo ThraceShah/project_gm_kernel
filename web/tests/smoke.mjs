@@ -451,6 +451,10 @@ async function inspectionChecks(page, latest, shot) {
   await page.waitForTimeout(250);
   check('V7: restoring tools restores geometry', JSON.stringify(await viewerStats(page)) === JSON.stringify(withTools));
 
+  const noIso = await page.$$eval('[data-testid="viewer-canvas-host"]', (els) => els.map((e) => ({ hasIso: e.dataset.hasIsoparametrics, count: Number(e.dataset.isoparametricsCount) })));
+  check('missing source: original Boolean snapshots draw no substitute parameter lines', noIso.every((s) => s.hasIso === 'false' && s.count === 0), JSON.stringify(noIso));
+  check('missing source: both viewers explain unavailable curves', await page.locator('[data-testid="viewer-no-iso-badge"]').count() === 2);
+
   await page.setViewportSize({ width: 320, height: 844 });
   await page.waitForTimeout(350);
   const panes = await page.locator('[data-testid="viewer-canvas-host"]').evaluateAll((els) => els.map((e) => ({ h: e.clientHeight, w: e.clientWidth })));

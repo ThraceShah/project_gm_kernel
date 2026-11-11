@@ -366,6 +366,12 @@ export const App: React.FC = () => {
               cases={manifestData?.cases || []}
               selectedCaseId={selectedCaseId}
               onSelectCase={(caseId) => {
+                // Batch the context switch with clearing the previous snapshot,
+                // so the new case cannot initially fit the old case's geometry.
+                if (caseId !== selectedCaseId) {
+                  setGmMeshes(null);
+                  setPkMeshes(null);
+                }
                 setSelectedCaseId(caseId);
                 setSidebarOpen(false);
               }}

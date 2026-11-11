@@ -158,10 +158,14 @@ export function buildThreeGeometry(
   if (showIsoparametrics) {
     const isoSegments: number[] = [];
     let isoLineCount = 0;
+    let uLineCount = 0;
+    let vLineCount = 0;
 
-    const addPolyline = (polyline: number[]) => {
+    const addPolyline = (polyline: number[], direction?: 'u' | 'v') => {
       if (!polyline || polyline.length < 6) return;
       isoLineCount++;
+      if (direction === 'u') uLineCount++;
+      if (direction === 'v') vLineCount++;
       for (let i = 0; i < polyline.length - 3; i += 3) {
         isoSegments.push(
           polyline[i],
@@ -181,13 +185,13 @@ export function buildThreeGeometry(
         if (isolateModified && face.role === 'unchanged') return;
         if (face.isoparametrics) {
           if (Array.isArray(face.isoparametrics.uLines)) {
-            face.isoparametrics.uLines.forEach(addPolyline);
+            face.isoparametrics.uLines.forEach((line) => addPolyline(line, 'u'));
           }
           if (Array.isArray(face.isoparametrics.vLines)) {
-            face.isoparametrics.vLines.forEach(addPolyline);
+            face.isoparametrics.vLines.forEach((line) => addPolyline(line, 'v'));
           }
           if (Array.isArray(face.isoparametrics.unclassifiedLines)) {
-            face.isoparametrics.unclassifiedLines.forEach(addPolyline);
+            face.isoparametrics.unclassifiedLines.forEach((line) => addPolyline(line));
           }
         }
       });
@@ -198,7 +202,7 @@ export function buildThreeGeometry(
       meshData.isoparametrics.forEach((iso) => {
         const face = meshData.faces?.find((f) => f.id === iso.faceId);
         if (!face || (!showTools && face.isTool) || (isolateModified && face.role === 'unchanged')) return;
-        addPolyline(iso.positions);
+        addPolyline(iso.positions, iso.direction);
       });
     }
 
@@ -220,6 +224,8 @@ export function buildThreeGeometry(
       isoLines.userData = {
         type: 'isoparametric',
         lineCount: isoLineCount,
+        uLineCount,
+        vLineCount,
         segmentCount: isoSegments.length / 6,
       };
 

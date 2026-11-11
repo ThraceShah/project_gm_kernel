@@ -201,6 +201,7 @@ export interface MeshData {
   faces: FaceData[];
   edges: EdgeData[];
   isoparametrics?: MeshIsoparametricLine[];
+  surfaceParameters?: { status: 'available' | 'unavailable' | 'unsupported'; reason: string };
 }
 
 export type StandardView = 'iso' | 'front' | 'top' | 'right';

@@ -377,6 +377,8 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
       container.dataset.roleEdges = JSON.stringify(roleEdges);
       container.dataset.hasIsoparametrics = hasIsoparametrics ? 'true' : 'false';
       container.dataset.isoparametricsCount = String(isoLineCount);
+      container.dataset.uLineCount = '0';
+      container.dataset.vLineCount = '0';
       container.dataset.dimmedOpacity = String(displayOptions?.unchangedOpacity ?? 1.0);
     };
 
@@ -406,6 +408,8 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
     let triangles = 0;
     let hasIsoparametrics = false;
     let isoLineCount = 0;
+    let uLineCount = 0;
+    let vLineCount = 0;
     const roleFaces: Record<string, number> = {};
     const roleEdges: Record<string, number> = {};
 
@@ -419,7 +423,9 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
       } else if (child instanceof THREE.LineSegments) {
         if (child.name === '__helper_isoparametrics') {
           hasIsoparametrics = true;
-          isoLineCount = (child.userData?.lineCount as number) || 0;
+          isoLineCount += (child.userData?.lineCount as number) || 0;
+          uLineCount += (child.userData?.uLineCount as number) || 0;
+          vLineCount += (child.userData?.vLineCount as number) || 0;
         } else {
           edges += 1;
           const role = String((child.userData && child.userData.role) || 'unknown');
@@ -431,6 +437,10 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
     scene.add(newGroup);
     currentMeshGroupRef.current = newGroup;
     setStats(meshData.bodyId, faces, edges, triangles, roleFaces, roleEdges, hasIsoparametrics, isoLineCount);
+    if (container) {
+      container.dataset.uLineCount = String(uLineCount);
+      container.dataset.vLineCount = String(vLineCount);
+    }
 
     // Camera policy:
     // Only automatically re-fit camera when navigating to a NEW case.
@@ -487,6 +497,10 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
               f.isoparametrics.unclassifiedLines?.length)
         )
       ));
+  const hasBothDirections = Boolean(meshData?.faces?.some((f) =>
+    (displayOptions?.showTools !== false || !f.isTool) &&
+    (!displayOptions?.isolateModified || f.role !== 'unchanged') &&
+    f.isoparametrics?.uLines?.length && f.isoparametrics?.vLines?.length));
 
   return (
     <div
@@ -524,15 +538,15 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
             className="hidden sm:inline text-[10px] text-sky-300 bg-sky-950/80 border border-sky-800/80 px-1.5 py-0.2 rounded font-mono-code"
             title="曲面具备真实U/V等参线，可直接用于几何曲率与走向观察"
           >
-            U/V等参线
+            {hasBothDirections ? 'U/V等参线' : '曲面参数线'}
           </span>
         ) : showIso ? (
           <span
             data-testid="viewer-no-iso-badge"
             className="hidden sm:inline text-[10px] text-slate-400 bg-slate-800/80 border border-slate-700/80 px-1.5 py-0.2 rounded font-mono-code"
-            title="此快照暂无等参线数据"
+            title={meshData?.surfaceParameters?.reason || '此快照暂无等参线数据'}
           >
-            无等参线
+            {meshData?.surfaceParameters?.status === 'unsupported' ? '等参线暂不支持' : '无等参线'}
           </span>
         ) : null}
       </div>
