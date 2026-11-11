@@ -59,9 +59,9 @@ PKToy `d820719`。所有测量串行执行，运行前后记录 `vm.loadavg`
   （PK 侧 observer ≈10 ms）；GM 侧 1631.08→1686.80 ms（observer ≈56 ms）。
   比率一律用 capture/BENCH `api-ms`，不用 stdout 行。
 - **BENCH 相位行**（本次新增插桩，`--bench-repeat` 时打印）：
-  `prepare-ms`（输入构造+检查）/`api-ms`（两次调用点墙钟，含 mark+选择+observer）/
-  `verify-ms`（独立验收：fresh XT、BODY_check、strict compare、物性）/`case-ms`。
-  纯 API ms 以 capture 为准。例：plane-nurbs rep0 prepare 18.6 / api 1743.9 /
+  `prepare-ms`（输入构造+检查）/`api-ms`（两次调用点墙钟，含 mark+选择+observer，
+  仅作相位参考）/`verify-ms`（独立验收：fresh XT、BODY_check、strict compare、物性）/`case-ms`。
+  **比率一律只用 capture `timings`（纯 API）**，不用 stdout 行也不用 BENCH api-ms。例：plane-nurbs rep0 prepare 18.6 / api 1743.9 /
   verify 53.6 ms；rep1 prepare 0.56 ms（输入构造冷热差 18 ms，其余是首调用开销）。
 - **cold 定义**：fresh 进程首个被计 API。输入构造（GM/PK 各自构造或共享 XT receive）
   已执行部分几何代码，所以 cold ≠ 全进程无 JIT。warm 定义：同进程 `--bench-repeat`，
@@ -80,7 +80,8 @@ PKToy `d820719`。所有测量串行执行，运行前后记录 `vm.loadavg`
   solidblend→shortedge）。
 - GM/PK 同进程同线程同参数同精度：sphere/planar/curved 为 GM 先、PK 后
   （各自按相同数值参数独立构造）；solidblend/shortedge 为 PK 先、GM 后
-  （short-edge 两侧接收同一 PK 种子 XT）。调用顺序随 case 记录在 JSON
+  （short-edge：PK 构造种子并持有内存原件，GM 接收由该种子 transmit 的 XT，
+  不是双方都 receive 同一 XT）。调用顺序随 case 记录在 JSON
   `operation.callOrder`，不做跨机相除。
 - 计时口径：capture `timings`（operation-only）；相位行与 process wall 另记。
 - 资格：进程 exit=0、无 `FAIL `、capture checks 全 pass/diagnostic、
@@ -303,3 +304,11 @@ MSBUILDDISABLENODEREUSE=1 dotnet run --file scripts/NestedBlendBenchmark.cs -c R
    后，原“基线 1857/1858、既有失败”限定为 **Mac 本机已观测**，失败为
    host/runtime/order/config 依赖、根因未定位；不称已修、不称全绿。
    证据在 `temp_docs/modeling-performance/baseline-test-evidence/`。
+6. **主表指针与资格器**：本文主表数据的不可变来源为
+   `temp_docs/modeling-performance/runs/20261111T003330Z-610e3ce/benchmark/report.json`
+   （`paired-benchmark-latest.json` 曾被 profile run 覆盖，不再作为引用源）。
+   `scripts/ModelingPairedBenchmark.cs` 资格器升级为 gate v2（逐 case 显式 expected
+   API/每 rep 唯一配对 owner/完整 strict+双 full BODY_check+5 计数+15 物性对应
+   检查、captureErrors 空、有限正计时；任一缺失/不合格即 unqualified 且整体
+   非零退出），自检 `--validate-fixtures`；04c 时的 45 组实测维持原
+   scope-qualified 描述、不重跑。
