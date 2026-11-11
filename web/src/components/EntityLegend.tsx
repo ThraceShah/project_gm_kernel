@@ -21,7 +21,11 @@ export const EntityLegend: React.FC = () => {
             className="w-2.5 h-2.5 rounded-xs"
             style={{ backgroundColor: ROLE_COLORS.selected.css }}
           />
-          <span className="truncate">{ROLE_COLORS.selected.label}</span>
+          <span className="truncate">选中面</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-2.5 h-2.5 rounded-xs" style={{ backgroundColor: ROLE_COLORS.support.css }} />
+          <span>支撑面</span>
         </div>
 
         {/* Green New Blend Face */}

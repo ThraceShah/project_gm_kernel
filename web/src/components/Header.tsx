@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   RefreshCw,
   Video,
@@ -6,8 +6,6 @@ import {
   RotateCcw,
   AlertTriangle,
   Layers,
-  GitCommit,
-  Clock,
   ListTree,
   Info,
 } from 'lucide-react';
@@ -28,6 +26,7 @@ interface HeaderProps {
   isFixture: boolean;
   onToggleFixture: () => void;
   onOpenSidebar: () => void;
+  onOpenData: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -44,36 +43,8 @@ export const Header: React.FC<HeaderProps> = ({
   isFixture,
   onToggleFixture,
   onOpenSidebar,
+  onOpenData,
 }) => {
-  const [metaOpen, setMetaOpen] = useState<boolean>(false);
-
-  const metaRow = runMeta ? (
-    <>
-      <div className="flex items-center gap-1 font-mono-code" title={`Commit: ${runMeta.commit}`}>
-        <GitCommit className="w-3.5 h-3.5 text-slate-400" />
-        <span>{runMeta.commit.slice(0, 7)}</span>
-      </div>
-      <div className="w-px h-3 bg-slate-300" />
-      <div className="flex items-center gap-1" title={`生成时间: ${runMeta.generatedAt}`}>
-        <Clock className="w-3.5 h-3.5 text-slate-400" />
-        <span>{formatDateTime(runMeta.generatedAt)}</span>
-      </div>
-      {runMeta.host && (
-        <>
-          <div className="w-px h-3 bg-slate-300" />
-          <span
-            className="truncate max-w-[220px]"
-            title={typeof runMeta.host === 'object' ? JSON.stringify(runMeta.host) : String(runMeta.host)}
-          >
-            {typeof runMeta.host === 'object'
-              ? `${(runMeta.host as any).cpu || ''} ${(runMeta.host as any).os || ''}`.trim() || 'Mac/Linux'
-              : String(runMeta.host)}
-          </span>
-        </>
-      )}
-    </>
-  ) : null;
-
   return (
     <header
       data-testid="app-header"
@@ -117,7 +88,7 @@ export const Header: React.FC<HeaderProps> = ({
             >
               {runs.map((r) => (
                 <option key={r.id} value={r.id}>
-                  {r.label || r.id} ({r.commit.slice(0, 7)})
+                  已发布基线 · {r.id} ({r.commit.slice(0, 7)})
                   {latestRunId && r.id !== latestRunId ? ' ·历史' : ''}
                 </option>
               ))}
@@ -126,32 +97,17 @@ export const Header: React.FC<HeaderProps> = ({
         )}
       </div>
 
-      {/* Middle: Active Run Metadata Info (desktop) */}
-      {runMeta && (
-        <div className="hidden lg:flex items-center gap-3 text-xs text-slate-600 bg-slate-50 px-3 py-1 rounded border border-slate-200">
-          {metaRow}
-        </div>
-      )}
-
-      {/* Secondary metadata on narrow screens: hidden but viewable */}
+      {/* The UI revision and captured result revision are independent. */}
       {runMeta && (
         <button
-          onClick={() => setMetaOpen((v) => !v)}
-          className="lg:hidden flex items-center gap-1 text-xs px-2 py-1 rounded border border-slate-200 text-slate-600 hover:bg-slate-100"
-          title="查看运行元数据 (commit / 生成时间 / 宿主)"
+          onClick={onOpenData}
+          className="flex items-center gap-1 text-[11px] px-2 py-1 rounded border border-slate-200 text-slate-600 hover:bg-slate-100 max-w-full"
+          title={`已发布数据 ${runMeta.id}；采集时间 ${runMeta.generatedAt}；代码 ${runMeta.commit}`}
           data-testid="header-meta-toggle"
         >
           <Info className="w-3.5 h-3.5 text-slate-400" />
-          <span>运行信息</span>
+          <span className="truncate">数据版本 {runMeta.commit.slice(0, 7)} · 采集 {formatDateTime(runMeta.generatedAt)} ↗</span>
         </button>
-      )}
-      {runMeta && metaOpen && (
-        <div
-          data-testid="header-meta-panel"
-          className="w-full lg:hidden flex flex-wrap items-center gap-3 text-xs text-slate-600 bg-slate-50 px-3 py-1 rounded border border-slate-200"
-        >
-          {metaRow}
-        </div>
       )}
 
       {/* Right: Controls & Actions */}
