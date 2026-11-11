@@ -1,8 +1,8 @@
 # Blend functional delivery
 
 Development base: `089939392bf2d756e22bcdaa97910e12023584c5`, branch
-`feat/pk-native-blend-functional`. This is ongoing functional work, not a whole
-candidate acceptance. Boolean and Mac performance remain separate operations
+`feat/pk-native-blend-functional`. This is a complete functional candidate for
+concentrated independent review, not an accepted or integrated release. Boolean and Mac performance remain separate operations
 and owners. Native environment preparation actually returned ENV_READY for
 Linux x64 / PK 38.0 / PKToy `d820719` before execution. No C ABI or AOT work.
 
@@ -10,7 +10,7 @@ Linux x64 / PK 38.0 / PKToy `d820719` before execution. No C ABI or AOT work.
 
 | Capability within the original plan | Current evidence and boundary |
 | --- | --- |
-| Convex planar single/separate/all-edge constant fillets; equal and designated unequal planar chamfers | New independent GM/PK local catalog, including an oriented block and prism, and copy/source deletion/mirror-scale/editable XT reload; finite analytic direction certificates where native raw senses differ. All geometry comparisons pass; original oblique fixture cleanup is tracked separately below. |
+| Convex planar single/separate/all-edge constant fillets; equal and designated unequal planar chamfers | New independent GM/PK local catalog, including an oriented block and prism, and copy/source deletion/mirror-scale/editable XT reload; finite analytic direction certificates where native raw senses differ. The final integration below closes the original oblique fixture cleanup failures. |
 | Cylinder one/both rim fillet, equal/unequal chamfer | Five catalog cases, independent construction plus the same full self lifecycle. |
 | Regular Plane/NURBS and NURBS/NURBS finite rolling bands, convex/concave classes | Computation unchanged from the fixed base; existing fixed evidence and managed regression retained. New plane/NURBS representative uses the current mass contract, with strict geometry passed and mass Unresolved. |
 | Smooth split carriers and certified equivalent, separate support records; modified support holes | Fixed support-chain and bore evidence reused; new separate-support representative additionally checks editable reload, copy/delete source and transformed product under the current comparator/mass contract. |
@@ -41,8 +41,9 @@ hashes are respectively `db275c4b3dccfc8d076565fcf19cdaa3c6bc8b7bdc066e504548e21
 `7ddc2b4507f7a9dc6d27f1e4fe28305ad9ae0bf37c9636ce2d4e73fb9b300a99`.
 The current source diff leaves the regular, support-chain and corner providers
 unchanged. The baseline's 0e/089 parent-line direction fixes are inherited;
-this delivery's only production change so far is planar contact/chamfer
-direction and temporary-carrier ownership. Shared Boolean development in the
+this delivery changes planar contact/chamfer direction and temporary-carrier
+ownership, integrates the isolated wire-to-sheet ownership repair, and fixes
+the public face-orientation query's composition of the two XT sense fields. Shared Boolean development in the
 base and the separate Mac performance branch are not signed off by this table.
 
 ## Acceptance runner correction
@@ -75,7 +76,7 @@ The exact runner diff is `temp_docs/blend-functional/contracts-v1.diff`, SHA256
 `5a074cb6a17bd687037b3d515f4beeb7de690fbfb3954ea476a361cd888de2b6`. Actual XT remains private in each runner's named output
 directory. These executions do not qualify all Blend families or Boolean.
 
-## Active functional inventory
+## Initial functional inventory (original results retained)
 
 The unmodified-base local-operation Blend catalog (`--blend-arrangement`) ran
 17 cases: 7 strict geometry passes, 10 hard failures, external exit 1. The five
@@ -88,7 +89,8 @@ created GM and PK blocks. This does not establish a primitive defect. The local
 oracle now supplies the same physical all-edge mark order and offers explicitly
 labeled GM/PK-authored identical-seed diagnostics, preserving both real products
 and original input bytes. Those diagnostics do not replace independent creator
-qualification or canonicalize either output. Native sense work remains active.
+qualification or canonicalize either output. The finite direction adjudication
+and final integration below close this initial inventory.
 
 ## Planar chamfer direction increment
 
@@ -145,8 +147,9 @@ a limitation of applying raw sense equality across different native input
 gauges, not a primitive defect or a geometric acceptance waiver. The conflict
 between that gate and preserving each input's native gauge was escalated to
 the coordinator. The comparator, primitive constructors and sense whitelist
-remain unchanged. All-edge fillet/chamfer and oblique single fillet remain
-unaccepted while their direct strict differences are unresolved.
+remain unchanged at this checkpoint. All-edge fillet/chamfer and oblique single
+fillet were unaccepted here; the subsequent finite direction proof closes these
+specific differences without modifying their geometry or raw native reports.
 
 The coordinator subsequently authorized a narrow, evidence-based adjudication
 of each analytic finite curve-sense difference, without changing the native
@@ -270,3 +273,168 @@ replace construction, ownership or mass evidence.
 
 Previously accepted f9 short-edge matrix/lifecycle evidence is reused read-only
 as scoped by the dispatch; no full 96/1885/347 rerun has been performed here.
+
+## Final isolated ownership integration and candidate status
+
+The shared owner delivered fixed `a0f68cb9e729b89309d7a203fa205ad9014c0a16`.
+Its actual four-file diff, production change, tests, oracle and report were read
+before cherry-picking; this branch's corresponding commit is
+`91270ab09593d16d34066b0ea5d919f993303280`, directly after `fc6c7bc`.
+It does not import 7b0 or unfinished continuous Boolean experiments. A published
+wire already owns its curves and points: conversion now updates only the new
+face/surface chain and its plane owner, avoiding duplicate boundary counts.
+Geometry, parameters, original owners, precision and the comparison mask are
+unchanged. Upstream's 42 tests and independent sheet/extrude oracle remain its
+own source-bound evidence, described in
+`docs/reviews/advanced-modeling/planar-sheet-ownership-fix.md`.
+
+Only the two affected oblique cases and the integration boundary were rerun.
+All four invocations below set `MSBUILDDISABLENODEREUSE=1`.
+The common command prefix is `MSBUILDDISABLENODEREUSE=1 dotnet run --no-cache
+scripts/LocalOperationOracle.cs -c Release -p:BuildInParallel=false
+-p:UseSharedCompilation=false -p:GmInProcessLinkTasks=true --`.
+
+| Actual selection and arguments | Actual result |
+| --- | --- |
+| `GM_WEB_SELECT=oblique-unequal-chamfer`, `--output-name=blend-final-oblique-chamfer --lifecycle` | construction, full native checks, strict finite direction/material comparisons, copy/delete source/reflection-scale/editable reload and complete pool cleanup pass; mass Verified; external exit 0 |
+| `GM_WEB_SELECT=oblique-single-fillet`, `--output-name=blend-final-oblique-fillet --lifecycle` | the same complete geometry/lifecycle/cleanup checks pass, including full finite line/ellipse direction proofs; both mass comparisons Unresolved; external exit 2 |
+| `dotnet test tests/KernelTests` with the shared build flags, `-m:1`, and `--filter FullyQualifiedName~PlanarSheetAndObliqueExtrusionReleaseEachOwnedGeometryOnce` | 3/3, external exit 0; own-PGID testhost cleanup |
+| `dotnet run --no-cache scripts/AllocationBanCheck.cs -c Release` | actual normal managed library: 2897 methods, CLEAN, external exit 0; no NativeAOT |
+
+Logs and original exits are in `temp_docs/blend-functional/final-integrated/`.
+Both real-PK operation processes report the same loaded GM assembly SHA256:
+`d5a135bcd6b5092b604ed35148ccad8da2467e7d576030ddfbe86bdcc7983073`.
+The three managed cases use the test-hook build, separately from the normal
+library used by the oracle/IL guard. Actual final products, native references
+and mass bounds remain private in
+`temp_docs/local-operation-oracle/blend-final-oblique-{chamfer,fillet}/`.
+
+At this pre-API-query checkpoint, the 17-case local Blend functional coverage was composed explicitly
+from the fixed 15 complete passes and these two corrected complete lifecycles.
+The older full-catalog processes keep external exit 1; they are not relabeled
+as a new all-green process. No original functional construction or ownership
+hard failure remains in this declared catalog. The broader regular bands,
+support holes/chains, corner/extinction and heterogeneous short-edge scope
+retain the fixed evidence and source-diff basis stated above. The stricter
+finite curve proof and correct mass contract are part of this review candidate,
+not an independently accepted test-policy change yet.
+
+The initial 26-entry receipt and its original successful check are retained as
+`temp_docs/blend-functional/receipt-before-face-api.sha256` and
+`final-integrated-manifest-check.{log,exit}`. It binds the integrated 24-entry private artifact receipt
+`temp_docs/blend-functional/final-integrated-evidence.sha256`, also 24/24,
+external exit 0, digest
+`0fb17be8b40f4d78d555f6f3c76aebdfc788f8a13f9c7f83748d340e6291bce8`.
+Receipt verification proves identity, not additional modeling execution.
+
+Remaining layered status is explicit: oblique fillet and procedural short-edge
+mass bounds are Unresolved, not Different or fixed-precision passes. The earlier
+fixed 510 boundary queries remain with their separately recorded four-way On
+disagreements; they were not rerun or exempted here, and their common finite
+precision contract remains with the Boolean/shared owner. No new Boolean,
+Mac timing, main integration, deployment or same-instance display receipt is
+claimed. The Boolean handoff is the actual self XT/hash above, unchanged from
+the prior product, with new independent lifecycle evidence; a future display
+must bind to those actual bytes and its own receipt. The stable computation
+source and the final receipt below are ready for one whole-candidate independent
+review and subsequent controlled integration by Run home.
+
+## Final managed face API and complete catalog
+
+The last interface audit found a real query defect beyond fresh XT geometry:
+`FaceAskOrientedSurf` returned only the raw face field. The new chamfer correctly
+stores positive face sense and negative surface sense, so GM returned true
+while real PK queried on the **same actual product XT** returned false.
+`temp_docs/blend-functional/final-integrated/face-query-before.{log,exit}` preserves that original failure,
+external exit 1. Official `PK_FACE_ask_oriented_surf` and XT 5.2.9 require the
+composition relative to the natural surface normal, independently of either
+raw field. `PlaneAsk` returns that original natural frame unchanged.
+
+With explicit single-owner authorization, `da9b8229c7538709621bee4386b6e6c750dafc8f`
+fixes only this public query: combine the two signs, leaving the geometry,
+parameters and both original records unchanged. A null surface keeps the FD's
+undefined-orientation boundary; no compatibility branch or C ABI change.
+The actual query consumers were inspected: none already composes the surface
+sense again. Four managed sign combinations additionally require no mutation.
+The related LocalOperation, LocalTopologyChange, XtBrepImport and
+BlendSupportChain regressions are **123/123, external exit 0**, in
+`temp_docs/blend-functional/final-integrated/face-query-tests.{log,exit}`. The test-hook build reports 175
+dispatch descriptors and allocation IL CLEAN across 2940 methods.
+
+`LocalOperationOracle --output-name=blend-face-sign-controls --face-query-controls`
+exports all four explicitly labeled raw face/surface sign fixtures and checks
+the GM query against the real PK query on those bytes, using the unique same
+natural plane frame. The results are true/false/false/true; external exit 0 in
+`temp_docs/blend-functional/final-integrated/face-sign-controls.{log,exit}`. These are query fixtures, not
+four accepted solid constructions. Only the geometry-preserving two-sign
+combinations receive the additional full BODY_check. The actual single-chamfer
+and mirror/reload products supply the real modeling positives.
+
+The final full operation command, with the common flags above, is
+`scripts/LocalOperationOracle.cs -- --output-name=blend-final-complete
+--blend-arrangement --lifecycle`. It actually executes **17/17 construction and
+self-lifecycle geometry/ownership checks**, plus GM/PK same-product plane
+orientation queries before and after copy/delete source/reflection-scale/reload.
+`temp_docs/blend-functional/final-integrated/complete-catalog.{log,exit}` reports zero functional failures,
+two mass comparisons Unresolved and original external exit **2**. This is a new
+complete catalog execution; the older external exit-1 runs remain untouched.
+The actual loaded normal GM assembly SHA256 is
+`0e49ecb43e4ead37925dcef63b8d6c3e4e6355854ebddd3166e33b56ea58dfe6`.
+Its final standalone IL guard checks 2897 methods, CLEAN, external exit 0;
+`temp_docs/blend-functional/final-integrated/final-normal-assembly.sha256` binds the inspected assembly.
+
+## Additional material-query operation: explicit remaining boundary
+
+The new `--managed-material` selection is a separate direct GM
+`BodyContainsVector` operation check, beyond the existing independent native
+interpretation of the actual GM B-rep's material and finite directed boundary.
+The initial extra-query execution `temp_docs/blend-functional/final-integrated/api-material-catalog`
+reports 12 query-compatible cases and five API errors, external exit **1**.
+This intermediate runner enabled that extra operation directly; its current
+explicit reproducer adds `--managed-material`. The failure is not erased by
+leaving this additional operation unselected in the Blend command.
+
+| Actual Blend product | Direct GM BodyContainsVector boundary |
+| --- | --- |
+| cylinder-rim-fillet | error 5000 |
+| cylinder-both-rim-fillet | error 5000 |
+| cylinder-rim-chamfer | error 5000 |
+| cylinder-both-rim-chamfer | error 5000 |
+| cylinder-unequal-chamfer | error 5000 |
+
+The focused current reproducer is `--output-name=blend-query-unsupported-axial
+--axial-arrangement --lifecycle --managed-material`. It keeps both native and
+GM calls for **all 20 actual finite-plane side points**, preserving coordinates,
+both original errors and returned classes before rejecting each query case.
+Real PK returns error 0 with the separated Inside/Outside results; GM returns
+5000 at every point. `temp_docs/blend-functional/final-integrated/axial-material-query.{log,exit}` preserves
+original exit 1; its five failed direct queries do not qualify query support,
+and do not reverse the independently completed Blend geometry/lifecycles.
+The extra-query cases stop before their query-selected lifecycle after the
+query rejection; their Blend lifecycles are instead covered by the independent
+complete catalog. This actual gap was handed to the shared owner.
+
+There is also a static negative-surface query/copy/reattach clue in the generic
+attachment API. That combination was not executed here and is not reported as
+a measured failure or an accepted capability; it was handed to the shared
+owner without expanding this task into every public geometry-attachment API.
+
+Actual complete products and reference/lifecycle XT remain private in
+`temp_docs/local-operation-oracle/blend-final-complete/`; query fixtures are in
+`temp_docs/local-operation-oracle/blend-face-sign-controls/`, and failed-query products in
+`temp_docs/local-operation-oracle/blend-query-unsupported-axial/`. The final private API receipt has 107 entries,
+all verified, external exit 0, at
+`temp_docs/blend-functional/final-api-evidence.sha256`, digest
+`c2cac36671656bfccdcc34fc9ad316b1d8b0e7127ca56e77b30da7af2653e038`.
+The separate 78-entry failed-query receipt is
+`temp_docs/blend-functional/extra-query-evidence.sha256`, digest
+`fb98501b0cb3c7451c0e29884824edc261b2b87fe553496996d0f1142e6962c7`.
+The persistent final source/evidence index is
+`docs/reviews/advanced-modeling/blend-functional-evidence.sha256`.
+Its actual final check is 33/33, external exit 0, digest
+`9c89bde1cffcc7b40015ea9c562ac1d6ef9122e7ad559cb94e857173957ad25b`;
+the new query-logging source diff and exact failing-query points are included.
+No mass-Unresolved result, extra unsupported query, or old 510 boundary
+disagreement is relabeled as a numerical/query pass. This is the complete
+declared Blend functional candidate for independent review, not M0–M5 Boolean
+completion, accepted main, an online release or a performance qualification.

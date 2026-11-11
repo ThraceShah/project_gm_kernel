@@ -465,7 +465,7 @@ static unsafe void CompareMass(int reference,int actual,string label,Action<stri
 
 static unsafe void CompareManagedPlaneOrientations(int own,int fresh,string label,Action<string> log,bool checkManagedMaterial)
 {
-    var candidates=Tags(false,fresh,false);var used=new HashSet<PK_FACE_t>();var count=0;
+    var candidates=Tags(false,fresh,false);var used=new HashSet<PK_FACE_t>();var count=0;var queryFailures=0;
     foreach(var face in Tags(true,own,false))
     {
         PK_SURF_t surface=0;byte orientation=0;PK_CLASS_t kind=0;
@@ -495,12 +495,17 @@ static unsafe void CompareManagedPlaneOrientations(int own,int fresh,string labe
         foreach(var side in new[]{-1,1})
         {
             var query=point;for(var axis=0;axis<3;axis++)query.coord[axis]+=side*1e-5*(expected==PK_LOGICAL_true?1:-1)*basis.basis_set.axis.coord[axis];
-            int actual=0,native=0,topology=0;Check(KernelRuntime.BodyContainsVector(own,*(M.PK_VECTOR_s*)&query,&actual,&topology),"GM finite plane material side");
-            Check(PK_BODY_contains_vector(fresh,query,&native,&topology),"PK finite plane material side");
+            int actual=0,native=0,topology=0;
+            var actualError=KernelRuntime.BodyContainsVector(own,*(M.PK_VECTOR_s*)&query,&actual,&topology);
+            var nativeError=PK_BODY_contains_vector(fresh,query,&native,&topology);
+            log($"MANAGED_MATERIAL_QUERY {label} faces={face}/{matched} side={side} point=({query.coord[0]:R},{query.coord[1]:R},{query.coord[2]:R}) GM_error={actualError} GM_class={actual} PK_error={nativeError} PK_class={native}");
+            Check(nativeError,"PK finite plane material side");
             Require(native==(side<0?PK_enclosure_inside_c:PK_enclosure_outside_c),label+" native finite plane material witness must be separated");
+            if(actualError!=0){queryFailures++;continue;}
             Require(actual==native,$"{label} managed material differs at actual finite plane face={face}/{matched} side={side}: GM={actual} PK={native}");
         }
     }
+    Require(queryFailures==0,$"{label} managed BodyContainsVector API failures={queryFailures}; original codes and native point results retained");
     log($"MANAGED_FACE_ORIENTATION_PASS {label} same_product_planes={count} separated_material_probes={(checkManagedMaterial?2*count:0)}");
 }
 static unsafe void CompareMaterialSense(int reference,int actual,string label)
