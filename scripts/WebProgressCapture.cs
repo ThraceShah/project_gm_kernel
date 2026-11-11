@@ -27,16 +27,32 @@ internal static unsafe partial class WebProgressCapture
     private static readonly Dictionary<string,int> ContextSteps=[];
     private static readonly Dictionary<int,OperationRecord> OperationsByOrdinal=[];
     private static string? ObservationOwner;
+    private static string CaseIdentity="";
+    private static readonly Dictionary<string,int> CaseOccurrences=[];
     private static readonly Dictionary<string,OperationRecord> RequestedOperations=[];
+    private static string LogicalContext(string context,string api)=>CaseIdentity.Length==0?context+":"+api:CaseIdentity+"|"+context+":"+api;
     internal static OperationRecord BeginObservedOperation(string id,string name,string role,string api,string context="")
     {
         if(!Enabled)return OperationAcceptanceLedger.Current.BeginOperation(id,name,role,api);
-        var key=context+":"+api+":"+ContextCounts.GetValueOrDefault((true,context+":"+api));
+        var contextKey=LogicalContext(context,api);
+        var key=contextKey+":"+ContextCounts.GetValueOrDefault((true,contextKey));
         if(ContextSteps.TryGetValue(key,out var ordinal)&&OperationsByOrdinal.TryGetValue(ordinal,out var paired))return paired;
         var op=OperationAcceptanceLedger.Current.BeginOperation(id,name,role,api);
         RequestedOperations.Add(key,op);return op;
     }
     internal static void Checkpoint(){if(Enabled)Observe(Flush);}
+    internal static IDisposable? UseCase(string name)=>Enabled?new CaptureCase(name):null;
+    private sealed class CaptureCase : IDisposable
+    {
+        private readonly string _previous=CaseIdentity;
+        private readonly string? _owner=ObservationOwner;
+        internal CaptureCase(string name)
+        {
+            var key=_previous+"/"+name;var occurrence=CaseOccurrences.GetValueOrDefault(key);CaseOccurrences[key]=occurrence+1;
+            CaseIdentity=key+"#"+occurrence;ObservationOwner=null;
+        }
+        public void Dispose(){CaseIdentity=_previous;ObservationOwner=_owner;}
+    }
     internal static IDisposable UseContext(string context)=>new CaptureContext(context);
     private sealed class CaptureContext : IDisposable
     {
@@ -59,8 +75,8 @@ internal static unsafe partial class WebProgressCapture
         {
             Directory.CreateDirectory(Output!);
             var ordinal=Ordinals[own]++;var side=own?"gm":"pk";
-            var contextKey=(own,Context+":"+operation);var occurrence=ContextCounts.GetValueOrDefault(contextKey);ContextCounts[contextKey]=occurrence+1;
-            var logicalKey=Context+":"+operation+":"+occurrence;
+            var contextKey=(own,LogicalContext(Context,operation));var occurrence=ContextCounts.GetValueOrDefault(contextKey);ContextCounts[contextKey]=occurrence+1;
+            var logicalKey=contextKey.Item2+":"+occurrence;
             if(!ContextSteps.TryGetValue(logicalKey,out ordinal)){ordinal=Steps.Count;ContextSteps.Add(logicalKey,ordinal);}
             Ordinals[own]=ordinal+1;
 
@@ -68,7 +84,7 @@ internal static unsafe partial class WebProgressCapture
             if(!OperationsByOrdinal.TryGetValue(ordinal,out var opRecord))
             {
                 var role=Context.Contains("lifecycle",StringComparison.OrdinalIgnoreCase)||Context.Contains("cut",StringComparison.OrdinalIgnoreCase)?"lifecycle":"primary";
-                var prov=new JsonObject{["scope"]="integration-step",["constructionSource"]=Environment.GetEnvironmentVariable("GM_WEB_GEOMETRY_AUTHOR"),["context"]=Context,["gm"]=null,["pk"]=null,["sameInputEvidence"]=null};
+                var prov=new JsonObject{["scope"]="integration-step",["constructionSource"]=Environment.GetEnvironmentVariable("GM_WEB_GEOMETRY_AUTHOR"),["context"]=Context,["caseScope"]=CaseIdentity,["gm"]=null,["pk"]=null,["sameInputEvidence"]=null};
                 opRecord=RequestedOperations.Remove(logicalKey,out var requested)?requested:OperationAcceptanceLedger.Current.BeginOperation(opId,(Context.Length>0?Context+" / ":"")+operation,role,operation,null,prov);
                 opRecord.InputProvenance=prov;
                 opRecord.StepRef=ordinal;
@@ -134,8 +150,8 @@ internal static unsafe partial class WebProgressCapture
             if(OperationsByOrdinal.TryGetValue(ordinal,out var opRec))
             {
                 ObservationOwner=opRec.Id;
-                if(own){opRec.GmMs=ms;opRec.Returns["gm"]=error;}
-                else{opRec.PkMs=ms;opRec.Returns["pk"]=error;}
+                if(own)opRec.GmMs=ms;else opRec.PkMs=ms;
+                OperationAcceptanceLedger.Current.RecordReturn(opRec.Id,side,error);
                 var outputs=new JsonArray();foreach(var body in bodies)outputs.Add((JsonNode)new JsonObject{["kernel"]=side,["entityTag"]=body});
                 opRec.EntityReferences[side]!["outputs"]=outputs;
             }
@@ -264,11 +280,9 @@ internal static unsafe partial class WebProgressCapture
         else if(int.TryParse(id.Split('-')[0],out var parsedOrdinal)&&OperationsByOrdinal.TryGetValue(parsedOrdinal,out var op2))owner=op2.Id;
 
         owner??=ObservationOwner;
-        if(owner==null)
-        {
-            owner="capture-internal-"+Errors.Count;
-            OperationAcceptanceLedger.Current.BeginOperation(owner,"Capture internal failure","auxiliary","capture-observer");
-        }
+        // Checks before the first modeled operation belong to the scenario.
+        // They are not repeated invocations of a fictitious observer API.
+        owner??="scenario";
         var checkObj=OperationAcceptanceLedger.Current.RecordCheck(owner,category,id,label,status,gm,pk,threshold,unit,note,evidence);
         Checks.Add(checkObj.DeepClone());
     }

@@ -95,7 +95,7 @@ if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
 var researchPrecision=NumberOption(args,"--research-precision=",0);
 Require(researchPrecision==0||double.IsFinite(researchPrecision)&&researchPrecision>0&&args.Contains("--native-only")&&args.Contains("--diagnostics")&&!args.Contains("--record-fixtures"),
     "research precision requires native-only diagnostics and cannot update fixtures");
-var output=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs",researchPrecision==0?"short-edge-blend-oracle":"short-edge-native-research");
+var output=Path.GetFullPath(args.FirstOrDefault(a=>a.StartsWith("--output="))?[9..]??"../temp_docs/"+(researchPrecision==0?"short-edge-blend-oracle":"short-edge-native-research"),Path.GetDirectoryName(ScriptPath())!);
 var floor=NumberOption(args,"--seed-floor=",0);
 var phase=NumberOption(args,"--support-phase=",0);
 var splitRemote=args.Contains("--split-remote-edge");
@@ -187,6 +187,7 @@ using(host)unsafe
             // seed units. The planar contact shifts that limit by Δradius.
             var transversePlaneDifference=-7+(radius-.5)-transverseOffset;
             cases++;
+            using var captureCase=WebProgressCapture.UseCase(name);
             Console.WriteLine("CASE "+name);
             try
             {
@@ -206,6 +207,7 @@ using(host)unsafe
                 Check(nativeError,"native fix");CheckBody(reference,"native fillet");
                 if(args.Contains("--native-only")&&args.Contains("--diagnostics"))ProductEdges(reference,"native-after-fix");
                 var result=Transmit(false,reference);File.WriteAllBytes(Path.Combine(output,name+"-native.x_t"),result);
+                var nativeResultHash=OperationAcceptanceLedger.HashBytes(result);
                 Describe(reference);DescribeXt(result);
                 if(args.Contains("--record-fixtures"))
                 {
@@ -256,15 +258,25 @@ using(host)unsafe
                 catch(Exception ex){failures++;Console.WriteLine("FAIL native editable roundtrip: "+ex.Message);}
                 if(!args.Contains("--native-only")&&!args.Contains("--import-only"))
                 {
-                    var filletOp=WebProgressCapture.BeginObservedOperation($"op-{name}-fillet",$"{name} fillet","primary","PK_BODY_fix_blends",context:"");
+                    var filletOp=WebProgressCapture.BeginObservedOperation($"op-{name}-fillet-{OperationAcceptanceLedger.Current.Operations.Count}",$"{name} fillet","primary","PK_BODY_fix_blends",context:"");
+                    if(!WebProgressCapture.Enabled)filletOp.InputProvenance=new System.Text.Json.Nodes.JsonObject{["scope"]="integration-step",["gm"]=null,["pk"]=null,["sameInputEvidence"]=null};
+                    int received=0;
                     try
                     {
-                    Check(Fillet(true,own,angle,radius*inputScale,tolerance*inputScale,reverse,procedural,mappedInput?&inputTransform:null,inputScale,splitSelected,splitEllipse,splitFraction,(int)rotateMarks),"managed fix");
+                    var managedError=Fillet(true,own,angle,radius*inputScale,tolerance*inputScale,reverse,procedural,mappedInput?&inputTransform:null,inputScale,splitSelected,splitEllipse,splitFraction,(int)rotateMarks);
+                    if(!WebProgressCapture.Enabled){OperationAcceptanceLedger.Current.RecordReturn(filletOp.Id,"gm",managedError);OperationAcceptanceLedger.Current.RecordReturn(filletOp.Id,"pk",nativeError);}
+                    Check(managedError,"managed fix");
                     var ownResult=Transmit(true,own);File.WriteAllBytes(Path.Combine(output,name+"-self.x_t"),ownResult);
-                    var received=Receive(false,ownResult);CheckBody(received,"managed fillet");
+                    OperationAcceptanceLedger.Current.RecordOutputHashes(filletOp.Id,"gm",[OperationAcceptanceLedger.HashBytes(ownResult)]);
+                    OperationAcceptanceLedger.Current.RecordOutputHashes(filletOp.Id,"pk",[nativeResultHash]);
+                    if(filletOp.EntityReferences["gm"]==null)filletOp.EntityReferences["gm"]=new System.Text.Json.Nodes.JsonObject{["kernel"]="gm"};
+                    if(filletOp.EntityReferences["pk"]==null)filletOp.EntityReferences["pk"]=new System.Text.Json.Nodes.JsonObject{["kernel"]="pk"};
+                    filletOp.EntityReferences["gm"]!["outputEntityTag"]=own;
+                    filletOp.EntityReferences["pk"]!["outputEntityTag"]=reference;
+                    received=Receive(false,ownResult);CheckBody(received,"managed fillet");
                     if(args.Contains("--diagnostics")){ProductEdges(reference,"reference");ProductEdges(received,"self-constructed-product");}
                     ParasolidBodyCompare.AssertEquivalent(reference,received,"independent fillet");
-                    OperationAcceptanceLedger.Current.RecordCheck(filletOp.Id,"primary",$"{filletOp.Id}-compare","BODY_compare","pass",evidence:Path.Combine(output,name+"-self.x_t"));
+                    OperationAcceptanceLedger.Current.RecordCheck(filletOp.Id,"primary",$"{filletOp.Id}-compare","BODY_compare","pass",evidence:WebProgressCapture.Enabled?null:name+"-self.x_t");
                     CompareFiniteIntersections(reference,received,"independent fillet",inputScale);
                     if(requireNativeFinBoxes)CompareNativeBlendFinBoxes(reference,received,"independent fillet",required:true);
                     if(requireNativeFaceDomains)CompareNativeFaceDomains(reference,received,"independent fillet",inputScale);
@@ -298,7 +310,9 @@ using(host)unsafe
         }
     }
     finally{Check(KernelRuntime.SessionStop(),"managed stop");}
-    OperationAcceptanceLedger.Current.EndScenario(failures==0?0:1);
+    OperationAcceptanceLedger.Current.InProcessExitCode=Environment.ExitCode;
+    if(failures!=0)OperationAcceptanceLedger.Current.ScenarioFailure=$"{failures} short-edge acceptance checks failed";
+    OperationAcceptanceLedger.Current.EndScenario(null);
     WebProgressCapture.Checkpoint();
     OperationAcceptanceLedger.Current.SaveSidecar(Path.Combine(output,"ledger.json"));
     OperationAcceptanceLedger.Current.PrintConsoleSummary();
@@ -629,16 +643,20 @@ static unsafe int Cut(bool own,int body,int tool)
 static unsafe int CompareFresh(int own,int reference,string directory,string name,double unitScale,bool materialOwnership,bool checkNativeTrims,bool requireNativeFinBoxes,bool requireNativeFaceDomains,
     KernelRuntime.BoundaryTrace? projected=null)
 {
-    var opId=$"op-{name.ToLowerInvariant().Replace(' ','-')}";
-    var op=OperationAcceptanceLedger.Current.BeginOperation(opId,name,"lifecycle","PK_BODY_boolean");
+    var opId=$"op-{name.ToLowerInvariant().Replace(' ','-')}-{OperationAcceptanceLedger.Current.Operations.Count}";
+    var op=OperationAcceptanceLedger.Current.BeginOperation(opId,name,"lifecycle","product-verification-integration",inputProvenance:new System.Text.Json.Nodes.JsonObject{["scope"]="product-verification",["gmEntityTag"]=own,["pkEntityTag"]=reference});
+    try
+    {
     var fresh=Transmit(true,own);File.WriteAllBytes(Path.Combine(directory,name+".x_t"),fresh);var received=Receive(false,fresh);
     var referenceBytes=Transmit(false,reference);File.WriteAllBytes(Path.Combine(directory,name+"-native.x_t"),referenceBytes);
+    OperationAcceptanceLedger.Current.RecordOutputHashes(opId,"gm",[OperationAcceptanceLedger.HashBytes(fresh)]);
+    OperationAcceptanceLedger.Current.RecordOutputHashes(opId,"pk",[OperationAcceptanceLedger.HashBytes(referenceBytes)]);
     var referenceReload=Receive(false,referenceBytes);
     try
     {
         CheckBody(reference,name+" native");
         CheckBody(referenceReload,name+" native own roundtrip");
-        try{ParasolidBodyCompare.AssertEquivalent(reference,received,name);OperationAcceptanceLedger.Current.RecordCheck(opId,"primary",$"{name}-compare","BODY_compare","pass",evidence:Path.Combine(directory,name+".x_t"));}
+        try{ParasolidBodyCompare.AssertEquivalent(reference,received,name);OperationAcceptanceLedger.Current.RecordCheck(opId,"primary",$"{name}-compare","BODY_compare","pass",evidence:WebProgressCapture.Enabled?null:name+".x_t");}
         catch(Exception ex){OperationAcceptanceLedger.Current.RecordCheck(opId,"primary",$"{name}-compare","BODY_compare","fail",note:ex.Message);Console.WriteLine("COMPARE DIAGNOSTIC "+ex.Message);throw;}
         CheckBody(received,name);
         CompareFiniteIntersections(reference,received,name,unitScale);
@@ -653,9 +671,14 @@ static unsafe int CompareFresh(int own,int reference,string directory,string nam
         return failures;
     }
     finally{
-        OperationAcceptanceLedger.Current.EndOperation(opId);
-        Check(PK_ENTITY_delete(1,&received),"delete lifecycle reload");Check(PK_ENTITY_delete(1,&referenceReload),"delete native lifecycle reload");
+        using(var step=new OperationStepScope(OperationAcceptanceLedger.Current,opId,"delete-received","PK_ENTITY_delete"))
+        {Check(step.Return("pk",PK_ENTITY_delete(1,&received)),"delete lifecycle reload");step.Complete();}
+        using(var step=new OperationStepScope(OperationAcceptanceLedger.Current,opId,"delete-reference-reload","PK_ENTITY_delete"))
+        {Check(step.Return("pk",PK_ENTITY_delete(1,&referenceReload)),"delete native lifecycle reload");step.Complete();}
     }
+    }
+    catch{OperationAcceptanceLedger.Current.EndOperation(opId,"fail");throw;}
+    finally{OperationAcceptanceLedger.Current.EndOperation(opId);WebProgressCapture.Checkpoint();}
 }
 
 static unsafe int OverlappingToolJunctions(int selfSource,int nativeSource,string directory,string name,bool projectedCell)
