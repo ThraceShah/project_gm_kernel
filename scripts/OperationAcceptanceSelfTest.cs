@@ -131,5 +131,69 @@ Validate(false, "rejects unproven same input", o => o["inputProvenance"] = null)
 Validate(false, "rejects zero GM", o => { o["timing"]!["gmMs"] = 0; o["timing"]!["ratio"] = 0; });
 Validate(false, "rejects wrong boundary", o => o["timing"]!["boundary"] = "scenario");
 Validate(false, "rejects wrong ratio", o => o["timing"]!["ratio"] = 3);
+
+// Use the real ledger/scope and persist its facts through the public disk
+// validator. No PK calls or new acceptance contract are needed for ordering.
+void FailureOrder(string label, Action<OperationAcceptanceLedger> record, string? first, string parentStatus, int failedOwners)
+{
+    var control=new OperationAcceptanceLedger(label,label);
+    Complete(control,"verify");
+    record(control);control.EndOperation("verify");control.EndScenario(0);
+    Assert(control.FirstFailedOperationId==first&&control.GetOperation("verify")!.PrimaryStatus==parentStatus,
+        label+" retains the actual first failure and parent primary status");
+    Assert(control.Operations.Count== (first==null?1:2)&&control.Operations.Count(o=>o.Status=="fail")==failedOwners&&
+        control.ScenarioStatus==(first==null?"pass":"fail")&&control.LegacyExitCode==0,
+        label+" retains all failed owners and caller exit code without duplicate operations");
+    var folder=Path.GetFullPath("../temp_docs/operation-first-failure/controls/"+label,here);
+    Directory.CreateDirectory(Path.Combine(folder,"runs/test"));
+    File.Copy(Path.Combine(original,"index.json"),Path.Combine(folder,"index.json"),true);
+    File.Copy(Path.Combine(original,"runs/test/mesh.json"),Path.Combine(folder,"runs/test/mesh.json"),true);
+    var disk=JsonNode.Parse(File.ReadAllText(Path.Combine(original,"runs/test/manifest.json")))!;
+    var scenario=control.ToJsonObject();var diskCase=disk["cases"]![0]!.AsObject();
+    foreach(var field in scenario)diskCase[field.Key]=field.Value?.DeepClone();
+    diskCase["status"]=control.ScenarioStatus;
+    diskCase["performance"]!["kind"]="scenario-aggregate";
+    diskCase["performance"]!["ratioGmOverPk"]=null;
+    diskCase["performance"]!["correctnessQualified"]=false;
+    var path=Path.Combine(folder,"runs/test/manifest.json");
+    File.WriteAllText(path,disk.ToJsonString());
+    control.SaveSidecar(Path.Combine(folder,"ledger.json"));
+    var loaded=JsonNode.Parse(File.ReadAllText(path))!["cases"]![0]!;
+    Assert(OperationAcceptanceRules.Text(loaded["firstFailedOperationId"])==first&&
+        loaded["operations"]!.AsArray().Count(o=>OperationAcceptanceRules.Text(o?["status"])=="fail")==failedOwners,
+        label+" preserves first cause and both failure facts on disk");
+    if(label is "parent-before-cleanup" or "child-before-parent-own-check")
+        Assert(loaded["checks"]!.AsArray().Any(ch=>OperationAcceptanceRules.Text(ch?["owner"])=="verify"&&OperationAcceptanceRules.Text(ch?["id"])=="strict-compare"&&OperationAcceptanceRules.Text(ch?["status"])=="fail")&&
+            loaded["operations"]![1]!["returns"]!["pk"]!.GetValue<int>()==22,
+            label+" keeps the owned comparison failure and raw cleanup error");
+    var errors=WebProgressDataValidation.Validate(folder)["errors"]!.AsArray();
+    Assert(errors.Count==0,label+" public disk validator: "+errors.ToJsonString());
+}
+void CleanupFailure(OperationAcceptanceLedger control)
+{
+    try
+    {
+        using var cleanup=new OperationStepScope(control,"verify","delete-received","PK_ENTITY_delete");
+        cleanup.Return("pk",22);throw new InvalidOperationException("cleanup failure");
+    }
+    catch(InvalidOperationException e) when(e.Message=="cleanup failure") { }
+}
+FailureOrder("parent-before-cleanup",control=>
+{
+    control.RecordCheck("verify","primary","strict-compare","strict comparison","fail");
+    CleanupFailure(control);control.EndOperation("verify","fail");
+},"verify","fail",2);
+FailureOrder("child-before-propagation",control=>
+{
+    CleanupFailure(control);control.EndOperation("verify","fail");
+},"verify/delete-received","fail",2);
+FailureOrder("child-before-parent-own-check",control=>
+{
+    CleanupFailure(control);
+    control.RecordCheck("verify","primary","strict-compare","later independent strict comparison","fail");
+    control.EndOperation("verify","fail");
+},"verify/delete-received","fail",2);
+FailureOrder("parent-pass-cleanup-fail",CleanupFailure,"verify/delete-received","pass",1);
+FailureOrder("normal",_=>{},null,"pass",0);
 Console.WriteLine("Recording contract tests passed; synthetic evidence only, no PK modeling claim.");
 static string ScriptPath([CallerFilePath] string path = "") => path;

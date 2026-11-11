@@ -198,8 +198,19 @@ internal sealed class OperationAcceptanceLedger
         var anyFail = Operations.Any(o => o.Status == "fail") || legacyExitCode.HasValue && legacyExitCode != 0 || ScenarioFailure != null;
         var anyTimeout = Operations.Any(o => o.Status == "timeout");
 
-        var failedParents=Operations.Where(o=>o.Status is "fail" or "timeout").Select(o=>o.ParentOperationId).Where(id=>id!=null).ToHashSet();
-        FirstFailedOperationId = Operations.FirstOrDefault(o => (o.Status is "fail" or "timeout") && !failedParents.Contains(o.Id))?.Id;
+        // RecordCheck already preserves failure event order. A parent's owned
+        // verification can fail before its cleanup child, or after a child;
+        // neither parentage nor BeginOperation order determines the first cause.
+        FirstFailedOperationId = AllChecks.FirstOrDefault(c =>
+            OperationAcceptanceRules.Text(c["category"]) == "primary" &&
+            OperationAcceptanceRules.Text(c["status"]) == "fail" &&
+            GetOperation(OperationAcceptanceRules.Text(c["owner"]) ?? "")?.Status is "fail" or "timeout")?["owner"]?.GetValue<string>();
+        if (FirstFailedOperationId == null)
+        {
+            // Without recorded failure order, retain the existing fallback.
+            var failedParents=Operations.Where(o=>o.Status is "fail" or "timeout").Select(o=>o.ParentOperationId).Where(id=>id!=null).ToHashSet();
+            FirstFailedOperationId = Operations.FirstOrDefault(o => (o.Status is "fail" or "timeout") && !failedParents.Contains(o.Id))?.Id;
+        }
 
         if (anyTimeout)
             ScenarioStatus = "timeout";
