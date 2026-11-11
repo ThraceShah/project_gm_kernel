@@ -14,8 +14,23 @@ internal static partial class JointNestedBlendEvaluation
         var first=program.Surfaces[spine.First];var second=program.Surfaces[spine.Second];
         if(first.IsBSpline==second.IsBSpline)return false;
         var spline=first.IsBSpline?first:second;var plane=first.IsBSpline?second:first;
-        return !plane.IsBlend&&plane.Analytic.Kind==SurfaceClass.Plane&&plane.NormalSense!=0&&spline.NormalSense!=0
-            &&(first.IsBSpline?node.FirstUv:node.SecondUv)==3;
+        if(plane.IsBlend||plane.Analytic.Kind!=SurfaceClass.Plane||plane.NormalSense==0||spline.NormalSense==0
+            ||(first.IsBSpline?node.FirstUv:node.SecondUv)!=3)return false;
+        // G must be continuous on each proof box. Restrict this optimization
+        // to nonperiodic C1 sheets; native evaluation retains other sheets.
+        var source=program.Spline(spline);
+        return !source.UPeriodic&&!source.VPeriodic&&CartesianSplineSmoothKnots(source.UKnots,source.UDegree,source.UVertexCount)
+            &&CartesianSplineSmoothKnots(source.VKnots,source.VDegree,source.VVertexCount);
+    }
+
+    private static bool CartesianSplineSmoothKnots(ReadOnlySpan<double> knots,SplineDegree degree,BufferCount count)
+    {
+        for(var i=degree+1;i<count;)
+        {
+            var start=i;var knot=knots[i];while(i<count&&knots[i]==knot)i++;
+            if(knot>knots[degree]&&knot<knots[count]&&i-start>=degree)return false;
+        }
+        return degree>0;
     }
 
     // The original three spline equations are M(UV)*(P-S-h*n), with rows
@@ -30,15 +45,36 @@ internal static partial class JointNestedBlendEvaluation
         var row=first.IsBSpline?0:1;var point=IntervalPoint(variables,0);
         var status=IntervalSpline(program,spline,variables[3],variables[4],out var foot,out var su,out var sv,cache,3);
         if(status!=AlgorithmStatus.Success)return status;
-        var cross=IntervalVector.Cross(su,sv);var length=cross.Norm();
-        if(!(length.Value.Lower>0))return AlgorithmStatus.NotConverged;
-        var normal=cross/length;var delta=point-foot-normal*spline.Offset;
+        var cross=IntervalVector.Cross(su,sv);var length=cross.Norm();var uLength=su.Norm();var vLength=sv.Norm();
+        if(!length.Finite||!uLength.Finite||!vLength.Finite||!(length.Value.Lower>0&&uLength.Value.Lower>0&&vLength.Value.Lower>0))
+            return AlgorithmStatus.NotConverged;
+        var normal=cross/length;if(!normal.Finite)return AlgorithmStatus.NotConverged;
+        var delta=point-foot-normal*spline.Offset;
         residual[row]=delta.X;residual[3]=delta.Y;residual[4]=delta.Z;
         residual[1-row]=IntervalVector.Dot(point-new IntervalVector(plane.Analytic.Origin),new IntervalVector(plane.Analytic.Axis))*plane.NormalSense;
         status=SpineParameterMap.Interval(spine,Chart(program,node.Spine)[charts[0]],parameter,point,out residual[2]);
         if(status!=AlgorithmStatus.Success)return status;
         for(var i=0;i<5;i++)if(!residual[i].Finite)return AlgorithmStatus.NotConverged;
         return AlgorithmStatus.Success;
+    }
+
+    // XYZ is affine in G. Validate the same frame once, then assemble its
+    // three exact columns; UV still differentiates the full changing frame.
+    private static AlgorithmStatus CartesianSplinePointColumns(in NestedBlendProgram program,ReadOnlySpan<Occurrence> nodes,
+        ReadOnlySpan<IntervalDual> variables,IntervalNumber parameter,Span<IntervalDual> equations,
+        ReadOnlySpan<BufferOffset> charts,ReadOnlySpan<IntervalSplineContact> cache,Span<IntervalNumber> matrix)
+    {
+        var status=CartesianSplineResidual(program,nodes,variables,parameter,equations,charts,cache);if(status!=AlgorithmStatus.Success)return status;
+        var spine=program.Spines[nodes[0].Spine];var splineRow=program.Surfaces[spine.First].IsBSpline?0:1;
+        var plane=program.Surfaces[splineRow==0?spine.Second:spine.First];var axis=plane.Analytic.Axis;
+        var chord=Chart(program,nodes[0].Spine)[charts[0]].Chord;
+        for(var column=0;column<3;column++)
+        {
+            matrix[splineRow*5+column]=column==0?1:0;matrix[3*5+column]=column==1?1:0;matrix[4*5+column]=column==2?1:0;
+            matrix[(1-splineRow)*5+column]=new IntervalNumber(column==0?axis.X:column==1?axis.Y:axis.Z)*plane.NormalSense;
+            matrix[2*5+column]=column==0?chord.X:column==1?chord.Y:chord.Z;
+        }
+        ModelingPerformance.SplinePointColumns();return AlgorithmStatus.Success;
     }
 
     // R_G=R_F*M is an approximate inverse for the equivalent residual.
@@ -51,7 +87,7 @@ internal static partial class JointNestedBlendEvaluation
         var spline=program.Surfaces[first.IsBSpline?spine.First:spine.Second];
         var status=NestedSplineEvaluation.Contact(program,spline,state[3],state[4],out var contact);if(status!=AlgorithmStatus.Success)return status;
         var uLength=Math.Sqrt(Dot(contact.Du,contact.Du));var vLength=Math.Sqrt(Dot(contact.Dv,contact.Dv));
-        if(!(uLength>0&&vLength>0))return AlgorithmStatus.NotConverged;
+        if(!(uLength>0&&vLength>0)||!double.IsFinite(uLength)||!double.IsFinite(vLength))return AlgorithmStatus.NotConverged;
         var normal=Scale(contact.Normal,spline.NormalSense);var u=Scale(contact.Du,1/uLength);var v=Scale(contact.Dv,1/vLength);
         for(var i=0;i<5;i++)
         {
@@ -66,22 +102,44 @@ internal static partial class JointNestedBlendEvaluation
 
 #if KERNEL_TEST_HOOKS
     internal static AlgorithmStatus TestCartesianSplineBinding(in NestedBlendProgram program,ReadOnlySpan<IntervalNumber> boxes,
-        Span<IntervalNumber> original,Span<IntervalNumber> rebound,Span<IntervalNumber> cartesian)
+        Span<IntervalDual> original,Span<IntervalDual> rebound,Span<IntervalDual> cartesian,BufferOffset direction=-1)
     {
         var root=program.Spines[0];var first=program.Surfaces[root.First];var source=program.Surfaces[first.IsBSpline?root.First:root.Second];
         Span<Occurrence> nodes=stackalloc Occurrence[1];nodes[0]=new(){Spine=0,Offset=0,Parent=-1,FirstChild=-1,SecondChild=-1,FirstUv=first.IsBSpline?3:-1,SecondUv=first.IsBSpline?-1:3};
         Span<BufferOffset> charts=stackalloc BufferOffset[1];charts[0]=0;
-        Span<IntervalDual> variables=stackalloc IntervalDual[5],old=stackalloc IntervalDual[5],changed=stackalloc IntervalDual[5];
+        Span<IntervalDual> variables=stackalloc IntervalDual[5];
         Span<IntervalSplineContact> cache=stackalloc IntervalSplineContact[5];cache.Clear();
-        for(var i=0;i<5;i++)variables[i]=new(boxes[i],0);
-        var status=IntervalResidual(program,nodes,variables,.4,old,charts,cache);if(status!=AlgorithmStatus.Success)return status;
-        status=CartesianSplineResidual(program,nodes,variables,.4,changed,charts,cache);if(status!=AlgorithmStatus.Success)return status;
+        for(var i=0;i<5;i++)variables[i]=new(boxes[i],i==direction?1:0);
+        var parameter=new IntervalDual(.4,direction==5?1:0);
+        var status=IntervalResidual(program,nodes,variables,parameter,original,charts,cache);if(status!=AlgorithmStatus.Success)return status;
+        status=CartesianSplineResidual(program,nodes,variables,parameter,cartesian,charts,cache);if(status!=AlgorithmStatus.Success)return status;
         status=IntervalSpline(program,source,variables[3],variables[4],out _,out var su,out var sv);if(status!=AlgorithmStatus.Success)return status;
         var normal=IntervalVector.Cross(su,sv).Unit()*source.NormalSense;var row=first.IsBSpline?0:1;
-        var delta=new IntervalVector(changed[row],changed[3],changed[4]);
-        for(var i=0;i<5;i++){original[i]=old[i].Value;rebound[i]=changed[i].Value;cartesian[i]=changed[i].Value;}
-        rebound[row]=IntervalVector.Dot(delta,normal).Value;rebound[3]=IntervalVector.Dot(delta,su.Unit()).Value;rebound[4]=IntervalVector.Dot(delta,sv.Unit()).Value;
+        var delta=new IntervalVector(cartesian[row],cartesian[3],cartesian[4]);
+        cartesian.CopyTo(rebound);
+        rebound[row]=IntervalVector.Dot(delta,normal);rebound[3]=IntervalVector.Dot(delta,su.Unit());rebound[4]=IntervalVector.Dot(delta,sv.Unit());
         return AlgorithmStatus.Success;
+    }
+
+    internal static AlgorithmStatus TestCartesianSplineMatrix(in NestedBlendProgram program,ReadOnlySpan<IntervalNumber> boxes,
+        Span<IntervalNumber> matrix,Span<double> inverse)
+    {
+        var root=program.Spines[0];var first=program.Surfaces[root.First];
+        Span<Occurrence> nodes=stackalloc Occurrence[1];nodes[0]=new(){Spine=0,Offset=0,Parent=-1,FirstChild=-1,SecondChild=-1,FirstUv=first.IsBSpline?3:-1,SecondUv=first.IsBSpline?-1:3};
+        Span<IntervalDual> variables=stackalloc IntervalDual[5],equations=stackalloc IntervalDual[5];
+        Span<IntervalSplineContact> cache=stackalloc IntervalSplineContact[5];cache.Clear();Span<BufferOffset> charts=stackalloc BufferOffset[1];charts[0]=0;
+        if(!CartesianSplineRows(program,nodes,5))return AlgorithmStatus.Unsupported;
+        var status=IntervalJacobian(program,nodes,boxes,.4,matrix,variables,equations,charts,cache,true);if(status!=AlgorithmStatus.Success||inverse.IsEmpty)return status;
+        Span<double> state=stackalloc double[5],jacobian=stackalloc double[25],rhs=stackalloc double[5],residual=stackalloc double[5];Span<int> pivots=stackalloc int[5];
+        for(var i=0;i<5;i++)state[i]=boxes[i].Midpoint;
+        status=Assemble(program,nodes,state,.4,residual,jacobian,false,default);if(status!=AlgorithmStatus.Success)return status;
+        status=SmallLinearSolve.LuFactorize(jacobian,5,pivots);if(status!=AlgorithmStatus.Success)return status;
+        for(var column=0;column<5;column++)
+        {
+            rhs.Clear();rhs[column]=1;status=SmallLinearSolve.LuSolveInPlace(jacobian,5,pivots,rhs);if(status!=AlgorithmStatus.Success)return status;
+            for(var row=0;row<5;row++)inverse[row*5+column]=rhs[row];
+        }
+        return CartesianSplineInverse(program,nodes,state,inverse);
     }
 #endif
 }

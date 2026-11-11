@@ -397,7 +397,12 @@ internal static partial class JointNestedBlendEvaluation
             var status=CacheSplineContact(program,source,boxes[uv],boxes[uv+1],ref cache[uv]);if(status!=AlgorithmStatus.Success)return status;
         }
         var firstColumn=0;
-        if(!cartesianSpline&&PlaneSplinePointColumns(program,nodes,boxes,parameter,fixedCharts,cache,matrix,out var pointStatus))
+        if(cartesianSpline)
+        {
+            var status=CartesianSplinePointColumns(program,nodes,variables[..n],parameter,equations[..n],fixedCharts,cache,matrix);
+            if(status!=AlgorithmStatus.Success)return status;firstColumn=3;
+        }
+        else if(PlaneSplinePointColumns(program,nodes,boxes,parameter,fixedCharts,cache,matrix,out var pointStatus))
         {
             if(pointStatus!=AlgorithmStatus.Success)return pointStatus;firstColumn=3;
         }
