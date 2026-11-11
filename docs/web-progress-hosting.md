@@ -68,7 +68,7 @@
 - **派生态镜像**：`activation-state.json` 是提交**之后**尽力写入的派生镜像；写失败显式输出 `ACTIVATION_STATE_MIRROR_FAILED`（激活本身已提交，退出码 0 且报告与实际 active 一致），下轮运行先按指针**重建完整派生态**再输出 `ACTIVATE_SKIP_SAME`——比较**全部契约字段**（active/previous/count，含 activationCount 与 previous 配对，H4b），同 pair 重试也能恢复完整历史/计数；skip 不掩盖修复，repair 不改真实激活计数、不制造新代。进程中断/失败后活跃代次、上一代与计数始终以指针为准且一致；恢复无需重跑任何几何。
 - **失败保留旧版本**：任何校验失败（release 缺失/校验和不符、data 缺引用/含符号链接、`--expect-run` 不符、导入失败）都在提交点前终止（退出码 3），旧激活继续服务。
 - **同代跳过**：release+generation 身份与指针一致时 `ACTIVATE_SKIP_SAME` 秒级跳过（幂等）。
-- **精确回滚**：`--rollback` 从指针的 `previous` 恢复确切的 ui+generation 配对——相同 index 字节、相同 run 文件哈希，绝不重新解析"当前最新"；回滚前**全闭包校验目标代次**（树键+对象哈希+index 快照），受损则显式 `ACTIVATE_REFUSED_GENERATION_CORRUPT` 拒绝并保留可验证的当前激活（不声称损坏字节正确）；旧 release 与旧代次对象均保留，无需重建。
+- **精确回滚**：`--rollback` 从指针的 `previous` 恢复确切的 ui+generation 配对——相同 index 字节、相同 run 文件哈希，绝不重新解析"当前最新"；回滚前**全闭包校验目标代次**（schema/代次身份+必需 run 映射+树键+对象哈希+从 index 到 manifest 及跨 run 证据引用的逻辑闭包），受损或缺失必需 run 则显式 `ACTIVATE_REFUSED_GENERATION_CORRUPT` 拒绝且退出码非零，不更新指针/计数/镜像，保持当前可验证激活继续服务（绝不变成 200 index + 404 refs）；旧 release 与旧代次对象均保留，无需重建。
 - host 进程无需重启即感知新指针（每请求 stat）；重启后仍读取最后激活版本。
 
 ## 5. Release 提交边界（Prepare 中断自愈）
@@ -146,7 +146,7 @@ ExecStartPost=dotnet run --file scripts/ActivateHostedWebProgressSite.cs -- --si
 
 ## 10. 验证证据（本分支，qingyu2）
 
-- `scripts/VerifyHostedWebProgressGaps.cs`（H1–H5 + H1b/H4b 独立黑盒回归，真实 CLI+host+HTTP，单一持续更新 cache 模拟 publisher 原子换 index）：**47/47 通过**（`temp_docs/web-progress-hosting/logs/gaps-all-after-H1b-H4b.log`）。修复前逐项先失败实证：`gaps-before-fixes.log`（H1–H5：未激活/被拒/被改写数据可见、根/父目录替换为外链即服务根外标记、旧 HTML 资产切换后 404、state 写失败 exit 134 且 skip 不修复、Prepare 中断留永久坏缓存）、`gaps-H1b-before.log`（损坏对象 HTTP 200 CONTROLLED_OBJECT_STORAGE_FAULT）、`gaps-H4b-before.log`（mirror count/previous 不恢复）；reviewer 原版 `Integrity.cs` 不改输入复跑对照：`temp_docs/hosting-rereview/integrity-before-fix.log`（fail）→ `integrity-after-H4b.log`（count=3/3、previous 完全一致、CAS 修复后 HTTP 200 为原始字节且 key hash 匹配）。
+- `scripts/VerifyHostedWebProgressGaps.cs`（H1–H5 + H1b/H4b/H1c 黑盒回归，真实 CLI+host+HTTP，单一持续更新 cache 模拟 publisher 原子换 index）：原 47 项和首批 H1c 37 项合跑 **84/84**，最终 H1c **39/39** 分段验证；日志及精确退出码见 [目标代次闭包修复记录](web-progress-hosting-closure-fix.md)（本轮实现者验证，独立接受待 reviewer 判定）。旧修复前实证保留：`gaps-before-fixes.log`、`gaps-H1b-before.log`、`gaps-H4b-before.log`；reviewer 原版 `Integrity.cs` 的既有修复对照保留在 `temp_docs/hosting-rereview/`。
 - `scripts/VerifyHostedWebProgressSite.cs`：**53/53 通过**（`verify-hosting-log.txt`）：真实已验证 cache 快照（3 run/28 MiB/3495 引用）HTTP 逐字节一致；多 run 数据集 608 文件/89 MiB 全量流式 GET 校验和一致；64 MiB（>32 MiB）受控资源流式 SHA256 一致、传输期间 VmRSS ≈ 63 MiB（服务容量测试，非图形 case 声明）；23 项穿越/双编码/repo/token 负例全拒；GET/HEAD only、无目录 listing、MIME+nosniff、缓存策略、4 读者 × 12 次指针翻转无撕裂、SIGKILL 重启持久、源 cache 全程只读。
 - `web/tests/smoke.mjs`（继承断言，指向临时 host）：**145/145 通过**（`temp_docs/webui_v2_smoke_log.txt`、截图 `temp_docs/webui_v2_*.png`）：真实双视图模型、拾取实体 ID、失败微值（Inertia YZ 2.01065554e-7 > 1e-7 等）、移动布局可用，console 无异常。
 

@@ -495,42 +495,188 @@ internal static class HostedWebProgressSite
         return File.Exists(indexPath) && HashHex(File.ReadAllBytes(indexPath)) == indexSha;
     }
 
-    // Full referenced-closure verification of a generation: every tree record
-    // must match its content key and every referenced object must hash to its
-    // key. Used before rollback restores a generation; refuses on corruption
-    // instead of claiming bad bytes are correct.
+    // Verify the target itself, including requirements absent from its metadata.
+    // Only indexed manifests define references; quarantined raw logs do not
+    // become indexed runs merely because a manifest shares their directory.
     internal static bool VerifyGenerationClosure(string siteRoot, string generationId, out string errors)
     {
-        var problems = new List<string>();
-        var meta = ReadJsonObject(Path.Combine(siteRoot, "generations", generationId + ".meta.json"));
-        if (meta is null) { errors = "generation metadata unreadable"; return false; }
-        var trees = Path.Combine(siteRoot, "data-store", "trees");
-        var objects = Path.Combine(siteRoot, "data-store", "objects");
-        foreach (var (runId, node) in (meta["runs"] as JsonObject) ?? new JsonObject())
+        try
         {
-            var treeHash = node?.GetValue<string>();
-            if (treeHash is null || treeHash.Length == 0) { problems.Add(runId + ": tree binding missing"); continue; }
-            var treeMeta = ReadJsonObject(Path.Combine(trees, treeHash + ".json"));
-            if (treeMeta?["files"] is not JsonArray files) { problems.Add(runId + ": tree record missing or malformed"); continue; }
-            using var recomputed = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
-            foreach (var pair in files)
-            {
-                var rel = pair?[0]?.GetValue<string>();
-                var sha = pair?[1]?.GetValue<string>();
-                if (rel is null || sha is null) { problems.Add(runId + ": malformed tree entry"); continue; }
-                recomputed.AppendData(System.Text.Encoding.UTF8.GetBytes(rel));
-                recomputed.AppendData(System.Text.Encoding.UTF8.GetBytes(sha));
-                var objectPath = Path.Combine(objects, sha);
-                if (!File.Exists(objectPath)) problems.Add(runId + "/" + rel + ": object missing " + sha);
-                else if (HashHex(File.ReadAllBytes(objectPath)) != sha) problems.Add(runId + "/" + rel + ": object content does not match key " + sha);
-            }
-            if (Convert.ToHexString(recomputed.GetHashAndReset()).ToLowerInvariant() != treeHash) problems.Add(runId + ": tree record does not match its key");
+            Verify();
+            errors = string.Empty;
+            return true;
         }
-        var indexPath = Path.Combine(siteRoot, "generations", generationId, "index.json");
-        if (!File.Exists(indexPath)) problems.Add("index snapshot missing");
-        else if (HashHex(File.ReadAllBytes(indexPath)) != meta["indexSha256"]?.GetValue<string>()) problems.Add("index snapshot does not match metadata hash");
-        errors = string.Join("; ", problems);
-        return problems.Count == 0;
+        catch (Exception e) when (e is InvalidDataException or IOException or UnauthorizedAccessException
+            or System.Text.Json.JsonException or InvalidOperationException or FormatException or ArgumentException or OverflowException)
+        {
+            errors = "generation closure: " + e.Message;
+            return false;
+        }
+
+        void Verify()
+        {
+            Require(IsSafeName(generationId), "unsafe generation id");
+            var generations = Path.Combine(siteRoot, "generations");
+            var meta = ReadObject(Path.Combine(generations, generationId + ".meta.json"));
+            Require(meta["schemaVersion"]?.GetValue<int>() == 1, "generation metadata schemaVersion");
+            Require(Text(meta["id"], "generation id") == generationId, "generation metadata id mismatch");
+            var runs = Object(meta["runs"], "generation runs mapping");
+            var trees = Path.Combine(siteRoot, "data-store", "trees");
+            var objects = Path.Combine(siteRoot, "data-store", "objects");
+            var verifiedObjects = new HashSet<string>(StringComparer.Ordinal);
+            var maps = new Dictionary<string, Dictionary<string, string>>(StringComparer.Ordinal);
+            foreach (var (runId, node) in runs)
+            {
+                Require(IsSafeName(runId), "unsafe run id: " + runId);
+                var treeHash = Text(node, runId + " tree hash");
+                Require(IsHash(treeHash), runId + ": invalid tree hash");
+                var tree = ReadObject(Path.Combine(trees, treeHash + ".json"));
+                Require(tree["schemaVersion"]?.GetValue<int>() == 1, runId + ": tree schemaVersion");
+                Require(Text(tree["treeHash"], "treeHash") == treeHash, runId + ": tree record key mismatch");
+                var map = new Dictionary<string, string>(StringComparer.Ordinal);
+                using var recomputed = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+                string? previous = null;
+                foreach (var entry in Array(tree["files"], runId + " tree files"))
+                {
+                    var pair = Array(entry, runId + " tree entry");
+                    Require(pair.Count == 2, runId + ": malformed tree entry");
+                    var relative = Text(pair[0], "tree file path");
+                    var sha = Text(pair[1], relative + " object hash");
+                    Require(IsSafeRelativePath(relative) && Path.GetExtension(relative) is ".json" or ".log", runId + ": invalid tree file path");
+                    Require(IsHash(sha), runId + "/" + relative + ": invalid object hash");
+                    Require(previous is null || string.CompareOrdinal(previous, relative) < 0, runId + ": unordered or duplicate tree file");
+                    previous = relative;
+                    map.Add(relative, sha);
+                    recomputed.AppendData(System.Text.Encoding.UTF8.GetBytes(relative));
+                    recomputed.AppendData(System.Text.Encoding.UTF8.GetBytes(sha));
+                    if (verifiedObjects.Add(sha))
+                        Require(HashHex(ReadBytes(Path.Combine(objects, sha))) == sha, runId + "/" + relative + ": object content does not match key " + sha);
+                }
+                Require(Convert.ToHexStringLower(recomputed.GetHashAndReset()) == treeHash, runId + ": tree record does not match its key");
+                maps.Add(runId, map);
+            }
+
+            var indexBytes = ReadBytes(Path.Combine(generations, generationId, "index.json"));
+            var indexSha = HashHex(indexBytes);
+            Require(indexSha == Text(meta["indexSha256"], "indexSha256"), "index snapshot does not match metadata hash");
+            // EnsureGeneration imports run IDs in Order() order. Metadata JSON
+            // property order is immaterial; use the same identity convention.
+            var identity = string.Join(",", runs.OrderBy(kv => kv.Key).Select(kv => kv.Key + ":" + Text(kv.Value, "tree hash")));
+            var expectedId = "gen-" + HashHex(System.Text.Encoding.UTF8.GetBytes(indexSha + "|" + identity))[..16];
+            var index = Object(JsonNode.Parse(indexBytes), "index snapshot");
+            Require(index["schemaVersion"]?.GetValue<int>() == 1, "index schemaVersion");
+            var descriptors = Array(index["runs"], "index runs");
+            var indexed = new HashSet<string>(StringComparer.Ordinal);
+            var required = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var node in descriptors)
+            {
+                var descriptor = Object(node, "index run descriptor");
+                var runId = Text(descriptor["id"], "indexed run id");
+                Require(IsSafeName(runId) && indexed.Add(runId), "invalid or duplicate indexed run id: " + runId);
+                required.Add(runId);
+                var commit = Text(descriptor["commit"], runId + " commit");
+                Require(commit.Length > 0, runId + ": commit missing");
+                var path = Text(descriptor["manifest"], runId + " manifest path");
+                var prefix = "runs/" + runId + "/";
+                Require(path.StartsWith(prefix, StringComparison.Ordinal), runId + ": manifest path does not bind indexed run");
+                var manifestFile = path[prefix.Length..];
+                Require(IsSafeRelativePath(manifestFile) && manifestFile.EndsWith("manifest.json", StringComparison.Ordinal), runId + ": invalid manifest path");
+                var manifest = ReadObject(Path.Combine(objects, FileHash(runId, manifestFile)));
+                Require(manifest["schemaVersion"]?.GetValue<int>() == 1, runId + ": manifest schemaVersion");
+                var run = Object(manifest["run"], runId + " manifest run");
+                Require(Text(run["id"], "manifest run id") == runId, runId + ": manifest run id mismatch");
+                Require(Text(run["commit"], "manifest commit") == commit, runId + ": manifest commit mismatch");
+                var manifestDir = Path.GetDirectoryName(manifestFile)?.Replace('\\', '/') ?? "";
+                foreach (var caseNode in Array(manifest["cases"], runId + " manifest cases"))
+                {
+                    var c = Object(caseNode, "manifest case");
+                    foreach (var stepNode in OptionalArray(c["steps"], "case steps"))
+                    {
+                        var step = Object(stepNode, "case step");
+                        foreach (var side in new[] { "gm", "pk" })
+                        {
+                            if (step[side] is null) continue;
+                            var body = Object(step[side], "step " + side);
+                            foreach (var key in new[] { "before", "after" })
+                                if (body[key] is { } single) Reference(single);
+                            foreach (var key in new[] { "tools", "afterBodies" })
+                                foreach (var value in OptionalArray(body[key], key)) Reference(value);
+                        }
+                    }
+                    foreach (var check in OptionalArray(c["checks"], "case checks"))
+                        if (Object(check, "case check")["evidence"] is { } evidence) Reference(evidence);
+                    foreach (var evidence in OptionalArray(c["evidence"], "case evidence"))
+                        Reference(Object(evidence, "case evidence entry")["path"]);
+                }
+
+                void Reference(JsonNode? value)
+                {
+                    var reference = Text(value, runId + " manifest reference");
+                    Require(TryResolveLogicalReference(runId, manifestDir, reference, out var targetRun, out var targetFile), runId + ": invalid reference " + reference);
+                    Require(Path.GetExtension(targetFile) is ".json" or ".log", runId + ": non-public reference " + reference);
+                    required.Add(targetRun);
+                    _ = FileHash(targetRun, targetFile);
+                }
+            }
+            if (descriptors.Count > 0 || index["latestRunId"] is not null)
+                Require(indexed.Contains(Text(index["latestRunId"], "index latestRunId")), "latestRunId not registered");
+            Require(JsonNode.DeepEquals(meta["sourceLatestRunId"], index["latestRunId"]), "generation latest run does not match index");
+            Require(required.SetEquals(maps.Keys), "generation run mappings differ from indexed and referenced runs");
+            Require(generationId == expectedId, "generation identity mismatch");
+
+            string FileHash(string runId, string relative)
+            {
+                Require(maps.TryGetValue(runId, out var map), runId + ": required run mapping missing");
+                Require(map!.TryGetValue(relative, out var sha), runId + "/" + relative + ": required file missing from run tree");
+                return sha!;
+            }
+        }
+
+        static void Require(bool valid, string message) { if (!valid) throw new InvalidDataException(message); }
+        static string Text(JsonNode? node, string context) => node is JsonValue value && value.TryGetValue<string>(out var text)
+            ? text : throw new InvalidDataException(context + ": expected string");
+        static JsonObject Object(JsonNode? node, string context) => node as JsonObject ?? throw new InvalidDataException(context + ": expected object");
+        static JsonArray Array(JsonNode? node, string context) => node as JsonArray ?? throw new InvalidDataException(context + ": expected array");
+        static JsonArray OptionalArray(JsonNode? node, string context) => node is null ? [] : Array(node, context);
+        static bool IsHash(string hash) => hash.Length == 64 && hash.All(c => c is >= '0' and <= '9' or >= 'a' and <= 'f');
+        static byte[] ReadBytes(string path)
+        {
+            Require(IsChainSafe(path), "symlink on generation closure path: " + Path.GetFileName(path));
+            return File.ReadAllBytes(path);
+        }
+        static JsonObject ReadObject(string path) => Object(JsonNode.Parse(ReadBytes(path)), Path.GetFileName(path));
+    }
+
+    internal static bool TryResolveLogicalReference(string currentRunId, string manifestSubDir, string reference, out string targetRun, out string targetFile)
+    {
+        targetRun = string.Empty;
+        targetFile = string.Empty;
+        if (reference.Length == 0 || Path.IsPathRooted(reference) || reference.Contains('\\') || reference.Contains(':')) return false;
+        foreach (var c in reference) if (!(char.IsAsciiLetterOrDigit(c) || c is '.' or '_' or '-' or '/')) return false;
+        var segments = new List<string> { currentRunId };
+        if (manifestSubDir.Length > 0)
+        {
+            foreach (var s in manifestSubDir.Split('/', StringSplitOptions.RemoveEmptyEntries))
+                segments.Add(s);
+        }
+        foreach (var segment in reference.Split('/', StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (segment == ".") continue;
+            if (segment == "..")
+            {
+                if (segments.Count == 0) return false;
+                segments.RemoveAt(segments.Count - 1);
+            }
+            else
+            {
+                segments.Add(segment);
+            }
+        }
+        if (segments.Count < 2) return false;
+        targetRun = segments[0];
+        if (!IsSafeName(targetRun)) return false;
+        targetFile = string.Join("/", segments.Skip(1));
+        return IsSafeRelativePath(targetFile);
     }
 
     // Rollback re-activates the exact previously active generation and UI
@@ -552,12 +698,6 @@ internal static class HostedWebProgressSite
         if (VerifyRelease(siteRoot, releaseId)["errors"]!.AsArray().Count > 0)
         {
             Console.Error.WriteLine("ACTIVATE_REFUSED_NO_PREVIOUS previous release is not retained");
-            return new JsonObject { ["status"] = "ACTIVATE_REFUSED_NO_PREVIOUS" };
-        }
-        if (!File.Exists(Path.Combine(siteRoot, "generations", generationId + ".meta.json"))
-            || !File.Exists(Path.Combine(siteRoot, "generations", generationId, "index.json")))
-        {
-            Console.Error.WriteLine("ACTIVATE_REFUSED_NO_PREVIOUS previous generation is not retained");
             return new JsonObject { ["status"] = "ACTIVATE_REFUSED_NO_PREVIOUS" };
         }
         if (!VerifyGenerationClosure(siteRoot, generationId, out var closureErrors))

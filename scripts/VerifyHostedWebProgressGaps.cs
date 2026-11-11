@@ -634,6 +634,164 @@ if (Wanted("H4b"))
         $"count={pointer4?["activationCount"]} generations={Directory.GetFiles(Path.Combine(site, "generations"), "gen-*.meta.json").Length}");
 }
 
+// ------------------------------------------------------------------ H1c: rollback target's complete logical closure
+if (Wanted("H1c"))
+{
+    WriteRun("r0", "sha-r0", "e.log", "R0_CLOSURE\n");
+    WriteRun("r1", "sha-r1", "e.log", "R1_CLOSURE\n");
+    var rawDir = Path.Combine(cache, "runs", "quarantine-0");
+    Directory.CreateDirectory(rawDir);
+    File.WriteAllText(Path.Combine(rawDir, "raw.log"), "QUARANTINE_RAW\n");
+    // This unindexed manifest is deliberately invalid. Only its safe raw log
+    // is referenced; closure must not promote it into a valid indexed run.
+    File.WriteAllText(Path.Combine(rawDir, "manifest.json"), "{invalid quarantined manifest");
+    var sourceManifestPath = Path.Combine(cache, "runs", "r1", "manifest.json");
+    var sourceManifest = JsonNode.Parse(File.ReadAllText(sourceManifestPath))!.AsObject();
+    sourceManifest["cases"]![0]!["evidence"]!.AsArray().Add(new JsonObject { ["path"] = "../quarantine-0/raw.log" });
+    File.WriteAllText(sourceManifestPath, sourceManifest.ToJsonString());
+    WriteIndex("r1", ("r0", "sha-r0"), ("r1", "sha-r1"));
+    Prepare(distOld);
+    var releaseOld = ReleaseOf("old-111.js");
+    var first = Activate(releaseOld, cache);
+    var target = JsonNode.Parse(SitePointer())!["generation"]!.GetValue<string>();
+    var metaPath = Path.Combine(site, "generations", target + ".meta.json");
+    var metaOriginal = File.ReadAllText(metaPath);
+    var treeHash = JsonNode.Parse(metaOriginal)!["runs"]!["r1"]!.GetValue<string>();
+    var treePath = Path.Combine(site, "data-store", "trees", treeHash + ".json");
+    var treeOriginal = File.ReadAllText(treePath);
+    var indexPath = Path.Combine(site, "generations", target, "index.json");
+    var indexOriginal = File.ReadAllText(indexPath);
+    WriteRun("r2", "sha-r2", "e.log", "R2_ACTIVE\n");
+    WriteIndex("r2", ("r2", "sha-r2"));
+    Prepare(distNew);
+    var second = Activate(ReleaseOf("new-222.js"), cache);
+    Check("H1c: complete multi-run target and successor activate", first.Code == 0 && second.Code == 0);
+    await StartHost();
+
+    void Meta(Action<JsonObject> mutate)
+    {
+        var meta = JsonNode.Parse(metaOriginal)!.AsObject();
+        mutate(meta);
+        File.WriteAllText(metaPath, meta.ToJsonString());
+    }
+    // Use actual content keys for changed records so closure negatives cannot
+    // pass merely by detecting an unrelated stale tree/object checksum.
+    void Tree(Action<JsonObject> mutate)
+    {
+        var tree = JsonNode.Parse(treeOriginal)!.AsObject();
+        mutate(tree);
+        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        foreach (var pair in tree["files"]!.AsArray())
+        {
+            hash.AppendData(Encoding.UTF8.GetBytes(pair![0]!.GetValue<string>()));
+            hash.AppendData(Encoding.UTF8.GetBytes(pair[1]!.GetValue<string>()));
+        }
+        var key = Convert.ToHexStringLower(hash.GetHashAndReset());
+        tree["treeHash"] = key;
+        File.WriteAllText(Path.Combine(site, "data-store", "trees", key + ".json"), tree.ToJsonString());
+        Meta(meta => meta["runs"]!["r1"] = key);
+    }
+    void Manifest(Action<JsonObject> mutate)
+    {
+        var manifest = JsonNode.Parse(File.ReadAllText(sourceManifestPath))!.AsObject();
+        mutate(manifest);
+        var bytes = Encoding.UTF8.GetBytes(manifest.ToJsonString());
+        var sha = Sha(bytes);
+        File.WriteAllBytes(Path.Combine(site, "data-store", "objects", sha), bytes);
+        Tree(tree => tree["files"]!.AsArray().First(p => p![0]!.GetValue<string>() == "manifest.json")![1] = sha);
+    }
+    void Index(Action<JsonObject> mutate)
+    {
+        var index = JsonNode.Parse(indexOriginal)!.AsObject();
+        mutate(index);
+        var bytes = Encoding.UTF8.GetBytes(index.ToJsonString());
+        File.WriteAllBytes(indexPath, bytes);
+        Meta(meta => meta["indexSha256"] = Sha(bytes));
+    }
+    async Task Refuse(string name, Action fault, string diagnostic)
+    {
+        var pointerBefore = SitePointer();
+        var mirrorBefore = File.ReadAllText(statePath);
+        try
+        {
+            fault();
+            var result = Rollback();
+            var activeIndex = await Get("/data/index.json");
+            var activeManifest = await Get("/data/runs/r2/manifest.json");
+            var activeLog = await Get("/data/runs/r2/cases/c1/sample-0/e.log");
+            Check("H1c: " + name, result.Code == 3
+                && result.Out.Contains("ACTIVATE_REFUSED_GENERATION_CORRUPT") && result.Out.Contains(diagnostic)
+                && SitePointer() == pointerBefore && File.ReadAllText(statePath) == mirrorBefore
+                && activeIndex.Status == 200 && activeIndex.Body.Contains("r2")
+                && activeManifest.Status == 200 && activeLog.Status == 200 && activeLog.Body == "R2_ACTIVE\n",
+                $"exit={result.Code}; pointer/previous/count/mirror unchanged={SitePointer() == pointerBefore && File.ReadAllText(statePath) == mirrorBefore}");
+        }
+        finally
+        {
+            File.WriteAllText(metaPath, metaOriginal);
+            File.WriteAllText(treePath, treeOriginal);
+            File.WriteAllText(indexPath, indexOriginal);
+        }
+    }
+    foreach (var value in new JsonNode?[] { null, new JsonArray(), JsonValue.Create("wrong"), JsonValue.Create(1) })
+        await Refuse("runs map rejects " + (value?.ToJsonString() ?? "null"), () => Meta(m => m["runs"] = value?.DeepClone()), "expected object");
+    await Refuse("missing runs map", () => Meta(m => m.Remove("runs")), "expected object");
+    await Refuse("metadata missing", () => File.Delete(metaPath), target + ".meta.json");
+    await Refuse("invalid metadata JSON", () => File.WriteAllText(metaPath, "{"), "generation closure:");
+    await Refuse("metadata schema wrong type", () => Meta(m => m["schemaVersion"] = new JsonArray()), "generation closure:");
+    await Refuse("empty required runs map", () => Meta(m => m["runs"] = new JsonObject()), "required run mapping missing");
+    await Refuse("one indexed run missing", () => Meta(m => m["runs"]!.AsObject().Remove("r0")), "r0: required run mapping missing");
+    await Refuse("cross-run evidence mapping missing", () => Meta(m => m["runs"]!.AsObject().Remove("quarantine-0")), "quarantine-0: required run mapping missing");
+    await Refuse("tree hash wrong type", () => Meta(m => m["runs"]!["r1"] = new JsonObject()), "expected string");
+    await Refuse("unsafe tree hash", () => Meta(m => m["runs"]!["r1"] = new string('/', 64)), "invalid tree hash");
+    await Refuse("tree record missing", () => File.Delete(treePath), treeHash + ".json");
+    await Refuse("tree key mismatch", () =>
+    {
+        var tree = JsonNode.Parse(treeOriginal)!;
+        tree["treeHash"] = new string('0', 64);
+        File.WriteAllText(treePath, tree.ToJsonString());
+    }, "tree record key mismatch");
+    await Refuse("duplicate tree path", () => Tree(t => t["files"]!.AsArray().Add(t["files"]![0]!.DeepClone())), "unordered or duplicate");
+    await Refuse("manifest mapping missing", () => Tree(t => t["files"]!.AsArray().Remove(t["files"]!.AsArray().First(p => p![0]!.GetValue<string>() == "manifest.json"))), "manifest.json: required file missing");
+    await Refuse("mesh mapping missing", () => Tree(t => t["files"]!.AsArray().Remove(t["files"]!.AsArray().First(p => p![0]!.GetValue<string>().EndsWith("m.json")))), "m.json: required file missing");
+    await Refuse("log mapping missing", () => Tree(t => t["files"]!.AsArray().Remove(t["files"]!.AsArray().First(p => p![0]!.GetValue<string>().EndsWith("e.log")))), "e.log: required file missing");
+    await Refuse("wrong tree from another run", () => Meta(m => m["runs"]!["r1"] = m["runs"]!["r0"]!.DeepClone()), "manifest run id mismatch");
+    await Refuse("manifest identity missing", () => Manifest(m => m["run"]!.AsObject().Remove("id")), "manifest run id: expected string");
+    await Refuse("manifest commit mismatch", () => Manifest(m => m["run"]!["commit"] = "wrong"), "manifest commit mismatch");
+    await Refuse("manifest cases wrong type", () => Manifest(m => m["cases"] = new JsonObject()), "manifest cases: expected array");
+    await Refuse("mesh reference wrong type", () => Manifest(m => m["cases"]![0]!["steps"]![0]!["gm"]!["after"] = new JsonObject()), "manifest reference: expected string");
+    await Refuse("evidence path missing", () => Manifest(m => m["cases"]![0]!["evidence"]![0]!.AsObject().Remove("path")), "manifest reference: expected string");
+    await Refuse("cross-run reference missing file", () => Manifest(m => m["cases"]![0]!["evidence"]![1]!["path"] = "../quarantine-0/missing.log"), "missing.log: required file missing");
+    await Refuse("reference escapes runs", () => Manifest(m => m["cases"]![0]!["checks"]![0]!["evidence"] = "../../outside.log"), "invalid reference");
+    await Refuse("generation metadata id mismatch", () => Meta(m => m["id"] = "gen-wrong"), "metadata id mismatch");
+    await Refuse("generation latest run mismatch", () => Meta(m => m["sourceLatestRunId"] = "r0"), "latest run does not match index");
+    await Refuse("index hash binding mismatch", () => Meta(m => m["indexSha256"] = new string('0', 64)), "index snapshot does not match metadata hash");
+    await Refuse("index missing", () => File.Delete(indexPath), "index.json");
+    await Refuse("index descriptor binds another run", () => Index(i => i["runs"]![0]!["manifest"] = "runs/r1/manifest.json"), "manifest path does not bind indexed run");
+    await Refuse("latest run is not registered", () => Index(i => i["latestRunId"] = "quarantine-0"), "latestRunId not registered");
+    await Refuse("empty index cannot keep a latest run", () => Index(i => i["runs"] = new JsonArray()), "latestRunId not registered");
+    await Refuse("index runs wrong type", () => Index(i => i["runs"] = new JsonObject()), "index runs: expected array");
+    // Valid index JSON and a matching metadata checksum do not establish the
+    // old generation identity when any index bytes have changed.
+    await Refuse("generation identity binds exact index bytes", () => Index(i => i["generatedAt"] = "changed"), "generation identity mismatch");
+    await Refuse("generation identity binds tree hashes", () => Tree(t =>
+    {
+        var files = t["files"]!.AsArray();
+        var logHash = files.First(p => p![0]!.GetValue<string>().EndsWith("e.log"))![1]!.DeepClone();
+        files.First(p => p![0]!.GetValue<string>().EndsWith("m.json"))![1] = logHash;
+    }), "generation identity mismatch");
+
+    var rollback = Rollback();
+    var exactIndex = await Get("/data/index.json");
+    var oldLog = await Get("/data/runs/r1/cases/c1/sample-0/e.log");
+    var rawLog = await Get("/data/runs/quarantine-0/raw.log");
+    Check("H1c: intact target restores exact index and indexed/cross-run refs", rollback.Code == 0
+        && rollback.Out.Contains("ROLLBACK_ACTIVATED") && exactIndex.Body == indexOriginal
+        && oldLog.Status == 200 && oldLog.Body == "R1_CLOSURE\n" && rawLog.Status == 200 && rawLog.Body == "QUARANTINE_RAW\n",
+        $"exit={rollback.Code}; raw quarantined manifest was not indexed");
+    StopHost();
+}
+
 // ------------------------------------------------------------------ report
 StopHost();
 var failed = results.Where(r => !r.Ok).ToArray();
