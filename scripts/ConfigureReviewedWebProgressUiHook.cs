@@ -31,6 +31,15 @@ var recordPath = Path.Combine(backup, "state.json");
 const string timer = "gm-kernel-progress-refresh.timer";
 const string service = "gm-kernel-progress-refresh.service";
 const string ownName = "zz-reviewed-ui.conf";
+var previousOptions = new[] { "--previous-release", "--previous-release-sha256", "--previous-state-sha256" };
+var ownedUpgrade = previousOptions.Any(name => args.Any(arg => arg == name || arg.StartsWith(name + "=", StringComparison.Ordinal)));
+if (mode == "install")
+{
+    if (ownedUpgrade && previousOptions.Any(name => args.Count(arg => arg == name) != 1 || Array.IndexOf(args, name) + 1 >= args.Length || args[Array.IndexOf(args, name) + 1].StartsWith("--", StringComparison.Ordinal)))
+        throw new IOException("UI_OWNED_TRANSITION_IDENTITY_REQUIRED complete previous release and state pins required");
+    if (ownedUpgrade && !File.Exists(Path.Combine(dropins, ownName))) throw new IOException("UI_OWNED_TRANSITION_HOOK_MISSING previous owned hook must still exist");
+    if (!ownedUpgrade && File.Exists(Path.Combine(dropins, ownName))) throw new IOException("UI_OWNED_TRANSITION_IDENTITY_REQUIRED existing hook cannot be treated as first install");
+}
 void Safe(string path)
 {
     if (!WebProgressSafePath.IsSafeChain(path, out _)) throw new IOException("UI_HOOK_PATH_UNSAFE");
@@ -41,8 +50,6 @@ Safe(work);
 if (!WebProgressSafePath.IsSafeChain(units, out _)) throw new IOException("UI_HOOK_PATH_UNSAFE unit root");
 Safe(dropins); // unrelated systemd enablement links are outside our write set
 if (WebProgressSafePath.IsWithin(work, units) || WebProgressSafePath.IsWithin(units, work)) throw new IOException("UI_HOOK_PATH_OVERLAP");
-Directory.CreateDirectory(work);
-using var lease = new FileStream(Path.Combine(work, "hook.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
 async Task<(int Exit, string Text)> Systemctl(params string[] arguments)
 {
     var info = new ProcessStartInfo("systemctl") { UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true };
@@ -93,9 +100,15 @@ async Task RestoreActive(JsonObject state)
     if (state["timerActive"]!.GetValue<bool>()) await Require("start", timer);
     else await Require("stop", timer);
 }
-if ((await Systemctl("show", timer, "--property=LoadState", "--value")).Text != "loaded") throw new IOException("ENV_NOT_READY expected existing user timer");
+async Task RequireLoadedTimer()
+{
+    if ((await Systemctl("show", timer, "--property=LoadState", "--value")).Text != "loaded") throw new IOException("ENV_NOT_READY expected existing user timer");
+}
 if (mode is "restore" or "resume")
 {
+    Directory.CreateDirectory(work);
+    using var restoreLease = new FileStream(Path.Combine(work, "hook.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+    await RequireLoadedTimer();
     var state = JsonNode.Parse(File.ReadAllBytes(recordPath))!.AsObject();
     ValidState(state);
     if (Path.GetRelativePath(scripts, units) != state["unitDir"]!.GetValue<string>()) throw new IOException("unit directory differs from backup");
@@ -158,7 +171,6 @@ if (mode is "restore" or "resume")
     return 0;
 }
 if (Directory.Exists(backup)) throw new IOException("use a fresh release work directory; preserve previous hook evidence");
-var ownedUpgrade = File.Exists(Path.Combine(dropins, ownName));
 var prepared = JsonNode.Parse(File.ReadAllBytes(Path.Combine(work, "prepared.json")))!.AsObject();
 var ui = Option("--ui-commit", ""); var hash = Option("--dist-hash", ""); var review = Option("--review", "");
 if (ui.Length != 40 || review.Length != 40 || hash.Length != 64 || !ui.All(char.IsAsciiHexDigit) || !review.All(char.IsAsciiHexDigit) || !hash.All(char.IsAsciiHexDigit)
@@ -209,6 +221,9 @@ if (ownedUpgrade)
     if (ReviewedWebProgressRelease.TreeHash(ReviewedWebProgressRelease.Hashes(saved, true)) != previousRelease["uiHash"]!.GetValue<string>()
         || ReviewedWebProgressRelease.TreeHash(ReviewedWebProgressRelease.Hashes(saved)) != newRelease["oldBundleHash"]!.GetValue<string>()) throw new IOException("UI_PREVIOUS_BUNDLE_IDENTITY_MISMATCH");
 }
+Directory.CreateDirectory(work);
+using var installLease = new FileStream(Path.Combine(work, "hook.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+await RequireLoadedTimer();
 var timerStatus = await Systemctl("is-active", timer);
 if (timerStatus.Text is not ("active" or "inactive") || timerStatus.Exit != (timerStatus.Text == "active" ? 0 : 3)) throw new IOException("UI_TIMER_NOT_STABLE");
 var timerActive = timerStatus.Text == "active";

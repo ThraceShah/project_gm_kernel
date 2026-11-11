@@ -81,6 +81,9 @@ JsonObject Read(string path) => JsonNode.Parse(File.ReadAllBytes(path))!.AsObjec
 }
 Task<(int Exit, string Text)> Configure(string label, string mode, string release, string units, string state) => Run(label,
     ["run", "--file", "scripts/ConfigureReviewedWebProgressUiHook.cs", "--", "--mode", mode, "--execute", "--work", Relative(release), "--unit-dir", Relative(units), "--dist", "../fixture-ui", "--data", "../fixture-producer-data", "--baseline-data", "../fixture-baseline-data", "--portalctl", "../fixture-portalctl", "--previous-bundle", "../fixture-previous", "--ui-commit", ui, "--dist-hash", hash, "--review", review], state);
+var transitionOnly = args.Contains("--transition-only");
+if (!transitionOnly)
+{
 foreach (var (name, active, enabled) in new[] { ("inactive-enabled", false, "enabled"), ("inactive-disabled", false, "disabled"), ("active-enabled", true, "enabled") })
 {
     var f = Setup(name, active, enabled); var original = Sha(f.Old);
@@ -112,6 +115,7 @@ foreach (var active in new[] { "activating", "deactivating", "reloading" })
     Check(result.Exit != 0 && result.Text.Contains("changed externally") && Sha(f.Old) == edited, "external drop-in edits retained on restore refusal");
 }
 Check(checks == 31, "all original 31 hook checks retained");
+}
 
 // Only temporary copies replace the fixed HTTPS origin with this finite BCL
 // loopback server. Production tools have no endpoint override or fixture mode.
@@ -220,6 +224,60 @@ void Bundle(string path, string label)
 }
 Task<(int Exit, string Text)> UpgradeRun(string label, string script, string mode, string release, string state, string[] arguments, bool verify = false) =>
     Run(label, ["run", "--file", Path.Combine(release, "tools", "scripts", script), "--", "--mode", mode, "--execute", .. arguments, .. verify ? new[] { "--verify-served" } : Array.Empty<string>()], state);
+JsonObject Evidence(string releaseWork, string dropins, string state)
+{
+    JsonObject Files(string path) => new(ReviewedWebProgressRelease.Hashes(path).Select(p => KeyValuePair.Create<string, JsonNode?>(p.Key, JsonValue.Create(p.Value))));
+    return new JsonObject { ["work"] = Files(releaseWork), ["directories"] = new JsonArray(Directory.GetDirectories(releaseWork, "*", SearchOption.AllDirectories).Order().Select(p => (JsonNode?)JsonValue.Create(Path.GetRelativePath(releaseWork, p))).ToArray()), ["dropins"] = Files(dropins), ["timerState"] = Sha(state), ["systemctl"] = File.Exists(state + ".commands") ? Sha(state + ".commands") : null };
+}
+foreach (var failure in new[] { "missing-owned", "only-release", "only-release-pin", "only-state-pin", "missing-release", "missing-release-pin", "missing-state-pin", "empty-state-pin", "no-state-value", "inline-state-pin", "wrong-state-pin" })
+{
+    var f = Upgrade("intent-" + failure, true, "enabled");
+    Save(Path.Combine(f.Work, "prepared.json"), new JsonObject { ["uiCommit"] = ui, ["uiHash"] = Read(Path.Combine(f.Release, "release.json"))["uiHash"]!.DeepClone(), ["review"] = review });
+    var previousNames = new[] { "--previous-release", "--previous-release-sha256", "--previous-state-sha256" };
+    var arguments = f.Arguments.ToList();
+    void Remove(string name) { var at = arguments.IndexOf(name); arguments.RemoveRange(at, 2); }
+    switch (failure)
+    {
+        case "missing-owned": File.Delete(f.OldHook); break;
+        case "only-release": foreach (var name in previousNames.Skip(1)) Remove(name); break;
+        case "only-release-pin": Remove(previousNames[0]); Remove(previousNames[2]); break;
+        case "only-state-pin": Remove(previousNames[0]); Remove(previousNames[1]); break;
+        case "missing-release": Remove(previousNames[0]); break;
+        case "missing-release-pin": Remove(previousNames[1]); break;
+        case "missing-state-pin": Remove(previousNames[2]); break;
+        case "empty-state-pin": arguments[arguments.IndexOf(previousNames[2]) + 1] = ""; break;
+        case "no-state-value": arguments.RemoveAt(arguments.IndexOf(previousNames[2]) + 1); break;
+        case "inline-state-pin": foreach (var name in previousNames) Remove(name); arguments.Add("--previous-state-sha256=" + new string('0', 64)); break;
+        case "wrong-state-pin": arguments[arguments.IndexOf(previousNames[2]) + 1] = new string('0', 64); break;
+    }
+    var before = Evidence(f.Work, Path.GetDirectoryName(f.OldHook)!, f.State);
+    var result = await UpgradeRun("intent-" + failure, "ConfigureReviewedWebProgressUiHook.cs", "install", f.Release, f.State, arguments.ToArray());
+    Check(result.Exit != 0 && (failure != "missing-owned" || result.Text.Contains("UI_OWNED_TRANSITION_HOOK_MISSING")), failure + " explicit transition cannot fall back to first install");
+    Check(JsonNode.DeepEquals(before, Evidence(f.Work, Path.GetDirectoryName(f.OldHook)!, f.State)), failure + " no timer/systemctl/dropins/work/backup/publication writes");
+}
+{
+    var f = Setup("intent-real-first-install", true, "enabled");
+    var original = Sha(f.Old);
+    Check((await Configure("intent-real-first-install", "install", f.Release, f.Units, f.State)).Exit == 0 && !Read(Path.Combine(f.Release, "hook-backup", "state.json"))["ownedUpgrade"]!.GetValue<bool>(), "true first install without previous options stays compatible");
+    Check((await Configure("intent-real-first-restore", "restore", f.Release, f.Units, f.State)).Exit == 0 && Sha(f.Old) == original && Read(f.State)["active"]!.GetValue<bool>(), "first install restore retains original bytes and active preference");
+}
+{
+    var f = Setup("intent-unknown-hook", true, "enabled");
+    Put(Path.Combine(Path.GetDirectoryName(f.Old)!, "zz-reviewed-ui.conf"), "UNKNOWN_OWNED_NAME\n");
+    var before = Evidence(f.Release, Path.GetDirectoryName(f.Old)!, f.State);
+    Check((await Configure("intent-unknown-hook", "install", f.Release, f.Units, f.State)).Exit != 0 && JsonNode.DeepEquals(before, Evidence(f.Release, Path.GetDirectoryName(f.Old)!, f.State)), "no previous options cannot overwrite unknown existing hook or write evidence");
+}
+{
+    var f = Upgrade("intent-full-positive", true, "enabled");
+    var original = Sha(f.OldHook);
+    Check((await UpgradeRun("intent-full-positive-prepare", "PublishReviewedWebProgressUi.cs", "prepare", f.Release, f.State, f.Arguments)).Exit == 0, "complete owned transition prepares");
+    Check((await UpgradeRun("intent-full-positive-backup", "PublishReviewedWebProgressUi.cs", "backup", f.Release, f.State, f.Arguments, true)).Exit == 0, "complete owned transition has verified bundle");
+    Check((await UpgradeRun("intent-full-positive-install", "ConfigureReviewedWebProgressUiHook.cs", "install", f.Release, f.State, f.Arguments)).Exit == 0 && Read(Path.Combine(f.Work, "hook-backup", "state.json"))["ownedUpgrade"]!.GetValue<bool>() && !Read(f.State)["active"]!.GetValue<bool>(), "complete valid owned transition still installs as owned with timer stopped");
+    Check((await UpgradeRun("intent-full-positive-rollback", "PublishReviewedWebProgressUi.cs", "rollback", f.Release, f.State, f.Arguments)).Exit == 0, "complete owned transition retains exact bundle rollback");
+    Check((await UpgradeRun("intent-full-positive-restore", "ConfigureReviewedWebProgressUiHook.cs", "restore", f.Release, f.State, f.Arguments)).Exit == 0 && Sha(f.OldHook) == original && Read(f.State)["active"]!.GetValue<bool>(), "complete owned restore recovers original hook and active preference");
+}
+if (!transitionOnly)
+{
 foreach (var (name, active, enabled) in new[] { ("active", true, "enabled"), ("disabled", false, "disabled"), ("inactive", false, "enabled") })
 {
     var f = Upgrade(name, active, enabled); var oldHook = Sha(f.OldHook);
@@ -327,6 +385,7 @@ Check((await Run("freeze-existing-refused", freezeArgs)).Exit != 0, "freeze refu
 Put(Path.Combine(uiRepo, "web", "dist", "index.html"), "UNREVIEWED_EDIT");
 freezeArgs[^1] = Relative(Path.Combine(work, "frozen-drift"));
 Check((await Run("freeze-drift-refused", freezeArgs)).Exit != 0 && !Directory.Exists(Path.Combine(work, "frozen-drift")), "accepted UI source drift rejected before creating release");
+}
 cancellation.Cancel(); await server;
 Console.WriteLine("EVIDENCE " + Path.GetRelativePath(root, work));
 Console.WriteLine("ALL PASS " + checks + " UI hook stub checks; no real systemd/portal mode executed");
