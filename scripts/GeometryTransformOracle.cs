@@ -15,7 +15,9 @@ using ProjectGmKernel.Native.Runtime;
 using M=ProjectGmKernel.Native.Generated;
 using static parasolid;
 
-var directory=Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","geometry-transform-oracle"));
+var selectedCase=args.FirstOrDefault(a=>a.StartsWith("--case="))?[7..];
+var output=args.FirstOrDefault(a=>a.StartsWith("--output="))?[9..];
+var directory=Path.GetFullPath(output??"../temp_docs/geometry-transform-oracle",Path.GetDirectoryName(ScriptPath())!);
 Directory.CreateDirectory(directory);
 var log=new StringBuilder();
 var ledger = new OperationAcceptanceLedger("geometry-transform-oracle", "Geometry Transform Oracle", directory);
@@ -27,7 +29,7 @@ try
     unsafe
     {
         var options=new M.PK_SESSION_start_o_s {o_t_version=1};Check(KernelRuntime.SessionStart(&options),"managed session start");
-        try {Run(directory,Log,ledger);}
+        try {Run(directory,Log,ledger,selectedCase);}
         finally {Check(KernelRuntime.SessionStop(),"managed session stop");}
     }
 }
@@ -46,13 +48,14 @@ static void Require(bool condition,string label) {if(!condition)throw new Except
 static void Equal(double actual,double expected,string label)
     =>Require(double.IsFinite(actual)&&double.IsFinite(expected)&&Math.Abs(actual-expected)<=2e-8*Math.Max(1,Math.Abs(expected)),$"{label}: actual={actual:R}, expected={expected:R}");
 
-static unsafe void Run(string directory,Action<string> log, OperationAcceptanceLedger? ledger = null)
+static unsafe void Run(string directory,Action<string> log, OperationAcceptanceLedger? ledger = null,string? selectedCase=null)
 {
     var failures=0;var passes=0;
     foreach(var operation in new[]{"translation","rotation","scale","reflection"})
     {
+        if(selectedCase!=null&&!selectedCase.StartsWith(operation+"-",StringComparison.Ordinal))continue;
         var (managedTransform,nativeTransform)=CreateTransform(operation,log);
-        if(operation=="translation")
+        if(operation=="translation"&&selectedCase==null)
         {
             var opId = "op-explicit-modify-dependency-closure";
             ledger?.BeginOperation(opId, "explicit modify dependency closure", "primary", "PK_GEOM_transform", null, "explicit shared closure");
@@ -92,6 +95,7 @@ static unsafe void Run(string directory,Action<string> log, OperationAcceptanceL
         foreach(var kind in new[]{"line","circle","ellipse","trim","rational-curve","plane","cylinder","cone","sphere","torus","bsurface","offset","swept","spun"})
         {
             var label=operation+"-"+kind;
+            if(selectedCase!=null&&selectedCase!=label)continue;
             var geomOpId = $"op-geom-{label}";
             ledger?.BeginOperation(geomOpId, label, "primary", "PK_GEOM_transform", null, $"geometry transform {kind}");
             try
@@ -111,6 +115,7 @@ static unsafe void Run(string directory,Action<string> log, OperationAcceptanceL
         foreach(var shape in new[]{"block","cylinder","sphere","rational-wire","construction-swept-wire","construction-offset-trim-wire"})
         {
             var label=operation+"-body-"+shape;
+            if(selectedCase!=null&&selectedCase!=label)continue;
             try
             {
                 CompareBody(shape,managedTransform,nativeTransform,label,directory,log,ledger);
@@ -120,11 +125,16 @@ static unsafe void Run(string directory,Action<string> log, OperationAcceptanceL
             catch(Exception ex)
             {
                 failures++;
+                var failedOp=ledger?.Operations.LastOrDefault(o=>o.Id.StartsWith($"op-body-{label}-",StringComparison.Ordinal));
+                if(failedOp!=null)ledger!.EndOperation(failedOp.Id,"fail");
+                var lifecycleId=$"op-body-{label}-source-lifecycle";
+                if(ledger!=null&&ledger.GetOperation(lifecycleId)==null)ledger.AddUnreachedOperation(lifecycleId,ledger.Operations.Count,label+" source lifecycle not reached","lifecycle");
                 log("FAIL "+label+": "+ex.Message);
             }
         }
     }
     log($"Transform Oracle: {passes} passed, {failures} failed.");
+    Require(passes+failures>0,"Unknown selected transform case: "+selectedCase);
     Require(failures==0,"Transform Oracle has failed cases.");
 }
 
@@ -333,19 +343,20 @@ static unsafe void CompareBody(string shape,int transform,int pkTransform,string
     var transformOp = ledger?.BeginOperation(transformOpId, label + " transform", "primary", "PK_BODY_transform", null, "body transform of copied source body");
     if (transformOp != null)
     {
-        transformOp.InputHashes["gm"] = new System.Text.Json.Nodes.JsonObject { ["bodyTag"] = copy };
-        transformOp.InputHashes["pk"] = new System.Text.Json.Nodes.JsonObject { ["bodyTag"] = nativeCopy };
+        transformOp.EntityReferences["gm"] = new System.Text.Json.Nodes.JsonObject { ["inputEntityTag"] = copy, ["transformEntityTag"]=transform };
+        transformOp.EntityReferences["pk"] = new System.Text.Json.Nodes.JsonObject { ["inputEntityTag"] = nativeCopy, ["transformEntityTag"]=pkTransform };
     }
-    int n;int* replaced;byte* exact;Check(KernelRuntime.BodyTransform(copy,transform,0,&n,&replaced,&exact),label+" managed body transform");
+    int n;int* replaced;byte* exact;var gmTransformError=KernelRuntime.BodyTransform(copy,transform,0,&n,&replaced,&exact);ledger?.RecordReturn(transformOpId,"gm",gmTransformError);Check(gmTransformError,label+" managed body transform");
     if(replaced!=null)Check(KernelRuntime.MemoryFree(replaced),"free managed replace list");if(exact!=null)Check(KernelRuntime.MemoryFree(exact),"free managed exact list");
-    PK_GEOM_t* pkReplaced;PK_LOGICAL_t* pkExact;Check(PK_BODY_transform(nativeCopy,pkTransform,0,&n,&pkReplaced,&pkExact),label+" PK body transform");
+    PK_GEOM_t* pkReplaced;PK_LOGICAL_t* pkExact;var pkTransformError=PK_BODY_transform(nativeCopy,pkTransform,0,&n,&pkReplaced,&pkExact);ledger?.RecordReturn(transformOpId,"pk",pkTransformError);Check(pkTransformError,label+" PK body transform");
     if(pkReplaced!=null)Check(PK_MEMORY_free(pkReplaced),"free PK replace list");if(pkExact!=null)Check(PK_MEMORY_free(pkExact),"free PK exact list");
     var bytes=Transmit(copy);File.WriteAllBytes(Path.Combine(directory,label+".x_t"),bytes);
-    File.WriteAllBytes(Path.Combine(directory,label+"-reference.x_t"),TransmitReference(nativeCopy));
+    var referenceBytes=TransmitReference(nativeCopy);File.WriteAllBytes(Path.Combine(directory,label+"-reference.x_t"),referenceBytes);
     var received=Receive(bytes);
     if (transformOp != null)
     {
-        transformOp.OutputHashes["gmReceived"] = new System.Text.Json.Nodes.JsonObject { ["bodyTag"] = received };
+        ledger!.RecordOutputHashes(transformOpId,"gm",[OperationAcceptanceLedger.HashBytes(bytes)]);
+        ledger.RecordOutputHashes(transformOpId,"pk",[OperationAcceptanceLedger.HashBytes(referenceBytes)]);
     }
     for(var kind=0;kind<5;kind++)
     {
@@ -374,11 +385,12 @@ static unsafe void CompareBody(string shape,int transform,int pkTransform,string
 
     // --- STEP 2: Source independence and deletion lifecycle ---
     var lifecycleOpId = $"op-body-{label}-source-lifecycle";
-    ledger?.BeginOperation(lifecycleOpId, label + " source lifecycle", "lifecycle", "PK_ENTITY_delete+PK_PART_receive_b", null, "source unchanged verification and independent lifetime after source deletion");
+    ledger?.BeginOperation(lifecycleOpId,label+" source lifecycle","lifecycle","source-independence-integration",null,"source unchanged verification and independent lifetime after source deletion; child API returns recorded separately");
     var sourceReceived=Receive(Transmit(source));CompareBodies(reference,sourceReceived,label+" unchanged source",log);
     ledger?.RecordCheck(lifecycleOpId, "primary", label+"-unchanged-source", label+" unchanged source comparison", "pass");
     if(construction)ComparePartSamples(originalSamples!,PartGeometrySamples(sourceReceived,managed:false),label+" source fresh XT construction");
-    Check(KernelRuntime.EntityDelete(1,&source),label+" delete managed source body");
+    using(var step=new OperationStepScope(ledger,lifecycleOpId,"delete-source","PK_ENTITY_delete"))
+    {Check(step.Return("gm",KernelRuntime.EntityDelete(1,&source)),label+" delete managed source body");step.Complete();}
     var validTag = KernelRuntime.IsValidTag(copy);
     ledger?.RecordCheck(lifecycleOpId, "representation", label+"-copy-lifetime", label+" copy lifetime after source deletion", validTag ? "pass" : "fail");
     Require(validTag,label+" copy lifetime");

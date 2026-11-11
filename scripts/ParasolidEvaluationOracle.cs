@@ -15,7 +15,9 @@ using M = ProjectGmKernel.Native.Generated;
 using static parasolid;
 
 static string ScriptPath([CallerFilePath] string path = "") => path;
-var directory = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ScriptPath())!, "..", "temp_docs", "evaluation-oracle"));
+var selectedCase=args.FirstOrDefault(a=>a.StartsWith("--case="))?[7..];
+var output=args.FirstOrDefault(a=>a.StartsWith("--output="))?[9..];
+var directory = Path.GetFullPath(output??"../temp_docs/evaluation-oracle",Path.GetDirectoryName(ScriptPath())!);
 Directory.CreateDirectory(directory);
 var roundtripFailures = new List<string>();
 var numericalOnly = args.Contains("--numerical-only");
@@ -23,6 +25,7 @@ var memoryReview = args.Contains("--memory-review");
 if (numericalOnly) Console.WriteLine("Numerical-only run: XT receive/compare is not checked.");
 
 var ledger = new OperationAcceptanceLedger("evaluation-oracle", "Parasolid Evaluation Oracle", directory);
+string? activeOperationId=null;
 try
 {
     unsafe
@@ -57,7 +60,9 @@ try
                     var bp = rotated ? &basis : null;
                     var mp = rotated ? &managedBasis : null;
                     var label = rotated ? kind + "-rotated" : kind;
+                    if(selectedCase!=null&&selectedCase!=label)continue;
                     var opId = $"op-{label}";
+                    activeOperationId=opId;
                     var op = ledger.BeginOperation(opId, label, "primary", kind switch
                     {
                         "block" => "PK_BODY_create_solid_block",
@@ -70,28 +75,28 @@ try
                     switch (kind)
                     {
                         case "block":
-                            Check(KernelRuntime.BodyCreateSolidBlock(2, 3, 4, mp, &ours), kind);
-                            Check(PK_BODY_create_solid_block(2, 3, 4, bp, &reference), kind);
+                            CheckRecorded(ledger,opId,"gm",KernelRuntime.BodyCreateSolidBlock(2, 3, 4, mp, &ours), kind);
+                            CheckRecorded(ledger,opId,"pk",PK_BODY_create_solid_block(2, 3, 4, bp, &reference), kind);
                             break;
                         case "cylinder":
-                            Check(KernelRuntime.BodyCreateSolidCyl(3, 5, mp, &ours), kind);
-                            Check(PK_BODY_create_solid_cyl(3, 5, bp, &reference), kind);
+                            CheckRecorded(ledger,opId,"gm",KernelRuntime.BodyCreateSolidCyl(3, 5, mp, &ours), kind);
+                            CheckRecorded(ledger,opId,"pk",PK_BODY_create_solid_cyl(3, 5, bp, &reference), kind);
                             break;
                         case "cone":
-                            Check(KernelRuntime.BodyCreateSolidCone(2, 5, 0.25, mp, &ours), kind);
-                            Check(PK_BODY_create_solid_cone(2, 5, 0.25, bp, &reference), kind);
+                            CheckRecorded(ledger,opId,"gm",KernelRuntime.BodyCreateSolidCone(2, 5, 0.25, mp, &ours), kind);
+                            CheckRecorded(ledger,opId,"pk",PK_BODY_create_solid_cone(2, 5, 0.25, bp, &reference), kind);
                             break;
                         case "sphere":
-                            Check(KernelRuntime.BodyCreateSolidSphere(3, mp, &ours), kind);
-                            Check(PK_BODY_create_solid_sphere(3, bp, &reference), kind);
+                            CheckRecorded(ledger,opId,"gm",KernelRuntime.BodyCreateSolidSphere(3, mp, &ours), kind);
+                            CheckRecorded(ledger,opId,"pk",PK_BODY_create_solid_sphere(3, bp, &reference), kind);
                             break;
                         default:
-                            Check(KernelRuntime.BodyCreateSolidTorus(5, 2, mp, &ours), kind);
-                            Check(PK_BODY_create_solid_torus(5, 2, bp, &reference), kind);
+                            CheckRecorded(ledger,opId,"gm",KernelRuntime.BodyCreateSolidTorus(5, 2, mp, &ours), kind);
+                            CheckRecorded(ledger,opId,"pk",PK_BODY_create_solid_torus(5, 2, bp, &reference), kind);
                             break;
                     }
-                    op.InputHashes["gm"] = new System.Text.Json.Nodes.JsonObject { ["bodyTag"] = ours };
-                    op.InputHashes["pk"] = new System.Text.Json.Nodes.JsonObject { ["bodyTag"] = reference };
+                    op.EntityReferences["gm"] = new System.Text.Json.Nodes.JsonObject { ["outputEntityTag"] = ours };
+                    op.EntityReferences["pk"] = new System.Text.Json.Nodes.JsonObject { ["outputEntityTag"] = reference };
                     if (memoryReview)
                     {
                         // Delete/restore a live body, then reuse slots from another
@@ -119,6 +124,7 @@ try
                     if (numericalOnly)
                     {
                         ledger.EndOperation(opId);
+                        activeOperationId=null;
                         continue;
                     }
                     try
@@ -126,30 +132,43 @@ try
                         CheckRoundtrip(ours, reference, Path.Combine(directory, label + ".x_t"));
                         ledger.RecordCheck(opId, "primary", label + "-xt-compare", label + " XT body comparison", "pass");
                         ledger.EndOperation(opId);
+                        activeOperationId=null;
                         Console.WriteLine(label + ": XT body comparison passed");
                         if (memoryReview)
                         {
-                            Check(KernelRuntime.EntityDelete(1, &ours), "our final delete");
-                            Check(PK_ENTITY_delete(1, &reference), "reference final delete");
+                            activeOperationId=opId+"-delete";
+                            ledger.BeginOperation(activeOperationId,label+" final delete","lifecycle","PK_ENTITY_delete");
+                            CheckRecorded(ledger,activeOperationId,"gm",KernelRuntime.EntityDelete(1,&ours),"our final delete");
+                            CheckRecorded(ledger,activeOperationId,"pk",PK_ENTITY_delete(1,&reference),"reference final delete");
+                            ledger.EndOperation(activeOperationId);activeOperationId=null;
                         }
                     }
                     catch (InvalidOperationException failure)
                     {
-                        ledger.RecordCheck(opId, "primary", label + "-xt-compare", label + " XT body comparison", "fail", note: failure.Message);
-                        ledger.EndOperation(opId, "fail");
+                        var failedOwner=activeOperationId??opId;
+                        ledger.RecordCheck(failedOwner,"primary",label+"-stage-failure",label+" current stage failure","fail",note:failure.Message);
+                        ledger.EndOperation(failedOwner,"fail");activeOperationId=null;
                         roundtripFailures.Add(label + ": " + failure.Message);
                         Console.WriteLine(roundtripFailures[^1]);
                     }
                 }
-                CheckDependentGeometryEvaluations(ledger);
+                CheckDependentGeometryEvaluations(ledger,id=>activeOperationId=id,selectedCase);
             }
             finally { Check(KernelRuntime.SessionStop(), "our stop"); }
         }
     }
 }
+catch(Exception failure)
+{
+    ledger.ScenarioFailure=failure.Message;
+    if(activeOperationId!=null)ledger.EndOperation(activeOperationId,"fail");
+    throw;
+}
 finally
 {
-    ledger.EndScenario(Environment.ExitCode != 0 ? Environment.ExitCode : (roundtripFailures.Count > 0 ? 1 : 0));
+    ledger.InProcessExitCode=Environment.ExitCode;
+    if(roundtripFailures.Count>0)ledger.ScenarioFailure=string.Join(Environment.NewLine,roundtripFailures);
+    ledger.EndScenario(null);
     ledger.SaveSidecar(Path.Combine(directory, "ledger.json"));
     ledger.PrintConsoleSummary(Console.WriteLine);
 }
@@ -165,6 +184,10 @@ foreach (var (kind, stats) in ComparisonStats.ByKind)
 static void Check(int error, string operation)
 {
     if (error != 0) throw new InvalidOperationException($"{operation}: error={error}");
+}
+static void CheckRecorded(OperationAcceptanceLedger ledger,string opId,string side,int error,string operation)
+{
+    ledger.RecordReturn(opId,side,error);Check(error,operation);
 }
 
 static void Equal(int expected, int actual, string label)
@@ -705,44 +728,37 @@ static unsafe void CheckRoundtrip(int body, int reference, string path)
 // Trimmed curves have no PK creation interface, so the trimmed-curve check
 // compares our evaluation against PK_CURVE_eval of the basis curve instead.
 
-static unsafe void CheckDependentGeometryEvaluations(OperationAcceptanceLedger? ledger = null)
+static unsafe void CheckDependentGeometryEvaluations(OperationAcceptanceLedger? ledger = null,Action<string?>? setActive=null,string? selectedCase=null)
 {
     Console.WriteLine("Dependent geometry evaluations (numerical only):");
     var deps = new[] { "ellipse", "bsurf", "offset", "swept", "spun", "spcurve", "trcurve" };
-    foreach (var dep in deps)
-    {
-        ledger?.BeginOperation($"op-dep-{dep}", dep + " evaluation", "primary", dep switch
-        {
-            "ellipse" => "PK_ELLIPSE_create",
-            "bsurf" => "PK_BSURF_create",
-            "offset" => "PK_OFFSET_create",
-            "swept" => "PK_SWEPT_create",
-            "spun" => "PK_SPUN_create",
-            "spcurve" => "PK_SPCURVE_create",
-            _ => "PK_CURVE_eval"
-        }, null, "dependent geometry numerical evaluation");
-    }
-
+    if(selectedCase!=null&&ledger?.Operations.Count==0&&!deps.Contains(selectedCase))throw new ArgumentException("Unknown selected evaluation case: "+selectedCase);
     void RunDep(string name, Action action)
     {
         var opId = $"op-dep-{name}";
+        if(selectedCase!=null&&selectedCase!=name)return;
+        ledger?.BeginOperation(opId,name+" numerical evaluation and lifecycle","primary","dependent-geometry-integration",null,"construction, evaluation and cleanup integration; API-level qualification unavailable");
+        setActive?.Invoke(opId);
         try
         {
             action();
-            ledger?.RecordCheck(opId, "primary", name + "-numerical-eval", name + " numerical evaluation", "pass");
+            ledger?.RecordCheck(opId,"primary",name+"-integration",name+" numerical evaluation and lifecycle integration","pass");
             ledger?.EndOperation(opId);
+            setActive?.Invoke(null);
         }
         catch (Exception ex)
         {
-            ledger?.RecordCheck(opId, "primary", name + "-numerical-eval", name + " numerical evaluation", "fail", note: ex.Message);
+            ledger?.RecordCheck(opId,"primary",name+"-integration",name+" numerical evaluation and lifecycle integration","fail",note:ex.Message);
             ledger?.EndOperation(opId, "fail");
+            setActive?.Invoke(null);
+            foreach(var unreached in deps.Skip(Array.IndexOf(deps,name)+1).Where(d=>selectedCase==null||d==selectedCase))ledger?.AddUnreachedOperation("op-dep-"+unreached,ledger.Operations.Count,unreached+" not reached");
             throw;
         }
     }
 
     RunDep("ellipse", CheckEllipseEvaluation);
     RunDep("bsurf", CheckBSurfaceEvaluation);
-    RunDep("offset", CheckOffsetEvaluation);
+    RunDep("offset",()=>CheckOffsetEvaluation(ledger));
     RunDep("swept", CheckSweptEvaluation);
     RunDep("spun", CheckSpunEvaluation);
     RunDep("spcurve", CheckSpCurveEvaluation);
@@ -883,41 +899,71 @@ static unsafe void CheckBSurfaceEvaluation()
     }
 }
 
-static unsafe void CheckOffsetEvaluation()
+static unsafe void CheckOffsetEvaluation(OperationAcceptanceLedger? ledger=null)
 {
     var bsurf = CreateBSurfacePair("offset base");
     int ours = bsurf[0], reference = bsurf[1];
+    var owner=ledger?.GetOperation("op-dep-offset");
+    if(owner!=null)
+    {
+        owner.EntityReferences["gm"]=new System.Text.Json.Nodes.JsonObject{["kernel"]="gm",["baseEntityTag"]=ours};
+        owner.EntityReferences["pk"]=new System.Text.Json.Nodes.JsonObject{["kernel"]="pk",["baseEntityTag"]=reference};
+        owner.Preconditions.Add((System.Text.Json.Nodes.JsonNode)new System.Text.Json.Nodes.JsonObject{["kind"]="offset-dependency-sequence",["definitionSource"]="CreateBSurfacePair: independent PK/GM create calls on the same cubic Bezier numeric definition",["source"]="scripts/ParasolidEvaluationOracle.cs",["sourceSha256"]=OperationAcceptanceLedger.HashBytes(File.ReadAllBytes(ScriptPath())),["offsetDistances"]=new System.Text.Json.Nodes.JsonArray(.4,-.7),["deleteOrder"]=new System.Text.Json.Nodes.JsonArray("negative-pk","negative-gm","positive-pk","positive-gm","base-pk","base-gm"),["scope"]="integration-step; no isolated same-GM-target experiment",["cleanupContract"]="original oracle allows PK 0 or PK_ERROR_not_a_tag; requires GM 0; recording the difference does not adjudicate kernel ownership semantics"});
+    }
     var oracleSf = new PK_OFFSET_sf_t { underlying_surface = reference, offset_distance = 0.4 };
     int referenceOffset, referenceFirstOffset;
-    Check(PK_OFFSET_create(&oracleSf, &referenceOffset), "oracle offset");
+    using(var step=new OperationStepScope(ledger,"op-dep-offset","create-positive","PK_OFFSET_create"))
+    {Check(step.Return("pk",PK_OFFSET_create(&oracleSf,&referenceOffset)),"oracle offset");step.Complete();}
     referenceFirstOffset = referenceOffset;
     var managedSf = new M.PK_OFFSET_sf_s { underlying_surface = ours, offset_distance = 0.4 };
     int ourOffset, ourFirstOffset;
-    Check(KernelRuntime.OffsetCreate(&managedSf, &ourOffset), "our offset");
+    using(var step=new OperationStepScope(ledger,"op-dep-offset","create-positive-self","PK_OFFSET_create"))
+    {Check(step.Return("gm",KernelRuntime.OffsetCreate(&managedSf,&ourOffset)),"our offset");step.Complete();}
     ourFirstOffset = ourOffset;
+    if(owner!=null){owner.EntityReferences["gm"]!["positiveOffsetEntityTag"]=ourFirstOffset;owner.EntityReferences["pk"]!["positiveOffsetEntityTag"]=referenceFirstOffset;}
     int classCode;
     Check(PK_ENTITY_ask_class(referenceOffset, &classCode), "oracle offset class");
     Equal(M.ParasolidConstants.PK_CLASS_offset, classCode, "offset class");
     var stats = ComparisonStats.For("Surface.Offset");
     var us = new[] { 0.0, 0.25, 0.6, 1.0, 0.75 };
     var vs = new[] { 0.0, 0.3, 0.5, 1.0, 1.5 };
-    CompareSurfaceEvaluations(ourOffset, referenceOffset, us, vs, "offset(+0.4)", stats, 0.15);
+    using(var step=new OperationStepScope(ledger,"op-dep-offset","evaluate-positive","surface-evaluation-suite"))
+    {
+        CompareSurfaceEvaluations(ourOffset,referenceOffset,us,vs,"offset(+0.4)",stats,0.15);
+        if(ledger!=null&&step.Id!=null)ledger.RecordCheck(step.Id,"primary","positive-numerical-eval","Positive offset sampled evaluation","pass");step.Complete();
+    }
     // Negative distance as well.
     var negativeOracle = new PK_OFFSET_sf_t { underlying_surface = reference, offset_distance = -0.7 };
-    Check(PK_OFFSET_create(&negativeOracle, &referenceOffset), "oracle offset negative");
+    using(var step=new OperationStepScope(ledger,"op-dep-offset","create-negative","PK_OFFSET_create"))
+    {Check(step.Return("pk",PK_OFFSET_create(&negativeOracle,&referenceOffset)),"oracle offset negative");step.Complete();}
     var negativeManaged = new M.PK_OFFSET_sf_s { underlying_surface = ours, offset_distance = -0.7 };
-    Check(KernelRuntime.OffsetCreate(&negativeManaged, &ourOffset), "our offset negative");
-    CompareSurfaceEvaluations(ourOffset, referenceOffset, us, vs, "offset(-0.7)", stats, 0.15);
-    Check(PK_ENTITY_delete(1, &referenceOffset), "delete oracle offset");
-    Check(KernelRuntime.EntityDelete(1, &ourOffset), "delete our offset");
-    Check(PK_ENTITY_delete(1, &referenceFirstOffset), "delete oracle first offset");
-    Check(KernelRuntime.EntityDelete(1, &ourFirstOffset), "delete our first offset");
-    // PK reclaims the base B-surface together with its offsets (its tag is
-    // already gone here), while our kernel keeps the standalone base alive.
-    var baseDeleteError = PK_ENTITY_delete(1, &reference);
-    if (baseDeleteError != 0 && baseDeleteError != PK_ERROR_not_a_tag)
-        Check(baseDeleteError, "delete oracle offset base");
-    Check(KernelRuntime.EntityDelete(1, &ours), "delete our offset base");
+    using(var step=new OperationStepScope(ledger,"op-dep-offset","create-negative-self","PK_OFFSET_create"))
+    {Check(step.Return("gm",KernelRuntime.OffsetCreate(&negativeManaged,&ourOffset)),"our offset negative");step.Complete();}
+    if(owner!=null){owner.EntityReferences["gm"]!["negativeOffsetEntityTag"]=ourOffset;owner.EntityReferences["pk"]!["negativeOffsetEntityTag"]=referenceOffset;}
+    using(var step=new OperationStepScope(ledger,"op-dep-offset","evaluate-negative","surface-evaluation-suite"))
+    {
+        CompareSurfaceEvaluations(ourOffset,referenceOffset,us,vs,"offset(-0.7)",stats,0.15);
+        if(ledger!=null&&step.Id!=null)ledger.RecordCheck(step.Id,"primary","negative-numerical-eval","Negative offset sampled evaluation","pass");step.Complete();
+    }
+    using(var step=new OperationStepScope(ledger,"op-dep-offset","delete-negative-pk","PK_ENTITY_delete"))
+    {Check(step.Return("pk",PK_ENTITY_delete(1,&referenceOffset)),"delete oracle offset");step.Complete();}
+    using(var step=new OperationStepScope(ledger,"op-dep-offset","delete-negative-gm","PK_ENTITY_delete"))
+    {Check(step.Return("gm",KernelRuntime.EntityDelete(1,&ourOffset)),"delete our offset");step.Complete();}
+    using(var step=new OperationStepScope(ledger,"op-dep-offset","delete-positive-pk","PK_ENTITY_delete"))
+    {Check(step.Return("pk",PK_ENTITY_delete(1,&referenceFirstOffset)),"delete oracle first offset");step.Complete();}
+    using(var step=new OperationStepScope(ledger,"op-dep-offset","delete-positive-gm","PK_ENTITY_delete"))
+    {Check(step.Return("gm",KernelRuntime.EntityDelete(1,&ourFirstOffset)),"delete our first offset");step.Complete();}
+    // Preserve the original cleanup assertions and record both outcomes.
+    // Their differing ownership/error semantics need separate investigation.
+    using(var step=new OperationStepScope(ledger,"op-dep-offset","delete-base-pk","PK_ENTITY_delete",interpretationVersion:"operation-rules-v3"))
+    {
+        if(step.Record is {} record)
+        {record.AcceptanceKind="expected-rejection";record.PrimaryContract="expected-delete-missing-v1";record.ExpectedReturns["pk"]=new System.Text.Json.Nodes.JsonArray(0,PK_ERROR_not_a_tag);record.EntityReferences["pk"]=new System.Text.Json.Nodes.JsonObject{["kernel"]="pk",["targetEntityTag"]=reference};}
+        var baseDeleteError=step.Return("pk",PK_ENTITY_delete(1,&reference));
+        if(baseDeleteError!=0&&baseDeleteError!=PK_ERROR_not_a_tag)Check(baseDeleteError,"delete oracle offset base");step.Complete();
+    }
+    using(var step=new OperationStepScope(ledger,"op-dep-offset","delete-base-gm","PK_ENTITY_delete"))
+    {if(step.Record is {} record)record.EntityReferences["gm"]=new System.Text.Json.Nodes.JsonObject{["kernel"]="gm",["targetEntityTag"]=ours};Check(step.Return("gm",KernelRuntime.EntityDelete(1,&ours)),"delete our offset base");step.Complete();}
     Console.WriteLine("  offset: passed");
 }
 

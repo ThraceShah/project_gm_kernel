@@ -56,7 +56,7 @@ try
                         10 or 11 => "PK_BODY_sew_bodies",
                         12 or 13 or 14 => "PK_SURF_make_sheet_body",
                         >= 20 => "PK_BSURF_reparameterise",
-                        >= 18 => "PK_BSURF_insert_knots+PK_BSURF_raise_degree",
+                        >= 18 => "PK_BSURF_add_u_knot+PK_BSURF_add_v_knot+PK_BSURF_raise_degree",
                         >= 16 => "PK_SURF_make_sheet_body",
                         _ => "PK_SURF_make_sheet_body"
                     },
