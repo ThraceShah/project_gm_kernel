@@ -256,7 +256,7 @@ using(host)unsafe
                 catch(Exception ex){failures++;Console.WriteLine("FAIL native editable roundtrip: "+ex.Message);}
                 if(!args.Contains("--native-only")&&!args.Contains("--import-only"))
                 {
-                    var filletOp=WebProgressCapture.BeginObservedOperation($"op-{name}-fillet",$"{name} fillet","primary","PK_BODY_fix_blends");
+                    var filletOp=WebProgressCapture.BeginObservedOperation($"op-{name}-fillet",$"{name} fillet","primary","PK_BODY_fix_blends",context:"");
                     try
                     {
                     Check(Fillet(true,own,angle,radius*inputScale,tolerance*inputScale,reverse,procedural,mappedInput?&inputTransform:null,inputScale,splitSelected,splitEllipse,splitFraction,(int)rotateMarks),"managed fix");
@@ -356,7 +356,7 @@ static unsafe PK_VECTOR_t MapPoint(M.PK_TRANSF_sf_s* matrix,PK_VECTOR_t point,bo
 
 static unsafe int Lifecycle(ref int source,int reference,string output,string name,M.PK_TRANSF_sf_s* input,double inputScale,bool localCut,bool transverseCut,double transversePlaneDifference,bool materialOwnership=false,bool requireNativeCutWitness=false,bool reloadBeforeLocalCut=false,bool checkNativeTrims=false,bool proofOnly=false,bool requireCutterChartWitness=false,bool requireNativeFinBoxes=false,bool requireNativeFaceDomains=false)
 {
-    WebProgressCapture.Context=name;
+    using var captureContext=WebProgressCapture.UseContext(name);
     int own,native;Check(KernelRuntime.EntityCopy(source,&own),"copy fillet product");Check(PK_ENTITY_copy(reference,&native),"copy PK fillet");
     var matrix=new M.PK_TRANSF_sf_s();var a=.37;var s=1.7;
     matrix.matrix[0]=-s*Math.Cos(a);matrix.matrix[1]=-s*Math.Sin(a);matrix.matrix[4]=-s*Math.Sin(a);matrix.matrix[5]=s*Math.Cos(a);matrix.matrix[10]=s;matrix.matrix[15]=1;
@@ -1685,7 +1685,7 @@ static unsafe int Fillet(bool own,int body,double angle,double radius,double tol
     var mark=new PK_EDGE_set_blend_constant_o_t();mark.properties.tolerance=1e-7*unitScale;int count;int* marked;
     fixed(int* selection=selected)Check(own?KernelRuntime.EdgeSetBlendConstant(selected.Length,selection,radius,(M.PK_EDGE_set_blend_constant_o_s*)&mark,&count,&marked):PK_EDGE_set_blend_constant(selected.Length,selection,radius,&mark,&count,&marked),"set blend");Free(own,marked);
     var fix=new PK_BODY_fix_blends_o_t{local_check=PK_LOGICAL_true,tolerance=tolerance};if(procedural)fix.update=PK_blend_edge_update_v261_c;
-    WebProgressCapture.Context="";
+    using var captureContext=WebProgressCapture.UseContext("");
     WebProgressCapture.Before(own,body,selected);
     WebProgressCapture.BlendParameters(own,fix,radius,mark.properties.tolerance);
     int* made;int fault,edgeFault,topolFault;var started=Stopwatch.GetTimestamp();

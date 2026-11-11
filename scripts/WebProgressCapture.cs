@@ -28,15 +28,22 @@ internal static unsafe partial class WebProgressCapture
     private static readonly Dictionary<int,OperationRecord> OperationsByOrdinal=[];
     private static string? ObservationOwner;
     private static readonly Dictionary<string,OperationRecord> RequestedOperations=[];
-    internal static OperationRecord BeginObservedOperation(string id,string name,string role,string api)
+    internal static OperationRecord BeginObservedOperation(string id,string name,string role,string api,string context="")
     {
         if(!Enabled)return OperationAcceptanceLedger.Current.BeginOperation(id,name,role,api);
-        var key=Context+":"+api+":"+ContextCounts.GetValueOrDefault((true,Context+":"+api));
+        var key=context+":"+api+":"+ContextCounts.GetValueOrDefault((true,context+":"+api));
         if(ContextSteps.TryGetValue(key,out var ordinal)&&OperationsByOrdinal.TryGetValue(ordinal,out var paired))return paired;
         var op=OperationAcceptanceLedger.Current.BeginOperation(id,name,role,api);
         RequestedOperations.Add(key,op);return op;
     }
     internal static void Checkpoint(){if(Enabled)Observe(Flush);}
+    internal static IDisposable UseContext(string context)=>new CaptureContext(context);
+    private sealed class CaptureContext : IDisposable
+    {
+        private readonly string _previous=Context;
+        internal CaptureContext(string context){Context=context;}
+        public void Dispose(){Context=_previous;}
+    }
     private static void SetParameters(bool own,JsonObject parameters)
     {
         if(!OperationsByOrdinal.TryGetValue(Ordinals[own]-1,out var op))return;
