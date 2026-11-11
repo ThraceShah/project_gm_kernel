@@ -22,7 +22,7 @@
 
 ## 开发期验证
 
-69 项针对性测试通过，原始退出码 0：缓存完整 key、短输出、可选分配失败、命令与可变作用域隔离、相关 dyadic key 碰撞、负项不发布值、改变编译视图数值尺度后的重算、含 spline 视图的重算、Jacobian record、CompactBranchCertificate 及 RollingNetwork 生命周期测试。见 `temp_docs/pk-native-algorithm-work/command-bound-reuse-lazy.log` 和 `test-results/command-bound-reuse-lazy.trx`。本轮没有重新执行全套测试。
+69 项针对性测试通过，原始退出码 0：缓存完整 key、短输出、可选分配失败、命令与可变作用域隔离、相关 dyadic key 碰撞、负项不发布值、改变编译视图数值尺度后的重算、含 spline 视图的重算、Jacobian record、CompactBranchCertificate 及 RollingNetwork 生命周期测试。见 `temp_docs/pk-native-algorithm-work/command-bound-reuse-lazy.log` 和 `test-results/command-bound-reuse-lazy.trx`。该检查点当时未重新执行全套；后续固定联合源码的完整套件见下节回执。
 
 完整 shortedge 使用相同 angle=1、radius=0.5、tolerance=1e-7，仍为独立构造模式；fresh GM XT 被真实 Mac PK38 接收，BODY_compare、BODY_check、有限 ICurve 及质量属性检查通过，操作原始退出码 0。开发诊断工作量如下：
 
@@ -58,6 +58,14 @@
 位置列仍有实际计算，不能把全残差调用减少 60% 当作 CPU 减少 60%。开发 GM API 观测值 curved 为 1,579.495→1,537.568 ms，reloaded curved 为 3,366.862→3,399.365 ms，NURBS 为 2,340.209→2,118.656 ms；没有正式测量窗口，不能签发倍率或认定微小时间差的因果。
 
 原始结果在 `temp_docs/pk-native-algorithm-work/plane-spline-point-columns.log`、`curved-spline-columns.log`、`nurbs-spline-columns.log`，及同名退出码、TRX/capture。三份日志 SHA256 依次为 `6a18620e971cfef5345d62599df5079fcbfc6b94f01b37a674f2ea7cd8e9b140`、`5af33d05e1846adda70f373850e9563be1f36aae77d40076e733fd2668d15e89`、`742317d7a336bbac4e88a590ba5ba6b4239aab2fdaa74c5a70a90fca1e525863`。此候选仍待最终独立复核，整体 PK 性能目标没有完成。
+
+## 固定联合源码的完整质量回执
+
+固定 `6616cd60a55e50a5d8a5ada7274895c44609676b` 完整套件自然结束：1,914 total、1,912 passed、2 failed、0 skipped，原始退出码 1。未以检查器成功覆盖这个结果。失败为 `BlendIntersectionTests.NativeCurveTubeBoundsItsSupportingBlendParameterAndDerivative` 与 `NestedBlendCacheEmptyReadSetTests.SupportingBlendSectionConsumersKeepIndependentChecksWithReuseDisabled`，均为 `Expected: Success / Actual: NotConverged`。
+
+同一 Mac 在独立 `270e2b6814afe5a48cd0532e89531f6fb80011be` 工作树中，按其实际 AGENTS/架构/diff 和 native ENV_READY 准备后，串行仅执行上述两项：total=2、passed=0、failed=2，原始退出码 1。失败消息与测试源文件原字节均一致。该基线不是首包旧 610/ecfff，而是本轮 f9+676 固定整合起点；没有重跑基线全套。所有本项目测试自然退出，核对后无残留 testhost，未终止用户进程。
+
+派生回执位于 `docs/native-modeling-algorithm/quality-receipt.json`，绑定两份原始 TRX/日志 SHA256、原退出码、实际执行范围、固定源码及相同失败消息。原始文件保留于 `temp_docs/pk-native-algorithm-work/`。本节支持这两个失败已在本轮整合基线上存在，不能将整套称为全绿；新正式性能测量仍未执行。
 
 ## 调研与撤下的候选
 
