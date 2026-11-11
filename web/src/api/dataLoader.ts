@@ -1,4 +1,5 @@
 import { IndexData, ManifestData, MeshData, StepMeshRef } from '../types/contract';
+import { MeshSelection, realUvDisplay, validateDisplaySelection } from './realUvDisplay';
 
 export interface LoadResult<T> {
   data: T | null;
@@ -132,12 +133,17 @@ export async function fetchManifestData(
 export async function fetchMeshData(
   manifestDir: string,
   meshRelPath: string | null,
+  selection: MeshSelection,
   fromFixture = false,
   signal?: AbortSignal
 ): Promise<MeshLoadResult> {
+  // Check independent selection before dereferencing a path or reusing any
+  // verified attachment, including a previously warmed before snapshot.
+  try { validateDisplaySelection(manifestDir, meshRelPath, selection); }
+  catch (err) { return { data: null, error: (err as Error).message }; }
   if (!meshRelPath) return { data: null, error: null };
 
-  const fullKey = `${fromFixture ? 'fixture:' : manifestDir + '/'}${meshRelPath}`;
+  const fullKey = JSON.stringify([fromFixture, manifestDir, meshRelPath, selection.runId, selection.caseId, selection.stepId, selection.kernel, selection.stage]);
   if (meshCache.has(fullKey)) {
     return { data: meshCache.get(fullKey)!, error: null };
   }
@@ -166,7 +172,7 @@ export async function fetchMeshData(
     }
     const bytes = await res.arrayBuffer();
     const mesh = JSON.parse(new TextDecoder().decode(bytes)) as MeshData;
-    await attachSurfaceParameters(mesh, bytes, manifestDir, meshRelPath, signal);
+    await attachSurfaceParameters(mesh, bytes, manifestDir, meshRelPath, selection, signal);
 
     meshCache.set(fullKey, mesh);
     return { data: mesh, error: null };
@@ -186,10 +192,10 @@ async function sha256(bytes: ArrayBuffer): Promise<string> {
 
 // Optional display companions are keyed by the complete run/snapshot identity and
 // checked against exact bytes. They never alter a run's checks or qualification.
-async function attachSurfaceParameters(mesh: MeshData, bytes: ArrayBuffer, manifestDir: string, snapshot: string, signal?: AbortSignal) {
+async function attachSurfaceParameters(mesh: MeshData, bytes: ArrayBuffer, manifestDir: string, snapshot: string, selection: MeshSelection, signal?: AbortSignal) {
   mesh.surfaceParameters = { status: 'unavailable', reason: '此快照未提供可核验的 XT 等参线派生数据' };
   if (manifestDir === 'display/real-uv') {
-    await attachVerifiedDisplay(mesh, bytes, manifestDir, snapshot, signal);
+    await attachVerifiedDisplay(mesh, bytes, manifestDir, snapshot, selection, signal);
     return;
   }
   try {
@@ -229,13 +235,17 @@ async function attachSurfaceParameters(mesh: MeshData, bytes: ArrayBuffer, manif
   }
 }
 
-async function attachVerifiedDisplay(mesh: MeshData, bytes: ArrayBuffer, directory: string, snapshot: string, signal?: AbortSignal) {
+async function attachVerifiedDisplay(mesh: MeshData, bytes: ArrayBuffer, directory: string, snapshot: string, selection: MeshSelection, signal?: AbortSignal) {
+  const expectedSnapshot = validateDisplaySelection(directory, snapshot, selection)!;
   const response = await fetch(`data/${directory}/display-manifest.json`, { signal });
   if (!response.ok) throw new Error('真实 U/V 显示来源清单加载失败');
-  const manifest = await response.json();
+  const manifestBytes = await response.arrayBuffer();
+  if (await sha256(manifestBytes) !== realUvDisplay.displayManifestSha256) throw new Error('真实 U/V unavailable：显示包与独立来源描述符不匹配');
+  const manifest = JSON.parse(new TextDecoder().decode(manifestBytes));
   const matches = manifest.items?.filter((entry: { meshPath: string }) => entry.meshPath === snapshot);
   if (manifest.schemaVersion !== 1 || manifest.type !== 'verified-render-only-display-manifest' || matches?.length !== 1) throw new Error('显示快照来源不唯一');
   const item = matches[0];
+  if (item.sourceRun !== realUvDisplay.sourceRun || item.caseId !== realUvDisplay.sourceCaseId || item.stepId !== realUvDisplay.sourceStepId || item.sampleId !== realUvDisplay.sampleId || item.producerCommit !== realUvDisplay.producerCommit || item.sourceSnapshot !== expectedSnapshot.sourceSnapshot || item.kernel !== selection.kernel || item.stage !== selection.stage) throw new Error('真实 U/V unavailable：来源快照不属于当前选择');
   const hashPattern = /^[a-f0-9]{64}$/;
   for (const key of ['sha256', 'sourceMeshSha256', 'inputXtSha256', 'snapshotReceiptSha256', 'executionSha256', 'captureCodeSha256', 'receiptCodeSha256']) {
     if (!hashPattern.test(item[key])) throw new Error('显示快照来源 SHA 无效');
@@ -316,16 +326,21 @@ export function combineMeshes(primary: MeshData, additional: MeshData[]): MeshDa
 export async function fetchStepMeshes(
   manifestDir: string,
   stepRef: StepMeshRef | undefined,
-  subState: 'before' | 'after',
+  selection: MeshSelection,
   fromFixture = false,
   signal?: AbortSignal
 ): Promise<MeshLoadResult> {
+  const subState = selection.stage;
+  const primaryPath = stepRef?.[subState] ?? null;
+  try {
+    const display = validateDisplaySelection(manifestDir, primaryPath, selection);
+    if (display && stepRef?.tools?.length) throw new Error('真实 U/V unavailable：显示源未定义工具映射');
+  } catch (err) { return { data: null, error: (err as Error).message }; }
   if (!stepRef) return { data: null, error: null };
 
-  const primaryPath = subState === 'before' ? stepRef.before : stepRef.after;
   if (!primaryPath) return { data: null, error: null };
 
-  const primaryRes = await fetchMeshData(manifestDir, primaryPath, fromFixture, signal);
+  const primaryRes = await fetchMeshData(manifestDir, primaryPath, selection, fromFixture, signal);
   if (primaryRes.error || !primaryRes.data) {
     return primaryRes;
   }
@@ -333,7 +348,7 @@ export async function fetchStepMeshes(
   // If before state and tools exist, fetch tools and combine
   if (subState === 'before' && stepRef.tools && stepRef.tools.length > 0) {
     const toolResults = await Promise.all(
-      stepRef.tools.map((tPath) => fetchMeshData(manifestDir, tPath, fromFixture, signal))
+      stepRef.tools.map((tPath) => fetchMeshData(manifestDir, tPath, selection, fromFixture, signal))
     );
     const validTools: MeshData[] = [];
     for (const tr of toolResults) {

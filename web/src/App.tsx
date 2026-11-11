@@ -173,7 +173,7 @@ export const App: React.FC = () => {
   const safeStepIndex = stepsCount > 0 ? Math.min(currentStepIndex, stepsCount - 1) : 0;
   // An async result belongs to the selection that requested it. Gate at render
   // time, before child effects can fit a previous case's geometry.
-  const meshKey = JSON.stringify([useFixture, manifestDir, currentCase?.id, safeStepIndex, subState]);
+  const meshKey = JSON.stringify([useFixture, selectedRunId, manifestDir, currentCase?.id, safeStepIndex, subState]);
   const cameraContext = JSON.stringify([useFixture, manifestDir, currentCase?.id]);
   useEffect(() => {
     if (stepsCount > 0 && currentStepIndex >= stepsCount) {
@@ -214,18 +214,11 @@ export const App: React.FC = () => {
     setGmError(null);
     setPkError(null);
 
-    const gmRelPath = step.gm ? step.gm[subState] : null;
-    const pkRelPath = step.pk ? step.pk[subState] : null;
-
-    if (!gmRelPath && !pkRelPath) {
-      setIsLoadingMeshes(false);
-      return;
-    }
-
     setIsLoadingMeshes(true);
+    const selection = { runId: selectedRunId, caseId: currentCase.id, stepId: step.id, stage: subState };
     Promise.all([
-      fetchStepMeshes(manifestDir, step.gm, subState, useFixture, abortController.signal),
-      fetchStepMeshes(manifestDir, step.pk, subState, useFixture, abortController.signal),
+      fetchStepMeshes(manifestDir, step.gm, { ...selection, kernel: 'GM' }, useFixture, abortController.signal),
+      fetchStepMeshes(manifestDir, step.pk, { ...selection, kernel: 'PK' }, useFixture, abortController.signal),
     ])
       .then(([gmRes, pkRes]) => {
         // Discard stale response
@@ -249,7 +242,7 @@ export const App: React.FC = () => {
     return () => {
       abortController.abort();
     };
-  }, [currentCase, currentStepIndex, stepsCount, subState, manifestDir, useFixture, meshKey]);
+  }, [currentCase, currentStepIndex, stepsCount, subState, selectedRunId, manifestDir, useFixture, meshKey]);
 
   // Refresh handler: reload index and manifest
   const handleRefresh = () => {
