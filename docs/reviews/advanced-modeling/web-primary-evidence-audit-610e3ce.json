@@ -860,6 +860,23 @@
       ]
     }
   ],
+  "duplicateCompareAudit": {
+    "source": "scripts/WebProgressCapture.cs:172-198 \u002B scripts/ParasolidBodyCompare.cs:24-68 @610e3ce",
+    "sameReferenceAndReceivedTags": true,
+    "sameEffectiveMask": true,
+    "samePostOperationStage": true,
+    "betweenCalls": "Raw result serialization and r_f; helper then asks body types and region/shell properties. No intervening body mutation or precision setting in these paths.",
+    "recommendation": "One lexical-scope real-PK comparison; write existing raw evidence, then run the existing shared verdict over that same live result, including type/region and applicable finite-wire checks; one owner frees in finally.",
+    "preserve": [
+      "All original check IDs, values, thresholds and statuses",
+      "Raw evidence even when equivalence fails",
+      "Exact current global/local and n_cht_pts-only verdict",
+      "Full type/region semantics, BODY_check, operation output/rollback, independent mass and wire/API contracts",
+      "Standalone helper and original oracle checks at their own distinct stages"
+    ],
+    "notImplemented": true,
+    "doNotCacheAcrossOperations": true
+  },
   "renderRules": [
     "Primary evidence opens compare-0.json, plus source and equivalence gate; original links remain available.",
     "Show raw local differences with n_cht_pts diagnostic annotation; do not display raw local_result as no differences.",

@@ -84,6 +84,16 @@ FD解释：local分析直到找到 `max_diffs` 个不同面配对或所有面配
 
 本次没有发现把local全关掉或将同拓扑错误尺寸接受为等价的当前配置缺陷。现有配置对“session precision范围内的几何与结构兼容、chart点表示可不同”有官方依据和有限负控；不据此宣称所有flag选择在所有API/模型上均合理。推荐今后**显式写全当前有效值**以固定构造依赖，并对cap命中/未知结果单独报告完整性；这是建议，不是本轮生产mask变更。没有依据把 `all_tests=true` 视为无条件更正确：它会改变子项选择并启用accurate偏差组，需另立目标合同及表示变化正例验证。也没有理由关闭tol_dev、non_match或扩大诊断白名单。
 
+### 可消除的真正重复调用：仅capture内同一次操作的这一对
+
+已经逐源码确认，不只是两个flag列表相似：`WebProgressCapture.Compare` 将 `AfterBodies[(true,ordinal)][0]` 保存到同一局部变量 `received`，将 `AfterBodies[(false,ordinal)][0]` 保存到同一局部变量 `reference`。先用这两个变量调用raw compare；写JSON、释放raw result后，原样传给 `AssertEquivalent(reference,received,...)`；后者只先询问type及region/material/shell信息，再用同一对tag调用compare。两处都用同一固定PskernelSharp显式构造器，显式覆盖字段相同，故完整有效mask相同。两次调用之间没有body修改、session precision设置或进入下一次操作。第二次调用发生在同一个post-operation/fresh-XT阶段。因此**此处是实际可合并的重复几何比较工作**；不能据此推算节省多少毫秒，也不能把两次比较耗时计入现有APIratio。
+
+下一最小代码任务可只让Capture复用现有raw result：把共享helper现有的“type/regions检查、raw结果global/local/白名单判定、适用wire辅助”拆出可消费借用结果的同一校验路径；Capture仍先调用一次PK并按原格式写raw JSON，再把仍有效的结果传给这条完整路径，按原异常处理生成原 `0-equivalence` 行。原独立 `AssertEquivalent` 入口仍可自行做一次比较并调用相同判定，不让其它oracle调用者丢门。两条路径的mask必须机械保持一致；若将来不同，拒绝把某一mask结果冒充另一合同。只在当前函数作用域借用结果，不缓存tag、body或result跨操作，也不返回 `r_f` 后悬空的native指针。
+
+由一个明确owner在 `finally` 释放 `PK_DEBUG_BODY_compare_r_f` 一次；证据序列化与结果判定均在结果有效期内完成，释放失败也保留为错误。共享判定继续逐条处理全部global/local结果和仅n_cht_pts白名单，保留当前成功/失败条件、日志的face/entity/diff信息；type/regions/适用wire检查不能因复用raw结果而跳过。BODY_check、原15物性、API/fault/body-set及原场景出口完全保留。若type/regions或判定失败，已写出的raw证据仍须存在；不能把检查前移后导致失败case再无比较证据。结构化输出可直接由同一借用result同时产生raw JSON和判定摘要，无需再从展示文字反向解析结果或引入通用全局缓存。
+
+验收该后续小改时，只需证明同一pair/阶段的PK调用数由2变1、原raw字段与检查行一致、相等正例/同拓扑错尺寸负例/已有chart诊断样本仍按原规则判定，并对API错误和释放生命周期作有限检查；已有wire负控和物性等原门继续原样适用。**这只是只读建议，本轮没有改Capture/helper或执行假定实现的验收。** `SupportBlendChainOracle` 自身的compare在capture之后，后面又有reload/cut后的另一份body；阶段、tag或输入不同，不能按“看见同名API”一概删除。对其是否复用必须另核身份、输入、mask和所需语义，不能跨原模型生命周期缓存本次结果。
+
 先在本worktree执行统一privateenv ensure，收到 `ENV_READY profile=native pk=38.0 platform=linux-x64` 后才动态；没有改全局配置或credentials。临时控制使用既有PskernelSharp、Host及共享helper，不手写P/Invoke、不加载GM程序集。额外environment-only调用 `PK_SESSION_ask_kernel_version` 实际返回 `38.0.150`，与历史manifest所用版本一致，记录于 `docs/reviews/advanced-modeling/web-primary-evidence/compare-environment.log`。
 
 | 控制 | 新执行/复用证据 | 观测 |
@@ -127,6 +137,6 @@ FD解释：local分析直到找到 `max_diffs` 个不同面配对或所有面配
 
 `MSBUILDDISABLENODEREUSE=1 dotnet run scripts/AuditWebPrimaryEvidence.cs` 仅BCL读取固定run，不运行oracle或改data；输出含index/manifest/capture/compare SHA256、原29行六组唯一归属、mask及timestamp/code/scope。它断言原28/29数量、所有local差异仍为21949、每条原check恰入一组。连续运行输出应相同；若外部index或原文件改变，指纹会体现，不能将新投影悄称旧快照。
 
-最终BCL生成连续两次退出0，JSON SHA256相同：`50389274389e821ec7373fe407183e1ba4ebdc0a4f9f82018ddf623370f5e5d2`；`git diff --check`通过。新控制摘录hash为 `a9d7e1342cf9e2d732c73468921fbc156983f04fc870470344b2b4fb6bc94534`，environment摘录为 `720bc628549c738597bcabc8a282b5a2dbdb49d675b5892bb98c2b314d584173`，最终临时源码存档为 `3c87692ea2f17aa14f810d810bedfa100c688fc8d6a37c972f990f0da93ac15d`。存档相较第一次成功控制只增加版本查询和无模型的environment-only退出分支；几何控制、mask和共享helper不变。原始编译输出位于 `temp_docs/web-primary-compare-control.log`、`temp_docs/web-primary-compare-environment.log`，文档摘录仅去掉含本机绝对路径的编译警告；未把警告伪作几何失败。
+最终BCL生成连续两次退出0，JSON SHA256相同：`96d3d5788ac5a6f5eb612f9ced8a197df73b6f72f4d58866b32e85af7b75d734`；`git diff --check`通过。新控制摘录hash为 `a9d7e1342cf9e2d732c73468921fbc156983f04fc870470344b2b4fb6bc94534`，environment摘录为 `720bc628549c738597bcabc8a282b5a2dbdb49d675b5892bb98c2b314d584173`，最终临时源码存档为 `3c87692ea2f17aa14f810d810bedfa100c688fc8d6a37c972f990f0da93ac15d`。存档相较第一次成功控制只增加版本查询和无模型的environment-only退出分支；几何控制、mask和共享helper不变。原始编译输出位于 `temp_docs/web-primary-compare-control.log`、`temp_docs/web-primary-compare-environment.log`，文档摘录仅去掉含本机绝对路径的编译警告；未把警告伪作几何失败。
 
 未做：所有API/模型的mask完备证明、accurate组与tolerant组的系统比较、大模型cap实际漏判复现、任意wire曲线完整等价证明、最新候选建模操作验收、稳定性能采样、live部署核验或数据发布。本报告没有发现需要放宽白名单/阈值的依据，也不更改既有生产验收。
