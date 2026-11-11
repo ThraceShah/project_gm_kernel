@@ -5,6 +5,14 @@ It preserves the independently accepted default uncut blend scope. The subsequen
 Boolean, exact stationary-end consumer, and saved classifications have separate
 results. The rejected `ec393598` public trigonometric changes are absent.
 
+Independent review of the frozen source-root increment `3344c539` is recorded
+at `285e93ca174dd307801ec16dce0f8cad48605e96`,
+`origin/ThraceShah/gm-source-root-3344-review`, in
+`docs/reviews/advanced-modeling/topology-event-framework-independent-review-3344c539.md`.
+It narrowly accepts root → Clip constraint preservation and the exercised
+primary blend scope; the two-tool Boolean remains failing. Later diagnostics
+below are separate from that fixed review.
+
 ## Reproducer and identical inputs
 
 `scripts/RollingBooleanConsumerOracle.cs` imports the unchanged
@@ -238,3 +246,52 @@ rolling/plane pair does not supply a finite boundary between the two near-J
 roots before cell selection. A missing split could make one loop contain
 multiple material regions; this remains a hypothesis until its actual finite
 root and clipping decision are observed. Closure remains a hard failure gate.
+
+## Increment 4: the near-J root is absent before interval clipping
+
+`finite-clip-decision-fixed` (exit 134) records the provider's accepted projected
+roots and each actual clipped-interval decision. This is diagnostic-only source;
+the initial `finite-clip-decision` attempt had a trace-enum compile error and
+executed zero modeling cases. That error was corrected without changing the
+modeling choices. Neither the failed build nor the diagnostic completion is a
+passing Boolean result.
+
+For rolling 176 / plane 515, provider curve 801 contains the certified source
+208 root S at native target station `2.549870312640293`, target enclosure
+`[2.5498703126402273,2.549870312640359]`. Its next accepted root in increasing
+target gauge is from source line 519 at `2.6501421444275666`. The whole interval
+between them is tested at `2.5881707442688584` and discarded as
+`OutsideSecondFace`, point
+`(-1.5383219689317815,-2.0007738586373245,4.999264141362675)`.
+
+P from source line 517 is absent from this accepted target-root list. It is
+separately certified on rolling 176 / cutter 543, target curve 831 at
+`.7844048776181026`, target enclosure
+`[.7844048776180722,.784404877618133]`. That other pair's proof does not alone
+establish membership in curve 801's actual finite domain or branch. The next
+trace therefore records **all source-root candidates before target projection**,
+their source occurrence/certificate/rolling station, and explicit target
+`RootNotOnCurve` / `RootOutsideTrim` decisions. It must distinguish a source
+producer omission from a correspondence or finite-domain rejection before any
+split is added. No material decision or closure gate has been bypassed.
+
+`finite-root-projection` (exit 134) then observes the first rejection directly:
+source line 517 generation 2, input edge/coedge occurrence `34/62`, contributes
+certificate **5** (`PlanePairBlendLineCertificate`) against rolling 176 while
+being read from plane 515. Its native root is
+`.15550974970339074` enclosed by
+`[.15550974970337608,.1555097497034054]`; its rolling station is
+`[3.1415926535897927,3.1415926535897936]` and spatial error upper bound is
+`2.7006503118386178e-14`. The producer has therefore supplied a finite root on
+the common corrected line of the two actual tool planes, not merely a nearby
+point seen in another event list. `TryPlanePairSourceLine` orders both coedges'
+plane equations identically before isolating it.
+
+Projection of this supplied root into provider 801 returns
+`PK_ERROR_not_on_curve` and is discarded as **RootNotOnCurve**, before finite
+target-trim ownership or material interval testing. The source producer is not
+the first loss. The same operation still ends at the unchanged product-incidence
+failure; the actual native Boolean status is success with one body. The next
+step is a frozen local projection replay to examine provider 801's CHART coverage
+and branch against this source witness. This observation is not permission to
+insert P into a target trim without that correspondence proof.

@@ -1,4 +1,5 @@
 using ProjectGmKernel.Native.Generated;
+using ProjectGmKernel.Native.Computation.Numerics;
 
 namespace ProjectGmKernel.Native.Runtime;
 
@@ -84,7 +85,8 @@ internal static unsafe partial class KernelRuntime
 
     [ThreadStatic] internal static bool ForbidLegacyRegularBlendAssembly;
     [ThreadStatic] internal static bool ForbidSpatialBoundaryReuse;
-    internal enum BoundaryTraceStage:byte{Input,Successor,Arrangement,Product,CarrierReuse,CertifiedRoot,UnresolvedOrder,NativeCutLocator,NativeCutEndpoints,AnalyticSectionEnds,SpatialEndpointReuse,NativeSectionChart,NativeSectionWinding,ThirdFaceStation,ThirdFaceOutsideTrim,CoincidentLineStation,AxialContactImprint,ProjectedCellReplacement,CellSelection,ComponentBoundary,ComponentCellMap}
+    internal enum BoundaryTraceStage:byte{Input,Successor,Arrangement,Product,CarrierReuse,CertifiedRoot,UnresolvedOrder,NativeCutLocator,NativeCutEndpoints,AnalyticSectionEnds,SpatialEndpointReuse,NativeSectionChart,NativeSectionWinding,ThirdFaceStation,ThirdFaceOutsideTrim,CoincidentLineStation,AxialContactImprint,ProjectedCellReplacement,CellSelection,ComponentBoundary,ComponentCellMap,CutRootLocation,CutIntervalDecision,SourceFiniteRoot}
+    internal enum FiniteClipDecision:byte{OutsideSupport,FirstChartOutside,SecondChartOutside,OutsideFirstFace,OutsideSecondFace,BoundaryCoincidence,Retained,RootNotOnCurve,RootOutsideTrim}
     internal struct BoundaryTrace
     {
         internal PK_UV_s UvStart,UvEnd;
@@ -99,6 +101,10 @@ internal static unsafe partial class KernelRuntime
         internal BoundaryEventId StartEvent,EndEvent;
         internal BoundaryRootWitnessId Witness;
         internal double First,Last,StartAngle,EndAngle,SpatialError;
+        internal double Station;
+        internal IntervalNumber RollingStation;
+        internal byte Certificate;
+        internal FiniteClipDecision ClipDecision;
         internal KernelVector3 StartPoint,EndPoint;
         internal KernelSense CurveSense,SurfaceSense,FaceSense;
         internal byte Forward;

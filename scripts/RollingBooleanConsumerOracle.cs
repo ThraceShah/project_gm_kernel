@@ -105,6 +105,12 @@ unsafe
                     Console.WriteLine($"BOOLEAN SELECT face={t.Face} source={t.Source} surface={t.Surface} keep={t.Selected} reverse={t.Reversed} material={t.MaterialInside}/{t.MaterialOutside} uv=({t.UvStart.param[0]:R},{t.UvStart.param[1]:R}) xyz=({t.StartPoint.X:R},{t.StartPoint.Y:R},{t.StartPoint.Z:R})");
                 if(args.Contains("--trace")&&t.Stage==KernelRuntime.BoundaryTraceStage.ComponentCellMap)
                     Console.WriteLine($"BOOLEAN MAP old={t.PreviousFace} merged={t.Face} source={t.Source} source_generation={KernelRuntime.Faces[t.Source].Header.Generation} surface={t.Surface}");
+                if(args.Contains("--trace")&&t.Stage==KernelRuntime.BoundaryTraceStage.CutRootLocation)
+                    Console.WriteLine($"BOOLEAN ROOT source_curve={t.Curve} target_curve={t.ProductCurve} supports={t.Surface}/{t.OtherSurface} station={t.Station:R} box=[{t.First:R},{t.Last:R}] decision={(t.Selected!=0?"Accepted":t.ClipDecision.ToString())} witness={t.Witness} xyz=({t.StartPoint.X:R},{t.StartPoint.Y:R},{t.StartPoint.Z:R})");
+                if(args.Contains("--trace")&&t.Stage==KernelRuntime.BoundaryTraceStage.SourceFiniteRoot)
+                    Console.WriteLine($"BOOLEAN SOURCE ROOT curve={t.Curve}/{t.Generation} target={t.ProductCurve} occurrence={t.Edge}/{t.InputCoedge} supports={t.Surface}/{t.OtherSurface} certificate={t.Certificate} witness={t.Witness} native={t.Station:R}/[{t.First:R},{t.Last:R}] rolling=[{t.RollingStation.Lower:R},{t.RollingStation.Upper:R}] error={t.SpatialError:R} xyz=({t.StartPoint.X:R},{t.StartPoint.Y:R},{t.StartPoint.Z:R})");
+                if(args.Contains("--trace")&&t.Stage==KernelRuntime.BoundaryTraceStage.CutIntervalDecision)
+                    Console.WriteLine($"BOOLEAN CLIP curve={t.Curve}/{t.Generation} supports={t.Surface}/{t.OtherSurface} native=[{t.First:R},{t.Last:R}] witness={t.Station:R} decision={t.ClipDecision} xyz=({t.StartPoint.X:R},{t.StartPoint.Y:R},{t.StartPoint.Z:R})");
                 if(args.Contains("--trace")&&t.Stage==KernelRuntime.BoundaryTraceStage.Input)
                 {
                     var sourceGeneration=t.Source>=0&&KernelRuntime.Faces.IsAlive(t.Source)?KernelRuntime.Faces[t.Source].Header.Generation:0;

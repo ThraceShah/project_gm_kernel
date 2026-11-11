@@ -488,6 +488,11 @@ internal static unsafe partial class KernelRuntime
             for(var i=0;i<nRoots;i++)
             {
                 rootParameters[i]=double.NaN;cutLocators[i]=new(double.NaN,double.NaN);
+                TraceFiniteBoundary?.Invoke(new(){Stage=BoundaryTraceStage.SourceFiniteRoot,Curve=roots[i].Curve,ProductCurve=curve.Curve,
+                    Generation=Curves[GetCurveSlotByTag(roots[i].Curve)].Header.Generation,Surface=roots[i].ContactSurface,OtherSurface=roots[i].CuttingSurface,
+                    Edge=roots[i].InputEdge,InputCoedge=roots[i].InputCoedge,Certificate=roots[i].Certified,Witness=roots[i].Witness,
+                    Station=roots[i].Root.Parameter,First=roots[i].Root.Lower,Last=roots[i].Root.Upper,SpatialError=roots[i].Root.SpatialError,
+                    RollingStation=roots[i].BlendStation,StartPoint=roots[i].Root.Point});
                 var p=new PK_VECTOR_s();WriteVector(&p,roots[i].Root.Point);double t=roots[i].Root.Parameter;
                 if(roots[i].Curve==curve.Curve)
                 {
@@ -502,7 +507,13 @@ internal static unsafe partial class KernelRuntime
                     {handled=true;t=sectionEnd;cutLocators[i]=new(t);}
                     if(!handled)error=CurveParameteriseVectorCore(curve.Curve,p,&t);
                 }
-                if(error==ParasolidConstants.PK_ERROR_not_on_curve){cutLocators[i]=UncertifiedStation;continue;}
+                if(error==ParasolidConstants.PK_ERROR_not_on_curve)
+                {
+                    TraceFiniteBoundary?.Invoke(new(){Stage=BoundaryTraceStage.CutRootLocation,Curve=roots[i].Curve,ProductCurve=curve.Curve,
+                        Surface=firstSurface,OtherSurface=secondSurface,Station=t,First=cutLocators[i].Lower,Last=cutLocators[i].Upper,
+                        ClipDecision=FiniteClipDecision.RootNotOnCurve,StartPoint=roots[i].Root.Point});
+                    cutLocators[i]=UncertifiedStation;continue;
+                }
                 if(error!=0)return error;
                 rootParameters[i]=t;
             }
@@ -523,7 +534,13 @@ internal static unsafe partial class KernelRuntime
                     }
                     error=LocateBoundedStation(curve.Curve,0,anchor,curve.First,curve.Last,lowerEnd?0:-1,upperEnd?0:-1,
                         out t,out cutLocators[i],out var inside);
-                    if(error!=0)return error;if(!inside){cutLocators[i]=UncertifiedStation;continue;}
+                    if(error!=0)return error;if(!inside)
+                    {
+                        TraceFiniteBoundary?.Invoke(new(){Stage=BoundaryTraceStage.CutRootLocation,Curve=roots[i].Curve,ProductCurve=curve.Curve,
+                            Surface=firstSurface,OtherSurface=secondSurface,Station=t,First=cutLocators[i].Lower,Last=cutLocators[i].Upper,
+                            ClipDecision=FiniteClipDecision.RootOutsideTrim,StartPoint=roots[i].Root.Point});
+                        cutLocators[i]=UncertifiedStation;continue;
+                    }
                     rootParameters[i]=t;
                     error=ReconcileCertifiedCutRoot(curve.Curve,i,roots[..nRoots],rootParameters,cutLocators,parameters[..n],out var joined);
                     if(error!=0)return error;if(joined)continue;
@@ -578,6 +595,10 @@ internal static unsafe partial class KernelRuntime
                 }
                 if(!duplicate){if(n==parameters.Length)return ParasolidConstants.PK_ERROR_not_implemented;parameters[n++]=t;}
             }
+            if(TraceFiniteBoundary!=null)for(var r=0;r<nRoots;r++)if(double.IsFinite(rootParameters[r]))
+                TraceFiniteBoundary(new(){Stage=BoundaryTraceStage.CutRootLocation,Curve=roots[r].Curve,ProductCurve=curve.Curve,
+                    Surface=firstSurface,OtherSurface=secondSurface,Station=rootParameters[r],First=cutLocators[r].Lower,Last=cutLocators[r].Upper,
+                    Selected=1,Witness=roots[r].Witness,StartPoint=roots[r].Root.Point});
             parameters[..n].Sort();stations[..n].Fill(UncertifiedStation);
             for(var r=0;r<nRoots;r++)if(cutLocators[r].Finite&&double.IsFinite(rootParameters[r]))
             {
@@ -599,16 +620,18 @@ internal static unsafe partial class KernelRuntime
                 }
                 else{at=lo+width*.3819660112501051;if(at>curve.Last)at=curve.First+at-curve.Last;}
                 var status=EvaluateCurveCore(in Curves[GetCurveSlotByTag(curve.Curve)],at,0,false,point,out _);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
-                if(RegularPointOutsideSupport(input.Faces[first].Surface,point[0])||RegularPointOutsideSupport(input.Faces[second].Surface,point[0]))continue;
+                if(RegularPointOutsideSupport(input.Faces[first].Surface,point[0])||RegularPointOutsideSupport(input.Faces[second].Surface,point[0]))
+                {TraceRegularClipInterval(firstSurface,secondSurface,curve.Curve,lo,hi,at,point[0],FiniteClipDecision.OutsideSupport);continue;}
                 error=FiniteBoundarySurfaceParameters(input.Faces[first].Surface,curve,at,point[0],sectionCharts,out var a);
-                if(error==ParasolidConstants.PK_ERROR_not_on_surface)continue;if(error!=0)return error;
+                if(error==ParasolidConstants.PK_ERROR_not_on_surface){TraceRegularClipInterval(firstSurface,secondSurface,curve.Curve,lo,hi,at,point[0],FiniteClipDecision.FirstChartOutside);continue;}if(error!=0)return error;
                 error=FiniteBoundarySurfaceParameters(input.Faces[second].Surface,curve,at,point[0],sectionCharts,out var b);
-                if(error==ParasolidConstants.PK_ERROR_not_on_surface)continue;if(error!=0)return error;
+                if(error==ParasolidConstants.PK_ERROR_not_on_surface){TraceRegularClipInterval(firstSurface,secondSurface,curve.Curve,lo,hi,at,point[0],FiniteClipDecision.SecondChartOutside);continue;}if(error!=0)return error;
                 error=RegularClipFaceContains(input,first,a,point[0],curve.Curve,at,sourceFaces,model.Tolerance,out var insideA,out var boundaryA);
-                if(error!=0)return error;if(!insideA)continue;
+                if(error!=0)return error;if(!insideA){TraceRegularClipInterval(firstSurface,secondSurface,curve.Curve,lo,hi,at,point[0],FiniteClipDecision.OutsideFirstFace);continue;}
                 error=RegularClipFaceContains(input,second,b,point[0],curve.Curve,at,sourceFaces,model.Tolerance,out var insideB,out var boundaryB);
-                if(error!=0)return error;if(!insideB)continue;
-                if(boundaryA&&boundaryB)continue;
+                if(error!=0)return error;if(!insideB){TraceRegularClipInterval(firstSurface,secondSurface,curve.Curve,lo,hi,at,point[0],FiniteClipDecision.OutsideSecondFace);continue;}
+                if(boundaryA&&boundaryB){TraceRegularClipInterval(firstSurface,secondSurface,curve.Curve,lo,hi,at,point[0],FiniteClipDecision.BoundaryCoincidence);continue;}
+                TraceRegularClipInterval(firstSurface,secondSurface,curve.Curve,lo,hi,at,point[0],FiniteClipDecision.Retained);
                 var cut=curve;cut.First=lo;cut.Last=hi;cut.Closed=closed?(byte)1:(byte)0;
                 if(!sourceFaces.IsEmpty&&(boundaryA||boundaryB)&&!wrap&&!closed)
                     cut.InheritedSourceEdge=FiniteLineBoundarySource(input,boundaryA?first:second,cut)+1;
@@ -754,6 +777,12 @@ internal static unsafe partial class KernelRuntime
         }
         return 0;
     }
+
+    private static void TraceRegularClipInterval(SurfTag first,SurfTag second,CurveTag curve,double lower,double upper,double station,
+        in KernelVector3 point,FiniteClipDecision decision)
+        =>TraceFiniteBoundary?.Invoke(new(){Stage=BoundaryTraceStage.CutIntervalDecision,Surface=first,OtherSurface=second,Curve=curve,
+            Generation=Curves[GetCurveSlotByTag(curve)].Header.Generation,SurfaceGeneration=Surfaces[GetSurfaceSlotByTag(first)].Header.Generation,
+            First=lower,Last=upper,Station=station,StartPoint=point,ClipDecision=decision});
 
     private static int RegularClipFaceContains(in RegularBoundaryView input,BufferOffset face,PK_UV_s uv,in KernelVector3 point,
         CurveTag cut,double station,ReadOnlySpan<FaceSlot> sources,double precision,out bool inside,out bool boundary)
