@@ -1,0 +1,193 @@
+{
+  "schema": 1,
+  "verdict": "accepted-with-explicit-scope",
+  "report": "docs/Native_Conic_Independent_Review.md",
+  "reviewedBase": "94f60da64836da33eafaea7ce5912c9d5132660e",
+  "reviewedHead": "f9ffc0985eb1e5ce53f649af66751de7c6c77353",
+  "nativeSource": "74c29e0fc14cc40bc134a012b0eca3fecedc2947",
+  "runnerSource": "b47e25ec90f99385f9d2ce86ec88029bb4143e00",
+  "nativeSubtree": "58c1667b0155ec46b53be42b9750c8dbd78a75dd",
+  "acceptedGReview": "3fdc109babe6eda489d985171e3808f956481be1",
+  "acceptedGNativeSubtree": "cf417678e17e5b106f7c4734091c55c9a7b021be",
+  "reviewBranch": "review/native-conic-b47",
+  "firstPushedIntegrityReview": "c8aab2b2fee5934d6bc9c892aa9ee7028a62ca3f",
+  "authorProductionTestsRunnerAndOriginalReceiptUnchanged": true,
+  "host": "qingyu2",
+  "privateEnvironment": "ENV_READY native PK38.0 linux-x64; PKToy d820719b6d8510d623972ab9d8efc65edbc312f9; no private payload committed",
+  "originalArchive": {
+    "path": "temp_docs/incoming/mac-conic-b47-quality.zip",
+    "bytes": 6810440,
+    "sha256": "b83b3615bb6a88d21326c7fb629bd2a36e92d36f5c860177426eb9c7d44c81ee",
+    "members": 167,
+    "expandedBytes": 24698347,
+    "verifiedReceiptFiles": 166,
+    "receiptAdditionalFile": true,
+    "safeMembersCheckedBeforeExtraction": true,
+    "extraction": "temp_docs/conic-independent-review/originals",
+    "fixedSourceDiffAndTwoRunnerDiffsExact": true,
+    "productionProcessesWithStartEndIdentity": 5,
+    "archivedPdbCount": 0,
+    "historicalSourceToBinaryIndependentlyRebuilt": false,
+    "earlyTwoStandardProcessesHaveLoadedIdentity": false
+  },
+  "originalSuite": {
+    "buildRawExit": 0,
+    "testRawExit": 1,
+    "driverRawExit": 1,
+    "total": 1944,
+    "passed": 1942,
+    "failed": 2,
+    "skipped": 0,
+    "threeBeforePEIdentitiesVerified": true,
+    "afterHashesMatch": true,
+    "perProcessLoadedIdentityNotAdded": true,
+    "rerun": false
+  },
+  "originalQuality": {
+    "standardFixRawExit": 0,
+    "rigidScalePoint125GeometryRawExit": 0,
+    "lifecycleRawExit": 0,
+    "lifecycleBooleanRoots": [
+      9,
+      6,
+      13,
+      10
+    ],
+    "mirrorScale8": {
+      "candidateRawExit": 134,
+      "baselineGRawExit": 134,
+      "pkReturn": 0,
+      "gmReturn": 157,
+      "fault": 16059,
+      "edge": 92,
+      "phase": "Network/Clip",
+      "bindSuccess": [
+        188,
+        188
+      ],
+      "scope": "94f G and b47 this case only; 1887/main not executed"
+    },
+    "fourOriginalStandardGmXtSha256": "37ac232e62340c29f4f6ba94807775b7d39ba3a64d445c75791499c1a811b0ba",
+    "gOriginalReadOnlySource": "../gm-spline-cartesian-review/temp_docs/cartesian-independent-review/original/temp_docs/short-edge-blend-oracle/cartesian-regular-frame/a1-r0.5-t1E-07-reverseFalse-default-self.x_t",
+    "seedProvenance": "PK seed -> GM receive -> GM operation; mode/geometryAuthor does not prove GM construction",
+    "massQualification": "PK point values; no GM modulus three-state Verified qualification"
+  },
+  "independentChecks": {
+    "actualMatrices": 16,
+    "independentComplexDerivativeColumns": 112,
+    "maxDerivativeOutsideInterval": 9.408841978100768e-18,
+    "numericalCrossCheckThresholdOnly": 2e-13,
+    "wrongUnitAxisFormulaExcludedInCases": 8,
+    "invalidCylinderRadiiRejected": [
+      0,
+      -0.7,
+      "NaN",
+      "PositiveInfinity"
+    ],
+    "signedBlendRangeUsesOriginalAbsoluteValue": true,
+    "nearBoundOriginalChartPositionVelocity": true,
+    "wrongQWitnessRejected": true,
+    "farCircleStationStatus": "NotConverged at original point nearest gate; new interval child Schur checked by derivation/source",
+    "originalProductRecheck": {
+      "referenceXtSha256": "b1b0028feca8fd51e0b4b5615d4c34ad81adbee43648dd6c5e320ef9af464655",
+      "gmXtSha256": "37ac232e62340c29f4f6ba94807775b7d39ba3a64d445c75791499c1a811b0ba",
+      "referenceIsOriginalPkOutputNotGmRetransmit": true,
+      "realPkReceive": true,
+      "bodyChecks": 2,
+      "faults": 0,
+      "strictComparePassed": true,
+      "globalResult": 21921,
+      "localResult": 21931,
+      "facePairs": 0,
+      "allowedDiagnosticOnly": "n_cht_pts",
+      "finiteICurves": 3,
+      "lengthBoundPieces": 16,
+      "samplesPerDirection": 17,
+      "maxSampleDistance": 3.3180942870238203e-12,
+      "normalized15PointMass": 3.965693779194955e-9,
+      "samplingNotArbitraryCurveEqualityProof": true,
+      "gmModelingRerun": false
+    }
+  },
+  "reviewFiles": [
+    {
+      "path": "scripts/ReviewNativeConicEvidence.cs",
+      "sha256": "3146847f28212dbea24743cecfc0cd2ada5da6386c4f5a44b3aa1504e8ab7962"
+    },
+    {
+      "path": "scripts/ReviewNativeConic.cs",
+      "sha256": "1f696bd3a6c97e60f97641d34ec54c55745d4c4e41e25e297838f79daea33ee6"
+    },
+    {
+      "path": "docs/Native_Conic_Independent_Review.md",
+      "sha256": "cb25759d3e54b1d31ef4b086f904743cd0d60c6dab20feda453ae6a0e13e5f0d"
+    }
+  ],
+  "reviewAttempts": [
+    {
+      "log": null,
+      "rawExit": 134,
+      "reason": "Initial audit reflection JSON serialization disabled; tool output not separately archived"
+    },
+    {
+      "log": "temp_docs/conic-independent-review/evidence-audit.log",
+      "rawExit": 0,
+      "sha256": "ea451fe7bdff589eb833519bd99152277f94e19a93ca3460db166b41f370c9d9"
+    },
+    {
+      "log": "temp_docs/conic-independent-review/evidence-audit-final.log",
+      "rawExit": 134,
+      "sha256": "0a6105aac70f2ed979c5c0c54fe96ca9cbc8a7bdec304edef0e6725112c2d964",
+      "reason": "Reviewer incorrectly appended newline to receipt comparison"
+    },
+    {
+      "log": "temp_docs/conic-independent-review/evidence-audit-final2.log",
+      "rawExit": 0,
+      "sha256": "02f95dea853fd23e89579d1fe046dc550de5c835a6a8ee3d8e21a1ed9addb1d3"
+    },
+    {
+      "log": "temp_docs/conic-independent-review/risk-product-attempt1.log",
+      "rawExit": 1,
+      "sha256": "c6881188ff0805f4901bb49f2d6b2b728f9f26b1e425274d0911f06d0d2ecbdf",
+      "reason": "Reviewer global using order compile error"
+    },
+    {
+      "log": "temp_docs/conic-independent-review/risk-product-attempt2.log",
+      "rawExit": 1,
+      "sha256": "008b4c46d6501690f379812765337649000009c5508226d3b9210e7379edb89c",
+      "reason": "Reviewer access of fixed buffer through record property compile error"
+    },
+    {
+      "log": "temp_docs/conic-independent-review/risk-product-attempt3.log",
+      "rawExit": 134,
+      "sha256": "555c3208a2e575caece59912d22825b9e9bd8905b7100480824408d86546bc26",
+      "reason": "Reviewer freed null fault array; PK 906 null_arg_address"
+    },
+    {
+      "log": "temp_docs/conic-independent-review/risk-product-attempt4.log",
+      "rawExit": 0,
+      "sha256": "9045df07e76f93abf62b496de2d16a7f5b9b5a49fae177f20a4036a065174bbd",
+      "reference": "native-fresh (GM retransmission of PK product)"
+    },
+    {
+      "log": "temp_docs/conic-independent-review/risk-product-final.log",
+      "rawExit": 0,
+      "sha256": "c1d12434bcf0e10e26f6476223011ce62a6e2d200e08cfafdaa4040d48a9758f",
+      "reference": "native original PK product"
+    }
+  ],
+  "reviewExitEvidence": "Raw exit values returned by execution tool; no contemporaneous separate .exit files were created for reviewer attempts",
+  "notExecutedOrNotSigned": [
+    "45/80/full suite/96 rerun",
+    "baseline full suite",
+    "NativeAOT",
+    "Mac or Windows builds/timing",
+    "new formal ABBA or speedup",
+    "PK performance target",
+    "GM independent seed construction",
+    "GM modulus Verified qualification",
+    "1887 functional integration",
+    "main merge",
+    "portal deployment"
+  ]
+}
