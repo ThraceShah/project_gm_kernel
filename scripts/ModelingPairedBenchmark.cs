@@ -21,7 +21,7 @@ using System.Text.Json.Nodes;
 // non-zero. --validate-fixtures runs the real qualification/summary/exit
 // pipeline over synthesized controlled capture fixtures (no oracle runs).
 
-const string GateVersion="modeling-paired-benchmark-qualification-v2";
+const string GateVersion="modeling-paired-benchmark-qualification-v4";
 
 var scriptDirectory=Path.GetDirectoryName(ScriptPath())!;
 var root=Path.GetFullPath(Path.Combine(scriptDirectory,".."));
@@ -32,18 +32,42 @@ if(args.Contains("--validate-fixtures",StringComparer.Ordinal))
     Console.WriteLine(failures==0?"PASS modeling-paired-benchmark qualification self-test":$"FAIL {failures} fixture verdicts wrong");
     return failures==0?0:3;
 }
-if(args.Contains("--revalidate",StringComparer.Ordinal))
+if(args.Contains("--revalidate",StringComparer.Ordinal)||args.Contains("--revalidate-report",StringComparer.Ordinal))
 {
-    var at=Array.IndexOf(args,"--revalidate");
-    var captureDirectory=args[at+1];var caseToken=args[at+2];var expectedReps=int.Parse(args[at+3],CultureInfo.InvariantCulture);
-    var bench=ResolveCases(caseToken).Single();
-    var capturePath=Path.Combine(captureDirectory,"capture.json");
-    var capture=File.Exists(capturePath)?JsonNode.Parse(File.ReadAllText(capturePath))!.AsObject():null;
-    var text=File.Exists(Path.Combine(captureDirectory,"oracle.log"))?File.ReadAllText(Path.Combine(captureDirectory,"oracle.log")):"";
-    var verdict=Qualify(bench,capture,text,0,false,expectedReps,captureDirectory);
-    Console.WriteLine($"revalidate {caseToken} {captureDirectory}: qualified={verdict.Qualified}");
+    var reportMode=args.Contains("--revalidate-report",StringComparer.Ordinal);
+    Verdict verdict;string scope;string subject;
+    if(reportMode)
+    {
+        // Full re-verification: process state comes from the immutable run
+        // report, so this covers the whole sample contract, not only capture.
+        var at=Array.IndexOf(args,"--revalidate-report");
+        var reportJson=JsonNode.Parse(File.ReadAllText(args[at+1]))!.AsObject();
+        var caseId=args[at+2];var label=args[at+3];
+        var caseNode=reportJson["cases"]!.AsArray().FirstOrDefault(c=>c!["id"]!.GetValue<string>()==caseId)??throw new ArgumentException("case not in report: "+caseId);
+        var sample=caseNode["samples"]!.AsArray().FirstOrDefault(x=>x!["label"]!.GetValue<string>()==label)??throw new ArgumentException("sample not in report: "+label);
+        var captureDirectory=Path.GetDirectoryName(Path.Combine(output,sample["capture"]!.GetValue<string>()))!;
+        var text=File.Exists(Path.Combine(output,sample["oracleLog"]!.GetValue<string>()))?File.ReadAllText(Path.Combine(output,sample["oracleLog"]!.GetValue<string>())):"";
+        var bench=ResolveCases(caseId).Single();
+        verdict=Qualify(bench,File.Exists(Path.Combine(captureDirectory,"capture.json"))?JsonNode.Parse(File.ReadAllText(Path.Combine(captureDirectory,"capture.json")))!.AsObject():null,
+            text,sample["processExit"]!.GetValue<int>(),sample["timedOut"]!.GetValue<bool>(),sample["expectedRepetitions"]!.GetValue<int>(),captureDirectory);
+        scope="full-run (process exit/timeout verified from the immutable report)";
+        subject=caseId+" "+label;
+    }
+    else
+    {
+        var at=Array.IndexOf(args,"--revalidate");
+        var captureDirectory=args[at+1];var caseToken=args[at+2];var expectedReps=int.Parse(args[at+3],CultureInfo.InvariantCulture);
+        var bench=ResolveCases(caseToken).Single();
+        var capturePath=Path.Combine(captureDirectory,"capture.json");
+        var capture=File.Exists(capturePath)?JsonNode.Parse(File.ReadAllText(capturePath))!.AsObject():null;
+        var text=File.Exists(Path.Combine(captureDirectory,"oracle.log"))?File.ReadAllText(Path.Combine(captureDirectory,"oracle.log")):"";
+        verdict=Qualify(bench,capture,text,0,false,expectedReps,captureDirectory);
+        scope="capture-contract only (original process exit/timeout NOT verifiable from capture.json alone; use --revalidate-report for full-run verification)";
+        subject=caseToken+" "+captureDirectory;
+    }
+    Console.WriteLine($"revalidate {subject}: qualified={verdict.Qualified} scope={scope}");
     foreach(var reason in verdict.Reasons)Console.WriteLine("  reason: "+reason);
-    return verdict.Qualified?0:5;
+    return verdict.Qualified?0:reportMode?6:5;
 }
 var mode=Option("--mode","measure");
 if(mode is not ("measure" or "profile"))throw new ArgumentException("--mode must be measure or profile");
@@ -187,14 +211,31 @@ JsonObject RunSample(BenchCase bench,string label,int? repetitions,string runRoo
         Path.Combine("runs",runId,"benchmark","cases",bench.Id,label));
 }
 
-JsonObject FinishSample(BenchCase bench,string label,string caseDirectory,int exitCode,bool timedOut,double wallMs,string text,int expectedReps,string loadBefore,string loadAfter,string relativeDirectory)
+static JsonObject FinishSample(BenchCase bench,string label,string caseDirectory,int exitCode,bool timedOut,double wallMs,string text,int expectedReps,string loadBefore,string loadAfter,string relativeDirectory)
 {
     var capturePath=Path.Combine(caseDirectory,"capture.json");
     var capture=File.Exists(capturePath)?JsonNode.Parse(File.ReadAllText(capturePath))!.AsObject():null;
     var verdict=Qualify(bench,capture,text,exitCode,timedOut,expectedReps,caseDirectory);
     var timings=capture?["timings"]?.AsArray();
-    var gm=timings==null?[]:timings.Where(t=>t!["kernel"]!.GetValue<string>()=="gm").Select(t=>SafeMs(t.AsObject())).ToArray();
-    var pk=timings==null?[]:timings.Where(t=>t!["kernel"]!.GetValue<string>()=="pk").Select(t=>SafeMs(t.AsObject())).ToArray();
+    // Raw arrays keep capture row order verbatim. Authoritative GM/PK pairing
+    // joins by rep owner (timing.step), never by array position: row order is
+    // not part of the capture contract and permutations must not change any
+    // ratio or the cold/warm attribution of rep 0.
+    var gmRows=new List<(int Rep,double Ms)>();var pkRows=new List<(int Rep,double Ms)>();
+    if(timings!=null)foreach(var row in timings.OfType<JsonObject>())
+    {
+        var kernel=row["kernel"]?.GetValue<string>();
+        var entry=(Owner:row["step"] is JsonValue v&&v.TryGetValue<int>(out var owner)?owner:-1,Ms:SafeMs(row));
+        if(kernel=="gm")gmRows.Add(entry);else if(kernel=="pk")pkRows.Add(entry);
+    }
+    var gm=gmRows.Select(r=>r.Ms).ToArray();var pk=pkRows.Select(r=>r.Ms).ToArray();
+    var pairs=new JsonArray();
+    foreach(var group in gmRows.GroupBy(r=>r.Rep).OrderBy(g=>g.Key))
+    {
+        var partners=pkRows.Where(r=>r.Rep==group.Key).ToList();
+        if(group.Count()==1&&partners.Count==1)
+            pairs.Add(new JsonObject{["rep"]=group.Key,["gmMs"]=JsonValue.Create(group.Single().Ms),["pkMs"]=JsonValue.Create(partners[0].Ms)});
+    }
     var benchLines=new JsonArray();
     var profileLines=new JsonArray();
     foreach(var line in text.Split('\n'))
@@ -212,7 +253,8 @@ JsonObject FinishSample(BenchCase bench,string label,string caseDirectory,int ex
         ["qualificationReasons"]=new JsonArray(verdict.Reasons.Select(r=>(JsonNode?)JsonValue.Create(r)).ToArray()),
         ["gmMs"]=new JsonArray(gm.Select(v=>(JsonNode?)(double.IsFinite(v)?JsonValue.Create(v):null)).ToArray()),
         ["pkMs"]=new JsonArray(pk.Select(v=>(JsonNode?)(double.IsFinite(v)?JsonValue.Create(v):null)).ToArray()),
-        ["repetitions"]=gm.Length,
+        ["pairsByRep"]=pairs,
+        ["repetitions"]=pairs.Count,
         ["expectedRepetitions"]=expectedReps,
         ["benchPhases"]=benchLines,
         ["profiles"]=profileLines,
@@ -358,15 +400,25 @@ static JsonObject Summarize(JsonArray samples,string kind)
     var cold=new List<double>();var coldPk=new List<double>();var warm=new List<double>();var warmPk=new List<double>();var unqualified=new JsonArray();
     foreach(var row in samples.OfType<JsonObject>())
     {
-        var g=((JsonArray)row["gmMs"]!).Select(v=>SafeNodeMs(v)).ToArray();
-        var p=((JsonArray)row["pkMs"]!).Select(v=>SafeNodeMs(v)).ToArray();
         var qualified=row["qualified"]!.GetValue<bool>();
-        for(var i=0;i<Math.Min(g.Length,p.Length);i++)
+        if(!qualified)
         {
-            var isWarm=row["kind"]!.GetValue<string>()=="warm"&&i>0;
-            if(!qualified){unqualified.Add((JsonNode?)JsonValue.Create($"{row["label"]}[{i}] gm={g[i].ToString("F3",CultureInfo.InvariantCulture)} pk={p[i].ToString("F3",CultureInfo.InvariantCulture)} reasons={string.Join("+",((JsonArray)row["qualificationReasons"]!).Select(r=>r!.GetValue<string>()))}"));continue;}
-            if(isWarm){warm.Add(g[i]);warmPk.Add(p[i]);}
-            else{cold.Add(g[i]);coldPk.Add(p[i]);}
+            var raw=((JsonArray)row["gmMs"]!).Select(SafeNodeMs).Zip(((JsonArray)row["pkMs"]!).Select(SafeNodeMs)).ToArray();
+            for(var i=0;i<raw.Length;i++)
+                unqualified.Add((JsonNode?)JsonValue.Create($"{row["label"]}[row {i}] gm={raw[i].First.ToString("F3",CultureInfo.InvariantCulture)} pk={raw[i].Second.ToString("F3",CultureInfo.InvariantCulture)} reasons={string.Join("+",((JsonArray)row["qualificationReasons"]!).Select(r=>r!.GetValue<string>()))}"));
+            continue;
+        }
+        // Authoritative pairs join by rep owner; cold/warm attribution comes
+        // from the stable rep identity (rep 0 of a warm process is that
+        // process's cold sample), never from array position.
+        if(row["pairsByRep"] is not JsonArray pairs){unqualified.Add((JsonNode?)JsonValue.Create($"{row["label"]}: qualified sample without pairsByRep"));continue;}
+        foreach(var pair in pairs.OfType<JsonObject>())
+        {
+            var rep=pair["rep"]!.GetValue<int>();
+            var g=SafeNodeMs(pair["gmMs"]);var p=SafeNodeMs(pair["pkMs"]);
+            var isWarm=row["kind"]!.GetValue<string>()=="warm"&&rep>0;
+            if(isWarm){warm.Add(g);warmPk.Add(p);}
+            else{cold.Add(g);coldPk.Add(p);}
         }
     }
     var gm=kind=="warm"?warm:cold;var pk=kind=="warm"?warmPk:coldPk;
@@ -399,18 +451,35 @@ static JsonObject Summarize(JsonArray samples,string kind)
 
 static int ValidateFixtures(string directory,TextWriter log)
 {
-    var bench=BenchCases()[0];var failures=0;
+    var bench=BenchCases()[0];var blend=BenchCases().First(b=>b.ApiKind=="blend");var failures=0;
     Directory.CreateDirectory(directory);
-    void Check(string name,bool expectedQualified,Action<JsonObject> mutate)
+    JsonObject RunFixture(string name,BenchCase contract,int reps,Action<JsonObject> mutate,out JsonObject sample)
     {
         var caseDirectory=Path.Combine(directory,name);Directory.CreateDirectory(caseDirectory);
-        var capture=ValidCapture(bench,2);mutate(capture);
+        var capture=ValidCapture(contract,reps);mutate(capture);
         File.WriteAllText(Path.Combine(caseDirectory,"capture.json"),capture.ToJsonString());
-        var verdict=Qualify(bench,capture,"PASS synthetic",0,false,2,caseDirectory);
-        var ok=verdict.Qualified==expectedQualified;
-        if(!ok)failures++;
-        log.WriteLine($"  fixture {name}: qualified={verdict.Qualified} expected={expectedQualified} {(ok?"ok":"WRONG")} {(verdict.Qualified?"":string.Join("; ",verdict.Reasons))}");
+        File.WriteAllText(Path.Combine(caseDirectory,"oracle.log"),"PASS synthetic");
+        sample=FinishSample(contract,name,caseDirectory,0,false,1000,"PASS synthetic",reps,"synthetic","synthetic",name);
+        return sample;
     }
+    IEnumerable<string> Reasons(JsonObject sample)=>((JsonArray)sample["qualificationReasons"]!).Select(r=>r!.GetValue<string>());
+    void Check(string name,bool expectedQualified,Action<JsonObject> mutate)
+    {
+        RunFixture(name,bench,2,mutate,out var sample);
+        var qualified=sample["qualified"]!.GetValue<bool>();
+        var ok=qualified==expectedQualified;
+        if(!ok)failures++;
+        log.WriteLine($"  fixture {name}: qualified={qualified} expected={expectedQualified} {(ok?"ok":"WRONG")} {(qualified?"":string.Join("; ",Reasons(sample)))}");
+    }
+    void BlendCheck(string name,bool expectedQualified,Action<JsonObject> mutate)
+    {
+        RunFixture(name,blend,1,mutate,out var sample);
+        var qualified=sample["qualified"]!.GetValue<bool>();
+        var ok=qualified==expectedQualified;
+        if(!ok)failures++;
+        log.WriteLine($"  fixture {name}: qualified={qualified} expected={expectedQualified} {(ok?"ok":"WRONG")} {(qualified?"":string.Join("; ",Reasons(sample)))}");
+    }
+    // GPT v2 counterexamples: expectations are FALSE and must never soften.
     Check("valid",true,_=>{});
     Check("capture-errors",false,c=>c["captureErrors"]=new JsonArray((JsonNode?)JsonValue.Create("boom")));
     Check("nan-time",false,c=>c["timings"]![0]!.AsObject().Remove("ms"));
@@ -424,29 +493,75 @@ static int ValidateFixtures(string directory,TextWriter log)
     Check("missing-mass-check",false,c=>c["checks"]!.AsArray().RemoveAt(c["checks"]!.AsArray().Count-1));
     Check("failing-check",false,c=>c["checks"]![3]!["status"]=JsonValue.Create("fail"));
     Check("missing-body-check",false,c=>{var checks=c["checks"]!.AsArray();for(var i=checks.Count-1;i>=0;i--)if(checks[i]!["id"]!.GetValue<string>()=="0-False-body-check")checks.RemoveAt(i);});
-    // GPT-proven v2 misjudgments (must reproduce as wrongly-qualified before
-    // the v3 closure fix; expectations are FALSE and must not be softened).
     Check("gpt-deleted-steps",false,c=>c.Remove("steps"));
     Check("gpt-unparseable-step-id",false,c=>c["steps"]![0]!["id"]=JsonValue.Create("operation-abc"));
     Check("gpt-required-diagnostic",false,c=>{foreach(var check in c["checks"]!.AsArray())check!["status"]=JsonValue.Create("diagnostic");});
     Check("gpt-extra-bad-row",false,c=>c["timings"]!.AsArray().Add(new JsonObject{["step"]=99,["kernel"]="bogus",["ms"]=-5.0,["error"]=901,["resultStatus"]=901}));
-    var blend=BenchCases().First(b=>b.ApiKind=="blend");
-    void BlendCheck(string name,bool expectedQualified,Action<JsonObject> mutate)
-    {
-        var caseDirectory=Path.Combine(directory,name);Directory.CreateDirectory(caseDirectory);
-        var capture=ValidCapture(blend,1);mutate(capture);
-        File.WriteAllText(Path.Combine(caseDirectory,"capture.json"),capture.ToJsonString());
-        var verdict=Qualify(blend,capture,"PASS synthetic",0,false,1,caseDirectory);
-        var ok=verdict.Qualified==expectedQualified;
-        if(!ok)failures++;
-        log.WriteLine($"  fixture {name}: qualified={verdict.Qualified} expected={expectedQualified} {(ok?"ok":"WRONG")} {(verdict.Qualified?"":string.Join("; ",verdict.Reasons))}");
-    }
+    Check("gpt-duplicate-check-id",false,c=>c["checks"]!.AsArray().Add(c["checks"]![0]!.DeepClone()));
+    Check("gpt-orphan-owner",false,c=>c["timings"]![2]!["step"]=JsonValue.Create(7));
     BlendCheck("blend-valid",true,_=>{});
     BlendCheck("blend-missing-fault-check",false,c=>{var checks=c["checks"]!.AsArray();for(var i=checks.Count-1;i>=0;i--)if(checks[i]!["id"]!.GetValue<string>()=="0-True-blend-fault")checks.RemoveAt(i);});
-    // The summary/exit semantics: qualified subsets may be reported but the
+    // GPT v3 counterexample: the capture is LEGAL (owner-joined pairs are
+    // rep0=(10,1) ratio 10 and rep1=(100,10) ratio 10) but row order is
+    // permuted. Verdict must stay qualified and every ratio/cold-warm
+    // attribution must come from rep identity, never array position.
+    void AssertOrderFixture(string name,JsonObject sample)
+    {
+        var qualified=sample["qualified"]!.GetValue<bool>();
+        var warm=Summarize(new JsonArray(sample),"warm");
+        var cold=Summarize(new JsonArray(sample.DeepClone()),"cold");
+        var warmRatios=((JsonArray)warm["sampleRatios"]!).Select(SafeNodeMs).ToArray();
+        var coldRatios=((JsonArray)cold["sampleRatios"]!).Select(SafeNodeMs).ToArray();
+        var ok=qualified&&warmRatios.Length==1&&warmRatios[0]==10.0&&coldRatios.Length==1&&coldRatios[0]==10.0
+            &&((JsonArray)warm["gmMs"]!)[0]!.GetValue<double>()==100.0&&((JsonArray)warm["pkMs"]!)[0]!.GetValue<double>()==10.0
+            &&((JsonArray)cold["gmMs"]!)[0]!.GetValue<double>()==10.0&&((JsonArray)cold["pkMs"]!)[0]!.GetValue<double>()==1.0;
+        if(!ok)failures++;
+        log.WriteLine($"  fixture {name}: qualified={qualified} warmRatio={(warmRatios.Length==1?warmRatios[0].ToString(CultureInfo.InvariantCulture):"n/a")} coldRatio={(coldRatios.Length==1?coldRatios[0].ToString(CultureInfo.InvariantCulture):"n/a")} {(ok?"ok":"WRONG (rep1 must pair GM100 with PK10 => ratio 10; rep0 GM10/PK1 => cold ratio 10; identity from rep owner)")}");
+    }
+    void OrderFixture(string name,JsonObject capture)
+    {
+        var caseDirectory=Path.Combine(directory,name);Directory.CreateDirectory(caseDirectory);
+        File.WriteAllText(Path.Combine(caseDirectory,"capture.json"),capture.ToJsonString());
+        File.WriteAllText(Path.Combine(caseDirectory,"oracle.log"),"PASS synthetic");
+        AssertOrderFixture(name,FinishSample(bench,"warm",caseDirectory,0,false,1000,"PASS synthetic",2,"synthetic","synthetic",name));
+    }
+    // The persisted original counterexample byte-exact (review branch commit
+    // 588af88, docs/reviews/advanced-modeling/qualifier-v3-a8ca-evidence/).
+    var originalPath=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","tests","KernelTests","Fixtures","qualifier","reordered-timings.capture.json");
+    if(File.Exists(originalPath))OrderFixture("gpt-order-fixture-original",JsonNode.Parse(File.ReadAllText(originalPath))!.AsObject());
+    else{failures++;log.WriteLine("  fixture gpt-order-fixture-original: WRONG (persisted original capture missing)");}
+    // Reviewer's exact insertion code path (same bytes), plus permutation
+    // invariance over any step/timing row order (gm-first, pk-first, reversed).
+    JsonObject InsertionCapture(int[] order)
+    {
+        var capture=ValidCapture(bench,2);
+        var rows=capture["timings"]!.AsArray();
+        rows[0]!["ms"]=10.0;rows[1]!["ms"]=1.0;rows[2]!["ms"]=100.0;rows[3]!["ms"]=10.0;
+        var permuted=new JsonArray();foreach(var index in order)permuted.Add(rows[index]!.DeepClone());
+        capture["timings"]=permuted;
+        return capture;
+    }
+    OrderFixture("gpt-order-fixture-insertion",InsertionCapture([0,3,2,1]));
+    string SummaryOf(JsonObject capture,string name)
+    {
+        var caseDirectory=Path.Combine(directory,name);Directory.CreateDirectory(caseDirectory);
+        File.WriteAllText(Path.Combine(caseDirectory,"capture.json"),capture.ToJsonString());
+        File.WriteAllText(Path.Combine(caseDirectory,"oracle.log"),"PASS synthetic");
+        var sample=FinishSample(bench,"warm",caseDirectory,0,false,1000,"PASS synthetic",2,"synthetic","synthetic",name);
+        AssertOrderFixture(name,(JsonObject)sample.DeepClone());
+        return Summarize(new JsonArray(sample),"warm").ToJsonString()+"|"+Summarize(new JsonArray(sample.DeepClone()),"cold").ToJsonString();
+    }
+    var reference=SummaryOf(InsertionCapture([0,1,2,3]),"order-identity");
+    var invariant=reference==SummaryOf(InsertionCapture([0,2,1,3]),"order-gm-first")
+        &&reference==SummaryOf(InsertionCapture([1,3,0,2]),"order-pk-first")
+        &&reference==SummaryOf(InsertionCapture([3,2,1,0]),"order-reversed");
+    if(!invariant)failures++;
+    log.WriteLine($"  fixture order-permutation-invariance: {(invariant?"ok":"WRONG (summary must be invariant under every step/timing row order)")} ");
+    // Summary/exit semantics: qualified subsets may be reported but the
     // unqualified sample stays verbatim and the run-level gate stays closed.
     var summaryProbe=new JsonArray();
-    summaryProbe.Add(new JsonObject{["label"]="warm",["kind"]="warm",["qualified"]=true,["qualificationReasons"]=new JsonArray(),["gmMs"]=new JsonArray(1.0,1.0),["pkMs"]=new JsonArray(1.0,1.0)});
+    summaryProbe.Add(new JsonObject{["label"]="warm",["kind"]="warm",["qualified"]=true,["qualificationReasons"]=new JsonArray(),["gmMs"]=new JsonArray(1.0,1.0),["pkMs"]=new JsonArray(1.0,1.0),
+        ["pairsByRep"]=new JsonArray(new JsonObject{["rep"]=0,["gmMs"]=1.0,["pkMs"]=1.0},new JsonObject{["rep"]=1,["gmMs"]=1.0,["pkMs"]=1.0})});
     summaryProbe.Add(new JsonObject{["label"]="warm",["kind"]="warm",["qualified"]=false,["qualificationReasons"]=new JsonArray((JsonNode?)JsonValue.Create("missing check")),["gmMs"]=new JsonArray(1.0,1.0),["pkMs"]=new JsonArray(1.0,1.0)});
     var summary=Summarize(summaryProbe,"warm");
     var subsetClean=summary["countedRepetitions"]!.GetValue<int>()==1&&summary["diagnosticOnly"]!.GetValue<bool>()&&summary["unqualifiedSamples"]!.AsArray().Count==2;
