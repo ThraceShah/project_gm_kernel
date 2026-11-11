@@ -141,11 +141,13 @@ export const ChecksTable: React.FC<ChecksTableProps> = ({ checks, evidenceBaseDi
 export const GroupedChecks: React.FC<ChecksTableProps> = ({ checks, evidenceBaseDir }) => {
   const groups = new Map<string, CheckItem[]>();
   for (const check of checks ?? []) {
-    const group = /equivalence|BODY_compare/.test(`${check.id} ${check.label}`) ? '原主比较验收记录'
-      : /body-check|BODY_check/.test(`${check.id} ${check.label}`) ? 'BODY_check'
+    const group = /equivalence|BODY_compare/.test(`${check.id} ${check.label}`) ? '原主比较验收记录（PK_DEBUG_BODY_compare + type / regions）'
+      : /body-check|BODY_check/.test(`${check.id} ${check.label}`) ? 'BODY_check 有效性'
       : /-mass-/.test(check.id) ? '物性量'
-      : /-api$/.test(check.id) ? 'API return'
-      : '辅助与拓扑计数 / 故障枚举 / 原进程 exit';
+      : /-count-\d+$/.test(check.id) ? '拓扑重复计数'
+      : /-api$|-blend-fault$|-body-count$/.test(check.id) ? '操作契约：API return / blend fault / 输出体数量'
+      : /oracle-exit/.test(check.id) ? '原进程 / 场景 exit'
+      : '其他原始验收记录';
     if (!groups.has(group)) groups.set(group, []);
     groups.get(group)!.push(check);
   }

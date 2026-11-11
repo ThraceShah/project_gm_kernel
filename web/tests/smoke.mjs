@@ -486,6 +486,9 @@ async function inspectionChecks(page, latest, shot) {
 
   // Find an actual unchanged entity by raycast; a missed pick must fail the check.
   await page.getByText('复位视角').click();
+  // The operation-facing underside is predominantly modified geometry. Show
+  // real unchanged context instead of relying on the former oversized pick cone.
+  await page.selectOption('[data-testid="select-standard-view"]', 'iso');
   await page.waitForTimeout(400);
   const host = await bbox(page, '[data-testid="viewer-canvas-host"]');
   const mesh = meshJson(latest, latest.manifest.cases.find((c) => c.id === blend).steps[0].gm.after);

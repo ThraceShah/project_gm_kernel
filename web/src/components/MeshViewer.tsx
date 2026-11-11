@@ -72,7 +72,6 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
   const controlsRef = useRef<OrbitControls | null>(null);
   const currentMeshGroupRef = useRef<THREE.Group | null>(null);
   const isSyncingFromExternal = useRef<boolean>(false);
-  const pickThresholdRef = useRef<number>(0.1);
   const measuredFocus = useMemo(() => extractOperationFocus(meshData, toolMeshes), [meshData, toolMeshes]);
   const measuredFocusRef = useRef(measuredFocus);
   const visibilityDirtyRef = useRef(true);
@@ -129,8 +128,6 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
       controls.enableDamping = false;
       controls.update();
       controls.enableDamping = damping;
-
-      pickThresholdRef.current = (pose.far - pose.near) * 0.0005;
 
       if (containerRef.current) {
         containerRef.current.dataset.cameraPos = `${pose.position.x.toFixed(2)},${pose.position.y.toFixed(2)},${pose.position.z.toFixed(2)}`;
@@ -500,23 +497,50 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
     const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
     const raycaster = new THREE.Raycaster();
-    raycaster.params.Line = { threshold: pickThresholdRef.current };
-    raycaster.setFromCamera(new THREE.Vector2(x, y), cameraRef.current);
+    const camera = cameraRef.current;
+    const group = currentMeshGroupRef.current;
+    const bounds = new THREE.Box3().setFromObject(group);
+    const maxDistance = camera.position.distanceTo(bounds.getCenter(new THREE.Vector3())) + bounds.getSize(new THREE.Vector3()).length() / 2;
+    const worldPerPixel = (distance: number) => 2 * distance * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) / (rect.height * camera.zoom);
+    // Line is world-space; Line2 is screen-space. The broad-phase tolerance
+    // must not make a nearby ordinary edge beat the actual highlighted stroke.
+    raycaster.params.Line = { threshold: worldPerPixel(maxDistance) * 3 };
+    raycaster.params.Line2 = { threshold: 1.5 }; // include antialiased stroke pixels
+    raycaster.setFromCamera(new THREE.Vector2(x, y), camera);
 
-    const intersects = raycaster.intersectObjects(currentMeshGroupRef.current.children, true);
-    if (intersects.length > 0) {
-      // Find first hit entity with an id
-      const hit = intersects.find((i) => i.object.userData && i.object.userData.id)?.object;
-      if (hit && hit.userData && hit.userData.id) {
-        onSelectEntity?.({
-          type: hit.userData.type,
-          id: hit.userData.id,
-          role: hit.userData.role,
-          triangleCount: hit.userData.triangleCount,
-          vertexCount: hit.userData.vertexCount,
-        });
-        return;
-      }
+    const intersects = raycaster.intersectObjects(group.children, true).filter((i) => i.object.userData.id);
+    const faces = intersects.filter((i) => i.object.userData.type === 'face');
+    const opaqueFace = faces.find((i) => {
+      const material = (i.object as THREE.Mesh).material;
+      return (Array.isArray(material) ? material : [material]).some((m) => m.depthWrite && m.opacity > 0);
+    });
+    const edges = intersects.filter((i) => i.object.userData.type === 'edge').map((i) => {
+      const point = (i.pointOnLine ?? i.point).clone().project(camera);
+      const pixels = Math.hypot((point.x - x) * rect.width / 2, (point.y - y) * rect.height / 2);
+      const materials = (i.object as THREE.Line).material;
+      const material = (Array.isArray(materials) ? materials[0] : materials) as THREE.Material & { isLineMaterial?: boolean; linewidth?: number };
+      const halfWidth = material.isLineMaterial ? (material.linewidth ?? 1) / 2 : 0.5;
+      return { intersection: i, pixels, stroke: pixels <= halfWidth + 0.75 };
+    }).filter(({ intersection, pixels }) => pixels <= 3 && (!opaqueFace || intersection.distance <= opaqueFace.distance + worldPerPixel(intersection.distance) * 1.5));
+    const strokes = edges.filter((e) => e.stroke);
+    const candidates = strokes.length ? strokes : edges;
+    candidates.sort((a, b) => {
+      const depth = a.intersection.distance - b.intersection.distance;
+      return Math.abs(depth) > worldPerPixel(a.intersection.distance) * 1.5 ? depth
+        : b.intersection.object.renderOrder - a.intersection.object.renderOrder || a.pixels - b.pixels;
+    });
+    // Transparent context does not write depth, so a visible stroke remains
+    // pickable through it. Opaque foreground faces still occlude hidden edges.
+    const hit = candidates[0]?.intersection.object ?? faces[0]?.object;
+    if (hit) {
+      onSelectEntity?.({
+        type: hit.userData.type,
+        id: hit.userData.id,
+        role: hit.userData.role,
+        triangleCount: hit.userData.triangleCount,
+        vertexCount: hit.userData.vertexCount,
+      });
+      return;
     }
     onSelectEntity?.(null);
   };
