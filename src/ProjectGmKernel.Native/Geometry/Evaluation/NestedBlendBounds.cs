@@ -392,7 +392,12 @@ internal static partial class JointNestedBlendEvaluation
             if(SplineContactMatches(cache[uv],source,boxes[uv],boxes[uv+1]))continue;
             var status=CacheSplineContact(program,source,boxes[uv],boxes[uv+1],ref cache[uv]);if(status!=AlgorithmStatus.Success)return status;
         }
-        for(var column=0;column<n;column++)
+        var firstColumn=0;
+        if(PlaneSplinePointColumns(program,nodes,boxes,parameter,fixedCharts,cache,matrix,out var pointStatus))
+        {
+            if(pointStatus!=AlgorithmStatus.Success)return pointStatus;firstColumn=3;
+        }
+        for(var column=firstColumn;column<n;column++)
         {
             ModelingPerformance.ResidualDirection();
             variables[column]=new(boxes[column],1);var status=IntervalResidual(program,nodes,variables[..n],parameter,equations[..n],fixedCharts,cache);if(status!=AlgorithmStatus.Success)return status;

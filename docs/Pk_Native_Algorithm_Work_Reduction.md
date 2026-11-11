@@ -1,6 +1,6 @@
 # 原生建模算法减量：命令内重复求界
 
-本页记录 `perf/pk-native-algorithm-work-reduction` 的开发检查点。整合起点为 `270e2b6`：已接受的固定功能源码 `f9c59201c0b9c5d103dee45124e3f43ca59a0921` 与首包性能源码合并。当前 Native 源码子树为 `769803239b613bae7c8e7560dd1e22e241464877`。本轮尚未独立接受、集成主分支或上线，未取得新的正式 GM/PK 倍率；首包历史验收与发布记录不变。
+本页记录 `perf/pk-native-algorithm-work-reduction` 的开发检查点。整合起点为 `270e2b6`：已接受的固定功能源码 `f9c59201c0b9c5d103dee45124e3f43ca59a0921` 与首包性能源码合并。命令缓存检查点的 Native 源码子树为 `769803239b613bae7c8e7560dd1e22e241464877`。本轮尚未独立接受、集成主分支或上线，未取得新的正式 GM/PK 倍率；首包历史验收与发布记录不变。
 
 ## 已确认的瓶颈
 
@@ -42,6 +42,22 @@
 实际求界减少 156,218 次，恰等于新增成功命中 65,745 次与失败状态命中 90,473 次之和。各用途的求界失败、排空和非单调计数也相同。开发进程 GM API 观测值从 17,074.566 ms 到 6,659.693 ms；两次不是正式固定窗口 ABBA，不据此签发加速倍率，也不与首包旧窗口的 PK 倍率混用。
 
 原始操作记录分别为 `temp_docs/pk-native-algorithm-work/root-shape.log`（SHA256 `641e6dbf52546ad7759555c3e4e92ab480e7de008cb326d25062212da95581b9`）和 `command-bound-reuse-operation.log`（SHA256 `a1d7c89c4273cb69f0e6ce0b650daaf15aac7f7c19602f59a4cd34f2c40f345c`）；同目录保留各自原始退出码、capture 和固定源码 diff。
+
+## plane/spline 五变量系统的位置列
+
+后续 Native 候选子树为 `5b4c6104c600b0194bb543e2dc11efa89e2f0f1f`。在一个 plane、一个 spline、单个隐式 occurrence、三个 XYZ 变量及两个原 UV 变量的系统中，固定 UV 时 XYZ 仿射进入各原生方程。三个位置列共享同一原 spline contact hull、支撑法向和归一化切向；CHART scale、支撑顺序、normal sense、offset 及全部原区间运算保留。两个 UV 列继续完整方向求导，其他系统不采用此特化。没有替换曲线、曲面、UV 或证明模型。
+
+20 项相关测试通过，新增矩阵测试覆盖有理/非有理、两种支撑顺序、负 sense、非零 offset、非单位 CHART scale、原边界外延、退化法向和零托管分配；全部 25 个矩阵区间端点与原五次方向求导逐位一致。完整 curved、reloaded curved 和独立 plane/NURBS fillet 均通过真实 PK 的同类操作、接收、BODY_compare、BODY_check、有限曲线与质量检查，两个脚本进程原始退出码均为 0。根单元/根数/SSI/winding 与上一检查点一致，Jacobian 数也相同。
+
+| 完整操作 | Jacobian 数 | 原全残差方向调用 | 当前全残差方向调用 | 共享几何量计算的位置列 |
+|---|---:|---:|---:|---:|
+| curved block subtract | 18,464 | 92,320 | 36,928 | 55,392 |
+| reloaded curved block subtract | 62,358 | 311,790 | 124,716 | 187,074 |
+| plane/NURBS fillet | 12,232 | 61,160 | 24,464 | 36,696 |
+
+位置列仍有实际计算，不能把全残差调用减少 60% 当作 CPU 减少 60%。开发 GM API 观测值 curved 为 1,579.495→1,537.568 ms，reloaded curved 为 3,366.862→3,399.365 ms，NURBS 为 2,340.209→2,118.656 ms；没有正式测量窗口，不能签发倍率或认定微小时间差的因果。
+
+原始结果在 `temp_docs/pk-native-algorithm-work/plane-spline-point-columns.log`、`curved-spline-columns.log`、`nurbs-spline-columns.log`，及同名退出码、TRX/capture。三份日志 SHA256 依次为 `6a18620e971cfef5345d62599df5079fcbfc6b94f01b37a674f2ea7cd8e9b140`、`5af33d05e1846adda70f373850e9563be1f36aae77d40076e733fd2668d15e89`、`742317d7a336bbac4e88a590ba5ba6b4239aab2fdaa74c5a70a90fca1e525863`。此候选仍待最终独立复核，整体 PK 性能目标没有完成。
 
 ## 调研与撤下的候选
 
