@@ -227,7 +227,35 @@ ratio=100，真实 rep1 应为 100/10=10，rep0cold 归属也被位置破坏。c
 透明记录两个中间 bug：自检 JsonNode 双 parent 崩溃、旧 report 字段缺失 NRE。
 S1 仍等 v4 独立 gate，未启动任何正式计时。
 
-## 11. 复现
+## 11. S1 短 ABBA 实测（v4 独立 gate 通过后，2026-01-11 02:27:54–02:32:49Z）
+
+v4 关键门由独立 GPT（ctx_c56d93eb0f69）通过后按授权直接执行；序列化保护
+独立小提交 b9c3f3c（非有限 pair 存 null+reason，qualification 逻辑未动），
+其余实现保持 1d341a4e 冻结。顺序为**跨 case AB/BA**（A-short→B-short→
+B-solid→A-solid；非每 case 自身对称，单 warm 样本局限如实保留）。
+
+| step | 侧/进程 | cold rep0 GM/PK ms | warm rep1 GM/PK ms | load 变化 |
+| --- | --- | ---: | ---: | --- |
+| A-short | base 04c | 25500.5 / 24.67 | **24434.9** / 1.57 | 2.7→3.8 |
+| B-short | cand b9c3f3c | 24120.7 / 25.11 | **23277.2** / 1.60 | 4.0→7.7（突变） |
+| B-solid | cand b9c3f3c | 2179.7 / 2.90 | **1617.9** / 2.11 | 5.5→5.3 |
+| A-solid | base 04c | 2119.0 / 21.44 | **1463.5** / 1.58 | 5.1→4.9 |
+
+- **严格成功门通过**：4/4 runner exit 0、overallQualified=True、每样本产物齐备、
+  base/candidate 全部 check 数值（status/gm/pk）**逐项相等 0 差异**（负载无关）。
+- **窗口受污染**（标受干扰）：load 2.7→7.7 突变（B-short warm 处于峰值），
+  四个 warm 绝对值均高于干净窗口（历史 shortedge 16.0s/solidblend 0.98s vs
+  本轮 23–24s/1.46–1.62s）；单 warm 样本/跨 case AB/BA 不足以分离优化效应。
+- 观测差：shortedge −4.7%（B 在更差负载下更快，方向与删零预期一致但不严格）、
+  solidblend +10.6%（成对相邻、负载相近，但该 case 预期效应 ~1% 低于 n=1
+  噪声底）；方向不一致 → **未建立可测收益，按规则不进 S2**，不抽好样本。
+- raw 全保留：`temp_docs/modeling-performance/opta/s1-run.log`、两侧
+  `runs/20261111T0227*|0229*|0232*/benchmark/report.json`（A 侧在 base 树）。
+- 结论：严格门过、收益**受干扰未定**；待自然回到可比负载（≤~2.5）后允许
+  同 S1 一次干净复跑（同 4 进程，非 S2）以定收益与否，否则以
+  “gate-passed/benefit-inconclusive（污染）”收尾。
+
+## 12. 复现
 
 ```sh
 # 合同测试 + 逐位 dump（base/candidate 各一次，diff 为空）
