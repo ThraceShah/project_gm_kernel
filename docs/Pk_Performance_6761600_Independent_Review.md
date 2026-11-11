@@ -4,7 +4,7 @@ Review branch: `review/pk-performance-6761600`. This is the performance candidat
 
 ## Status and fixed sources
 
-Source and independent Linux correctness review: no blocking implementation defect found within the stated applicability. The immutable Mac operation package and its 20 processes / 60 pairs have passed independent raw-evidence audit, within the fixed-window scope below. The full-suite original receipt has also been audited: **1877 total, 1875 passed, 2 failed, 0 skipped, raw external exit 1**. Same-platform original baseline evidence is pending to finish classification of those failures; no full-suite success or PK-target achievement is granted.
+**Final decision: independently accepted within the fixed production/operation/evidence scope below; no blocking implementation defect found and no review work remains.** The immutable Mac operation package and its 20 processes / 60 pairs passed independent raw-evidence audit. The full suite remains **1877 total, 1875 passed, 2 failed, 0 skipped, raw external exit 1**; original same-Mac fixed-baseline/candidate focused runs reproduce both failures with the same semantics, supporting their classification as existing failures. This is neither full-suite success nor PK-target achievement, integration or deployment.
 
 | Role | Commit | `src` tree |
 |---|---|---|
@@ -78,7 +78,7 @@ Raw local logs, exits, TRX and fresh capture remain under `temp_docs/pk-performa
 
 The independent fresh comparison's effective mask has max_diffs=1024, all_tests=false, acc_dev_tests=false, tol_dev_tests=true, and num/tol/class/sense/missing/non_match all true. Counts are 2 regions / 2 shells / 10 faces / 23 edges / 15 vertices. Finite ICurve comparison covers three edges, endpoint maximum about 3.32e-12 and length delta maximum about 4.70e-12; these checks are additional to body comparison. Original oracle's worst normalized mass value is about 3.97e-9, below 1e-7. This is a single correctness execution, not a speed measurement qualification.
 
-The documented Mac baseline has `BlendIntersectionTests.NativeCurveTubeBoundsItsSupportingBlendParameterAndDerivative` returning `NotConverged`; its reuse-disabled wrapper exposes the same behavior. In this Linux filtered execution both tests passed. This platform/run difference does not erase historical Mac failures, prove their resolution, or establish full-suite success. The final Mac suite failed these two tests as detailed below; attribution to a prior Mac baseline requires original same-platform evidence.
+The Mac baseline has `BlendIntersectionTests.NativeCurveTubeBoundsItsSupportingBlendParameterAndDerivative` returning `NotConverged`; its reuse-disabled wrapper exposes the same behavior. In this Linux filtered execution both tests passed. This platform/run difference does not erase the Mac failures, prove their resolution, or establish full-suite success. Original same-Mac baseline/candidate failure evidence has now been audited below; the failures remain open and are not newly observed candidate failures in this comparison.
 
 ## Final package/performance audit
 
@@ -140,6 +140,36 @@ The twelve record arithmetic/support tests are actually present in this TRX and 
 
 The author's receipt declares source `6761600` / `src` tree `01e03aa9…` at launch. No compiled test-assembly hash was captured then; neither a subsequent source manifest nor current rebuilt DLL hashes can retroactively attest to that run. Acceptance of the historical suite is therefore limited to the archived execution and declared source context, with this source-binding gap explicit. No new Mac suite, Linux full-suite replacement or launch attestation was manufactured.
 
-The supplied `ecfff3a` document records an earlier failure, but the two received packages do not contain its original Mac baseline failure run. Review `957ce708` is a Linux guard review and cannot fill that gap. The coordinator was asked to relay already-saved same-Mac baseline log/TRX/exit/source provenance; final “existing, not newly introduced” classification is held pending that evidence. Derived audit: `docs/Pk_Performance_6761600_Suite_Audit.json`.
+At the first suite checkpoint, the two initial packages supplied only the `ecfff3a` document's earlier-failure account. Review `957ce708` is a Linux guard review and could not fill that gap. Original same-Mac evidence was then relayed in the additive archive below. `docs/Pk_Performance_6761600_Suite_Audit.json` preserves that intermediate, pending-classification checkpoint; the final quality audit supersedes its pending classification without rewriting it or the original evidence.
+
+## Same-Mac failure comparison and final acceptance
+
+The final additive package `../gm-delivery-board/temp_docs/incoming/mac-performance/mac-modeling-baseline-failures.tar.gz` has SHA-256 `0c93eb4ebedc840f0bb5975dffb66903ae912950e3a11d2f01132cc2f7cd57fd`, 21,283 bytes. Independent traversal verified all 24 regular/directory members and 150,196 file bytes against their extracted originals under `temp_docs/pk-performance-review/mac-baseline-original/`, with no rooted/upward/link/device member. Raw comparison report SHA-256 is `215c4dbe56c83fa19cd4d4cceb9ab20629754a25290cffe9b0b9da403035a326`.
+
+The same Apple M4 / Arm64 / .NET 10.0.11 / SDK 10.0.400 comparison ran 12:41:36–12:43:19 UTC, after the performance ABBA and original full suite finished. Both environment logs actually report native `ENV_READY`, Mac PK38 and pinned PKToy; the optional derived corpus was absent and these two managed tests did not require it. Each tracked source tree was checked clean by the archived runner. Each side was built once (original build exit **0**) and tested once with `--no-build --no-restore`, using precisely the two named tests (original test exit **1**, no timeout).
+
+| Original focused side | Source commit / `src` tree | Results | Actual test/native DLL fingerprints recorded before and after |
+|---|---|---|---|
+| Baseline | `ecfff3aae1dbbe9dd48adbbdf2e8e635da735938` / `e314cc2307c5e77ea6f2b7685ba17836ae4ef5c8` | 2 total / 0 passed / 2 failed | `fbac856f5b0204731b7319214f58f161c5f047690686c6b47bb024c187251f77` / `d9f7724b7d556a3f9f5779417f734183ed802229d9e956e1983254f96bf438bf` |
+| Candidate | `003e7a4d9613f919468eafe7c09fba19eaab7761` / `01e03aa9ed10a8145556872e98fa1677e17a4cb7` | 2 total / 0 passed / 2 failed | `79a5453a186e2f6efbad71572f36b539fd2b4acc7762c3092d74bd2d79778fb8` / `fa3672316730cfacdd76358a51223177d02dc1b1b407bb9ca84245e27014db21` |
+
+The later candidate checkout includes documentation/test additions; its production tree is identical to measured `6761600`. Both actual test-file hashes match each other and the fixed review source: `BlendIntersectionTests.cs` = `36f5549180214fb95c86fc6c7787532953eab962b87085aa4705887183856d23`, guard test = `7979ab090034c14d73a224692c4de1cfd6e9aea371b4ae16649649b71d119769`. Before/after DLL hashes are stable in each original run. The baseline test tree `6a463cb475e12a18b4d96f1e40ee6e309234d1e0` matches the actual `ecfff3a:tests` object.
+
+Every build/test log and raw exit matches its recorded hash/value. Both actual TRX files contain the same two failed names and Expected Success / Actual NotConverged messages as the original full suite; both logs locate the original assertion at `tests/KernelTests/BlendIntersectionTests.cs:155`, the `BoundSpineSupportUv` success gate. Baseline TRX SHA-256 is `2bb0f2ea027ee90a8fb36f8079f3eedaa52684707401b4a4ba2af0c610b88acd`; candidate is `9c1b4eb4131b59bc9d881d526b4b492e16f02d08b2f1137939b7b08b9109e5d2`. The comparison runner's exit 0 means matching failures, never passing tests.
+
+The package also retains the earlier Mac `04c7ed0` valid-environment single-test log: it executed the original assertion and failed with NotConverged / external EXIT=1. Its preceding attempt failed in the fixture constructor with schema-access error 970; the test body did not execute, so that earlier attempt is an environment failure, not modeling evidence. The fresh exact-`ecfff3a` comparison, rather than historical labels or the Linux pass, is the decisive controlled evidence for the two existing failures.
+
+Final reproduction: `MSBUILDDISABLENODEREUSE=1 dotnet run --file scripts/ReviewSuiteSettlement6761600.cs -c Release -p:UseSharedCompilation=false -p:BuildInParallel=false` (writes a fresh derived output; an existing output is rejected, or give another output path relative to the script). It independently audited both additive packages and actual TRX semantics, with audit exit 0. Final derived quality result is `docs/Pk_Performance_6761600_Final_Quality_Audit.json`, SHA-256 `a421461e0400185e20564f3aa43fe86f5f75f90236ec97c1bf799e3a1702c9c1`. It retains the original suite exit 1 and launch-DLL binding limitation; the later stable focused DLL fingerprints do not retroactively fill that historical gap.
+
+The following may be handed to the dashboard owner after coordinator acceptance:
+
+- Production optimization at fixed `6761600` / `src` tree `01e03aa9…`: accepted for its scoped no-UV/non-BCurve tube record implementation, with bounded extra stack storage and unchanged proof/quality gates; no implementation blocker found.
+- Five independent operation results: 20 qualified original processes / 60 pairs, per-repetition capture/mesh/quality provenance and rep-2-only retained XT. Publish the warm/cold observations and all five rows above with profiling/small-sample/host limitations.
+- Shortedge: observed 1.59342x speedup / 37.2420% less warm elapsed time; still 9465.56563x PK. Publish graph-build/node/rebind work alongside residual-call counts; do not label it 99.7% arithmetic or CPU removal.
+- Planar: +30.334% observed warm median with overlapping ranges, zero Jacobians and unassigned cause; retain this observation. The other three small changes establish no material benefit.
+- Quality: full suite **1875/1877, two existing same-Mac-baseline failures, external exit 1**; twelve record tests passed inside the suite, separate maximum-capacity test passed outside it, independent q2 19-test/probe/fresh-XT checks passed. Keep the full-suite historical DLL-binding gap explicit.
+- Scope exclusions: no claim of general-model speed, successful downstream combinations, `f9c5920` computational acceptance, PK parity, all-green suite, merge or live deployment. This reviewer modified only review documents and offline/managed probes and did not publish.
+
+This complete independent review is settled. The two support-parameter failures and remaining PK performance gap are unresolved project work; they do not become new successful results or disappear because the bounded optimization/evidence review is accepted.
 
 No implementation was repaired, no thresholds/expected results changed, no author evidence removed, and no deployment/merge/hostproxy action performed. The benchmark's own qualification must not be extended to general modeling, the computational candidate's known failures, or achievement of the PK performance target.
