@@ -92,36 +92,6 @@ internal static partial class JointNestedBlendEvaluation
         return AlgorithmStatus.Success;
     }
 
-    // At Q=C(q), J_G=(I-A)J_F, where A has the old Q gradients
-    // of the Blend and foot rows in the three explicit-residual columns.
-    // A^2=0, so R_G=R_F*(I+A), followed by inverse positive radial
-    // row scales and the inverse cylinder-row subtraction. This is only a
-    // point preconditioner; actual interval inclusion and nearest decide.
-    private static AlgorithmStatus ConicSubstitutionInverse(in NestedBlendProgram program,ReadOnlySpan<Occurrence> nodes,
-        ReadOnlySpan<double> state,Span<double> inverse)
-    {
-        var root=program.Spines[nodes[0].Spine];var row=program.Surfaces[root.First].IsBlend?0:1;
-        var blend=program.Surfaces[row==0?root.First:root.Second];var delta=Sub(Point(state,0),Point(state,3));var length=Math.Sqrt(Dot(delta,delta));
-        if(!(length>0)||!double.IsFinite(length))return AlgorithmStatus.NotConverged;
-        var normal=Scale(delta,blend.NormalSense/length);
-        var status=SpineParameterMap.Series(program,program.Spines[nodes[1].Spine],new TaylorJet(state[6],1),out _,out var tangent);
-        if(status!=AlgorithmStatus.Success)return status;var t=tangent.Value;
-        for(var i=0;i<7;i++)
-        {
-            var a=inverse[i*7+row];var b=inverse[i*7+6];
-            inverse[i*7+3]-=a*normal.X+b*t.X;inverse[i*7+4]-=a*normal.Y+b*t.Y;inverse[i*7+5]-=a*normal.Z+b*t.Z;
-            inverse[i*7+row]/=2*Math.Abs(blend.Range0);
-            var other=program.Surfaces[row==0?root.Second:root.First];
-            if(other.Analytic.Kind==SurfaceClass.Cylinder)
-            {
-                inverse[i*7+1-row]/=2*other.Analytic.Radius;
-                inverse[i*7+1-row]+=inverse[i*7+row]*blend.NormalSense/other.NormalSense;
-            }
-        }
-        foreach(var value in inverse)if(!double.IsFinite(value))return AlgorithmStatus.NotConverged;
-        return AlgorithmStatus.Success;
-    }
-
 #if KERNEL_TEST_HOOKS
     internal static AlgorithmStatus TestConicSubstitutionMatrix(in NestedBlendProgram program,ReadOnlySpan<IntervalNumber> boxes,
         Span<IntervalNumber> matrix,Span<IntervalNumber> directional)
