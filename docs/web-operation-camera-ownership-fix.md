@@ -1,0 +1,18 @@
+# Case camera ownership UI slice
+
+This slice replaces the sidebar-only mesh clearing workaround with selection ownership at render time. Each completed mesh request records its fixture/run/case/step/stage key. App passes its geometry to the viewports only while that key matches the current selection. Camera context includes the run and case, so snapshots and playback within that case retain the manually chosen view. Navigating invalidates the previous fit, including navigation through an empty case; only drawable geometry consumes the destination's initial fit.
+
+The independent d75 review's failure remains recorded in `docs/web-operation-inspection-d75-independent-review.md` on review branch `ThraceShah/gm-operation-inspection-d75-review` at `a3d8db052b6d8c01f96092b08bb574111bf3a34c`. The starting implementation here was `eb3c5e630518bd9eb105993673e6f54d78204194`: its sidebar workaround already passed the original single-direction reproduction (exit 0, stale=false). This change does not claim that the original reproduction still failed at eb3.
+
+## Verification
+
+- `npm run build` in `web/`: exit 0, TypeScript and Vite production build; existing bundle-size warning remains.
+- `node tests/smoke.mjs --inspection-only` in `web/`: exit 0, 38 checks passed, zero failures and uncaught page errors. Evidence: `temp_docs/v3b-fix/inspection.log` and `temp_docs/inspection-remediation.json`.
+- The unchanged independent reproduction was copied into `temp_docs/v3b-fix/v3b-repro.mjs` to preserve the reviewer's original evidence. Both script hashes are `4fe0044f29b9cbc7dd036b7aa40d7c8de078e9f220b24ca81200d030f9b3d455`. Its fixed-build run exited 0, stale=false; output is `temp_docs/v3b-fix/fixed-original-repro.log`. Its embedded candidate label still names d75 and is not the tested implementation revision.
+- With real mesh responses delayed 350 ms, the new case's loading render has empty body IDs and zero triangles in both panes. The subsequent Boolean snapshots have their actual body IDs (`gm:27`, `pk:600`) and 24 triangles per pane, including the tools. Both automatic fits match the corresponding explicit Header reset: GM position `4.34,3.55,2.57`, target `0.40,0.40,1.00`; PK position `4.19,3.40,2.57`, target `0.25,0.25,1.00`. These are observed poses, not general expected coordinates for arbitrary models.
+- Reverse navigation restores the actual blend's 96-triangle initial view. Leaving a manually rotated blend through a missing case clears geometry and fits the returning valid model. Aborting two actual destination primary mesh requests clears both panes and displays request errors; retrying via another case fits the recovered Boolean correctly.
+- The original Header reset → manual rotation → after snapshot and playback checks pass in both panes. Existing tool, selection, unavailable-isoparametrics and mobile checks also pass.
+- Actual screenshots `temp_docs/inspection-new-case-auto-fit.png` and `temp_docs/inspection-reverse-case-fit.png` were opened and checked: both models fit within their panes. The recovered view is saved as `temp_docs/inspection-recovered-case-fit.png`.
+- `git diff 610e3ce --name-only -- web/data` is empty. Historical meshes, manifests and index remain byte-identical to the main baseline. No capture, ledger, refresh, exporter, kernel, acceptance thresholds or live services changed in this slice.
+
+This is a UI ownership fix for independent review. It does not claim shared fair framing for unequal GM/PK bounds, completed true U/V receipt integration, new geometry acceptance or deployment. Real curved-snapshot UV export remains a separate follow-up; no receipt or XT is grafted onto historical data.

@@ -388,6 +388,77 @@ async function inspectionChecks(page, latest, shot) {
   };
   const camera = () => page.$$eval('[data-testid="viewer-canvas-host"]', (els) => els.map((e) => e.dataset.cameraPos));
   const blend = 'solid-blend.plane-nurbs';
+  const booleanCase = 'planar-boolean.overlap-two-axes-subtract';
+  const poses = () => page.getByTestId('viewer-canvas-host').evaluateAll((els) => els.map((e) => ({ position: e.dataset.cameraPos, target: e.dataset.cameraTarget })));
+  const closePose = (a, b) => ['position', 'target'].every((key) => {
+    const x = a[key].split(',').map(Number), y = b[key].split(',').map(Number);
+    return Math.hypot(...x.map((v, i) => v - y[i])) < 0.05;
+  });
+  await select(blend);
+  const blendPose = await poses();
+  const initialBlendStats = await viewerStats(page);
+  // Delay the real, uncached destination response; the loading render may not
+  // lend the previous case's geometry to the new camera context.
+  const delayedMeshes = '**/meshes/*.json*';
+  await page.route(delayedMeshes, async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 350));
+    await route.continue();
+  });
+  await page.click(`[data-case-id="${booleanCase}"]`);
+  await page.waitForTimeout(100);
+  const loading = await viewerStats(page);
+  check('V3b: delayed new case draws no previous mesh', loading.every((s) => s.triangles === 0 && s.bodyId === ''), JSON.stringify(loading));
+  await waitForMeshes(page);
+  await page.unroute(delayedMeshes);
+  await page.waitForTimeout(500);
+  const booleanStats = await viewerStats(page);
+  const booleanPose = await poses();
+  const expectedBoolean = latest.manifest.cases.find((c) => c.id === booleanCase).steps[0];
+  for (const [i, side] of ['gm', 'pk'].entries()) {
+    const inputMeshes = [expectedBoolean[side].before, ...(expectedBoolean[side].tools || [])].map((p) => meshJson(latest, p));
+    const expectedTriangles = inputMeshes.flatMap((m) => m.faces).reduce((n, f) => n + f.indices.length / 3, 0);
+    check(`V3b: actual destination geometry ${side}`, booleanStats[i].bodyId === inputMeshes[0].bodyId && booleanStats[i].triangles === expectedTriangles, JSON.stringify(booleanStats[i]));
+    check(`V3b: destination automatically changes camera ${side}`, !closePose(blendPose[i], booleanPose[i]), JSON.stringify({ before: blendPose[i], auto: booleanPose[i] }));
+  }
+  await page.screenshot({ path: shot('inspection-new-case-auto-fit.png') });
+  await page.getByText('复位视角', { exact: true }).click();
+  await page.waitForTimeout(600);
+  const explicitBoolean = await poses();
+  check('V3b: automatic Boolean fit agrees with explicit reset', booleanPose.every((p, i) => closePose(p, explicitBoolean[i])), JSON.stringify({ auto: booleanPose, explicit: explicitBoolean }));
+  await select(blend);
+  await page.waitForTimeout(500);
+  const reverse = await poses();
+  check('V3b: reverse navigation draws the original blend geometry', JSON.stringify(await viewerStats(page)) === JSON.stringify(initialBlendStats));
+  check('V3b: reverse navigation restores blend initial fit', reverse.every((p, i) => closePose(p, blendPose[i])), JSON.stringify({ initial: blendPose, reverse }));
+  await page.screenshot({ path: shot('inspection-reverse-case-fit.png') });
+
+  const emptyCase = latest.manifest.cases.find((c) => !c.steps?.length);
+  await dragViewer(page, 0, 60, 30);
+  await page.click(`[data-case-id="${emptyCase.id}"]`);
+  await page.waitForTimeout(200);
+  check('V3b: missing case clears geometry', (await viewerStats(page)).every((s) => s.triangles === 0 && s.bodyId === ''));
+  await select(blend);
+  await page.waitForTimeout(500);
+  const recoveredEmpty = await poses();
+  check('V3b: returning from missing case fits first valid mesh', recoveredEmpty.every((p, i) => closePose(p, blendPose[i])), JSON.stringify(recoveredEmpty));
+
+  // A fresh page actually fetches (rather than cache-hits) the failure target.
+  await page.reload({ waitUntil: 'networkidle' });
+  await waitForMeshes(page);
+  let aborted = 0;
+  await page.route(delayedMeshes, async (route) => { aborted++; await route.abort(); });
+  await page.click(`[data-case-id="${booleanCase}"]`);
+  await page.waitForFunction(() => document.querySelectorAll('[data-testid="viewer-empty"]').length === 2);
+  check('V3b: failed requests leave no previous geometry', aborted >= 2 && (await viewerStats(page)).every((s) => s.triangles === 0 && s.bodyId === ''), `aborted=${aborted}`);
+  check('V3b: both failed panes explain the request error', (await page.getByTestId('viewer-empty').allTextContents()).every((s) => s.includes('网络错误')));
+  await page.unroute(delayedMeshes);
+  await select(blend);
+  await select(booleanCase);
+  await page.waitForTimeout(500);
+  const recoveredFailure = await poses();
+  check('V3b: request recovery fits actual destination', recoveredFailure.every((p, i) => closePose(p, booleanPose[i])), JSON.stringify(recoveredFailure));
+  await page.screenshot({ path: shot('inspection-recovered-case-fit.png') });
+
   await select(blend);
   await page.getByText('复位视角').click();
   await page.waitForTimeout(500);
@@ -400,6 +471,17 @@ async function inspectionChecks(page, latest, shot) {
     const a = orbit[i].split(',').map(Number), b = after[i].split(',').map(Number);
     check(`V3: reset then orbit then snapshot preserves camera ${i}`, Math.hypot(...a.map((x, j) => x - b[j])) < 0.05, JSON.stringify({ orbit: orbit[i], after: after[i] }));
   }
+  await page.locator('[title="自动按快照播放"]').click();
+  await page.waitForTimeout(1700);
+  await page.locator('[title="暂停"]').click();
+  await waitForMeshes(page);
+  const playback = await camera();
+  check('V3: playback preserves manually rotated camera', playback.every((p, i) => {
+    const a = orbit[i].split(',').map(Number), b = p.split(',').map(Number);
+    return Math.hypot(...a.map((x, j) => x - b[j])) < 0.05;
+  }), JSON.stringify({ orbit, playback }));
+  await page.getByText('后态 (After)').click();
+  await waitForMeshes(page);
   await page.screenshot({ path: shot('inspection-reset-snapshot.png') });
 
   // Find an actual unchanged entity by raycast; a missed pick must fail the check.

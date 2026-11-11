@@ -49,6 +49,7 @@ export const App: React.FC = () => {
   // Meshes & Mesh Errors
   const [gmMeshes, setGmMeshes] = useState<MeshData | null>(null);
   const [pkMeshes, setPkMeshes] = useState<MeshData | null>(null);
+  const [loadedMeshKey, setLoadedMeshKey] = useState<string>('');
   const [gmError, setGmError] = useState<string | null>(null);
   const [pkError, setPkError] = useState<string | null>(null);
   const [isLoadingMeshes, setIsLoadingMeshes] = useState<boolean>(false);
@@ -169,6 +170,11 @@ export const App: React.FC = () => {
   }, [selectedCaseId]);
 
   const stepsCount = currentCase?.steps?.length ?? 0;
+  const safeStepIndex = stepsCount > 0 ? Math.min(currentStepIndex, stepsCount - 1) : 0;
+  // An async result belongs to the selection that requested it. Gate at render
+  // time, before child effects can fit a previous case's geometry.
+  const meshKey = JSON.stringify([useFixture, manifestDir, currentCase?.id, safeStepIndex, subState]);
+  const cameraContext = JSON.stringify([useFixture, manifestDir, currentCase?.id]);
   useEffect(() => {
     if (stepsCount > 0 && currentStepIndex >= stepsCount) {
       setCurrentStepIndex(Math.max(0, stepsCount - 1));
@@ -227,6 +233,7 @@ export const App: React.FC = () => {
 
         setGmMeshes(gmRes.data);
         setPkMeshes(pkRes.data);
+        setLoadedMeshKey(meshKey);
         setGmError(gmRes.error);
         setPkError(pkRes.error);
         setIsLoadingMeshes(false);
@@ -242,7 +249,7 @@ export const App: React.FC = () => {
     return () => {
       abortController.abort();
     };
-  }, [currentCase, currentStepIndex, stepsCount, subState, manifestDir, useFixture]);
+  }, [currentCase, currentStepIndex, stepsCount, subState, manifestDir, useFixture, meshKey]);
 
   // Refresh handler: reload index and manifest
   const handleRefresh = () => {
@@ -366,12 +373,6 @@ export const App: React.FC = () => {
               cases={manifestData?.cases || []}
               selectedCaseId={selectedCaseId}
               onSelectCase={(caseId) => {
-                // Batch the context switch with clearing the previous snapshot,
-                // so the new case cannot initially fit the old case's geometry.
-                if (caseId !== selectedCaseId) {
-                  setGmMeshes(null);
-                  setPkMeshes(null);
-                }
                 setSelectedCaseId(caseId);
                 setSidebarOpen(false);
               }}
@@ -452,10 +453,10 @@ export const App: React.FC = () => {
                 {/* 3D Dual Viewports */}
                 <div className="flex-1 relative overflow-hidden min-h-[220px]" data-testid="viewport-region">
                   <ViewportContainer
-                    caseId={currentCase.id}
+                    caseId={cameraContext}
                     operation={currentCase.operation}
-                    gmMesh={gmMeshes}
-                    pkMesh={pkMeshes}
+                    gmMesh={loadedMeshKey === meshKey ? gmMeshes : null}
+                    pkMesh={loadedMeshKey === meshKey ? pkMeshes : null}
                     gmError={gmError}
                     pkError={pkError}
                     isLoading={isLoadingMeshes}

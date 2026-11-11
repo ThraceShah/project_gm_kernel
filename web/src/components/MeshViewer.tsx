@@ -72,6 +72,12 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
   const lastCaseIdRef = useRef<string | undefined>(undefined);
   const lastFocusTriggerIdRef = useRef<number>(-1);
 
+  // Navigation invalidates the previous fit, even when the destination has no mesh.
+  // The geometry effect consumes it only after this context owns drawable geometry.
+  useEffect(() => {
+    lastCaseIdRef.current = undefined;
+  }, [caseId]);
+
   // Latest-prop refs so the scene lifecycle never depends on callback identity.
   const cameraSyncRef = useRef<boolean>(cameraSync);
   const onCameraChangeRef = useRef<((state: CameraSyncState) => void) | undefined>(onCameraChange);
@@ -447,7 +453,7 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
     // If staying in the same case (e.g. user toggles step, plays timeline, or async response arrives),
     // and user has interacted or camera already placed, DO NOT steal/reset the camera!
     const isNewCase = caseId !== lastCaseIdRef.current;
-    if (isNewCase) {
+    if (isNewCase && (faces > 0 || edges > 0)) {
       lastCaseIdRef.current = caseId;
       userInteractedRef.current = false;
       fitOperationAwareView(meshData, toolMeshes, true);
