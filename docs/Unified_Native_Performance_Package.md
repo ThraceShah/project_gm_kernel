@@ -57,7 +57,7 @@
 
 10暖/source中位611.90055→538.6561ms，观察−11.970%，两个进程中位方向都较低。不能把它挂到1654、分拆给各机制、签数值全Qualified或与217fc旧窗相乘。std root22371/roots3518/SSI4956/winding196/budget0保持，新点Jac计入18951，统计方向数不当CPU单位。冷样本与JIT/系统波动原样保留，不签独占CPU/温控。
 
-下一步仅对这个稳定完整候选集中主要算法/集成交界独审，再按固定84c baseline/共同当前runner和质量三态作必要一次同机五操作正式窗口。物性Unresolved不改成几何失败，也不退旧point-only；新窗口性能资格由分层审查决定，不因runner的performanceQualified=false永远禁止记录，但也不能自行变绿。
+后续已对同一稳定Native224完成必要唯一同机五操作窗口，完整原状态、所有冷暖样本及未决/回退见 `docs/Unified_Native_Controlled_Measurement.md`；代码与测量集中独立接受仍待完成。物性Unresolved不改成几何失败，也不退旧point-only；新窗口性能资格由分层审查决定，不因runner的performanceQualified=false永远禁止记录，但也不能自行变绿。
 
 ## 原始证据
 
