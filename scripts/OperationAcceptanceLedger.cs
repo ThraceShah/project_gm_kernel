@@ -12,7 +12,7 @@ internal sealed class OperationAcceptanceLedger
     public string Title { get; set; }
     public string? OutputDirectory { get; set; }
     public string? CheckVersion { get; set; }
-    public string OperationSchemaVersion { get; set; } = "operation-layered-v1";
+    public string OperationSchemaVersion { get; set; } = "operation-layered-v2";
     public int LegacyExitCode { get; set; }
     public double? ScenarioWallElapsedMs { get; set; }
     public double? ScenarioElapsedMs => ScenarioWallElapsedMs;
@@ -272,6 +272,7 @@ internal sealed class OperationRecord
     public string Name { get; }
     public string Role { get; }
     public string Api { get; }
+    public string InterpretationVersion { get; } = "operation-rules-v2";
     public JsonObject? Options
     {
         get => (JsonObject?)_options?.DeepClone();
@@ -414,6 +415,7 @@ internal sealed class OperationRecord
             ["name"] = Name,
             ["role"] = Role,
             ["api"] = Api,
+            ["interpretationVersion"] = InterpretationVersion,
             ["primaryContract"] = PrimaryContract,
             ["terminalStatus"] = TerminalStatus ?? (Status == "not-run" ? "not-run" : null),
             ["sameInput"] = SameInput,

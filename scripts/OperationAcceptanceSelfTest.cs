@@ -9,10 +9,10 @@ void Assert(bool condition, string label)
     if (!condition) throw new InvalidOperationException(label);
     Console.WriteLine("PASS " + label);
 }
-OperationRecord Complete(OperationAcceptanceLedger ledger, string id)
+OperationRecord Complete(OperationAcceptanceLedger ledger, string id,string api="PK_BODY_boolean")
 {
     var options = new JsonObject { ["gm"] = new JsonObject { ["function"] = 1 }, ["pk"] = new JsonObject { ["function"] = 1 } };
-    var op = ledger.BeginOperation(id, "fixture Boolean", api: "PK_BODY_boolean", options: options,
+    var op = ledger.BeginOperation(id, "fixture Boolean", api: api, options: options,
         inputProvenance: new JsonObject { ["scope"] = "isolated-same-input", ["sameInputEvidence"] = "fixture-only" }, sameInput: true);
     op.PrimaryContract = "capture-body-result-v1";
     var requirements = new List<string> { "body-count", "True-body-check", "False-body-check", "equivalence" };
@@ -30,6 +30,8 @@ OperationRecord Complete(OperationAcceptanceLedger ledger, string id)
 var ledger = new OperationAcceptanceLedger("self-test", "recording only");
 var op = Complete(ledger, "body");
 Assert(op.ToJsonObject()["timing"]!["correctnessQualified"]!.GetValue<bool>(), "complete recorded contract qualifies");
+var versioned=Complete(ledger,"boolean-v2","PK_BODY_boolean_2");
+Assert(versioned.ToJsonObject()["interpretationVersion"]!.GetValue<string>()=="operation-rules-v2"&&versioned.PrimaryStatus=="pass","Boolean v2 support requires the recorded v2 interpretation");
 ledger.RecordCheck(op.Id, "auxiliary", "classification", "classification", "fail");
 ledger.RecordCheck(op.Id, "representation", "lifetime", "lifetime", "fail");
 Assert(op.ToJsonObject()["status"]!.GetValue<string>() == "pass" && op.HasAuxiliaryFailure, "primary survives owned auxiliary and representation failures");
@@ -99,6 +101,8 @@ Validate(false, "rejects wrong category", o => o["primaryChecks"]![0]!["category
 Validate(false, "rejects forged parameter hash", o => o["parameterHash"] = "PK_BODY_boolean");
 Validate(false, "rejects tag pretending to be hash", o => o["inputHashes"]!["gm"]!["target"] = "tag27");
 Validate(false, "rejects unsupported API", o => o["api"] = "unknown");
+Validate(false,"rejects unknown interpretation version",o=>o["interpretationVersion"]="unknown-version");
+Validate(false,"rejects Boolean v2 upgrade under legacy interpretation",o=>{o["api"]="PK_BODY_boolean_2";o.Remove("interpretationVersion");});
 Validate(false, "rejects unproven same input", o => o["inputProvenance"] = null);
 Validate(false, "rejects zero GM", o => { o["timing"]!["gmMs"] = 0; o["timing"]!["ratio"] = 0; });
 Validate(false, "rejects wrong boundary", o => o["timing"]!["boundary"] = "scenario");

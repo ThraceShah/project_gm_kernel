@@ -42,7 +42,9 @@ internal static class OperationAcceptanceRules
         var api = Text(op["api"]);
         // These requirements are the existing Compare capture checks: body count,
         // both BODY_check calls, five topology counts, strict compare and 15 mass values.
-        var supported = contract == "capture-body-result-v1" && api is "PK_BODY_boolean" or "PK_BODY_boolean_2" or "PK_BODY_fix_blends" or "PK_SURF_create_blend";
+        var interpretation = Text(op["interpretationVersion"]) ?? "operation-rules-v1";
+        var supportedApi = api is "PK_BODY_boolean" or "PK_BODY_fix_blends" or "PK_SURF_create_blend" || interpretation == "operation-rules-v2" && api == "PK_BODY_boolean_2";
+        var supported = (interpretation is "operation-rules-v1" or "operation-rules-v2") && contract == "capture-body-result-v1" && supportedApi;
         var complete = supported;
         var ordinal = Number(op["ordinal"]);
         if (ordinal is null || ordinal < 0 || ordinal != Math.Truncate(ordinal.Value)) { Reason("invalid-ordinal"); complete = false; }
