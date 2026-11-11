@@ -4,7 +4,7 @@ Review branch: `review/pk-performance-6761600`. This is the performance candidat
 
 ## Status and fixed sources
 
-Source and independent Linux correctness review: no blocking implementation defect found within the stated applicability. Final artifact/performance acceptance is **pending receipt and audit of the author's immutable Mac package and full-suite original results**. Numbers supplied in the task are not yet independently accepted measurements.
+Source and independent Linux correctness review: no blocking implementation defect found within the stated applicability. The immutable Mac operation package and its 20 processes / 60 pairs have now passed independent raw-evidence audit, within the fixed-window scope below. **Final delivery acceptance still awaits the author's full-suite original settlement/TRX/exit receipt**; no full-suite success or PK-target achievement is granted.
 
 | Role | Commit | `src` tree |
 |---|---|---|
@@ -82,8 +82,39 @@ The documented Mac baseline has `BlendIntersectionTests.NativeCurveTubeBoundsIts
 
 ## Final package/performance audit
 
-Pending the coordinator-provided package location and hash. Required audit: immutable tar hash and member/source scope; report/log/capture/mesh/XT hashes and provenance; all 20 original process exits and 60 pairs; every rep's checks/effective masks/15 numeric properties and owners; recomputed ABBA cold/warm distributions and GM/PK ratios; work counts and author suite raw results/baseline failures. No complete artifact acceptance is granted at this checkpoint.
+The coordinator supplied `../gm-delivery-board/temp_docs/incoming/mac-performance/mac-modeling-performance-6761600-raw.tar.gz`. Its actual SHA-256 is `85be8a3e3d349cd2a755ecd7a67722746ec5cc9a391aaf389b79a6d294ce0333` (5,287,400 bytes). Independent TarReader traversal verified 556 regular-file/directory members, 36,370,821 uncompressed file bytes, no rooted/upward/link/device member, and every extracted file's bytes against its archive stream. It was extracted only to `temp_docs/pk-performance-review/mac-original/`; its script/test/doc snapshots did not overwrite the fixed source.
 
-The task supplied preliminary shortedge warm medians 22593.3101 → 14179.1069 ms (1.5934x, 37.24% less) and candidate pairwise GM/PK median 9465.57x. These remain supplied, unaudited values here until raw-package review. They cannot support an “exceeds PK” claim. Supplied planar movement .5957 → .7764 ms (about +30.33%, overlapping four-value ranges) must remain visible as unassigned variation/regression; sphere/curved/solidblend near -0.40/-0.81/-1% do not establish material benefit. Residual-direction count reduction must retain graph construction/node/rebind work and cannot be reported as 99.7% arithmetic/CPU removal.
+The raw report hash is `0b867277df0f35e5a9be369f7cf17fcd36308a2cbe9db5bea12d0dc080ece418`. It identifies Apple M4 / macOS 27.2 / Arm64 / .NET 10.0.11, SDK 10.0.400, PKToy `d820719b6d8510d623972ab9d8efc65edbc312f9`, PK 38.0.150 / precision 1e-8; fixed-source recording lasted 11:58:28–12:08:07 UTC on 2026-11-11. The archived runner hash `0bf60027909ce7464bb61f3b61397eb52ded7e7af885956a25dcc765c5ff525b` matches the actual fixed-source runner. Each sample's oracle hash matches the corresponding fixed oracle. All twenty log/capture hashes and all 44 retained final-repetition XT hashes match.
+
+`scripts/ReviewPerformanceEvidence6761600.cs` completed with raw exit 0. It audits actual numeric/status/ownership data rather than trusting qualification flags, and emits `docs/Pk_Performance_6761600_Evidence_Audit.json` (SHA-256 `cad1d725334d9a2959971fc777129da52dfaff38d3e5c434db41704d20a23e8b`). It verified:
+
+- 20 original child `Process.ExitCode` values of 0, no timeout or oracle failure text; 60 uniquely owned GM/PK pairs, exact raw/report API interval and ratio agreement, ABBA source order, fixed per-case implementation order and matching GM/PK operation parameters.
+- Actual success result enums: Boolean `21650`, blend no-fault `18391`; zero API errors, two zero-fault full BODY checks per pair (120 total), five equal numeric structure counts per pair and the original equivalence check.
+- All 60 raw strict evidence files have the required effective mask and valid global/local outcomes; equal global-count records and the narrow chart-point diagnostic rule are treated according to the actual PK result semantics.
+- All 900 mass values were independently normalized from their raw GM/PK numbers and compared with the unchanged 1e-7 threshold; worst normalized difference is `5.239703452434893e-9`.
+- 312 distinct, correctly owned before/after/tool mesh files, with actual faces/edge arrays, source commits and GM fresh-XT provenance. Output mesh face/edge counts agree with that repetition's raw structural counts. Spherical inputs correctly have no finite edges.
+- All report work lines equal the original logs; requested Jacobians/directions and pair/SSI/root/budget/winding/bound counters agree across sources **at the same repetition index**. Warm/cold cache history can change those counts between repetition indices, so equality was not asserted across different reps. Every per-process profile API interval matches the corresponding captured GM interval to log-print precision.
+
+The author's summary medians and paired-ratio medians independently reproduce exactly from raw captures. The full cold/warm arrays and actual work are in the derived audit; each source/case has two cold pairs and four warm pairs. Warm results are:
+
+| Operation | Baseline GM ms | Candidate GM ms | Candidate PK ms | GM elapsed change | Candidate median of pairwise GM/PK |
+|---|---:|---:|---:|---:|---:|
+| Sphere subtract | 0.07575 | 0.07545 | 0.26760 | -0.40% | 0.28479x |
+| Planar subtract | 0.59570 | 0.77640 | 1.10575 | **+30.33%** | 0.80082x |
+| Curved block subtract | 917.27970 | 909.81715 | 1.85730 | -0.81% | 488.26694x |
+| Plane/NURBS fillet | 1540.33615 | 1524.97405 | 1.43810 | -1.00% | 1064.27179x |
+| Shortedge fillet | 22593.31015 | 14179.10690 | 1.49920 | **-37.24%** | **9465.56563x** |
+
+Shortedge's observed warm speedup is **1.5934226541x**; its GM ranges are 22482.3177–22646.4120 ms before and 14145.5623–14332.6965 ms after. Cold GM medians are 23684.20885 → 15212.37110 ms and have their own distinct paired GM/PK ratio. The candidate warm paired ratio 9465.56563x is not the ratio of medians (9457.78208x). Process cold means its first operation, not a reset machine or comparable per-implementation JIT state; fixed call order and prior snapshot/receive work matter. Profiling is enabled in both trees. The outer background shell's exit was not captured separately; neither audit exit 0 nor the summary generator's exit is substituted for it.
+
+Planar's observed increase remains visible: baseline warm 0.5930–0.6097 ms and candidate 0.5975–0.9793 ms have overlapping ranges and zero Jacobians. Its cause is unassigned; no repeated ABBA was run to select a passing window. Sphere/curved/solidblend's small changes do not establish material benefit. Author raw load strings support the disclosed approximate 3.51–11.09 one-minute load range, and 3.65–4.81 around shortedge; load average does not certify exclusive API CPU use.
+
+For shortedge warm rep 1, original residual directions fall from 10,113,178 to 27,774, but candidate still executes 223,506 record-build attempts, 33,683,402 nodes and 1,217,266 rebind attempts, with 1,450,110 Jacobians and 10,113,418 requested directions. Both sources retain 4,956 SSI cells, 220,895 root cells, 3,518 roots, 196 winding calls, 275,525 bound requests, 223,331 bound evaluations, 30,727 hits and zero budget failures. These are operation counts, not 99.7% arithmetic/CPU removal.
+
+Archived focused TRX contains twelve passing record tests. The added fifteen-variable capacity test belongs to author documentation/test head `9ddc2fbaecab4aee63e8fe7cc305ce30dc23c6b7`, not the formally measured test set at `6761600`; production tree remains identical. Its first run has an actual failed TRX and external exit 1: decimal `-.3` was outside the exact supplied plane coordinate `-.1*3` enclosure. The corrected test uses the actual supplied coefficient and has a passing TRX and external exit 0; no bound, tolerance or production source was changed. Both original records remain in the tar. The sparse-test TRX/log show twelve passes, but this tar has no separate sparse-test external-exit file; none is invented.
+
+The earlier excluded `controlled/` attempt is not part of the formal 20/60 result; its stopped qualifier/schema mismatch remains historical, without inheriting formal qualification. The full-suite was running when this tar was sealed; its mutable log is intentionally absent. A separate immutable settlement/TRX/original-exit receipt is still required before this overall review is closed.
+
+**Scoped package conclusion:** accept the immutable evidence for these five fixed independent operations and the observed shortedge elapsed improvement, subject to the stated warm/cold, profiling, small-sample and per-repetition artifact limits. The PK performance target remains unmet for curved Boolean, solidblend and shortedge. This does not sign general-model performance, downstream combinations, computational candidate `f9c5920`, full-suite success, integration or publication.
 
 No implementation was repaired, no thresholds/expected results changed, no author evidence removed, and no deployment/merge/hostproxy action performed. The benchmark's own qualification must not be extended to general modeling, the computational candidate's known failures, or achievement of the PK performance target.
