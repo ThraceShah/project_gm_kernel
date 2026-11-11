@@ -8,7 +8,7 @@ using System.Security.Cryptography;
 using static parasolid;
 
 var root=Path.GetFullPath(Path.Combine(Path.GetDirectoryName(Source())!,".."));
-if(args.Length!=2||Path.IsPathRooted(args[1]))throw new ArgumentException("new output name and project-relative native XT input");
+if(args.Length is not (2 or 3)||args.Skip(1).Any(Path.IsPathRooted))throw new ArgumentException("new output name and project-relative native XT input, or reference/actual XT pair");
 var output=Path.Combine(root,"temp_docs","native-acceptance-contract",args[0]);
 if(Directory.Exists(output))throw new InvalidOperationException("Existing evidence is immutable");
 Directory.CreateDirectory(output);
@@ -16,6 +16,21 @@ ParasolidMassProperties.BeginEvidence(output);
 if(!ParasolidScriptHost.TryStartSession("native acceptance contract",out var host,out var reason))throw new Exception(reason);
 using(host)unsafe
 {
+    if(args.Length==3)
+    {
+        var a=File.ReadAllBytes(Path.Combine(root,args[1]));var b=File.ReadAllBytes(Path.Combine(root,args[2]));
+        Save(output,"reference.x_t",a);Save(output,"actual.x_t",b);
+        var reference=Receive(a);var actual=Receive(b);
+        try
+        {
+            Full(reference);Full(actual);
+            var agreement=ParasolidMassProperties.Compare(reference,actual,"maximum-native-accuracy",accuracy:1);
+            Console.WriteLine($"MASS_ONLY_DIAGNOSTIC status={agreement}; no modeling operation acceptance asserted");
+            Environment.ExitCode=agreement==MassAgreement.Verified?0:agreement==MassAgreement.Unresolved?2:1;
+        }
+        finally{Check(PK_ENTITY_delete(1,&actual));Check(PK_ENTITY_delete(1,&reference));}
+        return;
+    }
     double precision;Check(PK_SESSION_ask_precision(&precision));
     Console.WriteLine($"PRECISION {precision:R}");
     ProbePrimitive(precision);
