@@ -15,12 +15,14 @@ try
     var output=Path.GetFullPath("../web/data/display/real-uv",scripts);
     if(Directory.Exists(output))throw new IOException("Display package already exists; choose a fresh reviewed generation, never overwrite evidence.");
     Directory.CreateDirectory(output);
+    Directory.CreateDirectory(Path.Combine(output,"meshes"));
+    Directory.CreateDirectory(Path.Combine(output,"display"));
     var items=new JsonArray();var refs=new Dictionary<string,string>();
     foreach(var receiptPath in Directory.GetFiles(directory,"*.receipt.json").Order())
     {
         var receipt=JsonNode.Parse(File.ReadAllBytes(receiptPath))!.AsObject();
         var kernel=receipt["kernel"]!.GetValue<string>();var stage=receipt["stage"]!.GetValue<string>();
-        if(kernel is not ("gm" or "pk")||stage is not ("before" or "after")||!refs.TryAdd(kernel+"-"+stage,kernel+"-"+stage+".mesh.json"))throw new InvalidDataException("Ambiguous receipt kernel/stage.");
+        if(kernel is not ("gm" or "pk")||stage is not ("before" or "after")||!refs.TryAdd(kernel+"-"+stage,"meshes/"+kernel+"-"+stage+".mesh.json"))throw new InvalidDataException("Ambiguous receipt kernel/stage.");
         var isoName=kernel+"-"+stage+".iso.json";var isoPath=Path.Combine(output,isoName);
         var start=new ProcessStartInfo("dotnet"){WorkingDirectory=scripts,RedirectStandardOutput=true,RedirectStandardError=true};
         foreach(var a in new[]{"run","--file","ExportWebIsoparametrics.cs","--","--snapshot",Path.GetRelativePath(scripts,receiptPath),"--output",Path.GetRelativePath(scripts,isoPath)})start.ArgumentList.Add(a);
@@ -35,6 +37,13 @@ try
         File.Copy(Path.GetFullPath(receipt["meshPath"]!.GetValue<string>(),directory),Path.Combine(output,meshName));
         var item=new JsonObject{["meshPath"]=meshName,["path"]=isoName,["sha256"]=Hash(File.ReadAllBytes(isoPath))};
         foreach(var key in new[]{"sourceRun","sourceSnapshot","kernel","caseId","sampleId","stepId","stage","sourceMeshSha256","inputXtSha256","snapshotReceiptSha256","executionSha256","producerCommit","captureCodeSha256","receiptCodeSha256"})item[key]=iso[key]!.DeepClone();
+        // Preserve the exact signed mesh bytes, including their relative receipt link.
+        // That public link resolves to an explicitly derived summary, never a raw XT dependency.
+        var summary=item.DeepClone().AsObject();summary.Remove("path");summary.Remove("sha256");
+        summary["schemaVersion"]=1;summary["type"]="render-only-receipt-summary";summary["rawXtPublished"]=false;
+        summary["originalReceiptSha256"]=iso["snapshotReceiptSha256"]!.DeepClone();
+        summary["meshPath"]="../"+meshName;summary["derivativePath"]="../"+isoName;summary["derivativeSha256"]=item["sha256"]!.DeepClone();
+        Write("display/"+receipt["sourceSnapshot"]!.GetValue<string>()+".receipt.json",summary);
         items.Add(item);
         Console.WriteLine($"VERIFIED {kernel}/{stage} receipt={Path.GetFileName(receiptPath)} faces={iso["faces"]!.AsArray().Count} mesh={iso["sourceMeshSha256"]}");
     }
@@ -58,7 +67,7 @@ try
         ["notes"]=new JsonArray("显式独立显示源 r2-curved-receipt-eecab6d / sample-0 / operation-1；原 live17 数据与性能不变。","U（青）=常数 u；V（紫）=常数 v。仅精确矩形 trim 的非平面支持；未覆盖面 unavailable。","真实 GM 导出 XT 由 PK receive 仅供显示求值；原始 XT 不公开，必要 hash 与双精度曲线完整提供。","parameterHash 尚未独立核验，保持 null；receipt 记录值仅作来源诊断。")
     };
     Write("manifest.json",new JsonObject{["schemaVersion"]=1,["run"]=new JsonObject{["id"]="real-uv-display",["commit"]=commit,["generatedAt"]=generated,["pkVersion"]="38.0.150",["scope"]="render-only; one case, before/after; no benchmark or acceptance"},["cases"]=new JsonArray(testCase)});
-    Console.WriteLine($"DISPLAY_PACKAGE bytes={Directory.GetFiles(output).Sum(p=>new FileInfo(p).Length)}; no raw XT, no live index changes");
+    Console.WriteLine($"DISPLAY_PACKAGE bytes={Directory.GetFiles(output,"*",SearchOption.AllDirectories).Sum(p=>new FileInfo(p).Length)}; no raw XT, no live index changes");
     void Write(string name,JsonObject value)=>File.WriteAllText(Path.Combine(output,name),value.ToJsonString());
     return 0;
 }
