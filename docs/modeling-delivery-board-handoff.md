@@ -50,8 +50,10 @@
 
 ## 当前待交接
 
-awaiting 计算：固定接受的完整 M0–M5 候选、原执行及显示产物或准确补采命令。
+awaiting 计算：固定接受的完整 M0–M5 候选、原执行及显示产物或准确补采命令。计算来源 `ctx_b6fbbccd3586` 继续执行中。
 
-awaiting 性能：固定接受候选及 Mac 同 host GM/PK raw 样本/工作量成果、口径与正确性证据。
+awaiting 性能：固定接受候选及 Mac 同 host GM/PK raw 样本/工作量成果、口径与正确性证据。Mac 负责人已换为 `ctx_5d80758d2e0b`（Pi codex/gpt-6.1-sol high）；原 `ctx089` 已停止，不再联系。2026-11-11 协调者预告（**尚非发布事件，不据此发布**）：Native 固定 `03931f6`，runner HEAD `6761600fef20602342cd9dc81bd4f7e4fb85d939` 仅修 runner 根 capture 实际格式并保留最终 rep XT，Native 树 `01e03aa9ed10a8145556872e98fa1677e17a4cb7` 不变；基线 `ecfff3a`，Native 树 `e314cc2307c5e77ea6f2b7685ba17836ae4ef5c8`。五类操作同 Mac ABBA、每进程 3 fresh 输入正式采集仍在运行，report 位于 Mac 树 `temp_docs/pk-native-work-reduction/controlled-final/report.json`；当前仅首 sphere 控制 qualified，不能签完整性能交付。
+
+收包方式（已与协调者约定）：最终包固定后由协调者经现有 SSH 拷入本树 `temp_docs/incoming/mac-performance/` 并核 SHA256，不搭新通道、不在接收前重测；联邦 worker 直发被 CLI 拒绝，统一经协调者转发。`temp_docs/` 为 gitignore，原包不入 Git。
 
 准备期间没有运行 PK、Refresh、性能测试或发布命令，没有修改线上状态；下一步由上述完整交付事件触发。
