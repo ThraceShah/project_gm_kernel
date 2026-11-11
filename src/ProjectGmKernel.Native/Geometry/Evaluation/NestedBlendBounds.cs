@@ -2,6 +2,7 @@ using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Geometry.Bounds;
 using ProjectGmKernel.Native.Runtime;
+using System.Runtime.CompilerServices;
 
 namespace ProjectGmKernel.Native.Geometry.Evaluation;
 
@@ -140,6 +141,13 @@ internal static partial class JointNestedBlendEvaluation
         output[6]=frame.X.Derivative;output[7]=frame.Y.Derivative;output[8]=frame.Z.Derivative;return AlgorithmStatus.Success;
     }
 
+    // SkipLocalsInit contract: every scratch below is active only on its
+    // written prefix [0..n) (or [0..n*n)); all reads are write-dominated on
+    // success and unreachable on failure, per the inventory in
+    // docs/Interval_Bounds_Initialization_OptA.md. The explicit rhs.Clear,
+    // Assemble's matrix.Clear and IntervalJacobian's cache.Clear keep their
+    // load-bearing semantics and are NOT removed by this attribute.
+    [SkipLocalsInit]
     private static AlgorithmStatus BoundSegment(in NestedBlendProgram program,BlendSurfaceIndex surface,BlendSpineIndex spine,in SurfaceParameterBox domain,Span<IntervalNumber> output,Span<BufferCount> reachBudget=default,
         Span<IntervalNumber> curvature=default,BufferOffset curvatureSide=0,Span<IntervalNumber> supportParameter=default,BufferOffset parameterSide=0,
         Span<IntervalNumber> captureWitness=default,ReadOnlySpan<IntervalNumber> requireWitness=default,BufferOffset rootChart=-1,

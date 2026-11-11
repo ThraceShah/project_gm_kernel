@@ -274,3 +274,32 @@ MSBUILDDISABLENODEREUSE=1 dotnet run --file scripts/NestedBlendBenchmark.cs -c R
   （Assert Expected Success / Actual **NotConverged**，BlendIntersectionTests.cs:155）
   在 610e3ce 独立复跑稳定失败，属基线既有问题（与 bounds 收敛域相关，未修，
   与本调查改动无关；建议归并到 bounds 优化线一并处理）。
+
+## 附录 A（勘误与口径更正，2026-01-11，不修改原文/原 trace/原样本）
+
+独立 review 与协调端重算后，以下口径在本文正文写得不准，以本附录为准：
+
+1. **Bound 成本口径**：14711.7 ms/223,331 = **65.874 µs/次是 Bound 评估的总成本**
+   （BoundTicks 包含其内部全部工作，含区间清零），不能再叠加“memset ≈70 µs/call”
+   —— 二者是同一时间的两种分解，正文第 6 节的加法式并列有重复计算之嫌。
+2. **bound/rootcell 比**：223,331/220,895 = **1.011 次 bound/记录 root cell**，
+   正文“每 root 60+ 次重求”是把 root（3,518 个）与 root cell（220,895 个）混用；
+   ≈63.48 是**每记录 root 的 bound 评估数**。另 `BoundEvaluations` 是高层
+   BoundCore 计数，一次可能展开多个 `BoundSegment`，故“evals→call”换算只是上界。
+3. **清零量口径**：reviewer x64 实测 sizeof：interval 16/dual 32/jet 72/contact 352；
+   `BoundSegment` 声明 stackalloc 合计 **226,612 B**（本机 ARM64 JIT 反汇编零初始化
+   循环合计 226,288 B+单点 624 B），`cache.Clear()` 22,176 B/次；
+   成功路径 `IntervalJacobian` **≥7 次**（1 expansion + 6 refine）而非 6 次。
+   “≈330KB/call、≈147GB”仅为估算口径，**未实测验证 traffic**；
+   trace 中 ZeroMemoryInternal 归属（31.4569/33.0606 s=95.15% inclusive，
+   直接父帧 IntervalJacobian ≈31.23 s）证明采样到的清零主要是 `cache.Clear`，
+   不能把 95% 解释为全部可去除，也不承诺 30–50% 收益。
+4. **depth3 求值红门**：本机复跑（`nurbs-blend`/`independent-torus-depth3` pass、
+   `depth3.x_t` D0 18.6%）为 **Mac 平台观测**；当时原始 per-fixture 日志与
+   hash-at-run 未完整存档，q2 未独立证实；定性保持“reported platform observation”，
+   不作跨 host 结论。
+5. **基线单测失败定性**：补充证据（q2 .NET SDK 10.0.302/runtime 10.0.10 同过滤
+   **PASS 1/1**；本机 SDK 10.0.400/runtime 10.0.11 有效复验 **NotConverged 683ms**）
+   后，原“基线 1857/1858、既有失败”限定为 **Mac 本机已观测**，失败为
+   host/runtime/order/config 依赖、根因未定位；不称已修、不称全绿。
+   证据在 `temp_docs/modeling-performance/baseline-test-evidence/`。
