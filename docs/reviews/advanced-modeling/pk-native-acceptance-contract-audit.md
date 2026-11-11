@@ -29,3 +29,15 @@ MSBUILDDISABLENODEREUSE=1 dotnet run scripts/NativeAcceptanceContractOracle.cs -
 同一脚本实际新建 2×2×2 原生 block。session precision 为 1e-8，顶点报告 precision 为 5e-9；沿顶点向实体外平移至 9.9e-9，`PK_BODY_contains_vector` 仍返回 On，1.01e-8 和 2e-8 返回 Outside。因此不能仅凭顶点报告精度就把 GM 边界阈值缩到 session precision 的一半。510 点审计必须保留四方分类，并结合实际有限边界、拥有关系及有效精度判断。
 
 首次编译失败、首次支持面 tag 子集断言失败及其原始退出码仍保留在同一审计目录；它们不属于成功对照。匹配支持面使用原生几何重合查询，不能用压印后 tag 必须不变的错误假设。
+
+## 有误差界的数值判定
+
+`scripts/ParasolidMassProperties.cs` 为原生积分结果保留每个分量的估计与 `PK_mass_bound_modulus_c` 返回的模量。volume/mass/periphery 使用各自模量，中心三分量共享中心模量，惯量九分量共享惯量模量。对每个分量，使用向外舍入计算所有报告区间内数值的归一化差下界与上界，分母仍为 `1+abs(reference)`，阈值仍为 1e-7。
+
+- 上界严格小于阈值：Verified，仅表示在报告误差范围内可验证该数值精度。
+- 下界大于或等于阈值：Different。
+- 其余：Unresolved，不签署固定精度通过；区间相交不能提升为 Verified。
+
+这不取代严格实体比较、完整 BODY_check、有限裁剪、材料和回滚验收。非法/非有限估计或模量直接失败；不通过缩放姿态、增大阈值或挑选分量消除差异。
+
+`native-contract-bounds.{log,exit}` 实际外部退出 0 验证的是控制实验执行及断言，三个压印数值结果均为 Unresolved，不能将该进程成功说成 15 项数值精度已经通过。新建真实 2.1×2×2 对 2×2×2 block 判 Different；相同精确数值判 Verified；宽误差界包住两个不同点值仍判 Unresolved。命令同上，仅输出名改为 `imprint-bounds-v1`，对应原生输入/输出保存在 `temp_docs/native-acceptance-contract/imprint-bounds-v1/`。此增量尚未切换原 ShortEdge/看板生产合同，后续整套候选统一接入。

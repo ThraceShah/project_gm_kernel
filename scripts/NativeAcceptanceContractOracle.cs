@@ -18,6 +18,12 @@ using(host)unsafe
     double precision;Check(PK_SESSION_ask_precision(&precision));
     Console.WriteLine($"PRECISION {precision:R}");
     ProbePrimitive(precision);
+    Require(ParasolidMassProperties.Classify(1,0,1,0,out _,out _)==MassAgreement.Verified,"exact numeric control");
+    Require(ParasolidMassProperties.Classify(1,100,2,100,out _,out _)==MassAgreement.Unresolved,"overlapping broad bounds must not verify equality");
+    Require(ParasolidMassProperties.Classify(1,0,2,0,out _,out _)==MassAgreement.Different,"separated numeric control");
+    PK_BODY_t correct,wrong;Check(PK_BODY_create_solid_block(2,2,2,null,&correct));Check(PK_BODY_create_solid_block(2.1,2,2,null,&wrong));
+    try{Require(ParasolidMassProperties.Compare(correct,wrong,"wrong-size-control")==MassAgreement.Different,"wrong size must fail mass agreement");}
+    finally{Check(PK_ENTITY_delete(1,&wrong));Check(PK_ENTITY_delete(1,&correct));}
     var bytes=File.ReadAllBytes(Path.Combine(root,args[1]));Save(output,"input.x_t",bytes);
     for(var axis=0;axis<3;axis++)
     {
@@ -48,7 +54,7 @@ using(host)unsafe
             }
             Console.WriteLine($"PARTITION regions={topology.Regions}/{after.Regions} shells={topology.Shells}/{after.Shells} faces={topology.Faces}/{after.Faces} original_oriented_supports=True");
             var fresh=Receive(result);
-            try{Full(fresh);Mass(reference,fresh,$"partition-{axis}");}
+            try{Full(fresh);Mass(reference,fresh,$"partition-{axis}");ParasolidMassProperties.Compare(reference,fresh,$"partition-{axis}");}
             finally{Check(PK_ENTITY_delete(1,&fresh));}
         }
         finally{if(plane!=0)Check(PK_ENTITY_delete(1,&plane));Check(PK_ENTITY_delete(1,&split));Check(PK_ENTITY_delete(1,&reference));}

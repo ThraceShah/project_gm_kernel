@@ -5,6 +5,7 @@
   <ItemGroup Condition="'$(UseParasolidScriptHost)' == 'true'">
     <Compile Include="$(MSBuildThisFileDirectory)ParasolidScriptHost.cs" Link="ParasolidScriptHost.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ParasolidBodyCompare.cs" Link="ParasolidBodyCompare.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ParasolidMassProperties.cs" Link="ParasolidMassProperties.cs" />
   </ItemGroup>
   <ItemGroup Condition="'$(UseShortEdgeNativeTrimIntegral)' == 'true'">
     <Compile Include="$(MSBuildThisFileDirectory)ShortEdgeNativeTrimIntegral.cs" Link="ShortEdgeNativeTrimIntegral.cs" />
