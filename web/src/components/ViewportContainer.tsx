@@ -46,9 +46,6 @@ export const ViewportContainer: React.FC<ViewportContainerProps> = ({
   const [rightSyncCam, setRightSyncCam] = useState<CameraSyncState | null>(null);
   const [selectedEntity, setSelectedEntity] = useState<PickedEntity | null>(null);
   const [mobileTab, setMobileTab] = useState<'both' | 'gm' | 'pk'>('both');
-  const [legendOpen, setLegendOpen] = useState<boolean>(() =>
-    typeof window === 'undefined' ? true : window.innerWidth >= 768
-  );
 
   // Focus trigger state
   const [focusTrigger, setFocusTrigger] = useState<FocusTriggerState | null>(null);
@@ -331,6 +328,8 @@ export const ViewportContainer: React.FC<ViewportContainerProps> = ({
         </div>
       </div>
 
+      <EntityLegend />
+
       {/* Mobile Tab Switcher */}
       <div className="md:hidden flex items-center justify-between bg-slate-900 border-b border-slate-800 px-3 py-1 text-xs text-slate-300 z-20">
         <span className="font-semibold text-slate-300 text-[11px]">视图切换:</span>
@@ -461,19 +460,6 @@ export const ViewportContainer: React.FC<ViewportContainerProps> = ({
         </div>
       )}
 
-      {/* Floating Entity Legend (Bottom Left, collapsible on narrow screens) */}
-      <div className="absolute bottom-3 left-3 z-20 max-w-[min(22rem,calc(100%-1.5rem))]">
-        <button
-          onClick={() => setLegendOpen((v) => !v)}
-          data-testid="legend-toggle"
-          className="md:hidden mb-1 px-2 py-0.5 rounded text-[11px] bg-slate-900/90 border border-slate-700 text-slate-300 shadow-md"
-        >
-          {legendOpen ? '收起图例' : '图例'}
-        </button>
-        <div className={legendOpen ? 'block' : 'hidden md:block'} data-testid="legend-body">
-          <EntityLegend />
-        </div>
-      </div>
     </div>
   );
 };

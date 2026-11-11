@@ -532,12 +532,7 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
             kernelName === 'GM Kernel' ? 'bg-sky-400' : 'bg-emerald-400'
           }`}
         />
-        <span className="font-semibold">{kernelName}</span>
-        {meshData?.source?.tessellator && (
-          <span className="hidden sm:inline text-[10px] text-slate-400 border-l border-slate-700 pl-1.5 font-mono-code">
-            {meshData.source.tessellator}
-          </span>
-        )}
+        <span className="font-semibold" title={JSON.stringify(meshData?.source ?? {})}>{kernelName === 'GM Kernel' ? 'GM' : 'PK'}</span>
         {hasIso ? (
           <span
             data-testid="viewer-iso-badge"

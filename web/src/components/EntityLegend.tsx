@@ -1,16 +1,11 @@
 import React from 'react';
 import { ROLE_COLORS, EDGE_ROLE_COLORS } from '../utils/geometryBuilder';
-import { Info } from 'lucide-react';
 
 export const EntityLegend: React.FC = () => {
   return (
-    <div className="bg-slate-900/85 backdrop-blur-xs border border-slate-700/70 rounded-md p-2 text-[11px] text-slate-300 shadow-lg select-none">
-      <div className="flex items-center gap-1.5 font-semibold text-slate-200 mb-1.5 pb-1 border-b border-slate-800">
-        <Info className="w-3 h-3 text-sky-400" />
-        <span>实体角色与视觉图例 (Roles & Lines)</span>
-      </div>
+    <div data-testid="legend-body" aria-label="共享实体角色图例" className="shrink-0 overflow-x-auto whitespace-nowrap px-3 py-1 text-[10px] text-slate-300 bg-slate-900 border-b border-slate-800 select-none">
 
-      <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+      <div className="flex items-center gap-4 w-max">
         {/* Yellow Selected Edge */}
         <div className="flex items-center gap-1.5">
           <span
@@ -70,7 +65,7 @@ export const EntityLegend: React.FC = () => {
           <div className="flex items-center justify-center w-3 h-2">
             <span className="w-3 h-0.5 bg-sky-400 rounded-full" />
           </div>
-          <span className="truncate text-sky-300">曲面等参线 (U/V)</span>
+          <span className="truncate text-sky-300">真实 U/V（若已记录）</span>
         </div>
 
         {/* Translucent context indication */}

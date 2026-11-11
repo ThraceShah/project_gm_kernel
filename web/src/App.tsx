@@ -386,7 +386,7 @@ export const App: React.FC = () => {
           </div>
 
           {/* Right Area: Dual Viewport + Timeline + Inspection Panel */}
-          <main className="flex-1 flex flex-col overflow-hidden bg-slate-900">
+          <main className="relative min-w-0 flex-1 flex flex-col overflow-hidden bg-slate-900">
             {manifestError ? (
               <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-slate-300">
                 <div className="bg-slate-800 border border-slate-700 rounded-lg p-6 max-w-sm space-y-3 shadow-lg">
