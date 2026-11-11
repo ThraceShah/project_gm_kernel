@@ -43,7 +43,7 @@ public class PlaneSplinePointJacobianTests
         var allocated=GC.GetAllocatedBytesForCurrentThread()-before;Assert.Equal(AlgorithmStatus.Success,result);Assert.Equal(0,allocated);
     }
 
-    private static NestedBlendProgram Program(bool rational,bool reversed,bool degenerate=false,bool nonplane=false)
+    internal static NestedBlendProgram Program(bool rational,bool reversed,bool degenerate=false,bool nonplane=false)
     {
         var dimension=rational?4:3;var data=new double[9*dimension+12];
         for(var u=0;u<3;u++)for(var v=0;v<3;v++)

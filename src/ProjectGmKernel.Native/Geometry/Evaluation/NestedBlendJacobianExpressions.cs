@@ -41,8 +41,8 @@ internal static partial class JointNestedBlendEvaluation
 
     private static AlgorithmStatus IntervalJacobianWithRecord(in NestedBlendProgram program,ReadOnlySpan<Occurrence> nodes,ReadOnlySpan<IntervalNumber> boxes,
         IntervalNumber parameter,Span<IntervalNumber> matrix,Span<IntervalDual> variables,Span<IntervalDual> equations,ReadOnlySpan<BufferOffset> fixedCharts,
-        Span<IntervalSplineContact> cache,ref IntervalJacobianRecord record)
-        =>record.Nodes.IsEmpty?IntervalJacobian(program,nodes,boxes,parameter,matrix,variables,equations,fixedCharts,cache)
+        Span<IntervalSplineContact> cache,ref IntervalJacobianRecord record,bool cartesianSpline=false)
+        =>record.Nodes.IsEmpty?IntervalJacobian(program,nodes,boxes,parameter,matrix,variables,equations,fixedCharts,cache,cartesianSpline)
             :RecordedIntervalJacobian(program,nodes,boxes,parameter,matrix,fixedCharts,cache,ref record);
 
     // Every use belongs to one immutable occurrence/chart structure. A new
