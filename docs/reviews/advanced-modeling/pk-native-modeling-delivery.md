@@ -97,6 +97,18 @@ run. Native cut witnesses identify two real short occurrences, four coedge uses
 and zero spatial reuses. Cutter/Blend and cutter/conic witnesses each retain four
 coedge uses. All 48 separated material probes agree.
 
+These transverse comparisons continue from **independently constructed** native
+and self Fix products, rather than from one identical serialized target. Before
+the first cut, the self reflected target is
+`57eecc0294734c805d3ded1ab034fc4c78dec6da6d2300a6ce85a0e553981ad2`;
+the independent native reflected target is
+`3047cc3e0d7366fdb655dfae534ad9bc0fe32183443f55cd333923ba891e6a99`.
+They are the `-copy-reflected.x_t` and `-copy-reflected-native.x_t` artifacts in
+the transverse directory. Both upstream Fix/copy comparisons pass their own
+gates. The separate two-tool consumer uses exactly the same GM target/tool
+bytes on both sides; its passing result does not qualify the transverse raw
+failure or silently replace either transverse input.
+
 To check whether the raw point criterion alone distinguishes an incorrect
 model, the independently constructed native target was reused byte-for-byte
 (`bd75b7926956c1506e00c172816a0bfc1bb07db1660d74da65aaf1734f219ef1`).
