@@ -55,6 +55,7 @@ foreach(var bench in benches)foreach(var side in baseline==null?new[]{"candidate
     foreach(var arg in argv)info.ArgumentList.Add(arg);
     info.Environment["MSBUILDDISABLENODEREUSE"]="1";info.Environment["GM_WEB_ROOT"]=tree;info.Environment["GM_WEB_CAPTURE"]=directory;
     info.Environment["GM_WEB_COMMIT"]=sha;info.Environment["GM_WEB_CAPTURE_COMMIT"]=sha;
+    info.Environment["GM_WEB_GEOMETRY_AUTHOR"]=bench.Id=="shortedge"?"PK seed received by GM; GM performs FixBlends":"GM and PK construct inputs independently";
     info.Environment.Remove("GM_WEB_SELECT");if(bench.Selector!=null)info.Environment["GM_WEB_SELECT"]=bench.Selector;
     var sourceFiles=Git(tree,"ls-files","src/ProjectGmKernel.Native","src/ProjectGmKernel.Xt","scripts").Split('\n');
     File.WriteAllLines(Path.Combine(directory,"source.sha256"),sourceFiles.Select(f=>Hash(Path.Combine(tree,f))+"  "+f));

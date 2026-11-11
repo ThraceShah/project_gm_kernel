@@ -237,7 +237,12 @@ internal static unsafe class WebProgressCapture
         var full=Path.Combine(Output!,xtPath);Directory.CreateDirectory(Path.GetDirectoryName(full)!);
         if(!File.Exists(full))File.WriteAllBytes(full,bytes);else if(Hash(File.ReadAllBytes(full))!=hash)throw new InvalidDataException("immutable source XT changed");
         return new JsonObject{["schemaVersion"]=1,["bodyId"]=(own?"gm:":"pk:")+body,["source"]=new JsonObject{["kernel"]=own?"GM":"PK",
-            ["geometryAuthor"]=ContextSource?["kind"]?.GetValue<string>()=="same-byte-fork"?"Validated GM upstream product and tool XT":Environment.GetEnvironmentVariable("GM_WEB_GEOMETRY_AUTHOR")??"independent-construction",
+            ["geometryAuthor"]=ContextSource?["kind"]?.GetValue<string>() switch
+            {
+                "same-byte-fork"=>"Validated GM upstream product and tool XT",
+                { } kind=>kind,
+                _=>Environment.GetEnvironmentVariable("GM_WEB_GEOMETRY_AUTHOR")??"Unspecified input provenance"
+            },
             ["tessellator"]="Parasolid PK_TOPOL_facet / PK_GEOM_render_line",["commit"]=Environment.GetEnvironmentVariable("GM_WEB_COMMIT"),["chordTolerance"]=ChordTolerance,["freshXtReceive"]=own,
             ["sourceBodyTag"]=body,["snapshotNativeBodyTag"]=display.ParasolidBodyTag,["xtSha256"]=hash,["xtArtifact"]=xtPath,["contextSource"]=ContextSource?.DeepClone(),["captureIdentity"]=SourceIdentity()},["faces"]=faces,["edges"]=edges};
     }

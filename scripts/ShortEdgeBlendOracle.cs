@@ -9,6 +9,7 @@
 using static parasolid;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Nodes;
 using ProjectGmKernel.Native.Runtime;
 using M=ProjectGmKernel.Native.Generated;
 using XtFieldKind=ProjectGmKernel.Xt.XtFieldKind;
@@ -227,6 +228,9 @@ using(host)unsafe
                 if(mappedInput){ApplyInput(true,own,inputTransform);ApplyInput(false,reference,inputTransform);}
                 Require(KernelRuntime.TryResolveBodySlot(own,out var body)&&!KernelRuntime.Xt.IsOpaque(body),"editable input");
                 var fresh=Transmit(true,own);File.WriteAllBytes(Path.Combine(output,name+"-input-fresh.x_t"),fresh);
+                WebProgressCapture.ContextSource=new JsonObject{["kind"]="PK-seed-GM-receive",["pkSeedXtSha256"]=Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(bytes)),
+                    ["gmFreshInputXtSha256"]=Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(fresh)),["mappedInput"]=mappedInput,["inputScale"]=inputScale,
+                    ["angle"]=angle,["radius"]=radius*inputScale,["tolerance"]=tolerance*inputScale};
                 var freshBody=Receive(false,fresh);CheckBody(freshBody,"fresh input");ParasolidBodyCompare.AssertEquivalent(reference,freshBody,"fresh input");
                 Check(PK_ENTITY_delete(1,&freshBody),"delete input roundtrip");
                 if(args.Contains("--native-only")&&args.Contains("--diagnostics"))ProductEdges(reference,"native-before-fix");
@@ -390,6 +394,8 @@ static unsafe PK_VECTOR_t MapPoint(M.PK_TRANSF_sf_s* matrix,PK_VECTOR_t point,bo
 static unsafe int Lifecycle(ref int source,int reference,string output,string name,M.PK_TRANSF_sf_s* input,double inputScale,bool localCut,bool transverseCut,double transversePlaneDifference,bool materialOwnership=false,bool requireNativeCutWitness=false,bool reloadBeforeLocalCut=false,bool checkNativeTrims=false,bool proofOnly=false,bool requireCutterChartWitness=false,bool requireNativeFinBoxes=false,bool requireNativeFaceDomains=false,bool blendOnly=false)
 {
     WebProgressCapture.Context=name;
+    var upstreamSource=WebProgressCapture.ContextSource;
+    WebProgressCapture.ContextSource=new JsonObject{["kind"]="lifecycle-products",["stage"]=name,["gmUpstreamLiveBody"]=source,["referenceUpstreamNativeBody"]=reference,["upstreamSource"]=upstreamSource?.DeepClone()};
     int own,native;Check(KernelRuntime.EntityCopy(source,&own),"copy fillet product");Check(PK_ENTITY_copy(reference,&native),"copy PK fillet");
     var matrix=new M.PK_TRANSF_sf_s();var a=.37;var s=1.7;
     matrix.matrix[0]=-s*Math.Cos(a);matrix.matrix[1]=-s*Math.Sin(a);matrix.matrix[4]=-s*Math.Sin(a);matrix.matrix[5]=s*Math.Cos(a);matrix.matrix[10]=s;matrix.matrix[15]=1;
@@ -446,6 +452,7 @@ static unsafe int Lifecycle(ref int source,int reference,string output,string na
     }
     finally
     {
+        WebProgressCapture.ContextSource=upstreamSource;
         if(own!=0)Check(KernelRuntime.EntityDelete(1,&own),"delete own lifecycle");Check(PK_ENTITY_delete(1,&native),"delete PK lifecycle");
         Check(KernelRuntime.EntityDelete(1,&selfTransform),"delete self transform");Check(PK_ENTITY_delete(1,&pkTransform),"delete PK transform");
     }
