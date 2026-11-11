@@ -161,6 +161,7 @@ internal static partial class JointNestedBlendEvaluation
         if(status!=AlgorithmStatus.Success)return status==AlgorithmStatus.Unsupported?status:AlgorithmStatus.NotConverged;
         var n=counts[0];var nodes=occurrences[..counts[1]];var t=new IntervalNumber(domain.U0,domain.U1);
         var cartesianSpline=captureWitness.IsEmpty&&requireWitness.IsEmpty&&CartesianSplineRows(program,nodes,n);
+        var substitutedConic=captureWitness.IsEmpty&&requireWitness.IsEmpty&&ConicConstraintSubstitution(program,nodes,n);
         Span<BufferOffset> fixedCharts=stackalloc BufferOffset[MaxOccurrences];
         for(var i=0;i<nodes.Length;i++)
         {
@@ -190,17 +191,19 @@ internal static partial class JointNestedBlendEvaluation
             for(var row=0;row<n;row++)inverse[row*n+column]=rhs[row];
         }
         if(cartesianSpline){status=CartesianSplineInverse(program,nodes,state[..n],inverse[..(n*n)]);if(status!=AlgorithmStatus.Success)return status;}
+        if(substitutedConic){status=ConicSubstitutionInverse(program,nodes,state[..n],inverse[..(n*n)]);if(status!=AlgorithmStatus.Success)return status;}
         Span<IntervalNumber> boxes=stackalloc IntervalNumber[MaxVariables],image=stackalloc IntervalNumber[MaxVariables],centerF=stackalloc IntervalNumber[MaxVariables];
         Span<IntervalNumber> intervalJacobian=stackalloc IntervalNumber[MaxVariables*MaxVariables],remainder=stackalloc IntervalNumber[MaxVariables*MaxVariables];
         Span<IntervalDual> variables=stackalloc IntervalDual[MaxVariables],equations=stackalloc IntervalDual[MaxVariables];
         Span<IntervalSplineContact> splineCache=stackalloc IntervalSplineContact[MaxVariables];
-        var recordCapacity=CanRecordJacobian(program,nodes,n)?64+512*nodes.Length:0;
+        var recordCapacity=!substitutedConic&&CanRecordJacobian(program,nodes,n)?64+512*nodes.Length:0;
         Span<IntervalExpressionNode> recordNodes=stackalloc IntervalExpressionNode[recordCapacity];
         Span<IntervalNumber> recordDerivatives=stackalloc IntervalNumber[recordCapacity*n];
         Span<BufferOffset> recordOutputs=stackalloc BufferOffset[MaxVariables];
         var jacobianRecord=new IntervalJacobianRecord(recordNodes,recordDerivatives,recordOutputs[..n]);
         for(var i=0;i<n;i++)variables[i]=new(state[i],0);
-        status=cartesianSpline?CartesianSplineResidual(program,nodes,variables[..n],t,equations[..n],fixedCharts,default)
+        status=substitutedConic?ConicSubstitutionResidual(program,nodes,variables[..n],t,equations[..n],fixedCharts,out _,out _,out _)
+            :cartesianSpline?CartesianSplineResidual(program,nodes,variables[..n],t,equations[..n],fixedCharts,default)
             :IntervalResidual(program,nodes,variables[..n],t,equations[..n],fixedCharts);if(status!=AlgorithmStatus.Success)return status;
         for(var i=0;i<n;i++)centerF[i]=equations[i].Value;
         var certified=false;var derivativeScale=0.0;for(var i=0;i<n;i++)derivativeScale=Math.Max(derivativeScale,Math.Abs(snapshot[i][1]));
@@ -212,7 +215,7 @@ internal static partial class JointNestedBlendEvaluation
                 var radius=factor*(2*Math.Max(Math.Abs(snapshot[i][1]),.1*derivativeScale)*Math.Max(Math.Abs(domain.U1-u),Math.Abs(domain.U0-u))+1e-10*(1+Math.Abs(state[i])));
                 boxes[i]=new(Math.BitDecrement(state[i]-radius),Math.BitIncrement(state[i]+radius));
             }
-            status=IntervalJacobianWithRecord(program,nodes,boxes[..n],t,intervalJacobian[..(n*n)],variables,equations,fixedCharts,splineCache,ref jacobianRecord,cartesianSpline);if(status!=AlgorithmStatus.Success)continue;
+            status=IntervalJacobianWithRecord(program,nodes,boxes[..n],t,intervalJacobian[..(n*n)],variables,equations,fixedCharts,splineCache,ref jacobianRecord,cartesianSpline,substitutedConic);if(status!=AlgorithmStatus.Success)continue;
             Precondition(inverse[..(n*n)],intervalJacobian[..(n*n)],n,remainder);
             certified=true;
             for(var row=0;row<n;row++)
@@ -234,7 +237,7 @@ internal static partial class JointNestedBlendEvaluation
         for(var iteration=0;iteration<6;iteration++)
         {
             for(var i=0;i<n;i++)boxes[i]=new(Math.Max(boxes[i].Lower,image[i].Lower),Math.Min(boxes[i].Upper,image[i].Upper));
-            status=IntervalJacobianWithRecord(program,nodes,boxes[..n],t,intervalJacobian[..(n*n)],variables,equations,fixedCharts,splineCache,ref jacobianRecord,cartesianSpline);if(status!=AlgorithmStatus.Success)return status;
+            status=IntervalJacobianWithRecord(program,nodes,boxes[..n],t,intervalJacobian[..(n*n)],variables,equations,fixedCharts,splineCache,ref jacobianRecord,cartesianSpline,substitutedConic);if(status!=AlgorithmStatus.Success)return status;
             Precondition(inverse[..(n*n)],intervalJacobian[..(n*n)],n,remainder);
             for(var row=0;row<n;row++)
             {
@@ -275,7 +278,8 @@ internal static partial class JointNestedBlendEvaluation
                 if(status!=AlgorithmStatus.Success)return status;
             }
         }
-        status=cartesianSpline?CartesianSplineResidual(program,nodes,variables[..n],new(t,1),equations[..n],fixedCharts,splineCache)
+        status=substitutedConic?ConicSubstitutionResidual(program,nodes,variables[..n],new(t,1),equations[..n],fixedCharts,out _,out _,out _)
+            :cartesianSpline?CartesianSplineResidual(program,nodes,variables[..n],new(t,1),equations[..n],fixedCharts,splineCache)
             :IntervalResidual(program,nodes,variables[..n],new(t,1),equations[..n],fixedCharts,splineCache);if(status!=AlgorithmStatus.Success)return status;
         for(var i=0;i<n;i++)image[i]=-equations[i].Derivative;
         status=SolveIntervals(intervalJacobian[..(n*n)],image[..n],n);if(status!=AlgorithmStatus.Success)return status;
