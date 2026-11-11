@@ -77,6 +77,45 @@ public unsafe class RollingNetworkTests:IDisposable
     }
 
     [Fact]
+    public void InteriorSourceRootPreservesTheStationaryPlaneConstraintAndItsFiniteBranch()
+    {
+        var body=Seed();Span<EdgeTag> selected=stackalloc EdgeTag[2];Selection(body,selected);Mark(selected);
+        var checkedRoots=0;
+        KernelRuntime.TraceFiniteBoundary=t=>
+        {
+            if(t.Stage!=KernelRuntime.BoundaryTraceStage.CertifiedRoot)return;
+            var target=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(t.ProductCurve)];
+            if(target.Class!=CurveClass.Ellipse)return;
+            var ellipse=KernelRuntime.EllipseDataPool[target.DataIndex];
+            var x=new KernelVector3{X=ellipse.RefDirX,Y=ellipse.RefDirY,Z=ellipse.RefDirZ};
+            var y=EvaluationMath.Cross(new(){X=ellipse.AxisX,Y=ellipse.AxisY,Z=ellipse.AxisZ},x);
+            var q=EvaluationMath.Sub(t.EndPoint,new(){X=ellipse.CenterX,Y=ellipse.CenterY,Z=ellipse.CenterZ});
+            var parameter=Math.Atan2(EvaluationMath.Dot(q,y)/ellipse.R2,EvaluationMath.Dot(q,x)/ellipse.R1);
+            if(parameter<0)parameter+=Math.Tau;
+            if(!Check(t.EndPoint,t.First,t.Last,0,Math.Tau,parameter))return;
+            checkedRoots++;
+            Assert.Equal(t.EndPoint.X,t.StartPoint.X);Assert.Equal(t.EndPoint.Y,t.StartPoint.Y);Assert.Equal(t.EndPoint.Z,t.StartPoint.Z);
+            Assert.False(Check(t.EndPoint,t.First,t.Last,parameter+.01,parameter+.02,parameter));
+            Assert.False(Check(t.EndPoint,t.First,t.Last,0,Math.Tau,parameter<Math.PI?parameter+Math.PI:parameter-Math.PI));
+            Assert.False(Check(t.EndPoint,t.First+1,t.Last+1,0,Math.Tau,parameter));
+            Assert.False(Check(t.EndPoint,t.First,t.Last,0,Math.Tau,parameter,witnessed:false));
+            Assert.False(KernelRuntime.TestCertifiedContactRootPoint(t.Curve,t.ProductCurve,t.OtherSurface,t.OtherSurface,
+                t.EndPoint,t.First,t.Last,t.SpatialError,0,Math.Tau,parameter));
+            var shifted=t.EndPoint;shifted.X+=1e-6;Assert.False(Check(shifted,t.First,t.Last,0,Math.Tau,parameter));
+            return;
+
+            bool Check(KernelVector3 p,double lower,double upper,double first,double last,double at,bool witnessed=true)
+                =>KernelRuntime.TestCertifiedContactRootPoint(t.Curve,t.ProductCurve,t.Surface,t.OtherSurface,p,lower,upper,t.SpatialError,first,last,at,witnessed);
+        };
+        var fix=new PK_BODY_fix_blends_o_s{o_t_version=31,tolerance=1e-7};int count,fault,edgeFault,topolFault;
+        Assert.Equal(0,KernelRuntime.BodyFixBlends(body,&fix,&count,null,null,null,&fault,&edgeFault,&topolFault));
+        Assert.True(checkedRoots>0);VerifyStationaryShortEnd(body);
+        var text=Transmit(body);Assert.Equal(0,KernelRuntime.EntityDelete(1,&body));
+        Assert.Equal(0,XtBrepImportTests.Receive(text,out var restored));VerifyStationaryShortEnd(restored);
+        Assert.Equal(0,KernelRuntime.EntityDelete(1,&restored));
+    }
+
+    [Fact]
     public void ShallowRollingPlaneCutsPreserveBothShortIntervalsThroughXt()
     {
         var body=Seed("generated-short-edge-shallow-input.x_t");

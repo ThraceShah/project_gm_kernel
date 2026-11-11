@@ -143,10 +143,16 @@ internal static partial class JointNestedBlendEvaluation
     private static AlgorithmStatus BoundSegment(in NestedBlendProgram program,BlendSurfaceIndex surface,BlendSpineIndex spine,in SurfaceParameterBox domain,Span<IntervalNumber> output,Span<BufferCount> reachBudget=default,
         Span<IntervalNumber> curvature=default,BufferOffset curvatureSide=0,Span<IntervalNumber> supportParameter=default,BufferOffset parameterSide=0,
         Span<IntervalNumber> captureWitness=default,ReadOnlySpan<IntervalNumber> requireWitness=default,BufferOffset rootChart=-1,
-        Span<double> anchorContacts=default,Span<IntervalNumber> acceleration=default,KernelVector3 accelerationNormal=default)
+        Span<double> anchorContacts=default,Span<IntervalNumber> acceleration=default,KernelVector3 accelerationNormal=default,
+        Span<BufferOffset> captureCharts=default,ReadOnlySpan<BufferOffset> requireCharts=default)
     {
         Span<TaylorJet> snapshot=stackalloc TaylorJet[MaxVariables];Span<Occurrence> occurrences=stackalloc Occurrence[MaxOccurrences];Span<BufferCount> counts=stackalloc BufferCount[2];
         Span<KernelVector3> point=stackalloc KernelVector3[2];SurfaceDerivativeLayout.TryCreate(1,0,out var layout);var chartRange=Chart(program,spine);var u=Math.Clamp(domain.U0+(domain.U1-domain.U0)*.5,chartRange[0].Parameter,chartRange[^1].Parameter);
+        // A fixed root chart sets the interval gauge. When the domain meets
+        // that cell, take the point preconditioner from the same cell rather
+        // than from a neighbour that a boundary-straddling midpoint selects.
+        if(rootChart>=0&&rootChart<chartRange.Length-1&&domain.U0<=chartRange[rootChart+1].Parameter&&domain.U1>=chartRange[rootChart].Parameter)
+            u=Math.Clamp(u,chartRange[rootChart].Parameter,Math.BitDecrement(chartRange[rootChart+1].Parameter));
         var status=EvaluateCore(program,spine,-1,u,0,layout,point,false,default,out _,out _,snapshot:snapshot,nodeSnapshot:occurrences,counts:counts);
         if(status!=AlgorithmStatus.Success)return status==AlgorithmStatus.Unsupported?status:AlgorithmStatus.NotConverged;
         var n=counts[0];var nodes=occurrences[..counts[1]];var t=new IntervalNumber(domain.U0,domain.U1);
@@ -155,6 +161,19 @@ internal static partial class JointNestedBlendEvaluation
         {
             if(i==0&&rootChart>=0){fixedCharts[i]=rootChart;continue;}
             var chart=Chart(program,nodes[i].Spine);var parameter=i==0?u:snapshot[nodes[i].Offset+3][0];var index=0;while(index<chart.Length-2&&chart[index+1].Parameter<=parameter)index++;fixedCharts[i]=index;
+        }
+        // A shared-root witness is only meaningful for one equation system:
+        // every nested occurrence must use the same spine and CHART cell.
+        if(!captureCharts.IsEmpty)
+        {
+            if(captureCharts.Length!=2*nodes.Length)return AlgorithmStatus.Unsupported;
+            for(var i=0;i<nodes.Length;i++){captureCharts[2*i]=nodes[i].Spine;captureCharts[2*i+1]=fixedCharts[i];}
+        }
+        if(!requireCharts.IsEmpty)
+        {
+            if(requireCharts.Length!=2*nodes.Length)return AlgorithmStatus.Unsupported;
+            for(var i=1;i<nodes.Length;i++)
+                if(requireCharts[2*i]!=nodes[i].Spine||requireCharts[2*i+1]!=fixedCharts[i])return AlgorithmStatus.NotConverged;
         }
         Span<double> state=stackalloc double[MaxVariables],jacobian=stackalloc double[MaxVariables*MaxVariables],inverse=stackalloc double[MaxVariables*MaxVariables],rhs=stackalloc double[MaxVariables],residual=stackalloc double[MaxVariables];Span<int> pivots=stackalloc int[MaxVariables];
         for(var i=0;i<n;i++)state[i]=snapshot[i][0];

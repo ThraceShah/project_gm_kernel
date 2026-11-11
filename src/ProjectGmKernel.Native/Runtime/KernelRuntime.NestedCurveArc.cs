@@ -106,111 +106,9 @@ internal static unsafe partial class KernelRuntime
         return Match(u0,u1,end.param[0])&&Match(v0,v1,end.param[1]);
     }
 
-    private readonly ref struct NestedBranchStationMap
-    {
-        private readonly ReadOnlySpan<double> _stations;
-        private readonly ReadOnlySpan<double> _parameters;
-
-        internal NestedBranchStationMap(ReadOnlySpan<double> stations, ReadOnlySpan<double> parameters)
-        {
-            _stations = stations;
-            _parameters = parameters;
-        }
-
-        internal int Count => _stations.Length;
-
-        internal bool TryMapOldToNew(double tOld, out double tNew)
-        {
-            tNew = 0;
-            if (!double.IsFinite(tOld) || _stations.Length < 2 || _parameters.Length < _stations.Length) return false;
-            if (tOld < _stations[0] || tOld > _stations[^1]) return false;
-            if (tOld == _stations[0]) { tNew = _parameters[0]; return true; }
-            if (tOld == _stations[^1]) { tNew = _parameters[_stations.Length - 1]; return true; }
-            for (var i = 0; i < _stations.Length - 1; i++)
-            {
-                var s0 = _stations[i];
-                var s1 = _stations[i + 1];
-                if (tOld >= s0 && tOld <= s1 && s1 > s0)
-                {
-                    var u = (tOld - s0) / (s1 - s0);
-                    tNew = _parameters[i] + u * (_parameters[i + 1] - _parameters[i]);
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        internal bool TryMapNewToOld(double tNew, out double tOld)
-        {
-            tOld = 0;
-            if (!double.IsFinite(tNew) || _stations.Length < 2 || _parameters.Length < _stations.Length) return false;
-            if (tNew < _parameters[0] || tNew > _parameters[_stations.Length - 1]) return false;
-            if (tNew == _parameters[0]) { tOld = _stations[0]; return true; }
-            if (tNew == _parameters[_stations.Length - 1]) { tOld = _stations[^1]; return true; }
-            for (var i = 0; i < _stations.Length - 1; i++)
-            {
-                var p0 = _parameters[i];
-                var p1 = _parameters[i + 1];
-                if (tNew >= p0 && tNew <= p1 && p1 > p0)
-                {
-                    var u = (tNew - p0) / (p1 - p0);
-                    tOld = _stations[i] + u * (_stations[i + 1] - _stations[i]);
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        internal bool CertifyBranchCoverage(
-            in NestedBlendProgram originalProgram, BufferOffset originalSpine,
-            in NestedBlendProgram compiledProgram, BufferOffset newSpine,
-            ReadOnlySpan<BlendChartInstruction> originalCharts,
-            double lower, double upper, double tolerance = 1e-7)
-        {
-            if (_stations.Length < 2 || _parameters.Length < _stations.Length) return false;
-            if (_stations[0] != lower || _stations[^1] != upper) return false;
-            for (var i = 0; i < _stations.Length - 1; i++)
-            {
-                if (!(_stations[i + 1] > _stations[i]) || !(_parameters[i + 1] > _parameters[i]))
-                    return false;
-            }
-            var prevP = _parameters[0];
-            Span<KernelVector3> origJet = stackalloc KernelVector3[2];
-            Span<KernelVector3> newJet = stackalloc KernelVector3[2];
-            Span<double> origUv = stackalloc double[4];
-            Span<double> newUv = stackalloc double[4];
-
-            for (var k = 0; k < originalCharts.Length; k++)
-            {
-                var tOld = originalCharts[k].Parameter;
-                if (tOld <= lower || tOld >= upper) continue;
-                if (!TryMapOldToNew(tOld, out var pNew) || !(pNew > prevP)) return false;
-                if (!TryMapNewToOld(pNew, out var tRecovered) || Math.Abs(tRecovered - tOld) > 1e-10) return false;
-
-                if (JointNestedBlendEvaluation.EvaluateSpine(originalProgram, originalSpine, tOld, 1, origJet, origUv) != AlgorithmStatus.Success)
-                    return false;
-                if (JointNestedBlendEvaluation.EvaluateSpine(compiledProgram, newSpine, pNew, 1, newJet, newUv) != AlgorithmStatus.Success)
-                    return false;
-
-                var diff = EvaluationMath.Sub(newJet[0], origJet[0]);
-                var tLenSq = EvaluationMath.Dot(newJet[1], newJet[1]);
-                if (tLenSq > 0)
-                {
-                    var pProj = Math.Clamp(pNew - EvaluationMath.Dot(diff, newJet[1]) / tLenSq, _parameters[0], _parameters[^1]);
-                    if (JointNestedBlendEvaluation.EvaluateSpine(compiledProgram, newSpine, pProj, 1, newJet, newUv) == AlgorithmStatus.Success)
-                        diff = EvaluationMath.Sub(newJet[0], origJet[0]);
-                }
-                var distSq = EvaluationMath.Dot(diff, diff);
-                if (distSq > tolerance * tolerance) return false;
-
-                var dotT = EvaluationMath.Dot(EvaluationMath.Unit(origJet[1]), EvaluationMath.Unit(newJet[1]));
-                if (!(dotT > 0.99)) return false;
-
-                prevP = pNew;
-            }
-            return true;
-        }
-    }
+    // Spatial distance allowed between a shared root and the compact gauge
+    // parameter at a station: a small fraction of the 1e-8 model resolution.
+    private const double CompactBranchLinkTolerance=1e-10;
 
     private static bool TryCompactFiniteNestedIntersection(in CurveRecord record,in ICurveData data,
         SurfTag firstSupport,SurfTag secondSupport,double lower,double upper,out CurveTag curve)
@@ -270,10 +168,8 @@ internal static unsafe partial class KernelRuntime
             var positions=NestedWorkspace<KernelVector3>(count);var uv=NestedWorkspace<double>(4*count);
             if(positions.Length!=count||uv.Length!=4*count)return false;
             Span<KernelVector3> point=stackalloc KernelVector3[1];Span<double> contacts=stackalloc double[4];
-            var midIndex=0;var bestMidDist=double.PositiveInfinity;
             for(var i=0;i<count;i++)
             {
-                var d=Math.Abs(stations[i]-mid);if(d<bestMidDist){bestMidDist=d;midIndex=i;}
                 if(i==0){positions[0]=jetLo[0];uvLo.CopyTo(uv.Slice(0,4));}
                 else if(i==count-1){positions[count-1]=jetHi[0];uvHi.CopyTo(uv.Slice(4*(count-1),4));}
                 else
@@ -282,21 +178,9 @@ internal static unsafe partial class KernelRuntime
                     positions[i]=point[0];contacts.CopyTo(uv.Slice(4*i,4));
                 }
             }
-            var seedA=new PK_UV_s();seedA.param[0]=uvMid[0];seedA.param[1]=uvMid[1];
-            var seedB=new PK_UV_s();seedB.param[0]=uvMid[2];seedB.param[1]=uvMid[3];
-            UnwrapStationUv(firstSupport,secondSupport,seedA,seedB,uv,midIndex);
-            for(var i=midIndex-1;i>=0;i--)
-            {
-                var prevA=new PK_UV_s();prevA.param[0]=uv[4*(i+1)];prevA.param[1]=uv[4*(i+1)+1];
-                var prevB=new PK_UV_s();prevB.param[0]=uv[4*(i+1)+2];prevB.param[1]=uv[4*(i+1)+3];
-                UnwrapStationUv(firstSupport,secondSupport,prevA,prevB,uv,i);
-            }
-            for(var i=midIndex+1;i<count;i++)
-            {
-                var prevA=new PK_UV_s();prevA.param[0]=uv[4*(i-1)];prevA.param[1]=uv[4*(i-1)+1];
-                var prevB=new PK_UV_s();prevB.param[0]=uv[4*(i-1)+2];prevB.param[1]=uv[4*(i-1)+3];
-                UnwrapStationUv(firstSupport,secondSupport,prevA,prevB,uv,i);
-            }
+            // Keep each support witness on the sheet of the original CHART
+            // witnesses, rather than on a sheet chosen by a continuous unwrap.
+            if(root.ChartCount!=data.ChartCount||!AnchorStationUv(data,firstSupport,secondSupport,charts,stations.Slice(0,count),uv))return false;
             var compiler=new NestedProgramCompiler();if(!compiler.Ready)return false;
             if(compiler.Surface(firstSupport,out var firstIndex)!=AlgorithmStatus.Success)return false;
             if(compiler.Surface(secondSupport,out var secondIndex)!=AlgorithmStatus.Success)return false;
@@ -308,13 +192,19 @@ internal static unsafe partial class KernelRuntime
                     Console.Error.WriteLine($"COMPACT_FAIL supports={firstSupport}/{secondSupport} count={count} status={compactStatus} range=[{lower:R},{upper:R}]");
                 return false;
             }
-            var compiled=compiler.View;
-            var compiledSpine=compiled.Spines[spine];
-            var compiledCharts=compiled.Charts.Slice(compiledSpine.ChartOffset,count);
-            Span<double> newParameters=stackalloc double[count];
-            for(var i=0;i<count;i++)newParameters[i]=compiledCharts[i].Parameter;
-            var branchMap=new NestedBranchStationMap(stations.Slice(0,count),newParameters);
-            if(!branchMap.CertifyBranchCoverage(program,data.ProgramSpine,compiled,spine,charts,lower,upper))return false;
+            // Publish only after a finite certificate that the compact CHART
+            // and the original CHART describe the same branch on [lower,upper].
+            // The original spine is appended on the same compiled supports
+            // and excluded from the published program.
+            var publishedSpines=compiler.SpineCount;var publishedCharts=compiler.ChartCount;
+            if(compiler.CopyChartSpine(program,data.ProgramSpine,firstIndex,secondIndex,out var originalSpine)!=AlgorithmStatus.Success)return false;
+            var verification=compiler.View;var certifyStarted=System.Diagnostics.Stopwatch.GetTimestamp();
+            var certified=JointNestedBlendEvaluation.CertifyCompactBranch(verification,originalSpine,spine,stations[..count],lower,upper,
+                CompactBranchLinkTolerance,out var report);
+            var declared=verification.Spines[spine];
+            if(Environment.GetEnvironmentVariable("PGM_XT_DIAGNOSTICS")=="1")Console.Error.WriteLine($"COMPACT_CERT ms={System.Diagnostics.Stopwatch.GetElapsedTime(certifyStarted).TotalMilliseconds:F1} status={certified} stations={count} boxes={report.Boxes} cell={report.FailedCell} stage={report.FailedStage} box=[{report.FailedLower:R},{report.FailedUpper:R}] range=[{lower:R},{upper:R}] link={report.LinkDeviation:R} chordal={report.ChordalBound:R}/{declared.ChordalError:R} angular={report.AngularBound:R}/{declared.AngularError:R}");
+            if(certified!=AlgorithmStatus.Success)return false;
+            var compiled=compiler.Prefix(publishedSpines,publishedCharts);
             CurveTag result=0;
             if(BindNestedBlendSpine(firstSupport,secondSupport,compiled,spine,&result,uv)!=0)return false;
             curve=result;return true;
@@ -322,13 +212,28 @@ internal static unsafe partial class KernelRuntime
         finally{CommandScratch.ThreadArenaOffset=checkpoint;}
     }
 
-    private static void UnwrapStationUv(SurfTag first,SurfTag second,in PK_UV_s prevA,in PK_UV_s prevB,Span<double> uv,BufferOffset index)
+    // Lift each evaluated station witness to the period of the published
+    // CHART witness at the same node, or at the start of the original cell
+    // holding the station. This retains the original face-use sheet, including a
+    // native seam endpoint written as the full period.
+    private static bool AnchorStationUv(in ICurveData data,SurfTag first,SurfTag second,ReadOnlySpan<BlendChartInstruction> charts,ReadOnlySpan<double> stations,Span<double> uv)
     {
-        var a=new PK_UV_s();a.param[0]=uv[4*index];a.param[1]=uv[4*index+1];
-        var b=new PK_UV_s();b.param[0]=uv[4*index+2];b.param[1]=uv[4*index+3];
-        UnwrapIntersectionParameters(first,prevA,ref a);
-        UnwrapIntersectionParameters(second,prevB,ref b);
-        uv[4*index]=a.param[0];uv[4*index+1]=a.param[1];uv[4*index+2]=b.param[0];uv[4*index+3]=b.param[1];
+        for(var i=0;i<stations.Length;i++)
+        {
+            var t=stations[i];var cell=0;
+            while(cell<charts.Length-2&&charts[cell+1].Parameter<=t)cell++;
+            var node=t==charts[cell].Parameter?cell:t==charts[cell+1].Parameter?cell+1:-1;
+            // The published witnesses are the ones a receiving modeller uses.
+            if(!TryReadChartUv(data,node>=0?node:cell,out var u0,out var v0,out var u1,out var v1)
+                ||!double.IsFinite(u0)||!double.IsFinite(v0)||!double.IsFinite(u1)||!double.IsFinite(v1))return false;
+            var a=new PK_UV_s();a.param[0]=uv[4*i];a.param[1]=uv[4*i+1];
+            var b=new PK_UV_s();b.param[0]=uv[4*i+2];b.param[1]=uv[4*i+3];
+            var refA=new PK_UV_s();refA.param[0]=u0;refA.param[1]=v0;
+            var refB=new PK_UV_s();refB.param[0]=u1;refB.param[1]=v1;
+            UnwrapIntersectionParameters(first,refA,ref a);UnwrapIntersectionParameters(second,refB,ref b);
+            uv[4*i]=a.param[0];uv[4*i+1]=a.param[1];uv[4*i+2]=b.param[0];uv[4*i+3]=b.param[1];
+        }
+        return true;
     }
 
     private static bool HasChartUvPeriodJump(SurfTag first,SurfTag second,ReadOnlySpan<BlendChartInstruction> charts)
