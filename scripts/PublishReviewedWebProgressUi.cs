@@ -101,10 +101,10 @@ async Task<string> EnsureBackup()
     {
         if (args.Contains("--verify-served"))
         {
-            await ReviewedWebProgressRelease.VerifyServed(valid);
             var metadata = Path.Combine(snapshot, "metadata.json");
-            if (valid != Path.Combine(snapshot, "bundle")) throw new IOException("UI_LEGACY_BACKUP_REQUIRES_FRESH_WORK");
-            var record = ReadObject(metadata)!; record["servedVerified"] = true; WriteAtomic(metadata, record);
+            if (valid != Path.Combine(snapshot, "bundle") || ReadObject(metadata)?["servedVerified"]?.GetValue<bool>() != true)
+                throw new IOException("UI_BACKUP_NOT_SERVED_VERIFIED preserve legacy metadata; use fresh work and --verify-served on first backup");
+            await ReviewedWebProgressRelease.VerifyServed(valid);
         }
         return valid;
     }

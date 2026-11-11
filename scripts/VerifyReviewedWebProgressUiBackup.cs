@@ -22,10 +22,11 @@ void Check(bool ok, string label) { Console.WriteLine((ok ? "PASS " : "FAIL ") +
 Dictionary<string, string> Hashes(string path) => Directory.GetFiles(path, "*", SearchOption.AllDirectories).ToDictionary(f => Path.GetRelativePath(path, f), f => Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(f))), StringComparer.Ordinal);
 bool Equal(string path, Dictionary<string, string> expected) { var actual = Hashes(path); return actual.Count == expected.Count && expected.All(p => actual.TryGetValue(p.Key, out var h) && h == p.Value); }
 void Copy(string from, string to) { foreach (var file in Directory.GetFiles(from, "*", SearchOption.AllDirectories)) { var target = Path.Combine(to, Path.GetRelativePath(from, file)); Directory.CreateDirectory(Path.GetDirectoryName(target)!); File.Copy(file, target); } }
-async Task<(int Exit, string Text)> Backup(string label, string release)
+async Task<(int Exit, string Text)> Backup(string label, string release, bool verify = false)
 {
     var info = new ProcessStartInfo("dotnet") { WorkingDirectory = root, UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true };
     foreach (var arg in new[] { "run", "--file", "scripts/PublishReviewedWebProgressUi.cs", "--", "--mode", "backup", "--work", Path.GetRelativePath(scripts, release), "--previous-bundle", Path.GetRelativePath(scripts, source) }) info.ArgumentList.Add(arg);
+    if (verify) info.ArgumentList.Add("--verify-served");
     info.Environment["MSBUILDDISABLENODEREUSE"] = "1";
     using var process = Process.Start(info)!;
     var stdout = process.StandardOutput.ReadToEndAsync(); var stderr = process.StandardError.ReadToEndAsync(); await process.WaitForExitAsync();
@@ -40,6 +41,8 @@ var complete = Path.Combine(normal, "previous-snapshot");
 Check(Equal(Path.Combine(complete, "bundle"), expected) && File.Exists(Path.Combine(complete, "metadata.json")), "complete old content and metadata share committed directory");
 var before = Hashes(complete);
 Check((await Backup("normal-retry", normal)).Exit == 0 && Equal(complete, before), "normal retry never rewrites true old backup");
+var unattested = await Backup("no-legacy-backfill", normal, true);
+Check(unattested.Exit != 0 && unattested.Text.Contains("UI_BACKUP_NOT_SERVED_VERIFIED") && Equal(complete, before), "legacy/unattested metadata cannot be backfilled or verified over network in place");
 var partial = Path.Combine(work, "partial");
 Directory.CreateDirectory(Path.Combine(partial, "previous-bundle"));
 File.WriteAllText(Path.Combine(partial, "previous-bundle", "index.html"), "INTERRUPTED_COPY");

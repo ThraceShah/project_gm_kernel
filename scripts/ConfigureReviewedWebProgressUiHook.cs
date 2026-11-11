@@ -8,7 +8,7 @@ using System.Text;
 using System.Text.Json.Nodes;
 
 // Operational companion to PublishReviewedWebProgressUi. Default is help;
-// install/restore/resume are intentionally NOT run by integration verification.
+// Operational modes require explicit execution; verification uses PATH stubs.
 var mode = Option("--mode", "plan");
 if (mode == "plan" || args.Contains("--help"))
 {
@@ -64,7 +64,7 @@ async Task RequireIdleWriter()
         || !values.TryGetValue("MainPID", out var pid) || pid != "0"
         || !values.TryGetValue("Job", out var job) || job.Length != 0
         || !values.TryGetValue("ControlGroup", out var group) || !values.TryGetValue("TasksCurrent", out var tasks)
-        || group.Length > 0 && tasks != "0") throw new IOException("UI_WRITER_NOT_IDLE wait for no active/transitional writer or pending service job; timer remains stopped");
+        || group.Length > 0 && tasks != "0" || ulong.TryParse(tasks, out var taskCount) && taskCount != 0) throw new IOException("UI_WRITER_NOT_IDLE wait for no active/transitional writer or pending service job; timer remains stopped");
 }
 string Sha(byte[] bytes) => Convert.ToHexStringLower(SHA256.HashData(bytes));
 Dictionary<string, string> Hashes(string path) => Directory.Exists(path) ? Directory.GetFiles(path, "*", SearchOption.AllDirectories).ToDictionary(f => Path.GetRelativePath(path, f), f => Sha(File.ReadAllBytes(f)), StringComparer.Ordinal) : new(StringComparer.Ordinal);
@@ -108,11 +108,22 @@ if (mode is "restore" or "resume")
             if (!JsonNode.DeepEquals(published[field], state[field])) throw new IOException("successful publication does not match installed fixed hook");
         var currentPrepared = JsonNode.Parse(File.ReadAllBytes(Path.Combine(work, "prepared.json")))!;
         if (!JsonNode.DeepEquals(published["fingerprint"], currentPrepared["fingerprint"])) throw new IOException("successful publication fingerprint differs from prepared bundle");
-        if (!ReviewedWebProgressRelease.ValidBackup(Path.Combine(work, "previous-snapshot")) && state["ownedUpgrade"]?.GetValue<bool>() == true) throw new IOException("UI_BACKUP_INVALID");
+        if (state["ownedUpgrade"]?.GetValue<bool>() == true)
+        {
+            var snapshot = Path.Combine(work, "previous-snapshot");
+            if (!ReviewedWebProgressRelease.ValidBackup(snapshot, served: true)
+                || ReviewedWebProgressRelease.TreeHash(ReviewedWebProgressRelease.Hashes(Path.Combine(snapshot, "bundle"))) != state["previousBundleHash"]?.GetValue<string>()) throw new IOException("UI_BACKUP_INVALID");
+            var bundle = Path.GetFullPath(currentPrepared["bundle"]!.GetValue<string>(), work);
+            if (!WebProgressSafePath.IsWithin(work, bundle)) throw new IOException("UI_PATH_UNSAFE");
+            var fingerprint = state["uiCommit"]!.GetValue<string>() + ":" + ReviewedWebProgressRelease.TreeHash(ReviewedWebProgressRelease.Hashes(bundle, true)) + ":" + ReviewedWebProgressRelease.TreeHash(ReviewedWebProgressRelease.Hashes(Path.Combine(bundle, "data")));
+            if (fingerprint != published["fingerprint"]?.GetValue<string>()) throw new IOException("UI_PUBLICATION_BUNDLE_CHANGED");
+            await ReviewedWebProgressRelease.VerifyServed(bundle);
+        }
         var currentPost = await Systemctl("show", service, "--property=ExecStartPost", "--value");
         if (currentPost.Exit != 0) throw new IOException("effective post unavailable");
         ReviewedWebProgressRelease.Effective(currentPost.Text, ReviewedWebProgressRelease.HookCommand(File.ReadAllText(Path.Combine(dropins, ownName))));
         await RequireIdleWriter();
+        ValidState(state);
         await RestoreActive(state); return 0;
     }
     await Require("stop", timer);
@@ -129,9 +140,12 @@ if (mode is "restore" or "resume")
     var expected = new Dictionary<string, string>(original) { [ownName] = state["hookHash"]!.GetValue<string>() };
     var currentHash = TreeHash(Hashes(dropins));
     if (currentHash != TreeHash(expected) && currentHash != TreeHash(original)) throw new IOException("drop-ins changed externally; refusing to delete user edits");
+    var restoreStaging = dropins + ".restore-" + Guid.NewGuid().ToString("N");
+    Copy(Path.Combine(backup, "dropins"), restoreStaging);
+    if (state["dropinsExisted"]!.GetValue<bool>()) Directory.CreateDirectory(restoreStaging);
+    if (TreeHash(Hashes(restoreStaging)) != TreeHash(original)) throw new IOException("restore staging differs; retained for inspection");
     if (Directory.Exists(dropins)) Directory.Move(dropins, Path.Combine(backup, "replaced-" + Guid.NewGuid().ToString("N")));
-    Copy(Path.Combine(backup, "dropins"), dropins);
-    if (state["dropinsExisted"]!.GetValue<bool>()) Directory.CreateDirectory(dropins);
+    if (Directory.Exists(restoreStaging)) Directory.Move(restoreStaging, dropins);
     if (TreeHash(Hashes(dropins)) != TreeHash(original)) throw new IOException("restored drop-ins differ");
     await Require("daemon-reload"); await Require("cat", service);
     if (original.ContainsKey(ownName))
@@ -157,6 +171,7 @@ var command = new StringBuilder("[Service]\nExecStartPost=\nExecStartPost=dotnet
 foreach (var name in new[] { "--dist", "--data", "--baseline-data", "--work", "--portalctl", "--previous-bundle" }) command.Append(' ').Append(name).Append(' ').Append(Relative(name));
 command.Append(" --ui-commit ").Append(ui).Append(" --dist-hash ").Append(hash).Append(" --review ").Append(review).Append('\n');
 string? oldCommand = null;
+string? ownedDropinsHash = null;
 if (ownedUpgrade)
 {
     var prior = Resolve("--previous-release"); Safe(prior);
@@ -172,6 +187,7 @@ if (ownedUpgrade)
     if (TreeHash(Hashes(priorDropins)) != oldState["originalDropinsHash"]!.GetValue<string>()) throw new IOException("UI_PREVIOUS_HOOK_BACKUP_INVALID");
     var expected = Hashes(priorDropins); expected[ownName] = oldState["hookHash"]!.GetValue<string>();
     if (TreeHash(Hashes(dropins)) != TreeHash(expected)) throw new IOException("drop-ins changed externally; unknown owned hook refused");
+    ownedDropinsHash = TreeHash(expected);
     oldCommand = ReviewedWebProgressRelease.HookCommand(File.ReadAllText(Path.Combine(dropins, ownName)));
     if (!oldCommand.StartsWith("dotnet run --file " + Path.Combine(oldScripts, "PublishReviewedWebProgressUi.cs") + " -- --mode publish --execute ", StringComparison.Ordinal)
         || !oldCommand.EndsWith(" --ui-commit " + oldState["uiCommit"]!.GetValue<string>() + " --dist-hash " + oldState["uiHash"]!.GetValue<string>() + " --review " + oldState["review"]!.GetValue<string>(), StringComparison.Ordinal)) throw new IOException("UI_PREVIOUS_TOOL_IDENTITY_MISMATCH");
@@ -206,8 +222,9 @@ var staging = backup + ".staging-" + Guid.NewGuid().ToString("N");
 Directory.CreateDirectory(staging); Copy(dropins, Path.Combine(staging, "dropins"));
 File.WriteAllText(Path.Combine(staging, "effective-before.txt"), effective.Text);
 File.WriteAllText(Path.Combine(staging, "effective-post-before.txt"), postBefore.Text);
-if (TreeHash(Hashes(dropins)) != TreeHash(Hashes(Path.Combine(staging, "dropins")))) throw new IOException("drop-ins changed during backup; staging retained, no hook installed");
-var record = new JsonObject { ["schemaVersion"] = 1, ["unitDir"] = Path.GetRelativePath(scripts, units), ["uiCommit"] = ui, ["uiHash"] = hash, ["review"] = review, ["ownedUpgrade"] = ownedUpgrade, ["timerActive"] = timerActive, ["timerEnabled"] = timerEnabled, ["dropinsExisted"] = Directory.Exists(dropins), ["originalDropinsHash"] = TreeHash(Hashes(dropins)), ["hookHash"] = Sha(Encoding.UTF8.GetBytes(command.ToString())) };
+var savedDropinsHash = TreeHash(Hashes(Path.Combine(staging, "dropins")));
+if (TreeHash(Hashes(dropins)) != savedDropinsHash || ownedDropinsHash is not null && savedDropinsHash != ownedDropinsHash) throw new IOException("drop-ins changed during backup; staging retained, no hook installed");
+var record = new JsonObject { ["schemaVersion"] = 1, ["unitDir"] = Path.GetRelativePath(scripts, units), ["uiCommit"] = ui, ["uiHash"] = hash, ["review"] = review, ["ownedUpgrade"] = ownedUpgrade, ["timerActive"] = timerActive, ["timerEnabled"] = timerEnabled, ["dropinsExisted"] = Directory.Exists(dropins), ["originalDropinsHash"] = savedDropinsHash, ["hookHash"] = Sha(Encoding.UTF8.GetBytes(command.ToString())) };
 if (ownedUpgrade) record["previousBundleHash"] = ReviewedWebProgressRelease.TreeHash(ReviewedWebProgressRelease.Hashes(Path.Combine(work, "previous-snapshot", "bundle")));
 File.WriteAllText(Path.Combine(staging, "state.json"), record.ToJsonString());
 Directory.Move(staging, backup);
@@ -221,6 +238,8 @@ if (oldCommand is not null)
     if (currentPost.Exit != 0) throw new IOException("effective post unavailable");
     ReviewedWebProgressRelease.Effective(currentPost.Text, oldCommand);
 }
+Safe(dropins); Safe(work);
+if (TreeHash(Hashes(dropins)) != record["originalDropinsHash"]!.GetValue<string>()) throw new IOException("drop-ins changed after served verification; no hook installed");
 Directory.CreateDirectory(dropins);
 var hookStaging = Path.Combine(dropins, ".reviewed-ui-" + Guid.NewGuid().ToString("N") + ".tmp");
 File.WriteAllText(hookStaging, command.ToString());

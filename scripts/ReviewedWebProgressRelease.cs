@@ -106,7 +106,7 @@ internal static class ReviewedWebProgressRelease
     internal static void Effective(string text, string command)
     {
         var argv = Regex.Matches(text, @"argv\[\]=(.*?) ;", RegexOptions.Singleline);
-        if (Regex.Matches(text, @"\bpath=").Count != 1 || argv.Count != 1 || argv[0].Groups[1].Value != command || !text.Contains("ignore_errors=no", StringComparison.Ordinal))
+        if (Regex.Matches(text, @"\bpath=").Count != 1 || !text.Contains("path=dotnet ;", StringComparison.Ordinal) || argv.Count != 1 || argv[0].Groups[1].Value != command || !text.Contains("ignore_errors=no", StringComparison.Ordinal))
             throw new IOException("UI_EFFECTIVE_POST_MISMATCH");
     }
 }

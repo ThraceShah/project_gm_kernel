@@ -17,3 +17,32 @@
 操作入口为 `scripts/FreezeReviewedWebProgressUi.cs`、`scripts/PublishReviewedWebProgressUi.cs`、`scripts/ConfigureReviewedWebProgressUiHook.cs` 的 `--help`。所有路径参数相对于运行脚本目录。私有 Tailnet HTTP 校验仅该 HttpClient 使用 `UseProxy=false`，保留系统 TLS 证书校验，不改全局代理。
 
 基础验证：`MSBUILDDISABLENODEREUSE=1 dotnet run --file scripts/VerifyReviewedWebProgressUiHook.cs` 原 31 项通过；`MSBUILDDISABLENODEREUSE=1 dotnet run --file scripts/VerifyReviewedWebProgressUiBackup.cs` 原 14 项通过。两者均无真实 systemctl/portal 操作；升级完整链 fixture 和最终固定 SHA 将在后续验证记录追加。没有 Kernel/PK/AOT/build/benchmark 验证。
+
+## UI424 只读事后核验
+
+2026-11-11T06:35:29Z，仅 GET 已有 HTTPS、读取文档指定 release 和 unit 文件，未执行 systemctl、portalctl、配置写入或发布。`temp_docs/owned-live-readonly.json` 记录当前旧 work 的 prepared bundle **610 files** 全部与 HTTPS 逐字节相同；这是新的事后证据，旧 release/state 没有增加字段。
+
+| 身份 | SHA256 |
+| --- | --- |
+| 旧 `release.json` 原始字节 | `504cc8661339a52e9cb2a40a4ad1f88d573e2b4bc1e706105b77c199033bc660` |
+| 旧 `work/hook-backup/state.json` 原始字节 | `b9e403bdc1767796766eea78dc6df5f586aeeef7066551253dd192f0425bbc2b` |
+| 当前 owned hook | `029319d829485be8ee6216b46be5ae8a8b28e041b0880a70271406af8b2d7f29` |
+| 当前 UI424 整包 tree hash | `ffcf2b2269f8208622da84ded3346f72f63288d63ecfc9e91bb9b2b96676a1b7` |
+| UI424 UI hash | `f443bb7ede213480603647f385707cfe09aed194eee2772d7fcad7d5e688ca88` |
+
+整包来源是旧 release 的 `work/prepared.json` 指定的 `work/bundle-9dc8ccd57888cb4b`，**不是** `previous-static`。下次准备时仍必须重核最新 producer data/served 闭包；上表不能替代切换时校验。旧 frozen tools commit `35498ac5e72eda303883120d8b58cbb6c15fdb33`、UI/review/HTML/index 身份仍按 `docs/web-progress-ui-424-deployment.md`。
+
+## 待独立接受后才执行的入口
+
+下列命令仅为 review runbook，本任务没有执行。`NEW_RELEASE` 是项目根相对的新冻结目录占位符，需替换为 `../../../../.local/share/gm-kernel-progress-ui/releases/` 下实际新 release；它与旧 UI424 release 同级。先从固定 tools Git 对象 freeze，显式传 accepted UI commit/review/dist hash、当前整包 tree hash；准备时从主 Watch 的实际 `temp_docs/web-progress-publish/data` 取数据。`--tools-commit` 不能指向未固定工作树；`--ui-tree` 是独立接受后的干净 UI checkout。
+
+新 release 的通用固定参数如下（参数值相对于 **新 release 的 tools/scripts**）：`--dist ../../ui --data ../../../../../../../code/project_gm_kernel-progress-publisher/temp_docs/web-progress-publish/data --baseline-data ../../previous-static/data --work ../../work --portalctl ../../../../../../../code/my_portal/portalctl.mjs --previous-bundle ../../previous-static --ui-commit <accepted40> --dist-hash <accepted64> --review <accepted40>`。prepare 后先以相同 work/previous-bundle 执行 `--mode backup --verify-served`；install 再附 `--unit-dir ../../../../../../../.config/systemd/user --release-sha256 <new-release-json-sha256> --previous-release ../../../ui-424-tools-35498ac --previous-release-sha256 504cc8661339a52e9cb2a40a4ad1f88d573e2b4bc1e706105b77c199033bc660 --previous-state-sha256 b9e403bdc1767796766eea78dc6df5f586aeeef7066551253dd192f0425bbc2b`。
+
+install 停 timer 后若旧 writer 尚未 idle，保留完整备份和原 exit，等待旧轮次自然结束后先评估证据；不要删 backup 再盲重试，也不要杀用户/其它 worker。失败后以新 work 回退；有有效更新前快照时，即使 publish 未写成功记录，也应执行整包 rollback 再 restore。精确顺序如下，第一次命令还会在新 work 留 `ROLLED_BACK` 阻止自动覆盖：
+
+```sh
+MSBUILDDISABLENODEREUSE=1 dotnet run --file NEW_RELEASE/tools/scripts/PublishReviewedWebProgressUi.cs -- --mode rollback --execute --work ../../work --portalctl ../../../../../../../code/my_portal/portalctl.mjs
+MSBUILDDISABLENODEREUSE=1 dotnet run --file NEW_RELEASE/tools/scripts/ConfigureReviewedWebProgressUiHook.cs -- --mode restore --execute --work ../../work --unit-dir ../../../../../../../.config/systemd/user
+```
+
+rollback 前必须暂停该 timer、核 writer inactive/failed、dead/failed、MainPID=0、无 job/tasks；发布脚本不替代 writer 管理。两条 CLI 原 exit 必须分别留存，不用后一个成功掩盖前一个失败。只有显式 publish 成功、完整 HTTPS 校验与独立浏览器接受后，才运行同一新 release 的 Configure `--mode resume --execute`；工具再次核 publication fingerprint、served 全包、当前 hook/effective argv、完整回退备份及原 enabled 偏好。此次范围不含 zz-hosted 排序或 hostproxy 部署。
