@@ -41,8 +41,13 @@
   6 成功前 +6 refinement 至多 12，报告口径同独立报告）。
 - **线程安全**：全部计数 `[ThreadStatic]`（内核会话单线程；跨线程也不共享）；
   dump 用 `Interlocked.Exchange` 保证一次性；热路径零分配、零日志。
-- **早退/异常**：失败 return 先计数再返回；未处理异常同样触发 ProcessExit
-  dump（计数不丢）；本次运行如异常，计数与 exit 一并保留。
+- **早退/异常（BCL smoke 实测路径矩阵）**：失败 return 先计数再返回；
+  正常返回（exit 0）与 `Environment.Exit`（exit 7）→ ProcessExit dump ✓；
+  管理未处理异常 → 本 runtime **无 ProcessExit（实测 exit 134）**，由
+  `UnhandledException` 同线程同步 dump 兜底（尽力而为，runtime 损坏时不保证）；
+  跨线程 `Environment.Exit` → dump ✓ 且聚合全部 owner 线程（实测 owner=1,4
+  全量并入，dump-thread=2 与 owner 不同也正确）；`Environment.FailFast`/
+  native 崩溃/信号 → **无 dump 保证**（实测 exit 134 无输出）。
 - **开销**：空双时间戳对 = 28.07 ns（本机 smoke 实测，5M 次）；桶计数精确性
   5,000,000/5,000,000 验证通过（`scripts/ClearAttributionSmoke.cs`）。每次 clear
   的计时含 2×GetTimestamp+累加（≥28ns 量级），clear 计时**可能包含 GC 暂停/
