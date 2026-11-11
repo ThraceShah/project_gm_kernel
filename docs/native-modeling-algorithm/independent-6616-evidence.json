@@ -1,0 +1,76 @@
+{
+  "candidateSource": "6616cd60a55e50a5d8a5ada7274895c44609676b",
+  "baselineSource": "270e2b6814afe5a48cd0532e89531f6fb80011be",
+  "archiveSha256": "ca17564e0e5f59186b93841ac8e7ab91a77036d5d3ac0c3b37b7c0f8bfd3ca81",
+  "originalFilesVerified": [
+    {
+      "path": "temp_docs/pk-native-algorithm-work/test-results/combined-6616-full.trx",
+      "sha256": "4f8eaa8b6d0dfdf4477d085b81b785de5a7f688eab958d1c7fe877e0d30d38ac"
+    },
+    {
+      "path": "temp_docs/pk-native-algorithm-work/combined-6616-full.log",
+      "sha256": "a397bca17f3ff057c79b684c0938e077219aeafa48dcaeda18afff2e179aece0"
+    },
+    {
+      "path": "temp_docs/pk-native-algorithm-work/test-results/integrated-270-baseline-failures.trx",
+      "sha256": "a13dd3091a694a4818fecab5af69c0717257fcc36c22aa2bafc869bd35f87c01"
+    },
+    {
+      "path": "temp_docs/pk-native-algorithm-work/integrated-270-baseline-failures.log",
+      "sha256": "462552da8573550b362a56205489ed06870c2a49f70a62c882f3de44b7f55e31"
+    },
+    {
+      "path": "temp_docs/pk-native-algorithm-work/root-shape.log",
+      "sha256": "641e6dbf52546ad7759555c3e4e92ab480e7de008cb326d25062212da95581b9"
+    },
+    {
+      "path": "temp_docs/pk-native-algorithm-work/command-bound-reuse-operation.log",
+      "sha256": "a1d7c89c4273cb69f0e6ce0b650daaf15aac7f7c19602f59a4cd34f2c40f345c"
+    },
+    {
+      "path": "temp_docs/pk-native-algorithm-work/plane-spline-point-columns.log",
+      "sha256": "6a18620e971cfef5345d62599df5079fcbfc6b94f01b37a674f2ea7cd8e9b140"
+    },
+    {
+      "path": "temp_docs/pk-native-algorithm-work/curved-spline-columns.log",
+      "sha256": "5af33d05e1846adda70f373850e9563be1f36aae77d40076e733fd2668d15e89"
+    },
+    {
+      "path": "temp_docs/pk-native-algorithm-work/nurbs-spline-columns.log",
+      "sha256": "742317d7a336bbac4e88a590ba5ba6b4239aab2fdaa74c5a70a90fca1e525863"
+    }
+  ],
+  "keyTrace": {
+    "records": 209158,
+    "distinct": 22157,
+    "repeated": 187001,
+    "scopes": 1
+  },
+  "captures": [
+    {
+      "path": "temp_docs/pk-native-algorithm-work/command-bound-reuse-capture/capture.json",
+      "sha256": "9e51f6c31da2e501a65006bac5c3b72537a898a3f517a9426eee539d43ef3a1f",
+      "steps": 1,
+      "checks": 63,
+      "rawExit": 0
+    },
+    {
+      "path": "temp_docs/pk-native-algorithm-work/curved-spline-columns-capture/capture.json",
+      "sha256": "7df409599a907a83f2f442b3b1495a0990a8170c4f3ca5537c89ba233c08467f",
+      "steps": 2,
+      "checks": 52,
+      "rawExit": 0
+    },
+    {
+      "path": "temp_docs/pk-native-algorithm-work/nurbs-spline-columns-capture/capture.json",
+      "sha256": "b27fa2511a75cf1d1a58e8c8c27c6255eea3f6478eb1a46455d249a2321f45bb",
+      "steps": 1,
+      "checks": 28,
+      "rawExit": 0
+    }
+  ],
+  "checkerRawExit": 0,
+  "originalCandidateSuiteRawExit": 1,
+  "originalFocusedBaselineRawExit": 1,
+  "formalPerformance": "not executed"
+}
