@@ -2,6 +2,8 @@
 
 This handoff is for the deployment owner on qingyu2, using its dedicated `code/project_gm_kernel-progress-publisher` checkout under that user's home. Do not run the job in the UI/editor/other workers' working trees. The data worker does not install a remote service, start an agent or publish the portal. The coordinator assigns installation and portal publication to the existing deployment worker.
 
+> Persistent scheduling note: `scripts/WatchWebProgress.cs` now drives a durable per-case queue (source-change priority, fair rotation, bounded exporter retries, accumulating aggregate view) instead of a fingerprint-only skip; the same command line above stays valid and starts from the representative subset. Queue semantics, additive schema fields, validation evidence and the portal capacity plan live in `docs/web-progress-persistent-scheduling.md`.
+
 ## Required checkout and runtime
 
 Enable the timer only after the data and UI changes have been integrated into `origin/main`. The dedicated checkout must track main without local tracked or staged edits; `git merge --ff-only origin/main` fails rather than replacing local work. Initialize the existing PKToy submodule at the pinned gitlink. .NET 10, the private PK runtime/schema and the UI lockfile's package manager must already be available under the systemd user's PATH. No SDK/runtime files enter static output.

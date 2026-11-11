@@ -1,8 +1,10 @@
 #!/usr/bin/env dotnet run
 #:property TargetFramework=net10.0
+#:property UseWebProgressValidation=true
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 
 // Deployment-owner publish step for the validated GM Kernel progress site.
 // Publishes a staged web/dist bundle via portalctl static (atomic snapshot
@@ -33,6 +35,16 @@ var name = Option("--name", "GM Kernel vs Parasolid 对比工作台");
 var description = Option("--description", "GM 几何建模内核与 Parasolid 真实对比与工程指标追踪工作台");
 const long BundleBudgetBytes = 30L * 1024 * 1024; // portal hard limit is 32 MiB decoded
 
+// 0. Verify data, web, dist, statePath and bundle chains before any side effect.
+if (!WebProgressSafePath.IsSafeChain(data, out var dataOffender)) { Console.Error.WriteLine("PUBLISH_REFUSED symlink/reparse data root rejected " + dataOffender); return 1; }
+if (!WebProgressSafePath.IsSafeChain(web, out var webOffender)) { Console.Error.WriteLine("PUBLISH_REFUSED symlink/reparse web root rejected " + webOffender); return 1; }
+if (!WebProgressSafePath.IsSafeChain(dist, out var distOffender)) { Console.Error.WriteLine("PUBLISH_REFUSED symlink/reparse dist root rejected " + distOffender); return 1; }
+if (!WebProgressSafePath.IsSafeChain(statePath, out var stateOffender)) { Console.Error.WriteLine("PUBLISH_REFUSED symlink/reparse state path rejected " + stateOffender); return 1; }
+var stateDir = Path.GetDirectoryName(statePath)!;
+if (!WebProgressSafePath.IsSafeChain(stateDir, out var stateDirOffender)) { Console.Error.WriteLine("PUBLISH_REFUSED symlink/reparse state directory rejected " + stateDirOffender); return 1; }
+var bundle = Path.Combine(stateDir, "bundle");
+if (!WebProgressSafePath.IsSafeChain(bundle, out var bundleOffender)) { Console.Error.WriteLine("PUBLISH_REFUSED symlink/reparse bundle path rejected " + bundleOffender); return 1; }
+
 // 1. The validated data cache must carry a complete latest run.
 var dataIndex = Path.Combine(data, "index.json");
 if (!File.Exists(dataIndex)) { Console.Error.WriteLine("PUBLISH_REFUSED no validated data index: " + dataIndex); return 1; }
@@ -60,38 +72,62 @@ if (!File.Exists(Path.GetFullPath(manifestRel, Path.Combine(dist, "data"))))
     return 1;
 }
 
-// 3. Stage a bundle bounded by the portal's static size limit.
-var bundle = Path.Combine(Path.GetDirectoryName(statePath)!, "bundle");
+// 3. Stage a bundle bounded by the portal's static size limit. The latest
+//    aggregate manifest references the measurement runs of its accumulated
+//    cases ("../<runId>/..."); those runs are required evidence and are never
+//    silently dropped. Older history runs are kept while they fit, newest
+//    first. If the latest aggregate and its evidence alone exceed the budget,
+//    the publication is refused loudly with measured sizes instead of cutting
+//    cases or evidence.
 if (Directory.Exists(bundle)) Directory.Delete(bundle, true);
-CopyTree(dist, bundle);
+try { CopyTree(dist, bundle); }
+catch (IOException e) { Console.Error.WriteLine("PUBLISH_REFUSED " + e.Message); return 1; }
 var bundleIndex = JsonNode.Parse(File.ReadAllText(Path.Combine(bundle, "data", "index.json")))!;
-var keepRuns = bundleIndex["runs"]!.AsArray()
-    .OrderByDescending(r => r!["generatedAt"]?.GetValue<string>() ?? string.Empty)
-    .ToList();
-var keepIds = new HashSet<string>(keepRuns.Select(r => r!["id"]!.GetValue<string>()));
 var bundleRunsDir = Path.Combine(bundle, "data", "runs");
+var orderedRuns = bundleIndex["runs"]!.AsArray()
+    .OrderByDescending(r => r!["id"]!.GetValue<string>() == latest)
+    .ThenByDescending(r => r!["generatedAt"]?.GetValue<string>() ?? string.Empty)
+    .ToList();
+long NonRunSize()
+{
+    long total = TreeSize(bundle);
+    if (Directory.Exists(bundleRunsDir)) foreach (var dir in Directory.GetDirectories(bundleRunsDir)) total -= TreeSize(dir);
+    return total;
+}
+HashSet<string> ReferencesOf(string runId)
+{
+    var references = new HashSet<string>(StringComparer.Ordinal);
+    var manifestPath2 = Path.Combine(bundleRunsDir, runId, "manifest.json");
+    if (!File.Exists(manifestPath2)) return references;
+    foreach (Match match in Regex.Matches(File.ReadAllText(manifestPath2), "\\.\\./([^/]+)/")) references.Add(match.Groups[1].Value);
+    return references;
+}
+var keepRuns = new List<JsonObject>();
+var keepIds = new HashSet<string>(StringComparer.Ordinal);
+foreach (var run in orderedRuns)
+{
+    var id = run!["id"]!.GetValue<string>();
+    var candidate = new HashSet<string>(keepIds, StringComparer.Ordinal) { id };
+    foreach (var reference in ReferencesOf(id)) candidate.Add(reference);
+    var projected = NonRunSize();
+    foreach (var candidateId in candidate) if (Directory.Exists(Path.Combine(bundleRunsDir, candidateId))) projected += TreeSize(Path.Combine(bundleRunsDir, candidateId));
+    if (projected > BundleBudgetBytes && keepRuns.Count > 0) { Console.WriteLine("PUBLISH_PRUNED_HISTORY_RUN " + id + " projected=" + projected); continue; }
+    keepRuns.Add(run.AsObject());
+    foreach (var candidateId in candidate) keepIds.Add(candidateId);
+}
 if (Directory.Exists(bundleRunsDir))
 {
     foreach (var dir in Directory.GetDirectories(bundleRunsDir))
-    {
-        if (!keepIds.Contains(Path.GetFileName(dir))) Directory.Delete(dir, true);
-    }
+        if (!keepIds.Contains(Path.GetFileName(dir))) { Directory.Delete(dir, true); Console.WriteLine("PUBLISH_PRUNED_UNREFERENCED_RUN " + Path.GetFileName(dir)); }
 }
-while (TreeSize(bundle) > BundleBudgetBytes && keepRuns.Count > 1)
-{
-    var dropped = keepRuns[^1]!;
-    keepRuns.RemoveAt(keepRuns.Count - 1);
-    keepIds.Remove(dropped["id"]!.GetValue<string>());
-    var droppedDir = Path.Combine(bundleRunsDir, dropped["id"]!.GetValue<string>());
-    if (Directory.Exists(droppedDir)) Directory.Delete(droppedDir, true);
-    Console.WriteLine("PUBLISH_PRUNED_OLDEST_RUN " + dropped["id"]!.GetValue<string>());
-}
-bundleIndex["runs"] = new JsonArray(keepRuns.Select(r => (JsonNode?)r!.DeepClone()).ToArray());
+// Required referenced runs that are not themselves index entries stay as
+// directory evidence even when their index descriptor was pruned.
+bundleIndex["runs"] = new JsonArray(keepRuns.Select(r => (JsonNode?)r.DeepClone()).ToArray());
 File.WriteAllText(Path.Combine(bundle, "data", "index.json"), bundleIndex.ToJsonString());
 var bundleSize = TreeSize(bundle);
 if (bundleSize > 32L * 1024 * 1024)
 {
-    Console.Error.WriteLine($"PUBLISH_REFUSED bundle {bundleSize} bytes exceeds the 32 MiB portal limit");
+    Console.Error.WriteLine($"PUBLISH_REFUSED_BUNDLE_OVERSIZE bundle {bundleSize} bytes exceeds the 32 MiB portal limit; the latest aggregate and its measurement evidence alone do not fit. Validated cache keeps the full history; use a persistent static serving path (docs/web-progress-persistent-scheduling.md capacity plan) instead of dropping case geometry or evidence.");
     return 1;
 }
 Console.WriteLine($"PUBLISH_BUNDLE runs={keepRuns.Count} bytes={bundleSize}");
@@ -139,9 +175,20 @@ string Option(string optionName, string fallback) { var at = Array.IndexOf(args,
 static string ScriptPath([CallerFilePath] string path = "") => path;
 static void CopyTree(string source, string target)
 {
+    // Same canonical-root contract as the validator and the data publisher:
+    // symlinks and other reparse points are not static data and must never be
+    // followed into a bundle (root, ancestors, intermediate, leaf).
+    if (!WebProgressSafePath.IsSafeChain(source, out var rootOffender)) throw new IOException("Symlinks are not static data: " + rootOffender);
+    if (!WebProgressSafePath.IsSafeChain(target, out var targetOffender)) throw new IOException("Symlinks are not static data: " + targetOffender);
     Directory.CreateDirectory(target);
-    foreach (var file in Directory.GetFiles(source)) File.Copy(file, Path.Combine(target, Path.GetFileName(file)));
-    foreach (var dir in Directory.GetDirectories(source)) CopyTree(dir, Path.Combine(target, Path.GetFileName(dir)));
+    foreach (var entry in Directory.EnumerateFileSystemEntries(source))
+    {
+        var targetEntry = Path.Combine(target, Path.GetFileName(entry));
+        if (!WebProgressSafePath.IsSafeChain(entry, out var offender)) throw new IOException("Symlinks are not static data: " + offender);
+        if (!WebProgressSafePath.IsSafeChain(targetEntry, out var targetEntryOffender)) throw new IOException("Symlinks are not static data: " + targetEntryOffender);
+        if (Directory.Exists(entry)) CopyTree(entry, targetEntry);
+        else File.Copy(entry, targetEntry, true);
+    }
 }
 static long TreeSize(string root)
 {
