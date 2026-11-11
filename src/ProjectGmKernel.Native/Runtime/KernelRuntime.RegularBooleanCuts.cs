@@ -787,7 +787,20 @@ internal static unsafe partial class KernelRuntime
                         if(targetLocator.Finite&&(t<targetLocator.Lower||t>targetLocator.Upper))
                             return UnresolvedBoundaryStation(cut.Curve,endpoint,t,targetLocator,sourceParameter,cutLocator);
                     }
-                    error=targetLocator.Finite?model.AssociateParameter(endpoint,cut.Curve,t,targetLocator.Lower,targetLocator.Upper)
+                    // The event was selected above by its finite source
+                    // witness. A line inverse supplies a representative,
+                    // not an exact station: retain the certified source
+                    // position enclosure in the target's native gauge.
+                    // This does not grant NativeLocatorEnds or join roots.
+                    var registration=targetLocator;
+                    if(!registration.Finite)for(var r=0;r<nRoots;r++)
+                    {
+                        if(rootParameters[r]!=sourceParameter||roots[r].Certified==0||roots[r].Witness==0
+                            ||!TryCutLineParameterBox(cut.Curve,roots[r].Root,out var projected))continue;
+                        registration=registration.Finite?IntersectStationBounds(registration,projected):projected;
+                        if(!registration.Finite)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                    }
+                    error=registration.Finite?model.AssociateParameter(endpoint,cut.Curve,Math.Clamp(t,registration.Lower,registration.Upper),registration.Lower,registration.Upper)
                         :model.AssociateParameter(endpoint,cut.Curve,t);
                     if(error!=0)return error;
                     for(var r=0;r<nRoots;r++)if(rootParameters[r]==sourceParameter)

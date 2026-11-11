@@ -479,7 +479,20 @@ internal static unsafe partial class KernelRuntime
         Span<OperationIntersectionPoint> coincidenceRoots=stackalloc OperationIntersectionPoint[checkAllBoundaries?IntersectionPointCapacity:0];
         for(var c=0;c<cuts.Length;c++)
         {
-            ref readonly var cut=ref cuts[c];var n=0;
+            var cut=cuts[c];var n=0;
+            // Clipped line ends are representatives of the retained source
+            // event enclosures. A later participant can refine that same
+            // event; carry the refined representative into this derived arc.
+            // Persistent source edges and native locator endpoints keep their
+            // own declared finite limits.
+            if(cut.NativeLocatorEnds==0&&cut.Closed==0&&Curves[GetCurveSlotByTag(cut.Curve)].Class==CurveClass.Line)
+            {
+                if(cut.LowerEvent>0&&model.KnownBoundaryParameter(cut.LowerEvent-1,cut.Curve,out var lower)&&HasBoundedStation(lower))
+                    cut.First=Math.Clamp(cut.First,lower.Lower,lower.Upper);
+                if(cut.UpperEvent>0&&model.KnownBoundaryParameter(cut.UpperEvent-1,cut.Curve,out var upper)&&HasBoundedStation(upper))
+                    cut.Last=Math.Clamp(cut.Last,upper.Lower,upper.Upper);
+                if(!(cut.Last>cut.First))return ParasolidConstants.PK_ERROR_cant_do_intersect;
+            }
             var certified=cut.NativeLocatorEnds!=0;var lowerEvent=cut.LowerEvent-1;var upperEvent=cut.UpperEvent-1;
             if(certified)
             {

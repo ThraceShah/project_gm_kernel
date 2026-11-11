@@ -76,6 +76,34 @@ public unsafe class RollingNetworkTests:IDisposable
         Assert.Equal(0,KernelRuntime.EntityDelete(1,&restored));Assert.Equal(0,KernelRuntime.Curves.AliveCount);Assert.Equal(0,KernelRuntime.Surfaces.AliveCount);
     }
 
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public void ReflectedScaledRollingSeedRetainsFiniteContactStationEnclosures(bool reverse)
+    {
+        var body=Seed();var scale=8.0;
+        var ca=Math.Cos(.37);var sa=Math.Sin(.37);var cb=Math.Cos(-.29);var sb=Math.Sin(-.29);
+        var cc=Math.Cos(.23);var sc=Math.Sin(.23);var move=new PK_TRANSF_sf_s();
+        move.matrix[0]=ca*cb;move.matrix[1]=ca*sb*sc-sa*cc;move.matrix[2]=ca*sb*cc+sa*sc;
+        move.matrix[4]=sa*cb;move.matrix[5]=sa*sb*sc+ca*cc;move.matrix[6]=sa*sb*cc-ca*sc;
+        move.matrix[8]=-sb;move.matrix[9]=cb*sc;move.matrix[10]=cb*cc;
+        for(var row=0;row<3;row++)for(var column=0;column<3;column++)move.matrix[4*row+column]*=scale*(column==0?-1:1);
+        move.matrix[3]=-.7*scale;move.matrix[7]=1.1*scale;move.matrix[11]=2.3*scale;move.matrix[15]=1;
+        int transform,count;int* replaced;byte* exact;
+        Assert.Equal(0,KernelRuntime.TransfCreate(&move,&transform));
+        Assert.Equal(0,KernelRuntime.BodyTransform(body,transform,0,&count,&replaced,&exact));
+        if(replaced!=null)Assert.Equal(0,KernelRuntime.MemoryFree(replaced));
+        if(exact!=null)Assert.Equal(0,KernelRuntime.MemoryFree(exact));
+        Assert.Equal(0,KernelRuntime.EntityDelete(1,&transform));
+        Span<EdgeTag> selected=stackalloc EdgeTag[2];Selection(body,selected);if(reverse)selected.Reverse();Mark(selected,.5*scale);
+        var fix=new PK_BODY_fix_blends_o_s{o_t_version=31,tolerance=1e-7*scale,local_check=1};int fault,edgeFault,topolFault;
+        var error=KernelRuntime.BodyFixBlends(body,&fix,&count,null,null,null,&fault,&edgeFault,&topolFault);
+        Assert.True(error==0,$"error={error} stage={KernelRuntime.LastRollingNetworkStage}/{KernelRuntime.LastSheetPartitionStage}");
+        Assert.Equal(2,count);BooleanOperationTests.Counts(body,10,23,15);ShortIntervals(body,scale*7.6e-5,scale*7.7e-5);NativeSupportIncidence(body);
+        Assert.Equal(0,XtBrepImportTests.Receive(Transmit(body),out var restored));
+        BooleanOperationTests.Counts(restored,10,23,15);ShortIntervals(restored,scale*7.6e-5,scale*7.7e-5);
+        Assert.Equal(0,KernelRuntime.EntityDelete(1,&restored));Assert.Equal(0,KernelRuntime.EntityDelete(1,&body));
+    }
+
     [Fact]
     public void InteriorSourceRootPreservesTheStationaryPlaneConstraintAndItsFiniteBranch()
     {
