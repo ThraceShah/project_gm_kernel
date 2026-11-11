@@ -168,6 +168,15 @@ pass 或在逐 case 白名单 `DiagnosticCheckIds`（当前全空）；无 owner
 （4 个 GPT 反例全部拒绝、17 原件期望未改），另 `--revalidate` 对 S0 四个真实
 oracle capture 回归全部 qualified=True（无误杀）。v2 不能作 S1/S2 正式 gate。
 
+**历史合法数据兼容（45 pair 重放）**：对 04c immutable run 的全部 20 个
+capture（15 cold rep + 5×6 warm rep = 45 个操作 pair，1521 项检查）逐只读
+`--revalidate` 重放，**20/20 qualified=True、0 误杀**（
+`temp_docs/modeling-performance/opta/v3-revalidate-45pair.log`）。
+历史 capture 的 check status 词表实测仅 {pass}，不存在 status=diagnostic 的行；
+合法 `n_cht_pts` 诊断存在于 equivalence 证据内部（compare JSON localDiffs 的
+`diagnostic:true`），不在 check 状态层——empty `DiagnosticCheckIds` 不会误杀
+真实旧数据，未来若有状态级 diagnostic 须逐 case 白名单准入。
+
 ## 9. 复现
 
 ```sh
