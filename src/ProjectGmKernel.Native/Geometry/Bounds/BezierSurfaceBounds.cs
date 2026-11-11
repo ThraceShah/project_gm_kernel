@@ -162,9 +162,14 @@ internal static class BezierSurfaceBounds
         IntervalNumber b, Span<IntervalNumber> output)
     {
         Span<IntervalNumber> work = stackalloc IntervalNumber[Math.Min(4*17,4*(degree+1))];
+        // Equal endpoint intervals select the same t in every blossom.
+        // Reuse that exact arithmetic; derivative nets are still restricted independently.
+        var repeated=degree>0&&BitConverter.DoubleToInt64Bits(a.Lower)==BitConverter.DoubleToInt64Bits(b.Lower)
+            &&BitConverter.DoubleToInt64Bits(a.Upper)==BitConverter.DoubleToInt64Bits(b.Upper);
+        var last=repeated?0:degree;
         // Blossom evaluation: kth restricted pole has degree-k copies of a
         // and k copies of b. This also supports tiny certification extensions.
-        for (var k = 0; k <= degree; k++)
+        for (var k = 0; k <= last; k++)
         {
             input[..(4 * (degree + 1))].CopyTo(work);
             for (var r = 0; r < degree; r++)
@@ -174,6 +179,7 @@ internal static class BezierSurfaceBounds
             }
             work[..4].CopyTo(output[(4 * k)..]);
         }
+        if(repeated)for(var k=1;k<=degree;k++)output[..4].CopyTo(output[(4*k)..]);
     }
 
     /// <summary>XYZ, d/du and d/dv intervals; output layout is component-major.</summary>
