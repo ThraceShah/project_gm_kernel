@@ -1,0 +1,1299 @@
+{
+  "format": "independent-fixed-6616-measurement-audit-v1",
+  "baselineSource": "270e2b6814afe5a48cd0532e89531f6fb80011be",
+  "candidateAcceptedSource": "6616cd60a55e50a5d8a5ada7274895c44609676b",
+  "candidateMeasurementSource": "a73bc08dbd39e984dff59dac7bba31a3baf80b4e",
+  "measurementDeliverySource": "03e5a8e8ec9a8a297346e42d1b854f6293c8a083",
+  "codeReviewSource": "5a4ad5319b77c0944baf598e07dbbce79782a483",
+  "archiveSha256": "97a3164698a16f1c543793289f1b863b1a67e20be7127ed5b0da017e0016120a",
+  "archiveMembersVerified": 490,
+  "expandedBytes": 36430726,
+  "archiveManifestSha256": "ad15e0b45bb45305b13936e0bd8695d35e74f0ad15a7ecc7f29e01fbd1e32536",
+  "auditSourceSha256": "276fd9b4fe995dacdd4554798e1475719b0bdd587a3bb32581cffb68308b8b62",
+  "reportSha256": "fef5e9a8fc33aa9da3d1ab8c932b680f33aa9b0f24214e73e3987c5dfa01e868",
+  "operationSummarySha256": "bfdf3f888e848f6b965ed844a4993dbf7f95a582d7e52bbfb8163762da0c2d39",
+  "materialBindingSha256": "df9a43cf55e2cf978d5c009c3920c2315417899d2a0d99f733ad2267b8173d7f",
+  "measurementReceiptSha256": "310c7d27513e387ce5b795e192e537e3baa940b801f1681ef4e4cba4025708cd",
+  "originalExits": {
+    "controlled-summary.exit": 0,
+    "controlled-6616.exit": 134,
+    "measurement-candidate-build-complete.exit": 0,
+    "controlled-receipt-check.exit": 0,
+    "measurement-qualification.exit": 0,
+    "controlled-material-check.exit": 0,
+    "controlled-6616-ready.exit": 0,
+    "measurement-baseline-build.exit": 0
+  },
+  "originalProcessExitsSource": "Original runner report captured Process.ExitCode; 20 matching original harness log lines, no separate per-process exit files",
+  "processes": [
+    {
+      "process": "00-sphere-baseline",
+      "source": "270e2b6814afe5a48cd0532e89531f6fb80011be",
+      "capturePath": "temp_docs/review-6616-controlled/original-mac/temp_docs/pk-native-algorithm-work/measurement-6616/temp_docs/native-270-6616-controlled/00-sphere-baseline/capture.json",
+      "captureSha256": "74417e4cc11ad8875461187775c2183be090a0cc121a7ff948c6579e92854e91",
+      "logSha256": "23eedbf365936fd3da794fb49977373372004e7d5e4ba85db7d45287359e27f9",
+      "originalProcessExit": 0,
+      "pairs": [
+        {
+          "rep": 0,
+          "temperature": "cold",
+          "gmMs": 22.7702,
+          "pkMs": 12.664,
+          "ratioGmOverPk": 1.7980259001895136
+        },
+        {
+          "rep": 1,
+          "temperature": "warm",
+          "gmMs": 0.0754,
+          "pkMs": 0.2523,
+          "ratioGmOverPk": 0.29885057471264365
+        },
+        {
+          "rep": 2,
+          "temperature": "warm",
+          "gmMs": 0.0735,
+          "pkMs": 0.265,
+          "ratioGmOverPk": 0.27735849056603773
+        }
+      ],
+      "meshFiles": 18,
+      "finalRep2XtFiles": 2
+    },
+    {
+      "process": "01-sphere-candidate",
+      "source": "a73bc08dbd39e984dff59dac7bba31a3baf80b4e",
+      "capturePath": "temp_docs/review-6616-controlled/original-mac/temp_docs/pk-native-algorithm-work/measurement-6616/temp_docs/native-270-6616-controlled/01-sphere-candidate/capture.json",
+      "captureSha256": "bf87f4a29d804a7fa3a09c323e1d248da695a050b208a33c68de5aa8e4271bb4",
+      "logSha256": "81c5547054b765dfdab56d906bc524876622c441bbd063a488142cacf6a0b22c",
+      "originalProcessExit": 0,
+      "pairs": [
+        {
+          "rep": 0,
+          "temperature": "cold",
+          "gmMs": 25.9422,
+          "pkMs": 0.4645,
+          "ratioGmOverPk": 55.849730893433794
+        },
+        {
+          "rep": 1,
+          "temperature": "warm",
+          "gmMs": 0.0828,
+          "pkMs": 0.2905,
+          "ratioGmOverPk": 0.28502581755593803
+        },
+        {
+          "rep": 2,
+          "temperature": "warm",
+          "gmMs": 0.0751,
+          "pkMs": 0.2729,
+          "ratioGmOverPk": 0.27519237816049835
+        }
+      ],
+      "meshFiles": 18,
+      "finalRep2XtFiles": 2
+    },
+    {
+      "process": "02-sphere-candidate",
+      "source": "a73bc08dbd39e984dff59dac7bba31a3baf80b4e",
+      "capturePath": "temp_docs/review-6616-controlled/original-mac/temp_docs/pk-native-algorithm-work/measurement-6616/temp_docs/native-270-6616-controlled/02-sphere-candidate/capture.json",
+      "captureSha256": "f171fba26bd470962fb39e5dfde099ba809bcebcc29d8f64eb15a146a95db590",
+      "logSha256": "e066ec8607c3c3d6aa2856c05494cbc80fde02e65d08ea49c52e676d14d6f4c2",
+      "originalProcessExit": 0,
+      "pairs": [
+        {
+          "rep": 0,
+          "temperature": "cold",
+          "gmMs": 22.8384,
+          "pkMs": 0.5078,
+          "ratioGmOverPk": 44.975187081528155
+        },
+        {
+          "rep": 1,
+          "temperature": "warm",
+          "gmMs": 0.0811,
+          "pkMs": 0.2935,
+          "ratioGmOverPk": 0.2763202725724021
+        },
+        {
+          "rep": 2,
+          "temperature": "warm",
+          "gmMs": 0.0751,
+          "pkMs": 0.2945,
+          "ratioGmOverPk": 0.25500848896434636
+        }
+      ],
+      "meshFiles": 18,
+      "finalRep2XtFiles": 2
+    },
+    {
+      "process": "03-sphere-baseline",
+      "source": "270e2b6814afe5a48cd0532e89531f6fb80011be",
+      "capturePath": "temp_docs/review-6616-controlled/original-mac/temp_docs/pk-native-algorithm-work/measurement-6616/temp_docs/native-270-6616-controlled/03-sphere-baseline/capture.json",
+      "captureSha256": "ec712e6d1f919267f07a10aa2d97550500d971ac76ec4b611d3a0d7232baa96e",
+      "logSha256": "b4a7da9af98135c5be0af93a28842c975ede1ed936a46912683d3bf3b6ca464c",
+      "originalProcessExit": 0,
+      "pairs": [
+        {
+          "rep": 0,
+          "temperature": "cold",
+          "gmMs": 24.4722,
+          "pkMs": 0.4541,
+          "ratioGmOverPk": 53.89165382074433
+        },
+        {
+          "rep": 1,
+          "temperature": "warm",
+          "gmMs": 0.0823,
+          "pkMs": 0.2898,
+          "ratioGmOverPk": 0.28398895790200135
+        },
+        {
+          "rep": 2,
+          "temperature": "warm",
+          "gmMs": 0.0777,
+          "pkMs": 0.3061,
+          "ratioGmOverPk": 0.25383861483175435
+        }
+      ],
+      "meshFiles": 18,
+      "finalRep2XtFiles": 2
+    },
+    {
+      "process": "04-planar-baseline",
+      "source": "270e2b6814afe5a48cd0532e89531f6fb80011be",
+      "capturePath": "temp_docs/review-6616-controlled/original-mac/temp_docs/pk-native-algorithm-work/measurement-6616/temp_docs/native-270-6616-controlled/04-planar-baseline/capture.json",
+      "captureSha256": "3477179736128364409f8f417acc3846b3a05c6c89f9fe91fefca31f1ebafc59",
+      "logSha256": "9d2db0bd47fb901069191e261f149e3b557a44b9c82efab68697132a7d4e26c1",
+      "originalProcessExit": 0,
+      "pairs": [
+        {
+          "rep": 0,
+          "temperature": "cold",
+          "gmMs": 49.4748,
+          "pkMs": 1.7567,
+          "ratioGmOverPk": 28.16348835885467
+        },
+        {
+          "rep": 1,
+          "temperature": "warm",
+          "gmMs": 0.606,
+          "pkMs": 0.8387,
+          "ratioGmOverPk": 0.7225467986169071
+        },
+        {
+          "rep": 2,
+          "temperature": "warm",
+          "gmMs": 0.5996,
+          "pkMs": 0.7598,
+          "ratioGmOverPk": 0.7891550408002106
+        }
+      ],
+      "meshFiles": 18,
+      "finalRep2XtFiles": 2
+    },
+    {
+      "process": "05-planar-candidate",
+      "source": "a73bc08dbd39e984dff59dac7bba31a3baf80b4e",
+      "capturePath": "temp_docs/review-6616-controlled/original-mac/temp_docs/pk-native-algorithm-work/measurement-6616/temp_docs/native-270-6616-controlled/05-planar-candidate/capture.json",
+      "captureSha256": "0959912e2fe872d37e255eb2faa7bde96b9c575a7dd45cb043dadde03d7761a6",
+      "logSha256": "125733b8d1ab1874e1ca3b93736e2c5959d12ab6917371ad26bb963a73bb7fd5",
+      "originalProcessExit": 0,
+      "pairs": [
+        {
+          "rep": 0,
+          "temperature": "cold",
+          "gmMs": 53.7666,
+          "pkMs": 1.1662,
+          "ratioGmOverPk": 46.104098782370095
+        },
+        {
+          "rep": 1,
+          "temperature": "warm",
+          "gmMs": 0.6762,
+          "pkMs": 0.9621,
+          "ratioGmOverPk": 0.702837542874961
+        },
+        {
+          "rep": 2,
+          "temperature": "warm",
+          "gmMs": 0.6915,
+          "pkMs": 0.9197,
+          "ratioGmOverPk": 0.7518756116124824
+        }
+      ],
+      "meshFiles": 18,
+      "finalRep2XtFiles": 2
+    },
+    {
+      "process": "06-planar-candidate",
+      "source": "a73bc08dbd39e984dff59dac7bba31a3baf80b4e",
+      "capturePath": "temp_docs/review-6616-controlled/original-mac/temp_docs/pk-native-algorithm-work/measurement-6616/temp_docs/native-270-6616-controlled/06-planar-candidate/capture.json",
+      "captureSha256": "92bcdd487ada1165f45cb0fc957d76818fce01fed0873fab6a7526fb677c86dc",
+      "logSha256": "94c7b46068257cad7206029e3f790578755f76acbbe769f5834609256adcc64a",
+      "originalProcessExit": 0,
+      "pairs": [
+        {
+          "rep": 0,
+          "temperature": "cold",
+          "gmMs": 51.7466,
+          "pkMs": 1.1971,
+          "ratioGmOverPk": 43.226631024977024
+        },
+        {
+          "rep": 1,
+          "temperature": "warm",
+          "gmMs": 0.6732,
+          "pkMs": 0.8599,
+          "ratioGmOverPk": 0.7828817304337714
+        },
+        {
+          "rep": 2,
+          "temperature": "warm",
+          "gmMs": 0.6648,
+          "pkMs": 0.9714,
+          "ratioGmOverPk": 0.6843730697961704
+        }
+      ],
+      "meshFiles": 18,
+      "finalRep2XtFiles": 2
+    },
+    {
+      "process": "07-planar-baseline",
+      "source": "270e2b6814afe5a48cd0532e89531f6fb80011be",
+      "capturePath": "temp_docs/review-6616-controlled/original-mac/temp_docs/pk-native-algorithm-work/measurement-6616/temp_docs/native-270-6616-controlled/07-planar-baseline/capture.json",
+      "captureSha256": "21c837f90bb682240f766c43de98a69ce0fbe5679f22902f981d6fe641e18f3f",
+      "logSha256": "5691848e52427bc9113323f4a75c1c934440d6b30f9367dd66f0a9186b06e65a",
+      "originalProcessExit": 0,
+      "pairs": [
+        {
+          "rep": 0,
+          "temperature": "cold",
+          "gmMs": 52.666,
+          "pkMs": 1.154,
+          "ratioGmOverPk": 45.63778162911612
+        },
+        {
+          "rep": 1,
+          "temperature": "warm",
+          "gmMs": 0.6643,
+          "pkMs": 0.8929,
+          "ratioGmOverPk": 0.7439802889461306
+        },
+        {
+          "rep": 2,
+          "temperature": "warm",
+          "gmMs": 0.6644,
+          "pkMs": 0.8305,
+          "ratioGmOverPk": 0.7999999999999999
+        }
+      ],
+      "meshFiles": 18,
+      "finalRep2XtFiles": 2
+    },
+    {
+      "process": "08-curved-baseline",
+      "source": "270e2b6814afe5a48cd0532e89531f6fb80011be",
+      "capturePath": "temp_docs/review-6616-controlled/original-mac/temp_docs/pk-native-algorithm-work/measurement-6616/temp_docs/native-270-6616-controlled/08-curved-baseline/capture.json",
+      "captureSha256": "6f7f22df59fdd7d4456610cc5125dc29072ef0344a2059d086f14667d5854e7e",
+      "logSha256": "4ffbdc75f39a28954df9bdc5c6f05b5aa597b2551b72c076f2ea7a90f59f2c5d",
+      "originalProcessExit": 0,
+      "pairs": [
+        {
+          "rep": 0,
+          "temperature": "cold",
+          "gmMs": 1460.0138,
+          "pkMs": 4.344,
+          "ratioGmOverPk": 336.09894106813994
+        },
+        {
+          "rep": 1,
+          "temperature": "warm",
+          "gmMs": 951.1477,
+          "pkMs": 2.0815,
+          "ratioGmOverPk": 456.9530146528945
+        },
+        {
+          "rep": 2,
+          "temperature": "warm",
+          "gmMs": 902.6799,
+          "pkMs": 1.929,
+          "ratioGmOverPk": 467.9522550544323
+        }
+      ],
+      "meshFiles": 18,
+      "finalRep2XtFiles": 1
+    },
+    {
+      "process": "09-curved-candidate",
+      "source": "a73bc08dbd39e984dff59dac7bba31a3baf80b4e",
+      "capturePath": "temp_docs/review-6616-controlled/original-mac/temp_docs/pk-native-algorithm-work/measurement-6616/temp_docs/native-270-6616-controlled/09-curved-candidate/capture.json",
+      "captureSha256": "88b1c5493cfd780ee8e4c4254008f6468c49ed6cab828e0c94e997face858406",
+      "logSha256": "1aab7b3bb0f5a849b946dc501217020735e274bb301f10dadcb6c874ab7f41a8",
+      "originalProcessExit": 0,
+      "pairs": [
+        {
+          "rep": 0,
+          "temperature": "cold",
+          "gmMs": 1529.1611,
+          "pkMs": 2.3119,
+          "ratioGmOverPk": 661.4304684458671
+        },
+        {
+          "rep": 1,
+          "temperature": "warm",
+          "gmMs": 878.0799,
+          "pkMs": 2.0319,
+          "ratioGmOverPk": 432.14720212608887
+        },
+        {
+          "rep": 2,
+          "temperature": "warm",
+          "gmMs": 895.0015,
+          "pkMs": 2.0818,
+          "ratioGmOverPk": 429.91713901431456
+        }
+      ],
+      "meshFiles": 18,
+      "finalRep2XtFiles": 1
+    },
+    {
+      "process": "10-curved-candidate",
+      "source": "a73bc08dbd39e984dff59dac7bba31a3baf80b4e",
+      "capturePath": "temp_docs/review-6616-controlled/original-mac/temp_docs/pk-native-algorithm-work/measurement-6616/temp_docs/native-270-6616-controlled/10-curved-candidate/capture.json",
+      "captureSha256": "b5356a98766cf76f7f6c29e791329b55ab4027aa22f7ed64ab11beaaeeb61c96",
+      "logSha256": "6f4ac4c05b53fdc667c85d8ea2331e2819d9e0b56ffeabfe6bef6d52ce5819c5",
+      "originalProcessExit": 0,
+      "pairs": [
+        {
+          "rep": 0,
+          "temperature": "cold",
+          "gmMs": 1598.914,
+          "pkMs": 2.3142,
+          "ratioGmOverPk": 690.9143548526489
+        },
+        {
+          "rep": 1,
+          "temperature": "warm",
+          "gmMs": 888.3334,
+          "pkMs": 1.9099,
+          "ratioGmOverPk": 465.12037279438715
+        },
+        {
+          "rep": 2,
+          "temperature": "warm",
+          "gmMs": 879.0627,
+          "pkMs": 1.9277,
+          "ratioGmOverPk": 456.0163407169165
+        }
+      ],
+      "meshFiles": 18,
+      "finalRep2XtFiles": 1
+    },
+    {
+      "process": "11-curved-baseline",
+      "source": "270e2b6814afe5a48cd0532e89531f6fb80011be",
+      "capturePath": "temp_docs/review-6616-controlled/original-mac/temp_docs/pk-native-algorithm-work/measurement-6616/temp_docs/native-270-6616-controlled/11-curved-baseline/capture.json",
+      "captureSha256": "adbb10c928776048cb1fc670e8b16b88207f64c7d75d0c2bab74d2be293ec74b",
+      "logSha256": "e1b1c4d16860a3c0d5e1632a45025032ce12b5905dc56a0f1b2d070f7e49f41c",
+      "originalProcessExit": 0,
+      "pairs": [
+        {
+          "rep": 0,
+          "temperature": "cold",
+          "gmMs": 1514.0953,
+          "pkMs": 2.3604,
+          "ratioGmOverPk": 641.4570835451618
+        },
+        {
+          "rep": 1,
+          "temperature": "warm",
+          "gmMs": 975.9105,
+          "pkMs": 2.0882,
+          "ratioGmOverPk": 467.34532132937454
+        },
+        {
+          "rep": 2,
+          "temperature": "warm",
+          "gmMs": 926.1877,
+          "pkMs": 2.848,
+          "ratioGmOverPk": 325.20635533707866
+        }
+      ],
+      "meshFiles": 18,
+      "finalRep2XtFiles": 1
+    },
+    {
+      "process": "12-solidblend-baseline",
+      "source": "270e2b6814afe5a48cd0532e89531f6fb80011be",
+      "capturePath": "temp_docs/review-6616-controlled/original-mac/temp_docs/pk-native-algorithm-work/measurement-6616/temp_docs/native-270-6616-controlled/12-solidblend-baseline/capture.json",
+      "captureSha256": "2d0396c7d16aec4cdef33158dfed561208929a60f69e47966ee350c9499fce37",
+      "logSha256": "aef776bab5d8cfc36cc764fa0dbb4463c94441229a8524b5ce984fe578c355c3",
+      "originalProcessExit": 0,
+      "pairs": [
+        {
+          "rep": 0,
+          "temperature": "cold",
+          "gmMs": 2382.7417,
+          "pkMs": 16.3472,
+          "ratioGmOverPk": 145.75839899187628
+        },
+        {
+          "rep": 1,
+          "temperature": "warm",
+          "gmMs": 1626.2029,
+          "pkMs": 1.5486,
+          "ratioGmOverPk": 1050.1116492315641
+        },
+        {
+          "rep": 2,
+          "temperature": "warm",
+          "gmMs": 1555.9443,
+          "pkMs": 1.6216,
+          "ratioGmOverPk": 959.51177849038
+        }
+      ],
+      "meshFiles": 12,
+      "finalRep2XtFiles": 1
+    },
+    {
+      "process": "13-solidblend-candidate",
+      "source": "a73bc08dbd39e984dff59dac7bba31a3baf80b4e",
+      "capturePath": "temp_docs/review-6616-controlled/original-mac/temp_docs/pk-native-algorithm-work/measurement-6616/temp_docs/native-270-6616-controlled/13-solidblend-candidate/capture.json",
+      "captureSha256": "1c0afa253bd49ec37941b17746e47c2d8c2450e4bffb84efdf786f472290d2c2",
+      "logSha256": "cffab380732c618735edae387cd6727ee806add544a36552f6f72ab0a6c436b7",
+      "originalProcessExit": 0,
+      "pairs": [
+        {
+          "rep": 0,
+          "temperature": "cold",
+          "gmMs": 2087.1974,
+          "pkMs": 2.1733,
+          "ratioGmOverPk": 960.381631620117
+        },
+        {
+          "rep": 1,
+          "temperature": "warm",
+          "gmMs": 1608.4702,
+          "pkMs": 1.5442,
+          "ratioGmOverPk": 1041.620385960368
+        },
+        {
+          "rep": 2,
+          "temperature": "warm",
+          "gmMs": 1634.8476,
+          "pkMs": 1.4848,
+          "ratioGmOverPk": 1101.055765086207
+        }
+      ],
+      "meshFiles": 12,
+      "finalRep2XtFiles": 1
+    },
+    {
+      "process": "14-solidblend-candidate",
+      "source": "a73bc08dbd39e984dff59dac7bba31a3baf80b4e",
+      "capturePath": "temp_docs/review-6616-controlled/original-mac/temp_docs/pk-native-algorithm-work/measurement-6616/temp_docs/native-270-6616-controlled/14-solidblend-candidate/capture.json",
+      "captureSha256": "752b9380b563a0475bbcbbdde630d266c793b5c8917141fd61ff20b8bbd4af24",
+      "logSha256": "33c351561e422db98e7da9deddd3ef81e78d0452ab5c557838668ec3c024f8d1",
+      "originalProcessExit": 0,
+      "pairs": [
+        {
+          "rep": 0,
+          "temperature": "cold",
+          "gmMs": 2162.9612,
+          "pkMs": 2.1657,
+          "ratioGmOverPk": 998.7353742438935
+        },
+        {
+          "rep": 1,
+          "temperature": "warm",
+          "gmMs": 1525.8231,
+          "pkMs": 1.6742,
+          "ratioGmOverPk": 911.3744474973122
+        },
+        {
+          "rep": 2,
+          "temperature": "warm",
+          "gmMs": 1541.5477,
+          "pkMs": 2.2544,
+          "ratioGmOverPk": 683.7951117814054
+        }
+      ],
+      "meshFiles": 12,
+      "finalRep2XtFiles": 1
+    },
+    {
+      "process": "15-solidblend-baseline",
+      "source": "270e2b6814afe5a48cd0532e89531f6fb80011be",
+      "capturePath": "temp_docs/review-6616-controlled/original-mac/temp_docs/pk-native-algorithm-work/measurement-6616/temp_docs/native-270-6616-controlled/15-solidblend-baseline/capture.json",
+      "captureSha256": "dd41ce4828cc6276ea6be8d24029a9edecc899721f5f8e99b91b1100003a9b47",
+      "logSha256": "749daa978544231f921a9a5544a53df68aea42bad81a4ff60c736adce7e7ec34",
+      "originalProcessExit": 0,
+      "pairs": [
+        {
+          "rep": 0,
+          "temperature": "cold",
+          "gmMs": 2438.2018,
+          "pkMs": 2.1442,
+          "ratioGmOverPk": 1137.1149146534838
+        },
+        {
+          "rep": 1,
+          "temperature": "warm",
+          "gmMs": 1583.884,
+          "pkMs": 1.6673,
+          "ratioGmOverPk": 949.969411623583
+        },
+        {
+          "rep": 2,
+          "temperature": "warm",
+          "gmMs": 1538.9857,
+          "pkMs": 1.6827,
+          "ratioGmOverPk": 914.5930350032685
+        }
+      ],
+      "meshFiles": 12,
+      "finalRep2XtFiles": 1
+    },
+    {
+      "process": "16-shortedge-baseline",
+      "source": "270e2b6814afe5a48cd0532e89531f6fb80011be",
+      "capturePath": "temp_docs/review-6616-controlled/original-mac/temp_docs/pk-native-algorithm-work/measurement-6616/temp_docs/native-270-6616-controlled/16-shortedge-baseline/capture.json",
+      "captureSha256": "f07d8038acc2c0ca687fafd5a21c9474d4f3a85378fb8cda5193ca201feacf4e",
+      "logSha256": "54c77d286bb6f019d04a867ea544b4212f2ea4870cd2358f32517fbdfe644181",
+      "originalProcessExit": 0,
+      "pairs": [
+        {
+          "rep": 0,
+          "temperature": "cold",
+          "gmMs": 16863.156,
+          "pkMs": 5.13,
+          "ratioGmOverPk": 3287.1649122807016
+        },
+        {
+          "rep": 1,
+          "temperature": "warm",
+          "gmMs": 15892.983,
+          "pkMs": 1.6105,
+          "ratioGmOverPk": 9868.353306426576
+        },
+        {
+          "rep": 2,
+          "temperature": "warm",
+          "gmMs": 15946.4309,
+          "pkMs": 2.1708,
+          "ratioGmOverPk": 7345.877510595173
+        }
+      ],
+      "meshFiles": 12,
+      "finalRep2XtFiles": 5
+    },
+    {
+      "process": "17-shortedge-candidate",
+      "source": "a73bc08dbd39e984dff59dac7bba31a3baf80b4e",
+      "capturePath": "temp_docs/review-6616-controlled/original-mac/temp_docs/pk-native-algorithm-work/measurement-6616/temp_docs/native-270-6616-controlled/17-shortedge-candidate/capture.json",
+      "captureSha256": "52b12f68c0ade97e407c5796c3c06a75d8945a167c32902c729aae16d87b89e3",
+      "logSha256": "284c8d56ee8061bc4e28ed7a65500ced16f4a48314a5979cba8c9aaa4d0d4419",
+      "originalProcessExit": 0,
+      "pairs": [
+        {
+          "rep": 0,
+          "temperature": "cold",
+          "gmMs": 6610.6975,
+          "pkMs": 2.2236,
+          "ratioGmOverPk": 2972.970633207412
+        },
+        {
+          "rep": 1,
+          "temperature": "warm",
+          "gmMs": 5626.7173,
+          "pkMs": 1.5977,
+          "ratioGmOverPk": 3521.7608437128374
+        },
+        {
+          "rep": 2,
+          "temperature": "warm",
+          "gmMs": 5652.0112,
+          "pkMs": 1.585,
+          "ratioGmOverPk": 3565.937665615142
+        }
+      ],
+      "meshFiles": 12,
+      "finalRep2XtFiles": 5
+    },
+    {
+      "process": "18-shortedge-candidate",
+      "source": "a73bc08dbd39e984dff59dac7bba31a3baf80b4e",
+      "capturePath": "temp_docs/review-6616-controlled/original-mac/temp_docs/pk-native-algorithm-work/measurement-6616/temp_docs/native-270-6616-controlled/18-shortedge-candidate/capture.json",
+      "captureSha256": "bca8dd142d8f29e2e5087c75a3ec24ab559194db13dae221a729fd894da35aab",
+      "logSha256": "0903cfc6bc11c1d39c9cfdb4ff2a59da319b3709977769ea5c108e577d8d3f70",
+      "originalProcessExit": 0,
+      "pairs": [
+        {
+          "rep": 0,
+          "temperature": "cold",
+          "gmMs": 6783.6905,
+          "pkMs": 2.2295,
+          "ratioGmOverPk": 3042.695895940794
+        },
+        {
+          "rep": 1,
+          "temperature": "warm",
+          "gmMs": 5639.2534,
+          "pkMs": 1.6987,
+          "ratioGmOverPk": 3319.7465120386173
+        },
+        {
+          "rep": 2,
+          "temperature": "warm",
+          "gmMs": 5639.9284,
+          "pkMs": 1.6961,
+          "ratioGmOverPk": 3325.233417840929
+        }
+      ],
+      "meshFiles": 12,
+      "finalRep2XtFiles": 5
+    },
+    {
+      "process": "19-shortedge-baseline",
+      "source": "270e2b6814afe5a48cd0532e89531f6fb80011be",
+      "capturePath": "temp_docs/review-6616-controlled/original-mac/temp_docs/pk-native-algorithm-work/measurement-6616/temp_docs/native-270-6616-controlled/19-shortedge-baseline/capture.json",
+      "captureSha256": "dc8937198b1332506d6fd710be689687536bdcedd1c927bafc90331f1b1fb3e4",
+      "logSha256": "1750e82fe4cf6e5aed079c0c33a8cc316356ed17e3fb6db40710ed87e55ce8c4",
+      "originalProcessExit": 0,
+      "pairs": [
+        {
+          "rep": 0,
+          "temperature": "cold",
+          "gmMs": 16884.1133,
+          "pkMs": 2.2444,
+          "ratioGmOverPk": 7522.773703439672
+        },
+        {
+          "rep": 1,
+          "temperature": "warm",
+          "gmMs": 15733.7352,
+          "pkMs": 1.7152,
+          "ratioGmOverPk": 9173.119869402984
+        },
+        {
+          "rep": 2,
+          "temperature": "warm",
+          "gmMs": 15823.8459,
+          "pkMs": 1.5366,
+          "ratioGmOverPk": 10297.960367044123
+        }
+      ],
+      "meshFiles": 12,
+      "finalRep2XtFiles": 5
+    }
+  ],
+  "operations": [
+    {
+      "id": "sphere",
+      "baseline": {
+        "cold": {
+          "n": 2,
+          "gmMedianMs": 23.6212,
+          "gmMinMs": 22.7702,
+          "gmMaxMs": 24.4722,
+          "pkMedianMs": 6.55905,
+          "pkMinMs": 0.4541,
+          "pkMaxMs": 12.664,
+          "ratioMedian": 27.844839860466923,
+          "ratioOfMedians": 3.601314214710972
+        },
+        "warm": {
+          "n": 4,
+          "gmMedianMs": 0.07655,
+          "gmMinMs": 0.0735,
+          "gmMaxMs": 0.0823,
+          "pkMedianMs": 0.2774,
+          "pkMinMs": 0.2523,
+          "pkMaxMs": 0.3061,
+          "ratioMedian": 0.28067372423401954,
+          "ratioOfMedians": 0.27595529920692147
+        }
+      },
+      "candidate": {
+        "cold": {
+          "n": 2,
+          "gmMedianMs": 24.3903,
+          "gmMinMs": 22.8384,
+          "gmMaxMs": 25.9422,
+          "pkMedianMs": 0.48615,
+          "pkMinMs": 0.4645,
+          "pkMaxMs": 0.5078,
+          "ratioMedian": 50.412458987480974,
+          "ratioOfMedians": 50.17031780314717
+        },
+        "warm": {
+          "n": 4,
+          "gmMedianMs": 0.0781,
+          "gmMinMs": 0.0751,
+          "gmMaxMs": 0.0828,
+          "pkMedianMs": 0.292,
+          "pkMinMs": 0.2729,
+          "pkMaxMs": 0.2945,
+          "ratioMedian": 0.27575632536645023,
+          "ratioOfMedians": 0.26746575342465756
+        }
+      },
+      "gmWarmSpeedup": 0.9801536491677337,
+      "gmWarmChangePercent": 2.0248203788373553
+    },
+    {
+      "id": "planar",
+      "baseline": {
+        "cold": {
+          "n": 2,
+          "gmMedianMs": 51.0704,
+          "gmMinMs": 49.4748,
+          "gmMaxMs": 52.666,
+          "pkMedianMs": 1.45535,
+          "pkMinMs": 1.154,
+          "pkMaxMs": 1.7567,
+          "ratioMedian": 36.90063499398539,
+          "ratioOfMedians": 35.09149001958292
+        },
+        "warm": {
+          "n": 4,
+          "gmMedianMs": 0.63515,
+          "gmMinMs": 0.5996,
+          "gmMaxMs": 0.6644,
+          "pkMedianMs": 0.8346,
+          "pkMinMs": 0.7598,
+          "pkMaxMs": 0.8929,
+          "ratioMedian": 0.7665676648731705,
+          "ratioOfMedians": 0.7610232446681044
+        }
+      },
+      "candidate": {
+        "cold": {
+          "n": 2,
+          "gmMedianMs": 52.7566,
+          "gmMinMs": 51.7466,
+          "gmMaxMs": 53.7666,
+          "pkMedianMs": 1.1816499999999999,
+          "pkMinMs": 1.1662,
+          "pkMaxMs": 1.1971,
+          "ratioMedian": 44.66536490367356,
+          "ratioOfMedians": 44.64655354800491
+        },
+        "warm": {
+          "n": 4,
+          "gmMedianMs": 0.6747000000000001,
+          "gmMinMs": 0.6648,
+          "gmMaxMs": 0.6915,
+          "pkMedianMs": 0.9409,
+          "pkMinMs": 0.8599,
+          "pkMaxMs": 0.9714,
+          "ratioMedian": 0.7273565772437217,
+          "ratioOfMedians": 0.7170793920714211
+        }
+      },
+      "gmWarmSpeedup": 0.9413813546761522,
+      "gmWarmChangePercent": 6.226875541210752
+    },
+    {
+      "id": "curved",
+      "baseline": {
+        "cold": {
+          "n": 2,
+          "gmMedianMs": 1487.0545499999998,
+          "gmMinMs": 1460.0138,
+          "gmMaxMs": 1514.0953,
+          "pkMedianMs": 3.3522,
+          "pkMinMs": 2.3604,
+          "pkMaxMs": 4.344,
+          "ratioMedian": 488.7780123066509,
+          "ratioOfMedians": 443.60555754429924
+        },
+        "warm": {
+          "n": 4,
+          "gmMedianMs": 938.6677,
+          "gmMinMs": 902.6799,
+          "gmMaxMs": 975.9105,
+          "pkMedianMs": 2.0848500000000003,
+          "pkMinMs": 1.929,
+          "pkMaxMs": 2.848,
+          "ratioMedian": 462.1491679911345,
+          "ratioOfMedians": 450.2327265750533
+        }
+      },
+      "candidate": {
+        "cold": {
+          "n": 2,
+          "gmMedianMs": 1564.03755,
+          "gmMinMs": 1529.1611,
+          "gmMaxMs": 1598.914,
+          "pkMedianMs": 2.31305,
+          "pkMinMs": 2.3119,
+          "pkMaxMs": 2.3142,
+          "ratioMedian": 676.172411649258,
+          "ratioOfMedians": 676.1797410345647
+        },
+        "warm": {
+          "n": 4,
+          "gmMedianMs": 883.69805,
+          "gmMinMs": 878.0799,
+          "gmMaxMs": 895.0015,
+          "pkMedianMs": 1.9798,
+          "pkMinMs": 1.9099,
+          "pkMaxMs": 2.0818,
+          "ratioMedian": 444.0817714215027,
+          "ratioOfMedians": 446.3572330538438
+        }
+      },
+      "gmWarmSpeedup": 1.0622041091977061,
+      "gmWarmChangePercent": -5.856135243601113
+    },
+    {
+      "id": "solidblend",
+      "baseline": {
+        "cold": {
+          "n": 2,
+          "gmMedianMs": 2410.4717499999997,
+          "gmMinMs": 2382.7417,
+          "gmMaxMs": 2438.2018,
+          "pkMedianMs": 9.245700000000001,
+          "pkMinMs": 2.1442,
+          "pkMaxMs": 16.3472,
+          "ratioMedian": 641.43665682268,
+          "ratioOfMedians": 260.7127367316698
+        },
+        "warm": {
+          "n": 4,
+          "gmMedianMs": 1569.91415,
+          "gmMinMs": 1538.9857,
+          "gmMaxMs": 1626.2029,
+          "pkMedianMs": 1.64445,
+          "pkMinMs": 1.5486,
+          "pkMaxMs": 1.6827,
+          "ratioMedian": 954.7405950569815,
+          "ratioOfMedians": 954.6742983976407
+        }
+      },
+      "candidate": {
+        "cold": {
+          "n": 2,
+          "gmMedianMs": 2125.0793000000003,
+          "gmMinMs": 2087.1974,
+          "gmMaxMs": 2162.9612,
+          "pkMedianMs": 2.1695,
+          "pkMinMs": 2.1657,
+          "pkMaxMs": 2.1733,
+          "ratioMedian": 979.5585029320052,
+          "ratioOfMedians": 979.5249135745564
+        },
+        "warm": {
+          "n": 4,
+          "gmMedianMs": 1575.00895,
+          "gmMinMs": 1525.8231,
+          "gmMaxMs": 1634.8476,
+          "pkMedianMs": 1.6092,
+          "pkMinMs": 1.4848,
+          "pkMaxMs": 2.2544,
+          "ratioMedian": 976.4974167288401,
+          "ratioOfMedians": 978.7527653492418
+        }
+      },
+      "gmWarmSpeedup": 0.9967652247309453,
+      "gmWarmChangePercent": 0.324527299788957
+    },
+    {
+      "id": "shortedge",
+      "baseline": {
+        "cold": {
+          "n": 2,
+          "gmMedianMs": 16873.63465,
+          "gmMinMs": 16863.156,
+          "gmMaxMs": 16884.1133,
+          "pkMedianMs": 3.6872,
+          "pkMinMs": 2.2444,
+          "pkMaxMs": 5.13,
+          "ratioMedian": 5404.969307860187,
+          "ratioOfMedians": 4576.273229008462
+        },
+        "warm": {
+          "n": 4,
+          "gmMedianMs": 15858.41445,
+          "gmMinMs": 15733.7352,
+          "gmMaxMs": 15946.4309,
+          "pkMedianMs": 1.6628500000000002,
+          "pkMinMs": 1.5366,
+          "pkMaxMs": 2.1708,
+          "ratioMedian": 9520.73658791478,
+          "ratioOfMedians": 9536.888143849414
+        }
+      },
+      "candidate": {
+        "cold": {
+          "n": 2,
+          "gmMedianMs": 6697.1939999999995,
+          "gmMinMs": 6610.6975,
+          "gmMaxMs": 6783.6905,
+          "pkMedianMs": 2.2265499999999996,
+          "pkMinMs": 2.2236,
+          "pkMaxMs": 2.2295,
+          "ratioMedian": 3007.833264574103,
+          "ratioOfMedians": 3007.879454761852
+        },
+        "warm": {
+          "n": 4,
+          "gmMedianMs": 5639.590899999999,
+          "gmMinMs": 5626.7173,
+          "gmMaxMs": 5652.0112,
+          "pkMedianMs": 1.6469,
+          "pkMinMs": 1.585,
+          "pkMaxMs": 1.6987,
+          "ratioMedian": 3423.4971307768833,
+          "ratioOfMedians": 3424.36753901269
+        }
+      },
+      "gmWarmSpeedup": 2.8119795799372613,
+      "gmWarmChangePercent": -64.43786408924382
+    }
+  ],
+  "shortedgeWork": [
+    {
+      "process": "16-shortedge-baseline",
+      "rep": 0,
+      "work": {
+        "jacobians": 1593664,
+        "directions": 11118884,
+        "residual-directions": 27333,
+        "record-builds": 245249,
+        "record-nodes": 36964043,
+        "record-rebinds": 1339224,
+        "api-ms": 16863.156,
+        "elapsed-ms": 16858.178,
+        "pairs": 0,
+        "ssi-cells": 4956,
+        "root-cells": 220895,
+        "roots": 3518,
+        "budget-failures": 0,
+        "winding": 196,
+        "bound-requests": 275525,
+        "bound-evaluations": 223355,
+        "cache-hits": 30703,
+        "bound-ms": 13367.707
+      }
+    },
+    {
+      "process": "16-shortedge-baseline",
+      "rep": 1,
+      "work": {
+        "jacobians": 1597561,
+        "directions": 11145575,
+        "residual-directions": 27774,
+        "record-builds": 245829,
+        "record-nodes": 37052348,
+        "record-rebinds": 1342394,
+        "api-ms": 15892.983,
+        "elapsed-ms": 15892.905,
+        "pairs": 0,
+        "ssi-cells": 4956,
+        "root-cells": 220895,
+        "roots": 3518,
+        "budget-failures": 0,
+        "winding": 196,
+        "bound-requests": 275525,
+        "bound-evaluations": 223331,
+        "cache-hits": 30727,
+        "bound-ms": 13157.182
+      }
+    },
+    {
+      "process": "16-shortedge-baseline",
+      "rep": 2,
+      "work": {
+        "jacobians": 1590600,
+        "directions": 11096820,
+        "residual-directions": 27795,
+        "record-builds": 244755,
+        "record-nodes": 36888811,
+        "record-rebinds": 1336500,
+        "api-ms": 15946.431,
+        "elapsed-ms": 15946.386,
+        "pairs": 0,
+        "ssi-cells": 4956,
+        "root-cells": 220895,
+        "roots": 3518,
+        "budget-failures": 0,
+        "winding": 196,
+        "bound-requests": 275525,
+        "bound-evaluations": 223360,
+        "cache-hits": 30698,
+        "bound-ms": 13192.655
+      }
+    },
+    {
+      "process": "17-shortedge-candidate",
+      "rep": 0,
+      "work": {
+        "jacobians": 526133,
+        "directions": 3673551,
+        "residual-directions": 7023,
+        "record-builds": 80144,
+        "record-nodes": 12071062,
+        "record-rebinds": 443644,
+        "api-ms": 6610.698,
+        "elapsed-ms": 6605.613,
+        "pairs": 0,
+        "ssi-cells": 4956,
+        "root-cells": 220895,
+        "roots": 3518,
+        "budget-failures": 0,
+        "winding": 196,
+        "bound-requests": 275525,
+        "bound-evaluations": 67137,
+        "cache-hits": 96448,
+        "bound-ms": 3209.304
+      }
+    },
+    {
+      "process": "17-shortedge-candidate",
+      "rep": 1,
+      "work": {
+        "jacobians": 525315,
+        "directions": 3667825,
+        "residual-directions": 7023,
+        "record-builds": 80018,
+        "record-nodes": 12052036,
+        "record-rebinds": 442952,
+        "api-ms": 5626.717,
+        "elapsed-ms": 5626.633,
+        "pairs": 0,
+        "ssi-cells": 4956,
+        "root-cells": 220895,
+        "roots": 3518,
+        "budget-failures": 0,
+        "winding": 196,
+        "bound-requests": 275525,
+        "bound-evaluations": 67137,
+        "cache-hits": 96447,
+        "bound-ms": 2879.083
+      }
+    },
+    {
+      "process": "17-shortedge-candidate",
+      "rep": 2,
+      "work": {
+        "jacobians": 525505,
+        "directions": 3669155,
+        "residual-directions": 7023,
+        "record-builds": 80047,
+        "record-nodes": 12056415,
+        "record-rebinds": 443113,
+        "api-ms": 5652.011,
+        "elapsed-ms": 5651.965,
+        "pairs": 0,
+        "ssi-cells": 4956,
+        "root-cells": 220895,
+        "roots": 3518,
+        "budget-failures": 0,
+        "winding": 196,
+        "bound-requests": 275525,
+        "bound-evaluations": 67166,
+        "cache-hits": 96431,
+        "bound-ms": 2891.715
+      }
+    },
+    {
+      "process": "18-shortedge-candidate",
+      "rep": 0,
+      "work": {
+        "jacobians": 526133,
+        "directions": 3673551,
+        "residual-directions": 7023,
+        "record-builds": 80144,
+        "record-nodes": 12071062,
+        "record-rebinds": 443644,
+        "api-ms": 6783.69,
+        "elapsed-ms": 6778.499,
+        "pairs": 0,
+        "ssi-cells": 4956,
+        "root-cells": 220895,
+        "roots": 3518,
+        "budget-failures": 0,
+        "winding": 196,
+        "bound-requests": 275525,
+        "bound-evaluations": 67137,
+        "cache-hits": 96448,
+        "bound-ms": 3248.055
+      }
+    },
+    {
+      "process": "18-shortedge-candidate",
+      "rep": 1,
+      "work": {
+        "jacobians": 525315,
+        "directions": 3667825,
+        "residual-directions": 7023,
+        "record-builds": 80018,
+        "record-nodes": 12052036,
+        "record-rebinds": 442952,
+        "api-ms": 5639.253,
+        "elapsed-ms": 5639.172,
+        "pairs": 0,
+        "ssi-cells": 4956,
+        "root-cells": 220895,
+        "roots": 3518,
+        "budget-failures": 0,
+        "winding": 196,
+        "bound-requests": 275525,
+        "bound-evaluations": 67137,
+        "cache-hits": 96447,
+        "bound-ms": 2908.299
+      }
+    },
+    {
+      "process": "18-shortedge-candidate",
+      "rep": 2,
+      "work": {
+        "jacobians": 525505,
+        "directions": 3669155,
+        "residual-directions": 7023,
+        "record-builds": 80047,
+        "record-nodes": 12056415,
+        "record-rebinds": 443113,
+        "api-ms": 5639.928,
+        "elapsed-ms": 5639.884,
+        "pairs": 0,
+        "ssi-cells": 4956,
+        "root-cells": 220895,
+        "roots": 3518,
+        "budget-failures": 0,
+        "winding": 196,
+        "bound-requests": 275525,
+        "bound-evaluations": 67166,
+        "cache-hits": 96431,
+        "bound-ms": 2877.029
+      }
+    },
+    {
+      "process": "19-shortedge-baseline",
+      "rep": 0,
+      "work": {
+        "jacobians": 1593664,
+        "directions": 11118884,
+        "residual-directions": 27333,
+        "record-builds": 245249,
+        "record-nodes": 36964043,
+        "record-rebinds": 1339224,
+        "api-ms": 16884.113,
+        "elapsed-ms": 16879.079,
+        "pairs": 0,
+        "ssi-cells": 4956,
+        "root-cells": 220895,
+        "roots": 3518,
+        "budget-failures": 0,
+        "winding": 196,
+        "bound-requests": 275525,
+        "bound-evaluations": 223355,
+        "cache-hits": 30703,
+        "bound-ms": 13416.156
+      }
+    },
+    {
+      "process": "19-shortedge-baseline",
+      "rep": 1,
+      "work": {
+        "jacobians": 1597561,
+        "directions": 11145575,
+        "residual-directions": 27774,
+        "record-builds": 245829,
+        "record-nodes": 37052348,
+        "record-rebinds": 1342394,
+        "api-ms": 15733.735,
+        "elapsed-ms": 15733.65,
+        "pairs": 0,
+        "ssi-cells": 4956,
+        "root-cells": 220895,
+        "roots": 3518,
+        "budget-failures": 0,
+        "winding": 196,
+        "bound-requests": 275525,
+        "bound-evaluations": 223331,
+        "cache-hits": 30727,
+        "bound-ms": 12998.607
+      }
+    },
+    {
+      "process": "19-shortedge-baseline",
+      "rep": 2,
+      "work": {
+        "jacobians": 1590600,
+        "directions": 11096820,
+        "residual-directions": 27795,
+        "record-builds": 244755,
+        "record-nodes": 36888811,
+        "record-rebinds": 1336500,
+        "api-ms": 15823.846,
+        "elapsed-ms": 15823.799,
+        "pairs": 0,
+        "ssi-cells": 4956,
+        "root-cells": 220895,
+        "roots": 3518,
+        "budget-failures": 0,
+        "winding": 196,
+        "bound-requests": 275525,
+        "bound-evaluations": 223360,
+        "cache-hits": 30698,
+        "bound-ms": 13027.958
+      }
+    }
+  ],
+  "nineFixedSourceHashes": [
+    {
+      "path": "scripts/AnalyticBooleanOracle.cs",
+      "baselineAndMeasurementSha256": "ac8bdd8ea6cb2d4c136ed5800c03b92c187cc593904ae3ee6db5b8e4714d9e4f"
+    },
+    {
+      "path": "scripts/BooleanOperationOracle.cs",
+      "baselineAndMeasurementSha256": "6c25958de4b50cfc959cfd4e57c5b69ab907b8385a2e9eebe4e1b1a3e4e422f7"
+    },
+    {
+      "path": "scripts/RegularCurvedBooleanOracle.cs",
+      "baselineAndMeasurementSha256": "2bb196e2f1c15f1a5b826b03fd877dcb0ad9d754fbaf5232de1ee79a33d880d0"
+    },
+    {
+      "path": "scripts/RegularSolidBlendOracle.cs",
+      "baselineAndMeasurementSha256": "dbeb8f0ced25d6dc348dc54faf1d26e6d0a40df1401497020dbbb0a5356a9036"
+    },
+    {
+      "path": "scripts/ShortEdgeBlendOracle.cs",
+      "baselineAndMeasurementSha256": "2681bd961cd2db379bcef421b052d79a85df5d69cd6c2eea0d73f9a7522efa31"
+    },
+    {
+      "path": "scripts/ParasolidScriptHost.cs",
+      "baselineAndMeasurementSha256": "62687b1f71d64b0255035a48885bf0718bd8787e6bf489ffe43f8707c49a3670"
+    },
+    {
+      "path": "scripts/ParasolidBodyCompare.cs",
+      "baselineAndMeasurementSha256": "38fdcac891ba99221bb778af8848761daf1b847d74db0bf6de12d714c290635e"
+    },
+    {
+      "path": "scripts/WebProgressCapture.cs",
+      "baselineAndMeasurementSha256": "8b705c1a0e3b79b981785c4759d22858bd3096bc1feb9b544a0000a5b3bafb75"
+    },
+    {
+      "path": "scripts/NativeModelingWorkComparison.cs",
+      "baselineAndMeasurementSha256": "0bf60027909ce7464bb61f3b61397eb52ded7e7af885956a25dcc765c5ff525b"
+    }
+  ],
+  "checksVerified": 2028,
+  "corePointMassComparisons": 900,
+  "rawCaptureModulusOrUncertaintyFields": 0,
+  "chartOnlyLocalDiffs": 96,
+  "meshFiles": 312,
+  "meshBytes": 34964660,
+  "rep2XtFiles": 44,
+  "rawGeometryAuthors": {
+    "independent-construction": 312
+  },
+  "geometryAuthorLimitation": "Raw independent-construction is a fixed helper default. Shortedge GM input is PK seed XT; actual GM output comes from GM operation then fresh XT receive. Default is not an independent input construction certificate.",
+  "massScope": "270 fixed point-value gate only, not newer modulus/three-state Verified qualification",
+  "result": "Accept fixed single-window measurements and bindings within stated original quality scope; no exclusive CPU/thermal/causal or full PK target claim",
+  "newModelingOrMeasurementExecuted": false
+}

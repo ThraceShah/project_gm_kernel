@@ -191,3 +191,145 @@ ParasolidScriptHost 与 ParasolidBodyCompare，无手写 PK ABI 或初始化副�
 `temp_docs/review-6616/independent-review-evidence.zip`，10 个文件、17,894 字节，SHA256
 `b90d5eead7bcc3683dec20b6457275f8d1d3f54a440f6fac38cd7c20cd4ec19e`。
 此包不含厂商库、凭证或 XT 正文；原 Mac 包终检 SHA 未改变。
+
+## 接续：固定正式 ABBA 原包独立审计
+
+本附节接续 `5a4ad5319b77c0944baf598e07dbbce79782a483` 的限定代码/数学结论，
+不重做该审查、不改变前文历史截止状态。接受本节固定的一轮 Mac 实测数据及制品绑定，
+供协调者交付看板；没有发现阻断这些限定数据使用的问题。接受不扩展为套件全绿、
+新物性资格全部 Verified、排他 CPU/热稳定/因果证明或完整 PK 性能目标完成。
+
+### 来源、取证与统计
+
+原包 `temp_docs/incoming/mac-controlled-270-6616-original.zip` 实测 5,644,747 字节，
+SHA256 `97a3164698a16f1c543793289f1b863b1a67e20be7127ed5b0da017e0016120a`，
+490 个成员、36,430,726 展开字节。C# 检查路径逃逸、rooted path 和 symlink 后解至新目录
+`temp_docs/review-6616-controlled/original-mac/`，逐成员长度/hash 重新核验；原包和旧包不改写。
+完整成员清单为 `temp_docs/review-6616-controlled/archive-manifest.tsv`。
+
+实际读取并核对固定交付 `03e5a8e8ec9a8a297346e42d1b854f6293c8a083` 的说明、
+operation-summary、measurement-receipt 和 material-binding 与包内原字节相同。
+基线仍是 `270e2b6814afe5a48cd0532e89531f6fb80011be`，Native 项目子树
+`afb8cec5cde9769cb68c470ea8da9591a1804e64`；候选测量包装
+`a73bc08dbd39e984dff59dac7bba31a3baf80b4e` 的 Native 项目子树仍为已审
+`5b4c6104c600b0194bb543e2dc11efa89e2f0f1f`。实际 Git diff 只有五主 oracle
+还原到 270 原字节；五 oracle、Host、BodyCompare、Capture、runner 共九文件的两边
+Git blob SHA256 均等于原 source-hashes 记录。原 report 的 NativeTree 字段实际指整个
+`src`：基线 `c45cafbbd581642157e963ea55f2c5355fc65211`、候选
+`41c8b597c54753ab394bc99a8b2e59bb3d83a756`，不可冒充上述 Native 项目子树。
+
+独立审计器从 20 份实际 capture 重新取得 120 个 API 时间、60 个配对，核实五操作分别
+按 baseline/candidate/candidate/baseline 顺序，每进程三个 fresh-input rep；rep0 为冷，
+rep1/2 为暖，因此每 source/case 恰为 2 冷、4 暖。实际参数、selector、调用顺序及返回
+status 均核验；Boolean 为 GM→PK，两个倒圆为 PK→GM。没有用 report.qualified
+替代原检查。重新计算全部冷热 GM/PK 中位数、min/max、配对比值中位数和中位数之比；
+原派生表及 JSON 的统计均一致。新增证据还保留原 summary 未列出的 PK min/max。
+
+| 操作 | 基线暖 GM ms | 候选暖 GM ms | 变化 | 基线/候选 | 候选配对 GM/PK 中位数 |
+|---|---:|---:|---:|---:|---:|
+| sphere subtract | 0.07655 | 0.07810 | +2.02% | 0.9802× | 0.2758× |
+| planar subtract | 0.63515 | 0.67470 | +6.23% | 0.9414× | 0.7274× |
+| curved block subtract | 938.66770 | 883.69805 | −5.86% | 1.0622× | 444.0818× |
+| plane/NURBS fillet | 1569.91415 | 1575.00895 | +0.32% | 0.9968× | 976.4974× |
+| shortedge FixBlends | 15858.41445 | 5639.59090 | −64.44% | 2.8120× | 3423.4971× |
+
+这些是同一固定窗口的 API wall 时间。三项暖 GM 变慢、curved 冷 GM 中位数变慢均保留，
+不对快操作微差归因，不从一轮实测推广普遍倍率。全部冷数据未删：例如首个 sphere
+基线 PK 冷值 12.664 ms，与另一基线冷值 0.4541 ms 同时计入；这也使冷配对比值中位数
+27.84484 与两个时间中位数之比 3.60131 相差很大，不能互相替代。候选 shortedge 暖
+配对 GM/PK 中位数 3423.49713 与中位数之比 3424.36754 也明确分列。
+
+原窗口 UTC `2026-11-11T17:42:47.3159860Z` 至 `17:50:06.6601560Z`，
+Apple M4/macOS 27.2 Arm64/.NET 10.0.11/SDK 10.0.400/PK 38.0.150，
+PKToy `d820719b6d8510d623972ab9d8efc65edbc312f9`。一分钟 load 的原记录范围
+3.38–15.37；源码 hash 记录和窗口前后 Native DLL hash 记录一致，但包中不含 DLL，
+此处签的是原记录一致性，未在 Mac 重新读取或执行。进程快照不能证明排他 CPU 或热稳定，
+也不能证明归档之外绝无其他执行；本包只存在这一轮完整 20 进程 ABBA。
+
+### 原质量门与实际制品
+
+20 个 Process.ExitCode 在原 runner report 均为 0，与原 harness 20 条退出行相符，
+无超时；总 harness 原 exit 文件 `controlled-6616-ready.exit` 为 0。没有单独的每进程
+exit 文件，因此不把 report 与日志描述为另一组独立进程实测。全部 capture 无 errors，
+2,028 项检查均 pass，其中核心 900 项点值物性比较由独审重新计算阈值。
+60 份 compare 文件均保留 max_diffs=1024、all_tests=false、acc_dev_tests=false、
+tol_dev_tests/数量/类型/sense/容差/missing/matching=true；global 为 no_diffs，
+local 为 no_diffs 或只含 n_cht_pts。累计 96 条 chart 诊断，无其他 local 差异。
+完整 BODY_check、单 body、region/shell/face/edge/vertex 计数以及 API/blend-fault
+实际值也重新核验；face_pairs 仍不被当成成功匹配总数。
+
+原日志中的 curved 125 个独立材料查询、NURBS 每次 9 个有限 section 的半径/接触/切向
+检查、shortedge 每次 3 条有限 ICurve 对照均保留并核查各三个 rep；它们仍是固定原 oracle
+的有限验收，不升级成任意曲线全域证明。NURBS 与 shortedge 各自按独立操作结算，
+本窗口没有执行其下游 Boolean。旧 suite 1914/1912/2/0、原 exit 1 和 270 两项 focused
+失败原 exit 1 继续有效，未重跑或改成全绿。
+
+**物性资格仅限固定 270 的原点值门。** 共同 Capture 由真实 PK 分别对 GM fresh XT
+和 PK reference 求 15 项物性点值，在 accuracy=.99999999 下按
+abs(GM−PK)/(1+abs(PK))<1e-7 判断；这不是 GM 原生物性 API 的模量证明。
+原 capture 没有 modulus/uncertainty 字段。shortedge 的失败时模量诊断分支本轮未触发，
+日志没有 MASS BOUNDS；不能把这 60 对 point-pass 改名为 4794/60be 新模量三态资格
+全部 Verified。实际调用 parasolid-research MCP 的 PK_TOPOL_eval_mass_props 和
+PK_DEBUG_BODY_compare detail，核实相关原型/输出；没有把 Linux 静态地址用于 Mac，
+本接续未执行任何新 PK/GM 建模或物性操作。
+
+逐文件核实 material-binding 的 312 个实际 mesh、34,964,660 字节，capture 每一条
+before/tool/after 引用与 process/step/kernel/source/hash 均有对应；没有额外未绑定 mesh。
+全部 mesh 的 source.kernel、commit、freshXtReceive 与实际 producer 对应，原 helper
+通过 GM transmit→真实 PK receive 或 PK snapshot 获取显示几何，没有固定 mesh 重建。
+原 geometryAuthor 的 312 个值都是 helper 默认的 independent-construction，不能据此
+声称所有输入独立构造：shortedge 的 GM 输入实际来自未变更的 PK seed XT，GM 倒圆
+成品再由 GM 导出并接收。看板必须沿用这一真实 provenance；默认作者字符串不是该 seed
+的构造证明。curved tracking=false，原 semanticCoverage=missing 也保留，不能展示为
+全部拓扑修改角色已知。
+
+44 个原 XT 与 report/material-binding 的原进程、sourcePath、hash 及 rep2 逐一相符，
+没有补造或公开 XT 正文。它们只属于各进程最后 rep2，且并非每一项都同时保存 GM/PK
+两份产品；不能补签 rep0/1 也有独立归档 XT。每个 rep 的 mesh/质量/计时各自存在。
+看板若使用这些 XT 作源，须选相同进程的 rep2；其他 rep 可使用自己已绑定的 mesh。
+
+shortedge 所有 12 次操作的根单元 220,895、根 3,518、SSI 4,956、winding 196、
+budget failure 0、bound requests 275,525 均相同。作者列出的暖 rep1 求界
+223,331→67,137、Jacobian 1,597,561→525,315 与原日志一致；rep2 候选求界实际
+67,166，未用 rep1 代替全部样本。60 次 PROFILE/WORK 与原 summary 逐数一致；本轮
+公共 oracle 未打印 negative-hit/XYZ-column 数字，不补填开发窗口计数，不把调用下降
+直接当成可删除或排他 CPU 成本。
+
+### 交付绑定与未执行范围
+
+可交看板的唯一组合为：计算源码 `6616cd60a55e50a5d8a5ada7274895c44609676b`、
+测量包装 `a73bc08dbd39e984dff59dac7bba31a3baf80b4e`、测量交付
+`03e5a8e8ec9a8a297346e42d1b854f6293c8a083`，加本附节所在 review 提交。
+代码/数学资格仍引用 `5a4ad5319b77c0944baf598e07dbbce79782a483`。
+看板源文件使用 03e 的 operation-summary/measurement-receipt/material-binding 原字节，
+并绑定原 report SHA256 `fef5e9a8fc33aa9da3d1ab8c932b680f33aa9b0f24214e73e3987c5dfa01e868`、
+material-binding SHA256 `df9a43cf55e2cf978d5c009c3920c2315417899d2a0d99f733ad2267b8173d7f`。
+不得混入旧 676 窗口、241b 实验或 4794/60be 功能资格。
+
+新增 `docs/native-modeling-algorithm/independent-6616-measurement-evidence.json`
+保留全部复算统计、20 个 process 的 60 配对与 capture/log hash、九源文件 hash、
+原退出文件、逐 rep shortedge 工作量，以及审计源/490 成员清单 hash。
+审计器为 `temp_docs/Review6616ControlledAudit.cs`，只读原件，只写独立派生证据。
+
+| 本接续实际执行/原材料 | 原退出码/状态 | 边界 |
+|---|---:|---|
+| 独立隔离解包、schema inspection | 各 0 | 只读取证，不执行模型 |
+| 审计首次/第二次 | 各 134 | 检查器误要求球体有 edge、随后 JSON int/double 读取问题；原日志保留，无建模 |
+| 修正后的完整审计 | 0 | 首次全部复算通过，派生首版另存 temp |
+| 增加原 finite 检查后的审计 | 134 | 检查器误把候选 rep1 的 67,137 套到 rep2；原件实际 67,166，未改原件 |
+| 按实际逐 rep 核验的最终审计 | 0 | 所有上述来源、质量、统计、制品绑定检查通过 |
+| 原 Mac 资格检查/最终预构建 | 各 0 | 不是本机新执行 |
+| 原首次 CLI 参数错误 | 134 | controlled-6616.exit；baseline 选项被等号形式误传，未进入计时操作 |
+| 原首次候选预构建 | 退出文件缺失 | 包内日志止于 Xt 构建；60 秒工具超时来自交接说明，包本身不能独立补签该工具退出码 |
+| 原正式总 harness / 20 子进程 | 0 / 全部 0 | 与前述 134 setup 和旧 suite exit 1 分开 |
+
+本机只运行 .NET10 只读 C# 审计（MSBUILDDISABLENODEREUSE=1），没有新 suite、
+288 数学矩阵、建模、ABBA、Mac 登录/执行、Windows、AOT、main 合并或网站发布；
+没有启动 testhost 或终止他人进程。正式单窗口观测现已取得，完整性能目标仍未完成，
+更广的模量质量资格及后续统一 Capture 修正不由此原窗口代签。
+
+独立取证源码、成员清单和上述审计尝试日志另封为
+`temp_docs/review-6616-controlled/independent-measurement-audit.zip`，10 文件、30,441 字节，
+SHA256 `740f580f0d8a8097bf59034129c736963b1bd757865e8348273846ac5326884e`。
+打包及逐项回读核 hash 的本机进程 exit 0；包不含 XT、厂商库、凭证或反编译正文。
+两个原始 Mac zip 终检 hash 均未改变。
