@@ -10,7 +10,7 @@
 
 原 receipt 位于 `../gm-publishing-integration-review/temp_docs/owned-ui-d9-review/missing-owned-7be1d950cee2400388dfec46408d1a37/receipt.json`，SHA256 `09d75f4bac049e6bf433c24322f19c3cc539d57c96d5b9ce081839d71023b78c`。其原 CLI exit0、newHookExists=true、recordedOwnedUpgrade=false、timerActiveAfter=false、counterexample=true；原 install log 明确有 stop timer 和 daemon-reload。它不因修复而改写。
 
-先以同一已确认反例 scenario 的隔离副本重放 d9：`temp_docs/owned-ui-intent-replay/before.log` / `before-receipt.json` 保存 exit0、9 次 stub systemctl 调用、创建 hook/备份、active→inactive。执行源码 SHA256 `3998b8204102dba621a9a5716cfeee6c6f621afda8ae145faff978ccc42ed0b4` 等于固定 d9 的 Configure。副作用后的完整 scenario 留在 `temp_docs/owned-ui-intent-replay/before-scenario-evidence`；不是删除现场再声称原来安全。
+先以同一已确认反例 scenario 的隔离副本重放 d9：`temp_docs/owned-ui-intent-replay/before.log` / `temp_docs/owned-ui-intent-replay/before-receipt.json` 保存 exit0、9 次 stub systemctl 调用、创建 hook/备份、active→inactive。执行源码 SHA256 `3998b8204102dba621a9a5716cfeee6c6f621afda8ae145faff978ccc42ed0b4` 等于固定 d9 的 Configure。副作用后的完整 scenario 留在 `temp_docs/owned-ui-intent-replay/before-scenario-evidence`；不是删除现场再声称原来安全。
 
 ## 最小实现
 
@@ -22,7 +22,7 @@ install 的 work 创建、hook.lock、LoadState 和其他 systemctl 调用移到
 
 `temp_docs/ReplayMissingOwnedIntent.cs` 在同一场景路径、相同 CLI 参数/原 pins/准备与回退数据下，仅替换 Configure 执行源码后复放；原 manifest 保留，missing-hook 检查在任何 manifest 访问/写入之前。它是窄反例重放，完整合法新冻结清单由下面的 owned positive 控制独立验证。
 
-after 的 `temp_docs/owned-ui-intent-replay/after.log` / `after-receipt.json` 保存 CLI **exit134**、`UI_OWNED_TRANSITION_HOOK_MISSING`、**systemctlCalls=0**、hookExists=false、timerActive=true、evidenceUnchanged=true。逐文件 SHA、work 目录集合、stub timer 状态、publication 指针均与执行前相同；无 hook.lock、新备份或 publication 写入。
+after 的 `temp_docs/owned-ui-intent-replay/after.log` / `temp_docs/owned-ui-intent-replay/after-receipt.json` 保存 CLI **exit134**、`UI_OWNED_TRANSITION_HOOK_MISSING`、**systemctlCalls=0**、hookExists=false、timerActive=true、evidenceUnchanged=true。逐文件 SHA、work 目录集合、stub timer 状态、publication 指针均与执行前相同；无 hook.lock、新备份或 publication 写入。
 
 窄 fixture 入口：
 
