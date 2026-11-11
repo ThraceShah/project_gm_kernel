@@ -4,6 +4,8 @@
 
 **结论：共享层仍blocked。** 原 fail复活、默认成功返回、重复ID静默合并、非有限时间导出崩溃、Options/provenance别名及多项浅validator漏验已关闭；但两个共享合同缺口仍在：not-run会遮住已记录的API/primary失败，输入/输出getter借出的嵌套对象仍能改变已完成operation的记录。两项均已交协调端转实施者，review不修改实现。
 
+此结论针对12e；任务结束前追加授权的固定a2修复已另节复验并窄范围接受，见文末，原12e事实及反例不变。
+
 这不是A1–A7整体复审或真实case资格验收。Capture/Refresh适配、leaf异常归属与真实返回、同输入隔离证据、场景实际退出/版本/样本身份仍是明确后续工作；不能据本轮合成正例给175API、旧真实case或整个框架签过。
 
 ## 固定范围与执行
@@ -95,3 +97,43 @@ MSBUILDDISABLENODEREUSE=1 dotnet run --no-cache --file docs/reviews/advanced-mod
 | 持久IndependentProbe.cs（另一次--no-cache验证exit0） | `34bf25a7a9b46c3b27e671742e6820f4c71f4f73e476991d686e3a45be278291` |
 
 固定12e的已关闭部分得到承认，两个共享阻断不得归入“仅leaf TODO”。本轮不接受该共享候选进入后续集成，也不对真实建模几何作新结论。
+
+## 追加授权的固定a2复验：两项共享阻断关闭
+
+在上述12e报告已提交推送 `2ea4b16649f79f0b35657e0efb0b929c5ce68eeb`、任务尚未settled时，协调端明确追加固定 **`a2be6682f0f108bcfc80a0b47a98b37b297c8a35`** 的两项边界复验。原12e结论及两个输入保留，不重写成“12e已过”；也没有审后续移动代码或leaf。
+
+从该固定git对象archive共享BCL文件到 ignored `temp_docs/operation-shared-a2-review/scripts/`，其独立props只引用这些副本；本树生产scripts仍为12e。源码与12e差异限定为not-run矛盾判定、hash getter的深拷贝/显式写入方法、对应自测/validator一条矛盾拒绝及说明。
+
+修复位置：a2 Rules61-64先判explicitFailure，再允许无执行事实的not-run；有执行事实时新增not-run-contradicts-execution原因，validator专门拒绝该矛盾。Ledger EndOperation在已有return/primary/timing时把not-run终止标记为fail；InputHashes/OutputHashes由私有snapshot保存，getter深拷贝，RecordInputHash/RecordOutputHashes走显式clone setter。
+
+**独立实际结果：**
+
+| a2受影响边界 | 实际结果 |
+| --- | --- |
+| 原known-error-not-run.json，SHA仍faaf4fdd… | 磁盘公共Validate **errors4**：矛盾、状态/primary应fail及原因不一致 |
+| 原not-run-failed-primary.json，SHA仍6d860479… | 磁盘公共Validate **errors3**：矛盾、状态与primary应fail |
+| 完整正例经显式方法记录input/output后，借出nested getter改为b/c | 内部仍a/a，qualified=true，序列化公共Validate **errors0** |
+| complete primary + owned auxiliary/representation fail，EndScenario(1) | primary=pass、aux/rep=fail、scenario=fail，公共Validate **errors0** |
+| 已记录gm901后EndOperation(not-run) | op=fail、scenario=fail、firstFailedOperationId=fail |
+| 从未执行、无返回/primary/time的not-run | status=not-run，公共Validate **errors0** |
+
+输出hash写入准备使用显式RecordOutputHashes；没有再用已改成copy的getter来“设置”初始数据。输入getter的借出/嵌套变更步骤原样保留。旧leaf里直写getter的方式不会写回私有snapshot，后续适配必须改用显式记录方法；不能因本轮共享接受就直接把旧Capture/leaf叫qualified。
+
+命令（均MSBUILDDISABLENODEREUSE=1、--no-cache，BCL串行）：
+
+```sh
+MSBUILDDISABLENODEREUSE=1 dotnet run --no-cache --file temp_docs/operation-shared-a2-review/BoundaryProbe.cs -c Release -p:UseSharedCompilation=false
+MSBUILDDISABLENODEREUSE=1 dotnet run --no-cache --file temp_docs/operation-shared-a2-review/scripts/OperationAcceptanceSelfTest.cs -c Release -p:UseSharedCompilation=false
+```
+
+二者 **exit0**；后者固定a2自测 **34条PASS**。BoundaryProbe读取原两文件后实际serialize/parse并调用公共validation，没有调用Evaluate来生成期望。自测磁盘外壳由前面已有fixture复制到a2隔离目录，未运行PK或真实case。持久 [BoundaryProbe.cs](operation-shared-a2-evidence/BoundaryProbe.cs) 的props绑定上述a2 archive目录，路径调整后另一次--no-cache重放exit0；使用前需从固定a2提取相同共享文件，不能将12e helpers冒充a2。
+
+| a2证据 | SHA256 |
+| --- | --- |
+| 固定Ledger副本 | `776ab7c7597a902559a5c619a48452ded63d414f50c6205bed19516b92ce16ea` |
+| 固定Rules副本 | `ccb01be785fc2c7d9c239883e72d285cc86d4b4ace6ed21fb5ad650d0e225137` |
+| 固定WebProgressDataValidation副本 | `dce3e785970d9cc919d879eeb7b5326ab32f2c43618a524f479f6f6135e3b86d` |
+| boundary.log | `16140f51603ab650ad010835f1e387b0022918c1ec1be3e718d13e29131d3376` |
+| selftest.log | `1d542551e7dd127f44aba5098f15b7d42b5f5bc9a2c9355f173a57c735a65bbc` |
+
+**追加结论：接受a2对S1/S2这两个共享阻断的窄范围修复，并保留前述12e已关部分。** 原报告中其余明确待办不被这个结论关闭，未知/非法nested类型的规范化诊断也未扩审；没有给真实case、Capture/Refresh/leaf、全部A1–A7或直接main集成颁发通过。
