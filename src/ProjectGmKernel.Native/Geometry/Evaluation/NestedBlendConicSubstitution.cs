@@ -46,6 +46,14 @@ internal static partial class JointNestedBlendEvaluation
             var relative=point-new IntervalVector(cylinder.Origin);var axis=new IntervalVector(cylinder.Axis);var radial=relative-axis*IntervalVector.Dot(relative,axis);
             residual[1-row]=(IntervalDual.Square(radial.X)+IntervalDual.Square(radial.Y)+IntervalDual.Square(radial.Z)-IntervalDual.Square((IntervalDual)cylinder.Radius))*otherSource.NormalSense;
             otherNormal=radial*(2*otherSource.NormalSense);
+            // Subtract the cylinder equation before interval evaluation so
+            // the common P-squared terms cancel algebraically. The stored
+            // axis is not assumed to have an exactly unit squared norm.
+            var centre=curve-new IntervalVector(cylinder.Origin);var z=IntervalVector.Dot(relative,axis);
+            var factor=2-IntervalVector.Dot(axis,axis);
+            residual[row]=(-2*IntervalVector.Dot(relative,centre)+IntervalDual.Square(centre.X)+IntervalDual.Square(centre.Y)+IntervalDual.Square(centre.Z)
+                +factor*IntervalDual.Square(z)+IntervalDual.Square((IntervalDual)cylinder.Radius)-IntervalDual.Square((IntervalDual)radius))*blend.NormalSense;
+            blendNormal=(axis*(2*factor*z)-centre*2)*blend.NormalSense;
         }
         status=SpineParameterMap.Interval(root,Chart(program,nodes[0].Spine)[charts[0]],parameter,point,out residual[2]);if(status!=AlgorithmStatus.Success)return status;
         var explicitResidual=IntervalPoint(variables,3)-curve;residual[3]=explicitResidual.X;residual[4]=explicitResidual.Y;residual[5]=explicitResidual.Z;
@@ -86,9 +94,9 @@ internal static partial class JointNestedBlendEvaluation
 
     // At Q=C(q), J_G=(I-A)J_F, where A has the old Q gradients
     // of the Blend and foot rows in the three explicit-residual columns.
-    // A^2=0, so R_G=R_F*(I+A), followed by the inverse positive radial
-    // row scales. This is only a point preconditioner; actual G interval
-    // inclusion and the original nearest test still decide.
+    // A^2=0, so R_G=R_F*(I+A), followed by inverse positive radial
+    // row scales and the inverse cylinder-row subtraction. This is only a
+    // point preconditioner; actual interval inclusion and nearest decide.
     private static AlgorithmStatus ConicSubstitutionInverse(in NestedBlendProgram program,ReadOnlySpan<Occurrence> nodes,
         ReadOnlySpan<double> state,Span<double> inverse)
     {
@@ -104,7 +112,11 @@ internal static partial class JointNestedBlendEvaluation
             inverse[i*7+3]-=a*normal.X+b*t.X;inverse[i*7+4]-=a*normal.Y+b*t.Y;inverse[i*7+5]-=a*normal.Z+b*t.Z;
             inverse[i*7+row]/=2*Math.Abs(blend.Range0);
             var other=program.Surfaces[row==0?root.Second:root.First];
-            if(other.Analytic.Kind==SurfaceClass.Cylinder)inverse[i*7+1-row]/=2*other.Analytic.Radius;
+            if(other.Analytic.Kind==SurfaceClass.Cylinder)
+            {
+                inverse[i*7+1-row]/=2*other.Analytic.Radius;
+                inverse[i*7+1-row]+=inverse[i*7+row]*blend.NormalSense/other.NormalSense;
+            }
         }
         foreach(var value in inverse)if(!double.IsFinite(value))return AlgorithmStatus.NotConverged;
         return AlgorithmStatus.Success;
