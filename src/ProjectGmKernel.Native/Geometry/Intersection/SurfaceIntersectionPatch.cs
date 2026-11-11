@@ -36,6 +36,17 @@ internal readonly ref struct SurfaceIntersectionPatch
     internal bool VVariable=>isBlend&&!isSpine||bezier.VDegree>0;
     internal SplineDegree UDegree=>isBlend?1:bezier.UDegree;
     internal SplineDegree VDegree=>isBlend?(isSpine?0:1):bezier.VDegree;
+    internal bool CanPrepareBezierIsoline=>!isBlend&&normalOffset==0&&isoAxis!=0&&sweepAxis==0&&!parameterLine;
+    internal AlgorithmStatus PrepareBezierIsoline(Span<IntervalNumber> poles,out SurfaceIntersectionPatch prepared)
+    {
+        prepared=default;if(!CanPrepareBezierIsoline)return AlgorithmStatus.Unsupported;
+        var constantU=isoAxis==1;var status=BezierSurfaceBounds.Isoline(bezier,constantU,isoParameter,poles);if(status!=AlgorithmStatus.Success)return status;
+        var degree=constantU?bezier.VDegree:bezier.UDegree;
+        var domain=constantU?new SurfaceParameterBox(bezier.Domain.V0,bezier.Domain.V1,0,1):new(bezier.Domain.U0,bezier.Domain.U1,0,1);
+        prepared=new(this,new BezierSurfacePatch(poles[..(4*(degree+1))],degree,0,domain));return AlgorithmStatus.Success;
+    }
+    private SurfaceIntersectionPatch(SurfaceIntersectionPatch source,BezierSurfacePatch prepared)
+    {this=source;bezier=prepared;isoAxis=0;cache=default;}
     internal SurfaceIntersectionPatch(BezierSurfacePatch patch){bezier=patch;blend=default;surface=0;isBlend=isSpine=false;Domain=patch.Domain;}
     internal SurfaceIntersectionPatch(BezierSurfacePatch patch,double offset):this(patch){normalOffset=offset;}
     internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,double offset){this=source;normalOffset+=offset;cache=default;}

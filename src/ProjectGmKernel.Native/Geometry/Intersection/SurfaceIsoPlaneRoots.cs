@@ -1,5 +1,6 @@
 using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Computation.Numerics;
+using ProjectGmKernel.Native.Geometry.Bounds;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Runtime;
 
@@ -26,6 +27,17 @@ internal static class SurfaceIsoPlaneRoots
     internal static AlgorithmStatus Find(in SurfaceIntersectionPatch curve,in AnalyticSurface plane,double first,double last,
         Span<OperationIntersectionPoint> output,ref BufferCount count,double tolerance=1e-10,bool strictSeparation=false,
         Span<ScalarRootIsolation> isolation=default,RootIsolationUse use=RootIsolationUse.SurfaceBoundary)
+    {
+        if(!curve.CanPrepareBezierIsoline)return FindPrepared(curve,plane,first,last,output,ref count,tolerance,strictSeparation,isolation,use);
+        if(!AnalyticLevelSet.Supported(plane))return AlgorithmStatus.Unsupported;
+        Span<IntervalNumber> poles=stackalloc IntervalNumber[4*(BezierSurfaceBounds.MaxDegree+1)];
+        var status=curve.PrepareBezierIsoline(poles,out var prepared);if(status!=AlgorithmStatus.Success)return status;
+        return FindPrepared(prepared,plane,first,last,output,ref count,tolerance,strictSeparation,isolation,use);
+    }
+
+    private static AlgorithmStatus FindPrepared(in SurfaceIntersectionPatch curve,in AnalyticSurface plane,double first,double last,
+        Span<OperationIntersectionPoint> output,ref BufferCount count,double tolerance,bool strictSeparation,
+        Span<ScalarRootIsolation> isolation,RootIsolationUse use)
     {
         using var profile=new ModelingPerformance.RootIsolationScope(use);
         if(!AnalyticLevelSet.Supported(plane))return AlgorithmStatus.Unsupported;

@@ -155,6 +155,26 @@ internal static class BezierSurfaceBounds
         return AlgorithmStatus.Success;
     }
 
+    // The fixed coordinate is evaluated once in homogeneous form. The free
+    // coordinate keeps its original native parameter and outward pole bounds.
+    internal static AlgorithmStatus Isoline(in BezierSurfacePatch patch,bool constantU,double parameter,Span<IntervalNumber> poles)
+    {
+        var fixedDegree=constantU?patch.UDegree:patch.VDegree;
+        var freeDegree=constantU?patch.VDegree:patch.UDegree;
+        if(fixedDegree is <0 or >MaxDegree||freeDegree is <0 or >MaxDegree)return AlgorithmStatus.Unsupported;
+        if(!(patch.Domain.U1>patch.Domain.U0)||!(patch.Domain.V1>patch.Domain.V0)||!double.IsFinite(parameter))return AlgorithmStatus.InvalidInput;
+        if(poles.Length<4*(freeDegree+1))return AlgorithmStatus.WorkspaceTooSmall;
+        var t=constantU?Normalize(parameter,patch.Domain.U0,patch.Domain.U1):Normalize(parameter,patch.Domain.V0,patch.Domain.V1);
+        Span<IntervalNumber> input=stackalloc IntervalNumber[4*(fixedDegree+1)],result=stackalloc IntervalNumber[4*(fixedDegree+1)];
+        for(var i=0;i<=freeDegree;i++)
+        {
+            for(var j=0;j<=fixedDegree;j++)for(var d=0;d<4;d++)
+                input[4*j+d]=patch.Poles[4*(constantU?j*(patch.VDegree+1)+i:i*(patch.VDegree+1)+j)+d];
+            RestrictCurve(input,fixedDegree,t,t,result);result[..4].CopyTo(poles[(4*i)..]);
+        }
+        return AlgorithmStatus.Success;
+    }
+
     private static IntervalNumber Normalize(double parameter, double first, double last)
         => parameter == first ? 0 : parameter == last ? 1 : (new IntervalNumber(parameter) - first) / (new IntervalNumber(last) - first);
 
