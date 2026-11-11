@@ -1,4 +1,5 @@
 using ProjectGmKernel.Native.Computation;
+using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Geometry.Intersection;
@@ -7,6 +8,46 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
+    // A certified source-line root on a rolling support belongs to that
+    // support's contact locus. Keep its source constraint when registering
+    // the event, including when it is an interior root rather than a seed
+    // vertex. The cut's finite station and the source-root enclosure select
+    // the occurrence; the position check cannot join unrelated roots.
+    private static bool TryCertifiedContactRootPoint(in SheetCutCurve cut,in RegularBoundaryRoot root,double parameter,
+        Span<KernelVector3> workspace,out KernelVector3 point)
+    {
+        point=default;
+        if(root.Certified==0||root.Witness==0||root.Root.Vertex>=0
+            ||!double.IsFinite(root.Root.SpatialError)||root.Root.SpatialError<0
+            ||parameter<cut.First||parameter>cut.Last)return false;
+        var source=Curves[GetCurveSlotByTag(root.Curve)];var target=Curves[GetCurveSlotByTag(cut.Curve)];
+        if(source.Class!=CurveClass.Line||!TryReadExplicitSpineCurve(source,out var line)
+            ||!TryAnalyticBlendContactMap(root.CuttingSurface,target,cut.First,cut.Last,out var section,out _,out _))return false;
+        var surface=Surfaces[GetSurfaceSlotByTag(root.CuttingSurface)];var data=BlendedEdgeDataPool[surface.DataIndex];
+        var program=GetNestedBlendProgram(data);var rolling=program.Surfaces[data.ProgramRoot];
+        var first=(section==1)!=rolling.ReverseSection;var support=first?data.Surface0Tag:data.Surface1Tag;
+        if(!TryCertifySupportChart(support,root.ContactSurface,out _)
+            ||!TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(support)],out var analytic))return false;
+        var p=new IntervalVector(root.Root.Point);
+        if(analytic.Kind==SurfaceClass.Cylinder?!PointExactlyOnCylinder(analytic,root.Root.Point)
+            :analytic.Kind!=SurfaceClass.Plane||!ExactPointOnPlaneLevel(p,analytic))return false;
+        var cross=IntervalVector.Cross(p-new IntervalVector(line.Origin),new IntervalVector(line.First));
+        if(cross.X.Value.Magnitude!=0||cross.Y.Value.Magnitude!=0||cross.Z.Value.Magnitude!=0
+            ||!CertifiedRootMatchesCutAnchor(root,cut.Curve,parameter,workspace))return false;
+        point=root.Root.Point;return true;
+    }
+
+#if KERNEL_TEST_HOOKS
+    internal static bool TestCertifiedContactRootPoint(CurveTag source,CurveTag target,SurfTag support,SurfTag rolling,
+        in KernelVector3 point,double lower,double upper,double error,double first,double last,double parameter,bool witnessed=true)
+    {
+        Span<KernelVector3> workspace=stackalloc KernelVector3[1];
+        var root=new RegularBoundaryRoot{Curve=source,ContactSurface=support,CuttingSurface=rolling,Certified=1,Witness=witnessed?1:0,
+            Root=new(){Point=point,Vertex=-1,Parameter=lower+(upper-lower)*.5,Lower=lower,Upper=upper,SpatialError=error}};
+        return TryCertifiedContactRootPoint(new(){Curve=target,First=first,Last=last},root,parameter,workspace,out _);
+    }
+#endif
+
     private static bool TryAnalyticBlendContactMap(SurfTag surface,in CurveRecord boundary,double first,double last,
         out double section,out double shift,out double scale)
     {

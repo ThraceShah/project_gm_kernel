@@ -57,6 +57,15 @@ unsafe
                 Console.WriteLine($"INPUT {name} sha256={Convert.ToHexStringLower(SHA256.HashData(before[i]))}");
                 native[i]=ReceiveNative(before[i]);FullCheck(native[i],name+" native receive");
             }
+            var reference=args.FirstOrDefault(a=>a.StartsWith("--reference-target="));
+            if(reference!=null)
+            {
+                var bytes=File.ReadAllBytes(Path.Combine(root,"temp_docs","contract-sol",reference["--reference-target=".Length..],"target.x_t"));
+                Console.WriteLine($"REFERENCE TARGET sha256={Convert.ToHexStringLower(SHA256.HashData(bytes))}");
+                var accepted=ReceiveNative(bytes);FullCheck(accepted,"reference target");
+                ParasolidBodyCompare.AssertEquivalent(accepted,native[0],"reference versus current uncut target");Mass(accepted,native[0]);
+            }
+            if(args.Contains("--blend-only")){Console.WriteLine("BLEND-ONLY diagnostic complete; Boolean not executed");return;}
             var nativeOptions=new PK_BODY_boolean_o_t{function=PK_boolean_subtract_c};
             var options=new M.PK_BODY_boolean_o_s();
             Require(sizeof(M.PK_BODY_boolean_o_s)==sizeof(PK_BODY_boolean_o_t),"generated options layout size");
@@ -78,6 +87,8 @@ unsafe
             var entered=false;KernelRuntime.ForbidSpatialBoundaryReuse=true;
             KernelRuntime.TraceFiniteBoundary=t=>
             {
+                if(args.Contains("--trace")&&t.Stage is KernelRuntime.BoundaryTraceStage.Input or KernelRuntime.BoundaryTraceStage.Arrangement or KernelRuntime.BoundaryTraceStage.Successor)
+                    Console.WriteLine($"BOOLEAN {t.Stage} surface={t.Surface} source={t.Source} face={t.Face} edge={t.Edge} curve={t.Curve} events={t.StartEvent}/{t.EndEvent}");
                 if(t.Stage!=KernelRuntime.BoundaryTraceStage.ProjectedCellReplacement)return;
                 entered=true;Console.WriteLine("PROJECTED replacement entered");
                 if(args.Contains("--inject"))KernelRuntime.InjectAllocationFailure(0);
@@ -174,7 +185,7 @@ static unsafe void Mass(int reference,int actual)
     Check(PK_TOPOL_eval_mass_props(1,&reference,.99999999,&options,a,a+1,a+2,a+5,a+14),"PK mass");
     Check(PK_TOPOL_eval_mass_props(1,&actual,.99999999,&options,b,b+1,b+2,b+5,b+14),"GM mass");
     var worst=0d;for(var i=0;i<15;i++)worst=Math.Max(worst,Math.Abs(a[i]-b[i])/(1+Math.Abs(a[i])));
-    Console.WriteLine($"MASS normalized15={worst:R}");Require(worst<=1e-7,"mass gate");
+    Console.WriteLine($"MASS normalized15={worst:R}");Require(worst<1e-7,"mass gate");
 }
 static void Selection(int body,Span<int> selected)
 {
