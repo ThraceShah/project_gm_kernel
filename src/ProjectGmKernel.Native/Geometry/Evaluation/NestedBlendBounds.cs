@@ -141,12 +141,8 @@ internal static partial class JointNestedBlendEvaluation
         output[6]=frame.X.Derivative;output[7]=frame.Y.Derivative;output[8]=frame.Z.Derivative;return AlgorithmStatus.Success;
     }
 
-    // SkipLocalsInit contract: every scratch below is active only on its
-    // written prefix [0..n) (or [0..n*n)); all reads are write-dominated on
-    // success and unreachable on failure, per the inventory in
-    // docs/Pk_Native_Modeling_Work_Reduction.md. The explicit rhs.Clear,
-    // Assemble's matrix.Clear and IntervalJacobian's cache.Clear keep their
-    // load-bearing semantics and are NOT removed by this attribute.
+    // Active scratch prefixes are written before use; keep the explicit
+    // matrix, RHS and live spline-cache initialization inside their owners.
     [SkipLocalsInit]
     private static AlgorithmStatus BoundSegment(in NestedBlendProgram program,BlendSurfaceIndex surface,BlendSpineIndex spine,in SurfaceParameterBox domain,Span<IntervalNumber> output,Span<BufferCount> reachBudget=default,
         Span<IntervalNumber> curvature=default,BufferOffset curvatureSide=0,Span<IntervalNumber> supportParameter=default,BufferOffset parameterSide=0,
@@ -177,6 +173,11 @@ internal static partial class JointNestedBlendEvaluation
         Span<IntervalNumber> intervalJacobian=stackalloc IntervalNumber[MaxVariables*MaxVariables],remainder=stackalloc IntervalNumber[MaxVariables*MaxVariables];
         Span<IntervalDual> variables=stackalloc IntervalDual[MaxVariables],equations=stackalloc IntervalDual[MaxVariables];
         Span<IntervalSplineContact> splineCache=stackalloc IntervalSplineContact[MaxVariables];
+        var recordCapacity=CanRecordJacobian(program,nodes,n)?64+512*nodes.Length:0;
+        Span<IntervalExpressionNode> recordNodes=stackalloc IntervalExpressionNode[recordCapacity];
+        Span<IntervalNumber> recordDerivatives=stackalloc IntervalNumber[recordCapacity*n];
+        Span<BufferOffset> recordOutputs=stackalloc BufferOffset[MaxVariables];
+        var jacobianRecord=new IntervalJacobianRecord(recordNodes,recordDerivatives,recordOutputs[..n]);
         for(var i=0;i<n;i++)variables[i]=new(state[i],0);
         status=IntervalResidual(program,nodes,variables[..n],t,equations[..n],fixedCharts);if(status!=AlgorithmStatus.Success)return status;
         for(var i=0;i<n;i++)centerF[i]=equations[i].Value;
@@ -189,7 +190,7 @@ internal static partial class JointNestedBlendEvaluation
                 var radius=factor*(2*Math.Max(Math.Abs(snapshot[i][1]),.1*derivativeScale)*Math.Max(Math.Abs(domain.U1-u),Math.Abs(domain.U0-u))+1e-10*(1+Math.Abs(state[i])));
                 boxes[i]=new(Math.BitDecrement(state[i]-radius),Math.BitIncrement(state[i]+radius));
             }
-            status=IntervalJacobian(program,nodes,boxes[..n],t,intervalJacobian[..(n*n)],variables,equations,fixedCharts,splineCache);if(status!=AlgorithmStatus.Success)continue;
+            status=IntervalJacobianWithRecord(program,nodes,boxes[..n],t,intervalJacobian[..(n*n)],variables,equations,fixedCharts,splineCache,ref jacobianRecord);if(status!=AlgorithmStatus.Success)continue;
             Precondition(inverse[..(n*n)],intervalJacobian[..(n*n)],n,remainder);
             certified=true;
             for(var row=0;row<n;row++)
@@ -211,7 +212,7 @@ internal static partial class JointNestedBlendEvaluation
         for(var iteration=0;iteration<6;iteration++)
         {
             for(var i=0;i<n;i++)boxes[i]=new(Math.Max(boxes[i].Lower,image[i].Lower),Math.Min(boxes[i].Upper,image[i].Upper));
-            status=IntervalJacobian(program,nodes,boxes[..n],t,intervalJacobian[..(n*n)],variables,equations,fixedCharts,splineCache);if(status!=AlgorithmStatus.Success)return status;
+            status=IntervalJacobianWithRecord(program,nodes,boxes[..n],t,intervalJacobian[..(n*n)],variables,equations,fixedCharts,splineCache,ref jacobianRecord);if(status!=AlgorithmStatus.Success)return status;
             Precondition(inverse[..(n*n)],intervalJacobian[..(n*n)],n,remainder);
             for(var row=0;row<n;row++)
             {
