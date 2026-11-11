@@ -17,6 +17,10 @@ KernelRuntime.ForbidLegacyRegularBlendAssembly=args.Contains("--event-arrangemen
 var cutArg=args.SingleOrDefault(x=>x.StartsWith("--cut-x=",StringComparison.Ordinal));
 var cutX=cutArg==null?.5:double.Parse(cutArg[8..],CultureInfo.InvariantCulture);
 Require(cutX>0&&cutX<1,"the cut station must be inside the seed's X range");
+var benchRepeat=1;var benchOption=args.SingleOrDefault(x=>x.StartsWith("--bench-repeat=",StringComparison.Ordinal));
+if(benchOption!=null)benchRepeat=int.Parse(benchOption["--bench-repeat=".Length..],CultureInfo.InvariantCulture);
+Require(benchRepeat>=1&&benchRepeat<=64,"bench repeat must be in 1..64");
+ModelingPerformance.Enabled=args.Contains("--bench-profile",StringComparer.Ordinal);
 var requireCutSection=args.Contains("--require-cut-section",StringComparer.Ordinal);
 var remoteCapBore=args.Contains("--remote-cap-bore",StringComparer.Ordinal);
 var coincidentCylinderWell=args.Contains("--coincident-cylinder-well",StringComparer.Ordinal);
@@ -78,15 +82,19 @@ using(host)unsafe
                 cases++;
                 Console.WriteLine($"CASE {name}, radius={radius:R}, fix.update=v261");
                 File.Delete(Path.Combine(directory,name+"-fillet.x_t"));File.Delete(Path.Combine(directory,name+"-fillet-cut.x_t"));
-                var caseStarted=Stopwatch.GetTimestamp();
+                for(var benchRep=0;benchRep<benchRepeat;benchRep++)
+                {
+                var caseStarted=Stopwatch.GetTimestamp();var benchPhase=caseStarted;
                 try
                 {
                     var own=Roof(true,bulge,wall,concave);var reference=Roof(false,bulge,wall,concave);CheckBody(reference,name+" reference input");
                     if(args.Contains("--remote-bore",StringComparer.Ordinal)){own=Bore(true,own);reference=Bore(false,reference);CheckBody(reference,name+" bored reference input");}
                     if(remoteCapBore){own=Bore(true,own,true);reference=Bore(false,reference,true);CheckCapBoreRings(own,reference);}
+                    var prepareMs=Stopwatch.GetElapsedTime(benchPhase).TotalMilliseconds;benchPhase=Stopwatch.GetTimestamp();
                     var nativeBlend=Fillet(false,reference,radius,concave);CheckBody(reference,name+" reference fillet");
                     sectionWitnesses=0;
                     var ownBlend=Fillet(true,own,radius,concave);
+                    var apiMs=Stopwatch.GetElapsedTime(benchPhase).TotalMilliseconds;
                     if(remoteCapBore)CheckCapBoreRings(own,reference);
                     if(name=="affine-plane-nurbs"&&KernelRuntime.ForbidLegacyRegularBlendAssembly)
                         Require(sectionWitnesses==2,"both affine cap boundaries have known native section limits");
@@ -125,9 +133,11 @@ using(host)unsafe
                         }
                         catch(Exception ex){failures++;Console.WriteLine("FAIL "+name+" subsequent cut: "+ex.Message);}
                     }
+                    Console.WriteLine($"BENCH case={name} rep={benchRep} prepare-ms={prepareMs:F3} api-ms={apiMs:F3} verify-ms={Stopwatch.GetElapsedTime(caseStarted).TotalMilliseconds-prepareMs-apiMs:F3} case-ms={Stopwatch.GetElapsedTime(caseStarted).TotalMilliseconds:F3}");
                 }
                 catch(Exception ex){failures++;Console.WriteLine("FAIL "+name+" construction: "+ex.Message);}
                 Console.WriteLine($"TIME case {name} ms={Stopwatch.GetElapsedTime(caseStarted).TotalMilliseconds:F3}");
+                }
             }
             Require(cases>0,"no matching freeform solid fillet cases");Require(failures==0,$"{failures} freeform solid fillet checks failed");
             Console.WriteLine(lifecycleOnly?"PASS independent freeform solid fillet lifecycle":$"PASS all {cases} freeform solid fillet{(roundingOnly?"":" and subsequent cutting")} cases");
@@ -207,6 +217,7 @@ static unsafe int Fillet(bool own,int body,double radius,bool concave=false)
     WebProgressCapture.After(own,body,webElapsed,error,count,blends,fault,webUnders,webTopols);
     WebProgressCapture.FreeBlendTracking(own,count,webUnders,webTopols);
     Console.WriteLine($"TIME {(own?"self":"PK")} BODY_fix_blends radius={radius:R} ms={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F3}, error={error}");
+    if(own&&ModelingPerformance.Enabled)PrintProfile("FixBlends",webElapsed);
     Console.WriteLine($"{(own?"own":"native")} fix error={error}, count={count}, fault={fault}, edge={fe}, topol={ft}");Check(error,"fix constant blend");
     try
     {
@@ -382,8 +393,16 @@ static unsafe int Cut(bool own,int body,double x)
     var started=Stopwatch.GetTimestamp();
     var error=own?KernelRuntime.BodyBoolean(body,1,&tool,(M.PK_BODY_boolean_o_s*)&options,&n,&bodies):PK_BODY_boolean(body,1,&tool,&options,&n,&bodies);
     var webMs=Stopwatch.GetElapsedTime(started).TotalMilliseconds;WebProgressCapture.BooleanAfter(own,error==0?new ReadOnlySpan<int>(bodies,n).ToArray():[],webMs,error,0,null);
-    Console.WriteLine($"TIME {(own?"self":"PK")} BODY_boolean x={x:R} ms={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F3}, error={error}");Check(error,"cut filleted solid");
+    Console.WriteLine($"TIME {(own?"self":"PK")} BODY_boolean x={x:R} ms={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F3}, error={error}");
+    if(own&&ModelingPerformance.Enabled)PrintProfile("Boolean",webMs);
+    Check(error,"cut filleted solid");
     try{Require(n==1,"one cut solid");return bodies[0];}finally{Free(own,bodies);}
+}
+static void PrintProfile(string operation,double apiMs)
+{
+    var p=ModelingPerformance.Last;var milliseconds=1000.0/Stopwatch.Frequency;
+    Console.WriteLine($"PROFILE operation={operation} api-ms={apiMs:F3} elapsed-ms={p.ElapsedTicks*milliseconds:F3} pairs={p.SurfacePairs} ssi-cells={p.SsiCells} root-cells={p.RootCells} roots={p.Roots} budget-failures={p.BudgetFailures} winding={p.WindingCalls} bound-requests={p.BoundRequests} bound-evaluations={p.BoundEvaluations} cache-hits={p.BoundCacheHits} bound-ms={p.BoundTicks*milliseconds:F3}");
+    foreach(var stage in Enum.GetValues<KernelRuntime.RegularBooleanStage>())if(p.Stages[(int)stage]!=0)Console.WriteLine($"PROFILE stage={stage} ms={p.Stages[(int)stage]*milliseconds:F3}");
 }
 static unsafe int Notch(bool own,int body)
 {

@@ -11,6 +11,10 @@ using ProjectGmKernel.Native.Runtime;
 using System.Runtime.CompilerServices;
 using M=ProjectGmKernel.Native.Generated;
 
+var benchRepeat=1;var benchOption=args.SingleOrDefault(x=>x.StartsWith("--bench-repeat=",StringComparison.Ordinal));
+if(benchOption!=null)benchRepeat=int.Parse(benchOption["--bench-repeat=".Length..],System.Globalization.CultureInfo.InvariantCulture);
+Require(benchRepeat>=1&&benchRepeat<=64,"bench repeat must be in 1..64");
+ModelingPerformance.Enabled=args.Contains("--bench-profile",StringComparer.Ordinal);
 var directory=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","regular-curved-boolean-oracle");Directory.CreateDirectory(directory);
 if(!ParasolidScriptHost.TryStartSession("Independent regular curved solid Booleans",out var host,out var message))throw new Exception(message);
 using(host)unsafe
@@ -24,9 +28,18 @@ using(host)unsafe
         foreach(var function in new[]{PK_boolean_unite_c,PK_boolean_intersect_c,PK_boolean_subtract_c})
         {
             var name=$"{kind}-{function}";if(!WebProgressCapture.Select(name))continue;if(args.Length!=0&&!name.Contains(args[0],StringComparison.Ordinal))continue;
+            for(var benchRep=0;benchRep<benchRepeat;benchRep++)
+            {
+            var benchStart=System.Diagnostics.Stopwatch.GetTimestamp();
             try
             {
-                var ours=Produce(true,kind,function);var reference=Produce(false,kind,function);Require(ours.Length==reference.Length,name+" body count");
+                var gmProduceStart=System.Diagnostics.Stopwatch.GetTimestamp();
+                var ours=Produce(true,kind,function);
+                var gmProduceMs=System.Diagnostics.Stopwatch.GetElapsedTime(gmProduceStart).TotalMilliseconds;
+                var pkProduceStart=System.Diagnostics.Stopwatch.GetTimestamp();
+                var reference=Produce(false,kind,function);
+                var pkProduceMs=System.Diagnostics.Stopwatch.GetElapsedTime(pkProduceStart).TotalMilliseconds;
+                Require(ours.Length==reference.Length,name+" body count");
                 var matched=new bool[reference.Length];
                 for(var i=0;i<ours.Length;i++)
                 {
@@ -36,8 +49,10 @@ using(host)unsafe
                     Require(found>=0,name+" body correspondence");matched[found]=true;CheckBody(reference[found],name+" reference");Compare(reference[found],received,name);Classify(ours[i],reference[found],name);
                 }
                 passed++;Console.WriteLine("PASS "+name);
+                Console.WriteLine($"BENCH case={name} rep={benchRep} gm-produce-ms={gmProduceMs:F3} pk-produce-ms={pkProduceMs:F3} verify-ms={System.Diagnostics.Stopwatch.GetElapsedTime(benchStart).TotalMilliseconds-gmProduceMs-pkProduceMs:F3} case-ms={System.Diagnostics.Stopwatch.GetElapsedTime(benchStart).TotalMilliseconds:F3}");
             }
             catch(Exception ex){failures++;Console.WriteLine("FAIL "+name+": "+ex);}
+            }
         }
         Require(failures==0,$"{failures} regular curved Boolean cases failed");Console.WriteLine($"PASS all {passed} regular curved Boolean cases");
     }
@@ -93,6 +108,7 @@ static unsafe int[] Produce(bool own,string kind,int function,double tolerance=1
         var started=System.Diagnostics.Stopwatch.GetTimestamp();
         var error=own?KernelRuntime.BodyBoolean2(target,toolCount,tools,(M.PK_BODY_boolean_o_s*)&options,(M.PK_TOPOL_track_r_s*)&tracking,(M.PK_boolean_r_s*)&result):PK_BODY_boolean_2(target,toolCount,tools,&options,&tracking,&result);
         var ms=System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+        if(own&&ModelingPerformance.Enabled)PrintProfile($"Boolean {kind}-{function}",ms);
         try
         {
             var output=error==0?new ReadOnlySpan<int>(result.bodies,result.n_bodies).ToArray():[];
@@ -103,6 +119,12 @@ static unsafe int[] Produce(bool own,string kind,int function,double tolerance=1
     Check(own?KernelRuntime.BodyBoolean(target,toolCount,tools,(M.PK_BODY_boolean_o_s*)&options,&count,&bodies):PK_BODY_boolean(target,toolCount,tools,&options,&count,&bodies),$"{(own?"own":"native")} {kind} Boolean");
     try{var result=new int[count];new ReadOnlySpan<int>(bodies,count).CopyTo(result);if(kind=="mixed-disjoint"&&function==PK_boolean_unite_c)Require(result.Contains(tools[1]),"disjoint tool body identity");return result;}
     finally{if(bodies!=null)Check(own?KernelRuntime.MemoryFree(bodies):PK_MEMORY_free(bodies),"Boolean buffers");}
+}
+static void PrintProfile(string operation,double apiMs)
+{
+    var p=ModelingPerformance.Last;var milliseconds=1000.0/System.Diagnostics.Stopwatch.Frequency;
+    Console.WriteLine($"PROFILE operation={operation} api-ms={apiMs:F3} elapsed-ms={p.ElapsedTicks*milliseconds:F3} pairs={p.SurfacePairs} ssi-cells={p.SsiCells} root-cells={p.RootCells} roots={p.Roots} budget-failures={p.BudgetFailures} winding={p.WindingCalls} bound-requests={p.BoundRequests} bound-evaluations={p.BoundEvaluations} cache-hits={p.BoundCacheHits} bound-ms={p.BoundTicks*milliseconds:F3}");
+    foreach(var stage in Enum.GetValues<KernelRuntime.RegularBooleanStage>())if(p.Stages[(int)stage]!=0)Console.WriteLine($"PROFILE stage={stage} ms={p.Stages[(int)stage]*milliseconds:F3}");
 }
 static unsafe int Roof(bool own,double dx,double dy,double dz,double bulge)
 {

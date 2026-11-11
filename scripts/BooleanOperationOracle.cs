@@ -23,6 +23,10 @@ var coplanarToolsOnly=args.Contains("--coplanar-tools");
 var axialContactOnly=args.Contains("--finite-axial-contact");
 var axialImprintOnly=args.Contains("--axial-contact-imprint");
 var specialized=threePlaneOnly||conicCutOnly||conicCornerOnly||coplanarToolsOnly||axialContactOnly||axialImprintOnly;
+var benchRepeat=1;var benchOption=args.SingleOrDefault(x=>x.StartsWith("--bench-repeat=",StringComparison.Ordinal));
+if(benchOption!=null)benchRepeat=int.Parse(benchOption["--bench-repeat=".Length..],System.Globalization.CultureInfo.InvariantCulture);
+Require(benchRepeat>=1&&benchRepeat<=64,"bench repeat must be in 1..64");
+ModelingPerformance.Enabled=args.Contains("--bench-profile",StringComparer.Ordinal);
 var output=Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","boolean-operation-oracle"));
 Directory.CreateDirectory(output);var log=new StringBuilder();
 void Log(string s){Console.WriteLine(s);log.AppendLine(s);}
@@ -40,9 +44,17 @@ try
                 :new[]{"three-plane-cuts","guarded-three-plane-cuts"}):new[]{"coincident","overlap-two-axes","aligned","touching-face","disjoint","nested","crossing-rotated","translated-large","two-tools","closed-cavity","through-hole"})
             {
                 var label=$"{fixture}-{mode}";if(!WebProgressCapture.Select(label))continue;count++;
+                for(var benchRep=0;benchRep<benchRepeat;benchRep++)
+                {
+                var benchStart=System.Diagnostics.Stopwatch.GetTimestamp();
                 try
                 {
-                    var own=Produce(true,fixture,mode,out var ownStatus);var reference=Produce(false,fixture,mode,out var pkStatus);
+                    var gmProduceStart=System.Diagnostics.Stopwatch.GetTimestamp();
+                    var own=Produce(true,fixture,mode,out var ownStatus);
+                    var gmProduceMs=System.Diagnostics.Stopwatch.GetElapsedTime(gmProduceStart).TotalMilliseconds;
+                    var pkProduceStart=System.Diagnostics.Stopwatch.GetTimestamp();
+                    var reference=Produce(false,fixture,mode,out var pkStatus);
+                    var pkProduceMs=System.Diagnostics.Stopwatch.GetElapsedTime(pkProduceStart).TotalMilliseconds;
                     Require(ownStatus==pkStatus,$"status own={ownStatus} PK={pkStatus}");
                     Require(own.Length==reference.Length,$"body count own={own.Length} PK={reference.Length}");
                     var received=new List<int>();
@@ -62,8 +74,10 @@ try
                         if(!specialized)CompareBodies(reference[b],received[b],label,Log);
                     }
                     Log("PASS "+label);
+                    Console.WriteLine($"BENCH case={label} rep={benchRep} gm-produce-ms={gmProduceMs:F3} pk-produce-ms={pkProduceMs:F3} verify-ms={System.Diagnostics.Stopwatch.GetElapsedTime(benchStart).TotalMilliseconds-gmProduceMs-pkProduceMs:F3} case-ms={System.Diagnostics.Stopwatch.GetElapsedTime(benchStart).TotalMilliseconds:F3}");
                 }
                 catch(Exception ex){failures++;Log("FAIL "+label+": "+ex.Message);}
+                }
             }
             foreach(var fixture in specialized||WebProgressCapture.Enabled?[]:new[]{"imprint","oblique-imprint","trim-keep","trim-remove","section-both","section-front","section-back","section-miss","section-coincident"})
             {
@@ -105,6 +119,12 @@ try
 catch(Exception ex){Log("FAIL: "+ex.Message);Environment.ExitCode=1;}
 finally{File.WriteAllText(Path.Combine(output,"report.txt"),log.ToString());}
 
+static void PrintProfile(string operation,double apiMs)
+{
+    var p=ModelingPerformance.Last;var milliseconds=1000.0/System.Diagnostics.Stopwatch.Frequency;
+    Console.WriteLine($"PROFILE operation={operation} api-ms={apiMs:F3} elapsed-ms={p.ElapsedTicks*milliseconds:F3} pairs={p.SurfacePairs} ssi-cells={p.SsiCells} root-cells={p.RootCells} roots={p.Roots} budget-failures={p.BudgetFailures} winding={p.WindingCalls} bound-requests={p.BoundRequests} bound-evaluations={p.BoundEvaluations} cache-hits={p.BoundCacheHits} bound-ms={p.BoundTicks*milliseconds:F3}");
+    foreach(var stage in Enum.GetValues<KernelRuntime.RegularBooleanStage>())if(p.Stages[(int)stage]!=0)Console.WriteLine($"PROFILE stage={stage} ms={p.Stages[(int)stage]*milliseconds:F3}");
+}
 static unsafe int[] Produce(bool own,string fixture,int function,out int status)
 {
     var x=fixture switch{"overlap-two-axes"=>.5,"aligned"=>1,"touching-face"=>2,"disjoint"=>4,"crossing-rotated"=>.4,_=>0};
@@ -267,6 +287,7 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
                 var webMs=System.Diagnostics.Stopwatch.GetElapsedTime(webStarted).TotalMilliseconds;
                 WebProgressCapture.BooleanAfter(true,error==0?new ReadOnlySpan<int>(result.bodies,result.n_bodies).ToArray():[],webMs,error,result.result,(PK_TOPOL_track_r_t*)&tracking);
                 Check(error,$"{fixture} Boolean at {KernelRuntime.LastRegularBooleanStage}/{KernelRuntime.LastSheetPartitionStage}, curve {KernelRuntime.LastSheetCurve}, t={KernelRuntime.LastSheetParameter:R}");
+                if(ModelingPerformance.Enabled)PrintProfile($"Boolean {fixture}-{function}",webMs);
                 var joined=certified.Where(published.Contains).GroupBy(x=>x.Event).Count(x=>x.Count()==3);
                 var publishedTransfers=transferredLines.Count(published.Contains);
                 if(threePlane)Require(joined>0,"a three-plane event must retain all three native stations on published edges");
@@ -310,6 +331,7 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
             var error=KernelRuntime.BodyBoolean2(target,nt,tools,&options,&tracking,&result);
             var webMs=System.Diagnostics.Stopwatch.GetElapsedTime(webStarted).TotalMilliseconds;
             WebProgressCapture.BooleanAfter(true,error==0?new ReadOnlySpan<int>(result.bodies,result.n_bodies).ToArray():[],webMs,error,result.result,(PK_TOPOL_track_r_t*)&tracking);Check(error,"own Boolean");
+            if(ModelingPerformance.Enabled)PrintProfile($"Boolean {fixture}-{function}",webMs);
         }
         status=result.result;var bodies=new ReadOnlySpan<int>(result.bodies,result.n_bodies).ToArray();
         Check(KernelRuntime.TopolTrackResultFree(&tracking),"own tracking free");Check(KernelRuntime.BooleanResultFree(&result),"own result free");return bodies;
