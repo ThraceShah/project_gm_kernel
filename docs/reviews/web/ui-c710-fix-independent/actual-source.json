@@ -1,0 +1,39 @@
+{
+  "verdict": "accepted",
+  "acceptedScope": "Fixed 53f9871 declared viewing UI slice, combined with unchanged finite passes from original 9ef8ce1 review",
+  "actualCandidate": "53f9871e55574ec66a96f12904293515ce40c23c",
+  "productFix": "2e0c8bd97c183f85084d7a95a0ecaf5ded8e0cc4",
+  "webSrcTreeBothCommits": "07ded43c9321e7e76a8177865c2852cc4fbd1db3",
+  "sourceSha256": {
+    "web/src/components/MeshViewer.tsx": "dd1b5d5c8f90e97bdc6e7091e92798da3146dfcc742269e89b05f36aff1381a0",
+    "web/src/components/ChecksTable.tsx": "581962011c62b2e7f556e1240a7b5647c23186cd3d349c6e6c5ee36fa7d82f73"
+  },
+  "originalReview": "9ef8ce133bf60cf70f635bd3b016b06a9701e170",
+  "originalC710Verdict": "blocked, preserved",
+  "originalProbeSha256": "8f05cb5fbdbb06d10e5894c52527be8c384eac2495305535eda6cb42cc63dace",
+  "unchangedProbeJsonCandidateLabel": "c710171bfea776a77217a3c417bc73f7906ac4fd",
+  "probeLabelIsActualCodeIdentity": false,
+  "dataIndexSha256": "117bb8e7ad20ea90aee004eb18428d2a220e5270795ab9ce81eff380843e3990",
+  "dataRun": "20261110T195008Z-610e3ce8",
+  "case": "support-chain.asymmetric43-base",
+  "input": { "viewport": [1965, 1228], "stage": "Before", "opacity": 0.25, "linked": true },
+  "batches": [
+    { "name": "original final probe", "exit": 0, "passed": 28, "failed": 0, "pageErrors": 0, "runsThisReview": 1 },
+    { "name": "original picking-only probe", "exit": 0, "passed": 8, "failed": 0, "pageErrors": 0, "runsThisReview": 1 },
+    { "name": "two finite boundary classes and exact check mapping", "exit": 0, "passed": 8, "failed": 0, "pageErrors": 0, "runsThisReview": 1 }
+  ],
+  "auditGroupSizes": { "primary": 1, "overlap-counts": 5, "operation-contract": 5, "body-validity": 2, "mass": 15, "scenario": 1 },
+  "all29IdsUniqueAndMatched": true,
+  "all29DisplayedStatusesValuesThresholdsEvidenceMatched": true,
+  "boundaries": [
+    "Ordinary unchanged faces and rear ordinary edges through transparent context remain selectable",
+    "Actual opaque foreground faces block rear edges; no global selected-role priority"
+  ],
+  "newPKCalls": 0,
+  "newDataCollections": 0,
+  "reranAuthor30Plus38Suites": false,
+  "deploymentReviewedOrPerformed": false,
+  "uv1ebE8ddIntegrationSignedOff": false,
+  "implementationTreeEdited": false,
+  "originalLogsAndReportsRestoredUnchanged": true
+}

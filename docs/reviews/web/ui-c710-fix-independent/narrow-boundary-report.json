@@ -1,0 +1,1155 @@
+{
+  "actualCandidate": "53f9871e55574ec66a96f12904293515ce40c23c",
+  "webSrcTree": "07ded43c9321e7e76a8177865c2852cc4fbd1db3",
+  "indexHash": "117bb8e7ad20ea90aee004eb18428d2a220e5270795ab9ce81eff380843e3990",
+  "run": "20261110T195008Z-610e3ce8",
+  "rows": [
+    {
+      "name": "same immutable screenshot data input",
+      "ok": true,
+      "detail": "117bb8e7ad20ea90aee004eb18428d2a220e5270795ab9ce81eff380843e3990"
+    },
+    {
+      "name": "six groups match every c9b88 member ID with no loss or duplication",
+      "ok": true,
+      "detail": [
+        {
+          "auditId": "primary",
+          "ids": [
+            "0-equivalence"
+          ],
+          "actual": {
+            "summary": "原主比较验收记录（PK_DEBUG_BODY_compare + type / regions） · 1 条 · 1 通过 / 0 失败 / 0 其他",
+            "rows": [
+              {
+                "id": "0-equivalence",
+                "status": "PASS",
+                "label": "Type, regions and strict BODY_compare",
+                "cells": [
+                  "null",
+                  "null",
+                  "null",
+                  "null",
+                  "-",
+                  "-"
+                ],
+                "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+                "note": "Only n_cht_pts is diagnostic."
+              }
+            ]
+          }
+        },
+        {
+          "auditId": "overlap-counts",
+          "ids": [
+            "0-count-0",
+            "0-count-1",
+            "0-count-2",
+            "0-count-3",
+            "0-count-4"
+          ],
+          "actual": {
+            "summary": "拓扑重复计数 · 5 条 · 5 通过 / 0 失败 / 0 其他",
+            "rows": [
+              {
+                "id": "0-count-0",
+                "status": "PASS",
+                "label": "Regions",
+                "cells": [
+                  "2",
+                  "2",
+                  "0",
+                  "0",
+                  "≤ 0",
+                  "count"
+                ],
+                "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+                "note": ""
+              },
+              {
+                "id": "0-count-1",
+                "status": "PASS",
+                "label": "Shells",
+                "cells": [
+                  "2",
+                  "2",
+                  "0",
+                  "0",
+                  "≤ 0",
+                  "count"
+                ],
+                "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+                "note": ""
+              },
+              {
+                "id": "0-count-2",
+                "status": "PASS",
+                "label": "Faces",
+                "cells": [
+                  "13",
+                  "13",
+                  "0",
+                  "0",
+                  "≤ 0",
+                  "count"
+                ],
+                "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+                "note": ""
+              },
+              {
+                "id": "0-count-3",
+                "status": "PASS",
+                "label": "Edges",
+                "cells": [
+                  "28",
+                  "28",
+                  "0",
+                  "0",
+                  "≤ 0",
+                  "count"
+                ],
+                "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+                "note": ""
+              },
+              {
+                "id": "0-count-4",
+                "status": "PASS",
+                "label": "Vertices",
+                "cells": [
+                  "17",
+                  "17",
+                  "0",
+                  "0",
+                  "≤ 0",
+                  "count"
+                ],
+                "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+                "note": ""
+              }
+            ]
+          }
+        },
+        {
+          "auditId": "operation-contract",
+          "ids": [
+            "gm-0-api",
+            "0-True-blend-fault",
+            "pk-0-api",
+            "0-body-count",
+            "0-False-blend-fault"
+          ],
+          "actual": {
+            "summary": "操作契约：API return / blend fault / 输出体数量 · 5 条 · 5 通过 / 0 失败 / 0 其他",
+            "rows": [
+              {
+                "id": "gm-0-api",
+                "status": "PASS",
+                "label": "gm API error",
+                "cells": [
+                  "0",
+                  "null",
+                  "null",
+                  "null",
+                  "≤ 0",
+                  "code"
+                ],
+                "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+                "note": "API error, zero means success"
+              },
+              {
+                "id": "0-True-blend-fault",
+                "status": "PASS",
+                "label": "Blend fault GM",
+                "cells": [
+                  "18391",
+                  "null",
+                  "null",
+                  "null",
+                  "≤ 18391",
+                  "enum"
+                ],
+                "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+                "note": "PK_blend_fault_no_fault_c required"
+              },
+              {
+                "id": "pk-0-api",
+                "status": "PASS",
+                "label": "pk API error",
+                "cells": [
+                  "null",
+                  "0",
+                  "null",
+                  "null",
+                  "≤ 0",
+                  "code"
+                ],
+                "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+                "note": "API error, zero means success"
+              },
+              {
+                "id": "0-body-count",
+                "status": "PASS",
+                "label": "Result body count",
+                "cells": [
+                  "1",
+                  "1",
+                  "0",
+                  "0",
+                  "≤ 0",
+                  "count"
+                ],
+                "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+                "note": ""
+              },
+              {
+                "id": "0-False-blend-fault",
+                "status": "PASS",
+                "label": "Blend fault PK",
+                "cells": [
+                  "null",
+                  "18391",
+                  "null",
+                  "null",
+                  "≤ 18391",
+                  "enum"
+                ],
+                "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+                "note": "PK_blend_fault_no_fault_c required"
+              }
+            ]
+          }
+        },
+        {
+          "auditId": "body-validity",
+          "ids": [
+            "0-True-body-check",
+            "0-False-body-check"
+          ],
+          "actual": {
+            "summary": "BODY_check 有效性 · 2 条 · 2 通过 / 0 失败 / 0 其他",
+            "rows": [
+              {
+                "id": "0-True-body-check",
+                "status": "PASS",
+                "label": "Full BODY_check GM fresh XT",
+                "cells": [
+                  "0",
+                  "null",
+                  "null",
+                  "null",
+                  "≤ 0",
+                  "faults"
+                ],
+                "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+                "note": "[]"
+              },
+              {
+                "id": "0-False-body-check",
+                "status": "PASS",
+                "label": "Full BODY_check PK",
+                "cells": [
+                  "null",
+                  "0",
+                  "null",
+                  "null",
+                  "≤ 0",
+                  "faults"
+                ],
+                "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+                "note": "[]"
+              }
+            ]
+          }
+        },
+        {
+          "auditId": "mass",
+          "ids": [
+            "0-mass-0",
+            "0-mass-1",
+            "0-mass-2",
+            "0-mass-3",
+            "0-mass-4",
+            "0-mass-5",
+            "0-mass-6",
+            "0-mass-7",
+            "0-mass-8",
+            "0-mass-9",
+            "0-mass-10",
+            "0-mass-11",
+            "0-mass-12",
+            "0-mass-13",
+            "0-mass-14"
+          ],
+          "actual": {
+            "summary": "物性量 · 15 条 · 15 通过 / 0 失败 / 0 其他",
+            "rows": [
+              {
+                "id": "0-mass-0",
+                "status": "PASS",
+                "label": "Volume",
+                "cells": [
+                  "1.025097782",
+                  "1.025097782",
+                  "1.320445975e-10",
+                  "6.520406009e-11",
+                  "≤ 1e-7",
+                  "model³"
+                ],
+                "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+                "note": "abs(GM-PK)/(1+abs(PK)) < threshold; accuracy=.99999999"
+              },
+              {
+                "id": "0-mass-1",
+                "status": "PASS",
+                "label": "Mass",
+                "cells": [
+                  "1.025097782",
+                  "1.025097782",
+                  "1.320445975e-10",
+                  "6.520406009e-11",
+                  "≤ 1e-7",
+                  "model³"
+                ],
+                "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+                "note": "abs(GM-PK)/(1+abs(PK)) < threshold; accuracy=.99999999"
+              },
+              {
+                "id": "0-mass-2",
+                "status": "PASS",
+                "label": "Centroid X",
+                "cells": [
+                  "0.5000000001",
+                  "0.5",
+                  "6.416900344e-11",
+                  "4.277933563e-11",
+                  "≤ 1e-7",
+                  "model"
+                ],
+                "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+                "note": "abs(GM-PK)/(1+abs(PK)) < threshold; accuracy=.99999999"
+              },
+              {
+                "id": "0-mass-3",
+                "status": "PASS",
+                "label": "Centroid Y",
+                "cells": [
+                  "0.5007353695",
+                  "0.5007353695",
+                  "5.12383469e-11",
+                  "3.414215986e-11",
+                  "≤ 1e-7",
+                  "model"
+                ],
+                "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+                "note": "abs(GM-PK)/(1+abs(PK)) < threshold; accuracy=.99999999"
+              },
+              {
+                "id": "0-mass-4",
+                "status": "PASS",
+                "label": "Centroid Z",
+                "cells": [
+                  "0.5128624926",
+                  "0.5128624926",
+                  "4.853684121e-11",
+                  "3.208278442e-11",
+                  "≤ 1e-7",
+                  "model"
+                ],
+                "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+                "note": "abs(GM-PK)/(1+abs(PK)) < threshold; accuracy=.99999999"
+              },
+              {
+                "id": "0-mass-5",
+                "status": "PASS",
+                "label": "Inertia XX",
+                "cells": [
+                  "0.1743990145",
+                  "0.1743990145",
+                  "4.228506434e-11",
+                  "3.600570489e-11",
+                  "≤ 1e-7",
+                  "model⁵"
+                ],
+                "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+                "note": "abs(GM-PK)/(1+abs(PK)) < threshold; accuracy=.99999999"
+              },
+              {
+                "id": "0-mass-6",
+                "status": "PASS",
+                "label": "Inertia XY",
+                "cells": [
+                  "5.730885e-11",
+                  "3.81791991e-11",
+                  "1.91296509e-11",
+                  "1.91296509e-11",
+                  "≤ 1e-7",
+                  "model⁵"
+                ],
+                "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+                "note": "abs(GM-PK)/(1+abs(PK)) < threshold; accuracy=.99999999"
+              },
+              {
+                "id": "0-mass-7",
+                "status": "PASS",
+                "label": "Inertia XZ",
+                "cells": [
+                  "-3.521028291e-11",
+                  "-1.252097864e-11",
+                  "2.268930427e-11",
+                  "2.268930427e-11",
+                  "≤ 1e-7",
+                  "model⁵"
+                ],
+                "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+                "note": "abs(GM-PK)/(1+abs(PK)) < threshold; accuracy=.99999999"
+              },
+              {
+                "id": "0-mass-8",
+                "status": "PASS",
+                "label": "Inertia YX",
+                "cells": [
+                  "5.730885e-11",
+                  "3.81791991e-11",
+                  "1.91296509e-11",
+                  "1.91296509e-11",
+                  "≤ 1e-7",
+                  "model⁵"
+                ],
+                "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+                "note": "abs(GM-PK)/(1+abs(PK)) < threshold; accuracy=.99999999"
+              },
+              {
+                "id": "0-mass-9",
+                "status": "PASS",
+                "label": "Inertia YY",
+                "cells": [
+                  "0.1742243165",
+                  "0.1742243164",
+                  "4.571881762e-11",
+                  "3.893533542e-11",
+                  "≤ 1e-7",
+                  "model⁵"
+                ],
+                "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+                "note": "abs(GM-PK)/(1+abs(PK)) < threshold; accuracy=.99999999"
+              },
+              {
+                "id": "0-mass-10",
+                "status": "PASS",
+                "label": "Inertia YZ",
+                "cells": [
+                  "-0.0003540038796",
+                  "-0.0003540038998",
+                  "2.026532772e-11",
+                  "2.025815625e-11",
+                  "≤ 1e-7",
+                  "model⁵"
+                ],
+                "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+                "note": "abs(GM-PK)/(1+abs(PK)) < threshold; accuracy=.99999999"
+              },
+              {
+                "id": "0-mass-11",
+                "status": "PASS",
+                "label": "Inertia ZX",
+                "cells": [
+                  "-3.521028291e-11",
+                  "-1.252097864e-11",
+                  "2.268930427e-11",
+                  "2.268930427e-11",
+                  "≤ 1e-7",
+                  "model⁵"
+                ],
+                "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+                "note": "abs(GM-PK)/(1+abs(PK)) < threshold; accuracy=.99999999"
+              },
+              {
+                "id": "0-mass-12",
+                "status": "PASS",
+                "label": "Inertia ZY",
+                "cells": [
+                  "-0.0003540038796",
+                  "-0.0003540038998",
+                  "2.026532772e-11",
+                  "2.025815625e-11",
+                  "≤ 1e-7",
+                  "model⁵"
+                ],
+                "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+                "note": "abs(GM-PK)/(1+abs(PK)) < threshold; accuracy=.99999999"
+              },
+              {
+                "id": "0-mass-13",
+                "status": "PASS",
+                "label": "Inertia ZZ",
+                "cells": [
+                  "0.1684322425",
+                  "0.1684322425",
+                  "4.150885191e-11",
+                  "3.552525376e-11",
+                  "≤ 1e-7",
+                  "model⁵"
+                ],
+                "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+                "note": "abs(GM-PK)/(1+abs(PK)) < threshold; accuracy=.99999999"
+              },
+              {
+                "id": "0-mass-14",
+                "status": "PASS",
+                "label": "Area",
+                "cells": [
+                  "5.977972243",
+                  "5.977972242",
+                  "7.811262748e-10",
+                  "1.119417286e-10",
+                  "≤ 1e-7",
+                  "model²"
+                ],
+                "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+                "note": "abs(GM-PK)/(1+abs(PK)) < threshold; accuracy=.99999999"
+              }
+            ]
+          }
+        },
+        {
+          "auditId": "scenario",
+          "ids": [
+            "oracle-exit"
+          ],
+          "actual": {
+            "summary": "原进程 / 场景 exit · 1 条 · 1 通过 / 0 失败 / 0 其他",
+            "rows": [
+              {
+                "id": "oracle-exit",
+                "status": "PASS",
+                "label": "Original oracle exit code and acceptance",
+                "cells": [
+                  "null",
+                  "null",
+                  "null",
+                  "null",
+                  "≤ 0",
+                  "exit code"
+                ],
+                "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/oracle.log",
+                "note": "Original process exit codes are retained in execution.exitCodes; oracle failure is result data, not exporter success."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "all 29 original statuses, values, deltas, thresholds, labels and evidence unchanged",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "name": "gm: ordinary face and ordinary rear edge through transparent context remain selectable",
+      "ok": true,
+      "detail": {
+        "facePoint": [
+          698.3171169063603,
+          416.7915803555108
+        ],
+        "faceHit": "面 [gm:face:48]角色:未改动实体(5 三角片)×",
+        "edgePoint": [
+          831.6637177210731,
+          564.0234085212992
+        ],
+        "edgeHit": "边 [gm:edge:102]角色:未改动实体×",
+        "foreground": [
+          {
+            "id": "gm:face:48",
+            "role": "unchanged",
+            "distance": 3.1549911956206853
+          },
+          {
+            "id": "gm:face:78",
+            "role": "unchanged",
+            "distance": 3.503743435753707
+          }
+        ],
+        "transparent": [
+          {
+            "id": "gm:face:84",
+            "role": "unchanged",
+            "distance": 2.4357197441587806
+          },
+          {
+            "id": "gm:face:42",
+            "role": "unchanged",
+            "distance": 3.485598944227747
+          }
+        ]
+      }
+    },
+    {
+      "name": "gm: actual opaque foreground wins over rear edge",
+      "ok": true,
+      "detail": {
+        "point": [
+          721.7037889113542,
+          781.4258385670447
+        ],
+        "picked": "面 [gm:face:66]角色:支撑面(37 三角片)×",
+        "expectedFront": "gm:face:66",
+        "rear": "gm:edge:104",
+        "hits": [
+          {
+            "id": "gm:face:66",
+            "role": "support",
+            "distance": 2.560465480109376
+          },
+          {
+            "id": "gm:face:54",
+            "role": "support",
+            "distance": 3.432113051751095
+          }
+        ]
+      }
+    },
+    {
+      "name": "pk: ordinary face and ordinary rear edge through transparent context remain selectable",
+      "ok": true,
+      "detail": {
+        "facePoint": [
+          1521.3171169063603,
+          416.7915803555108
+        ],
+        "faceHit": "面 [pk:face:180]角色:未改动实体(5 三角片)×",
+        "edgePoint": [
+          1654.663717721073,
+          564.0234085212992
+        ],
+        "edgeHit": "边 [pk:edge:181]角色:未改动实体×",
+        "foreground": [
+          {
+            "id": "pk:face:180",
+            "role": "unchanged",
+            "distance": 3.1549911956206853
+          },
+          {
+            "id": "pk:face:101",
+            "role": "unchanged",
+            "distance": 3.503743435753707
+          }
+        ],
+        "transparent": [
+          {
+            "id": "pk:face:96",
+            "role": "unchanged",
+            "distance": 2.4357197441587806
+          },
+          {
+            "id": "pk:face:185",
+            "role": "unchanged",
+            "distance": 3.485598944227747
+          }
+        ]
+      }
+    },
+    {
+      "name": "pk: actual opaque foreground wins over rear edge",
+      "ok": true,
+      "detail": {
+        "point": [
+          1544.7037889113542,
+          781.4258385670447
+        ],
+        "picked": "面 [pk:face:111]角色:支撑面(37 三角片)×",
+        "expectedFront": "pk:face:111",
+        "rear": "pk:edge:166",
+        "hits": [
+          {
+            "id": "pk:face:111",
+            "role": "support",
+            "distance": 2.560465480109376
+          },
+          {
+            "id": "pk:face:170",
+            "role": "support",
+            "distance": 3.432113051751095
+          }
+        ]
+      }
+    },
+    {
+      "name": "no boundary page errors",
+      "ok": true,
+      "detail": []
+    }
+  ],
+  "rendered": [
+    {
+      "groups": [
+        {
+          "summary": "操作契约：API return / blend fault / 输出体数量 · 5 条 · 5 通过 / 0 失败 / 0 其他",
+          "rows": [
+            {
+              "id": "gm-0-api",
+              "status": "PASS",
+              "label": "gm API error",
+              "cells": [
+                "0",
+                "null",
+                "null",
+                "null",
+                "≤ 0",
+                "code"
+              ],
+              "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+              "note": "API error, zero means success"
+            },
+            {
+              "id": "0-True-blend-fault",
+              "status": "PASS",
+              "label": "Blend fault GM",
+              "cells": [
+                "18391",
+                "null",
+                "null",
+                "null",
+                "≤ 18391",
+                "enum"
+              ],
+              "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+              "note": "PK_blend_fault_no_fault_c required"
+            },
+            {
+              "id": "pk-0-api",
+              "status": "PASS",
+              "label": "pk API error",
+              "cells": [
+                "null",
+                "0",
+                "null",
+                "null",
+                "≤ 0",
+                "code"
+              ],
+              "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+              "note": "API error, zero means success"
+            },
+            {
+              "id": "0-body-count",
+              "status": "PASS",
+              "label": "Result body count",
+              "cells": [
+                "1",
+                "1",
+                "0",
+                "0",
+                "≤ 0",
+                "count"
+              ],
+              "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+              "note": ""
+            },
+            {
+              "id": "0-False-blend-fault",
+              "status": "PASS",
+              "label": "Blend fault PK",
+              "cells": [
+                "null",
+                "18391",
+                "null",
+                "null",
+                "≤ 18391",
+                "enum"
+              ],
+              "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+              "note": "PK_blend_fault_no_fault_c required"
+            }
+          ]
+        },
+        {
+          "summary": "BODY_check 有效性 · 2 条 · 2 通过 / 0 失败 / 0 其他",
+          "rows": [
+            {
+              "id": "0-True-body-check",
+              "status": "PASS",
+              "label": "Full BODY_check GM fresh XT",
+              "cells": [
+                "0",
+                "null",
+                "null",
+                "null",
+                "≤ 0",
+                "faults"
+              ],
+              "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+              "note": "[]"
+            },
+            {
+              "id": "0-False-body-check",
+              "status": "PASS",
+              "label": "Full BODY_check PK",
+              "cells": [
+                "null",
+                "0",
+                "null",
+                "null",
+                "≤ 0",
+                "faults"
+              ],
+              "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+              "note": "[]"
+            }
+          ]
+        },
+        {
+          "summary": "拓扑重复计数 · 5 条 · 5 通过 / 0 失败 / 0 其他",
+          "rows": [
+            {
+              "id": "0-count-0",
+              "status": "PASS",
+              "label": "Regions",
+              "cells": [
+                "2",
+                "2",
+                "0",
+                "0",
+                "≤ 0",
+                "count"
+              ],
+              "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+              "note": ""
+            },
+            {
+              "id": "0-count-1",
+              "status": "PASS",
+              "label": "Shells",
+              "cells": [
+                "2",
+                "2",
+                "0",
+                "0",
+                "≤ 0",
+                "count"
+              ],
+              "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+              "note": ""
+            },
+            {
+              "id": "0-count-2",
+              "status": "PASS",
+              "label": "Faces",
+              "cells": [
+                "13",
+                "13",
+                "0",
+                "0",
+                "≤ 0",
+                "count"
+              ],
+              "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+              "note": ""
+            },
+            {
+              "id": "0-count-3",
+              "status": "PASS",
+              "label": "Edges",
+              "cells": [
+                "28",
+                "28",
+                "0",
+                "0",
+                "≤ 0",
+                "count"
+              ],
+              "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+              "note": ""
+            },
+            {
+              "id": "0-count-4",
+              "status": "PASS",
+              "label": "Vertices",
+              "cells": [
+                "17",
+                "17",
+                "0",
+                "0",
+                "≤ 0",
+                "count"
+              ],
+              "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "summary": "原主比较验收记录（PK_DEBUG_BODY_compare + type / regions） · 1 条 · 1 通过 / 0 失败 / 0 其他",
+          "rows": [
+            {
+              "id": "0-equivalence",
+              "status": "PASS",
+              "label": "Type, regions and strict BODY_compare",
+              "cells": [
+                "null",
+                "null",
+                "null",
+                "null",
+                "-",
+                "-"
+              ],
+              "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+              "note": "Only n_cht_pts is diagnostic."
+            }
+          ]
+        },
+        {
+          "summary": "物性量 · 15 条 · 15 通过 / 0 失败 / 0 其他",
+          "rows": [
+            {
+              "id": "0-mass-0",
+              "status": "PASS",
+              "label": "Volume",
+              "cells": [
+                "1.025097782",
+                "1.025097782",
+                "1.320445975e-10",
+                "6.520406009e-11",
+                "≤ 1e-7",
+                "model³"
+              ],
+              "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+              "note": "abs(GM-PK)/(1+abs(PK)) < threshold; accuracy=.99999999"
+            },
+            {
+              "id": "0-mass-1",
+              "status": "PASS",
+              "label": "Mass",
+              "cells": [
+                "1.025097782",
+                "1.025097782",
+                "1.320445975e-10",
+                "6.520406009e-11",
+                "≤ 1e-7",
+                "model³"
+              ],
+              "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+              "note": "abs(GM-PK)/(1+abs(PK)) < threshold; accuracy=.99999999"
+            },
+            {
+              "id": "0-mass-2",
+              "status": "PASS",
+              "label": "Centroid X",
+              "cells": [
+                "0.5000000001",
+                "0.5",
+                "6.416900344e-11",
+                "4.277933563e-11",
+                "≤ 1e-7",
+                "model"
+              ],
+              "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+              "note": "abs(GM-PK)/(1+abs(PK)) < threshold; accuracy=.99999999"
+            },
+            {
+              "id": "0-mass-3",
+              "status": "PASS",
+              "label": "Centroid Y",
+              "cells": [
+                "0.5007353695",
+                "0.5007353695",
+                "5.12383469e-11",
+                "3.414215986e-11",
+                "≤ 1e-7",
+                "model"
+              ],
+              "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+              "note": "abs(GM-PK)/(1+abs(PK)) < threshold; accuracy=.99999999"
+            },
+            {
+              "id": "0-mass-4",
+              "status": "PASS",
+              "label": "Centroid Z",
+              "cells": [
+                "0.5128624926",
+                "0.5128624926",
+                "4.853684121e-11",
+                "3.208278442e-11",
+                "≤ 1e-7",
+                "model"
+              ],
+              "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+              "note": "abs(GM-PK)/(1+abs(PK)) < threshold; accuracy=.99999999"
+            },
+            {
+              "id": "0-mass-5",
+              "status": "PASS",
+              "label": "Inertia XX",
+              "cells": [
+                "0.1743990145",
+                "0.1743990145",
+                "4.228506434e-11",
+                "3.600570489e-11",
+                "≤ 1e-7",
+                "model⁵"
+              ],
+              "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+              "note": "abs(GM-PK)/(1+abs(PK)) < threshold; accuracy=.99999999"
+            },
+            {
+              "id": "0-mass-6",
+              "status": "PASS",
+              "label": "Inertia XY",
+              "cells": [
+                "5.730885e-11",
+                "3.81791991e-11",
+                "1.91296509e-11",
+                "1.91296509e-11",
+                "≤ 1e-7",
+                "model⁵"
+              ],
+              "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+              "note": "abs(GM-PK)/(1+abs(PK)) < threshold; accuracy=.99999999"
+            },
+            {
+              "id": "0-mass-7",
+              "status": "PASS",
+              "label": "Inertia XZ",
+              "cells": [
+                "-3.521028291e-11",
+                "-1.252097864e-11",
+                "2.268930427e-11",
+                "2.268930427e-11",
+                "≤ 1e-7",
+                "model⁵"
+              ],
+              "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+              "note": "abs(GM-PK)/(1+abs(PK)) < threshold; accuracy=.99999999"
+            },
+            {
+              "id": "0-mass-8",
+              "status": "PASS",
+              "label": "Inertia YX",
+              "cells": [
+                "5.730885e-11",
+                "3.81791991e-11",
+                "1.91296509e-11",
+                "1.91296509e-11",
+                "≤ 1e-7",
+                "model⁵"
+              ],
+              "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+              "note": "abs(GM-PK)/(1+abs(PK)) < threshold; accuracy=.99999999"
+            },
+            {
+              "id": "0-mass-9",
+              "status": "PASS",
+              "label": "Inertia YY",
+              "cells": [
+                "0.1742243165",
+                "0.1742243164",
+                "4.571881762e-11",
+                "3.893533542e-11",
+                "≤ 1e-7",
+                "model⁵"
+              ],
+              "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+              "note": "abs(GM-PK)/(1+abs(PK)) < threshold; accuracy=.99999999"
+            },
+            {
+              "id": "0-mass-10",
+              "status": "PASS",
+              "label": "Inertia YZ",
+              "cells": [
+                "-0.0003540038796",
+                "-0.0003540038998",
+                "2.026532772e-11",
+                "2.025815625e-11",
+                "≤ 1e-7",
+                "model⁵"
+              ],
+              "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+              "note": "abs(GM-PK)/(1+abs(PK)) < threshold; accuracy=.99999999"
+            },
+            {
+              "id": "0-mass-11",
+              "status": "PASS",
+              "label": "Inertia ZX",
+              "cells": [
+                "-3.521028291e-11",
+                "-1.252097864e-11",
+                "2.268930427e-11",
+                "2.268930427e-11",
+                "≤ 1e-7",
+                "model⁵"
+              ],
+              "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+              "note": "abs(GM-PK)/(1+abs(PK)) < threshold; accuracy=.99999999"
+            },
+            {
+              "id": "0-mass-12",
+              "status": "PASS",
+              "label": "Inertia ZY",
+              "cells": [
+                "-0.0003540038796",
+                "-0.0003540038998",
+                "2.026532772e-11",
+                "2.025815625e-11",
+                "≤ 1e-7",
+                "model⁵"
+              ],
+              "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+              "note": "abs(GM-PK)/(1+abs(PK)) < threshold; accuracy=.99999999"
+            },
+            {
+              "id": "0-mass-13",
+              "status": "PASS",
+              "label": "Inertia ZZ",
+              "cells": [
+                "0.1684322425",
+                "0.1684322425",
+                "4.150885191e-11",
+                "3.552525376e-11",
+                "≤ 1e-7",
+                "model⁵"
+              ],
+              "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+              "note": "abs(GM-PK)/(1+abs(PK)) < threshold; accuracy=.99999999"
+            },
+            {
+              "id": "0-mass-14",
+              "status": "PASS",
+              "label": "Area",
+              "cells": [
+                "5.977972243",
+                "5.977972242",
+                "7.811262748e-10",
+                "1.119417286e-10",
+                "≤ 1e-7",
+                "model²"
+              ],
+              "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/capture.json",
+              "note": "abs(GM-PK)/(1+abs(PK)) < threshold; accuracy=.99999999"
+            }
+          ]
+        },
+        {
+          "summary": "原进程 / 场景 exit · 1 条 · 1 通过 / 0 失败 / 0 其他",
+          "rows": [
+            {
+              "id": "oracle-exit",
+              "status": "PASS",
+              "label": "Original oracle exit code and acceptance",
+              "cells": [
+                "null",
+                "null",
+                "null",
+                "null",
+                "≤ 0",
+                "exit code"
+              ],
+              "evidence": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/oracle.log",
+              "note": "Original process exit codes are retained in execution.exitCodes; oracle failure is result data, not exporter success."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": []
+}
