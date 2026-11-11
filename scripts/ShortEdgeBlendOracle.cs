@@ -96,6 +96,7 @@ var benchRepeat=1;var benchOption=args.SingleOrDefault(x=>x.StartsWith("--bench-
 if(benchOption!=null)benchRepeat=int.Parse(benchOption["--bench-repeat=".Length..],System.Globalization.CultureInfo.InvariantCulture);
 Require(benchRepeat>=1&&benchRepeat<=64,"bench repeat must be in 1..64");
 ModelingPerformance.Enabled=args.Contains("--bench-profile",StringComparer.Ordinal);
+if(ModelingPerformance.Enabled)PrintKernelIdentity("start");
 var researchPrecision=NumberOption(args,"--research-precision=",0);
 Require(researchPrecision==0||double.IsFinite(researchPrecision)&&researchPrecision>0&&args.Contains("--native-only")&&args.Contains("--diagnostics")&&!args.Contains("--record-fixtures"),
     "research precision requires native-only diagnostics and cannot update fixtures");
@@ -317,9 +318,15 @@ using(host)unsafe
             }
         }
     }
-    finally{Check(KernelRuntime.SessionStop(),"managed stop");}
+    finally{Check(KernelRuntime.SessionStop(),"managed stop");if(ModelingPerformance.Enabled)PrintKernelIdentity("end");}
     Require(failures==0,$"{failures} short-edge acceptance checks failed");
     Console.WriteLine($"PASS cases={cases} mode={(args.Contains("--native-only")?"native-only":args.Contains("--import-only")?"import-only":"independent-construction")}");
+}
+
+static void PrintKernelIdentity(string phase)
+{
+    var assembly=typeof(KernelRuntime).Assembly;using var file=File.OpenRead(assembly.Location);
+    Console.WriteLine($"KERNEL_IDENTITY phase={phase} mvid={assembly.ManifestModule.ModuleVersionId} bytes={file.Length} sha256={Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(file))}");
 }
 
 static unsafe void ScalarBoundaryEvidence(int surface,int other)
