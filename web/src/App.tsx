@@ -283,6 +283,14 @@ export const App: React.FC = () => {
         onOpenSidebar={() => setSidebarOpen(true)}
       />
 
+      <div className="bg-slate-800 border-b border-slate-700 px-4 py-1 text-xs text-slate-200 flex flex-wrap gap-x-3 gap-y-1" data-testid="display-source-bar">
+        {new URLSearchParams(window.location.search).get('display') === 'real-uv' ? <>
+          <strong>真实 U/V · 独立显示源</strong>
+          <span>r2-curved-receipt-eecab6d · sample-0 · operation-1；无新增几何验收或性能结果</span>
+          <a href="?" className="text-sky-300 underline">返回 live17 基线</a>
+        </> : <a href="?display=real-uv" className="text-sky-300 underline">打开真实 U/V 显示样例（独立来源，含操作前后）</a>}
+      </div>
+
       {/* Fixture Alert Notice Banner (if active in dev) */}
       {import.meta.env.DEV && useFixture && (
         <div className="bg-amber-500/10 border-b border-amber-300/60 px-4 py-1 text-xs text-amber-900 flex items-center justify-between select-none">

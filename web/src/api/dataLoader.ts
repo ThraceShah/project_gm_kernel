@@ -56,7 +56,8 @@ export async function fetchIndexData(
 
   try {
     const cacheBuster = `_t=${Date.now()}`;
-    const url = `data/index.json?${cacheBuster}`;
+    const displayExample = new URLSearchParams(window.location.search).get('display') === 'real-uv';
+    const url = `data/${displayExample ? 'display/real-uv/' : ''}index.json?${cacheBuster}`;
     const res = await fetch(url, { signal });
     if (!res.ok) {
       return {
@@ -187,6 +188,10 @@ async function sha256(bytes: ArrayBuffer): Promise<string> {
 // checked against exact bytes. They never alter a run's checks or qualification.
 async function attachSurfaceParameters(mesh: MeshData, bytes: ArrayBuffer, manifestDir: string, snapshot: string, signal?: AbortSignal) {
   mesh.surfaceParameters = { status: 'unavailable', reason: '此快照未提供可核验的 XT 等参线派生数据' };
+  if (manifestDir === 'display/real-uv') {
+    await attachVerifiedDisplay(mesh, bytes, manifestDir, snapshot, signal);
+    return;
+  }
   try {
     const response = await fetch('data/derivatives/isoparametrics/index.json', { signal });
     if (!response.ok) return;
@@ -221,6 +226,61 @@ async function attachSurfaceParameters(mesh: MeshData, bytes: ArrayBuffer, manif
   } catch (err) {
     if ((err as Error)?.name === 'AbortError') throw err;
     mesh.surfaceParameters = { status: 'unavailable', reason: '等参线来源校验失败；未加载派生线' };
+  }
+}
+
+async function attachVerifiedDisplay(mesh: MeshData, bytes: ArrayBuffer, directory: string, snapshot: string, signal?: AbortSignal) {
+  const response = await fetch(`data/${directory}/display-manifest.json`, { signal });
+  if (!response.ok) throw new Error('真实 U/V 显示来源清单加载失败');
+  const manifest = await response.json();
+  const matches = manifest.items?.filter((entry: { meshPath: string }) => entry.meshPath === snapshot);
+  if (manifest.schemaVersion !== 1 || manifest.type !== 'verified-render-only-display-manifest' || matches?.length !== 1) throw new Error('显示快照来源不唯一');
+  const item = matches[0];
+  const hashPattern = /^[a-f0-9]{64}$/;
+  for (const key of ['sha256', 'sourceMeshSha256', 'inputXtSha256', 'snapshotReceiptSha256', 'executionSha256', 'captureCodeSha256', 'receiptCodeSha256']) {
+    if (!hashPattern.test(item[key])) throw new Error('显示快照来源 SHA 无效');
+  }
+  if (item.sourceMeshSha256 !== await sha256(bytes) || item.kernel !== mesh.source.kernel || item.producerCommit !== mesh.source.commit || !['before', 'after'].includes(item.stage)) throw new Error('显示网格 SHA / 来源校验失败，拒绝绘制');
+  const ids = new Set(mesh.faces.map((face) => face.id));
+  const identifiers = new Set(mesh.faces.map((face) => face.identifier));
+  if (ids.size !== mesh.faces.length || identifiers.size !== mesh.faces.length || mesh.faces.some((face) => !Number.isInteger(face.identifier) || face.identifier! <= 0)) throw new Error('显示网格 face identifier 不唯一');
+  try {
+    if (typeof item.path !== 'string' || !/^[a-z-]+\.iso\.json$/.test(item.path)) throw new Error('Invalid display derivative path');
+    const isoResponse = await fetch(`data/${directory}/${item.path}`, { signal });
+    if (!isoResponse.ok) throw new Error('Derivative unavailable');
+    const isoBytes = await isoResponse.arrayBuffer();
+    if (await sha256(isoBytes) !== item.sha256) throw new Error('Derivative SHA mismatch');
+    const iso = JSON.parse(new TextDecoder().decode(isoBytes));
+    if (iso.schemaVersion !== 3 || iso.type !== 'render-only-isoparametrics-derivative') throw new Error('Invalid derivative schema');
+    for (const key of ['sourceRun', 'sourceSnapshot', 'kernel', 'caseId', 'sampleId', 'stepId', 'stage', 'sourceMeshSha256', 'inputXtSha256', 'snapshotReceiptSha256', 'executionSha256', 'producerCommit', 'captureCodeSha256', 'receiptCodeSha256']) {
+      if (iso[key] !== item[key]) throw new Error(`Derivative identity mismatch: ${key}`);
+    }
+    if (iso.sourceHashes?.['scripts/WebProgressCapture.cs'] !== item.captureCodeSha256 || iso.sourceHashes?.['scripts/WebProgressDisplayReceipts.cs'] !== item.receiptCodeSha256 || iso.dirtyAtStart !== false || iso.parameterHash !== null) throw new Error('Unverified producer sources');
+    if (iso.status !== 'available') {
+      mesh.surfaceParameters = { status: 'unsupported', reason: '此快照没有受支持的精确矩形非平面 trim' };
+      return;
+    }
+    if (!Number.isFinite(iso.chordTolerance) || iso.chordTolerance <= 0 || !Array.isArray(iso.faces) || !iso.faces.length) throw new Error('Invalid display error/face evidence');
+    const seen = new Set<string>();
+    const pending = iso.faces.map((entry: any) => {
+      const face = mesh.faces.find((f) => f.id === entry.faceId && f.identifier === entry.identifier && f.entityTag === entry.meshEntityTag);
+      if (!face || seen.has(face.id) || entry.trimMethod !== 'PK_FACE_is_uvbox confirmed exact face rectangle') throw new Error('Derivative face/trim binding mismatch');
+      seen.add(face.id);
+      const valid = (lines: number[][]) => Array.isArray(lines) && lines.length > 0 && lines.every((line) => Array.isArray(line) && line.length >= 6 && line.length % 3 === 0 && line.every(Number.isFinite));
+      if (!valid(entry.uLines) || !valid(entry.vLines) || entry.curves?.length !== entry.uLines.length + entry.vLines.length) throw new Error('Invalid U/V evidence');
+      entry.curves.forEach((curve: any, index: number) => {
+        const direction = index < entry.uLines.length ? 'u' : 'v';
+        const line = direction === 'u' ? entry.uLines[index] : entry.vLines[index - entry.uLines.length];
+        if (curve.direction !== direction || !Number.isFinite(curve.constantParameter) || !Number.isFinite(curve.sampledChordError) || curve.sampledChordError > iso.chordTolerance || curve.uvSamples?.length !== line.length / 3 * 2 || !curve.uvSamples.every(Number.isFinite) || curve.uvSamples.some((v: number, i: number) => i % 2 === (direction === 'u' ? 0 : 1) && v !== curve.constantParameter)) throw new Error('Invalid constant-parameter evidence');
+      });
+      return { face, entry };
+    });
+    for (const { face, entry } of pending) face.isoparametrics = { uLines: entry.uLines, vLines: entry.vLines, source: entry.source, chordTolerance: iso.chordTolerance };
+    mesh.surfaceParameters = { status: 'available', reason: `${pending.length} 个非平面；仅精确矩形 trim；${iso.unsupportedFaces.length} 面未覆盖。采样弦差 ≤ ${iso.chordTolerance}，无解析全局界。` };
+    mesh.displayProvenance = { sourceRun: item.sourceRun, snapshot: item.sourceSnapshot, stage: item.stage, meshSha256: item.sourceMeshSha256, xtSha256: item.inputXtSha256, receiptSha256: item.snapshotReceiptSha256, evidencePath: `data/${directory}/${item.path}` };
+  } catch (err) {
+    if ((err as Error)?.name === 'AbortError') throw err;
+    mesh.surfaceParameters = { status: 'unavailable', reason: '等参线来源 / SHA / 面绑定校验失败；未加载派生线' };
   }
 }
 

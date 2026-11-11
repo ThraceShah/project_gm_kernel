@@ -202,6 +202,7 @@ export interface MeshData {
   edges: EdgeData[];
   isoparametrics?: MeshIsoparametricLine[];
   surfaceParameters?: { status: 'available' | 'unavailable' | 'unsupported'; reason: string };
+  displayProvenance?: { sourceRun: string; snapshot: string; stage: string; meshSha256: string; xtSha256: string; receiptSha256: string; evidencePath: string };
 }
 
 export type StandardView = 'iso' | 'front' | 'top' | 'right';

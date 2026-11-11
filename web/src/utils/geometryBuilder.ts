@@ -157,6 +157,7 @@ export function buildThreeGeometry(
   // 3. Build True Isoparametric Lines (if available and enabled)
   if (showIsoparametrics) {
     const isoSegments: number[] = [];
+    const isoColors: number[] = [];
     let isoLineCount = 0;
     let uLineCount = 0;
     let vLineCount = 0;
@@ -175,6 +176,8 @@ export function buildThreeGeometry(
           polyline[i + 4],
           polyline[i + 5]
         );
+        const color = new THREE.Color(direction === 'v' ? 0xc084fc : 0x38bdf8);
+        isoColors.push(color.r, color.g, color.b, color.r, color.g, color.b);
       }
     };
 
@@ -209,10 +212,11 @@ export function buildThreeGeometry(
     if (isoSegments.length > 0) {
       const isoGeom = new THREE.BufferGeometry();
       isoGeom.setAttribute('position', new THREE.Float32BufferAttribute(isoSegments, 3));
+      isoGeom.setAttribute('color', new THREE.Float32BufferAttribute(isoColors, 3));
 
       // Distinct, elegant CAD cyan-teal line for U/V surface parameters
       const isoMat = new THREE.LineBasicMaterial({
-        color: 0x38bdf8, // Sky-400 CAD parameter color
+        vertexColors: true,
         depthTest: true,
         transparent: true,
         opacity: 0.85,
