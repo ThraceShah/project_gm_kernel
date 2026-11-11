@@ -1,0 +1,587 @@
+{
+  "implementation": "1eb9308",
+  "originalCandidate": "f3fb9432ae97609f34391cffef819f62a9dd161d",
+  "originalReview": "67b5a4edbc23582c23d75f4e8ecce9b14265d42a",
+  "originalReproSha256": "4278d8ef82e0fd565c6554c1cb6eb715140c0f14867074ff45d471555bd5ebb4",
+  "assetHashes": {
+    "web/data/display/real-uv/display/snapshot-0.receipt.json": "d6e82fe0e9a08037ab8a733f41eb1a1f183b4a6236c92066dc6774c3dbfc223f",
+    "web/data/display/real-uv/display/snapshot-1.receipt.json": "8a810b64401cf7a93a354f3d077be9058dfa80284d9b3cd39acd27b77d17ecf5",
+    "web/data/display/real-uv/display/snapshot-2.receipt.json": "9038b391a4f133a70b17bafde43fd01bb37026a8b26ecff1de3ed12cb00df962",
+    "web/data/display/real-uv/display/snapshot-3.receipt.json": "e2dba548ee557cc39725b2908d6b1833e8f834a0906912f936af13c711f5697c",
+    "web/data/display/real-uv/display-manifest.json": "0875f9b8208db2d248e3a4fc912b0f5a077d75deaba8b3d1553b840dfb732714",
+    "web/data/display/real-uv/gm-after.iso.json": "d12092402e590ce680233bcddb1bb1fa528d99b44df5a3eeae59becb8b6a82a5",
+    "web/data/display/real-uv/gm-before.iso.json": "6c36c4d940cf7d6178afe5f550a51f26561b27e4a2c6bb2ec7d537eaa685ec13",
+    "web/data/display/real-uv/index.json": "97ba0cf53cf118b60bbdb75a0b1e93253538c20844310fa2f9561d48064810e8",
+    "web/data/display/real-uv/manifest.json": "4727934d55dfc32a58f78f110299c37198a98ddb441e1365a007917d8330f913",
+    "web/data/display/real-uv/meshes/gm-after.mesh.json": "ee8ef5dbb75f97a7942c5647e315b942743550c71994ec62f0992fbcc3f495f1",
+    "web/data/display/real-uv/meshes/gm-before.mesh.json": "f19b18867e17ae47fac8b2b2a0489b27f3049da6c3f03d9e87fcd5bbd0d06b22",
+    "web/data/display/real-uv/meshes/pk-after.mesh.json": "1024e741e3f4c4daadbef671e43c3aa78a05966861e80a5d9cea41716f36baed",
+    "web/data/display/real-uv/meshes/pk-before.mesh.json": "555d53765eb2ef485d38c3e8da70b08f66b6e808da1ece1fc9a11b9b21d7b3b3",
+    "web/data/display/real-uv/pk-after.iso.json": "9fa3bb4313eb0cf98e9c8aadf54610697197de6a0c7d3c1d4b1f3bd231dbe6a3",
+    "web/data/display/real-uv/pk-before.iso.json": "94cbcddfac053c4971a4dffa77ece2daeccecf0ddc95734620d3f3c3eee5a8fb"
+  },
+  "originalRepro": [
+    {
+      "mode": "unaltered",
+      "passed": true,
+      "panes": [
+        {
+          "bodyId": "gm:27",
+          "triangles": "96",
+          "u": "5",
+          "v": "5"
+        },
+        {
+          "bodyId": "pk:51",
+          "triangles": "96",
+          "u": "5",
+          "v": "5"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "wrong-case-step",
+      "passed": false,
+      "panes": [
+        {
+          "bodyId": "gm:27",
+          "triangles": "96",
+          "u": "5",
+          "v": "5"
+        },
+        {
+          "bodyId": "pk:51",
+          "triangles": "96",
+          "u": "5",
+          "v": "5"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "before-as-after",
+      "passed": false,
+      "panes": [
+        {
+          "bodyId": "gm:27",
+          "triangles": "96",
+          "u": "5",
+          "v": "5"
+        },
+        {
+          "bodyId": "pk:51",
+          "triangles": "130",
+          "u": "5",
+          "v": "5"
+        }
+      ],
+      "errors": []
+    }
+  ],
+  "fixedOriginalRepro": [
+    {
+      "mode": "unaltered",
+      "passed": true,
+      "panes": [
+        {
+          "bodyId": "gm:27",
+          "triangles": "96",
+          "u": "5",
+          "v": "5"
+        },
+        {
+          "bodyId": "pk:51",
+          "triangles": "96",
+          "u": "5",
+          "v": "5"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "wrong-case-step",
+      "passed": true,
+      "panes": [
+        {
+          "bodyId": "",
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        },
+        {
+          "bodyId": "",
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "before-as-after",
+      "passed": true,
+      "panes": [
+        {
+          "bodyId": "",
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        },
+        {
+          "bodyId": "pk:51",
+          "triangles": "130",
+          "u": "5",
+          "v": "5"
+        }
+      ],
+      "errors": []
+    }
+  ],
+  "selectionControls": [
+    {
+      "mode": "normal-four",
+      "warm": false,
+      "passed": true,
+      "targetStage": "before",
+      "panes": [
+        {
+          "bodyId": "gm:27",
+          "triangles": "96",
+          "u": "5",
+          "v": "5"
+        },
+        {
+          "bodyId": "pk:51",
+          "triangles": "96",
+          "u": "5",
+          "v": "5"
+        }
+      ],
+      "warmRequestCount": 4,
+      "finalRequestCount": 4,
+      "mutations": [],
+      "errors": []
+    },
+    {
+      "mode": "before-as-after",
+      "warm": false,
+      "passed": true,
+      "targetStage": "after",
+      "panes": [
+        {
+          "bodyId": "",
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        },
+        {
+          "bodyId": "pk:51",
+          "triangles": "130",
+          "u": "5",
+          "v": "5"
+        }
+      ],
+      "warmRequestCount": 2,
+      "finalRequestCount": 3,
+      "mutations": [
+        {
+          "name": "manifest.json",
+          "originalSha256": "4727934d55dfc32a58f78f110299c37198a98ddb441e1365a007917d8330f913",
+          "routedSha256": "1d5a75b1104a12539e633bd50e4e9af60b2fa9caf34bc9775acc2e3eb8f55784"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "before-as-after",
+      "warm": true,
+      "passed": true,
+      "targetStage": "after",
+      "panes": [
+        {
+          "bodyId": "",
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        },
+        {
+          "bodyId": "pk:51",
+          "triangles": "130",
+          "u": "5",
+          "v": "5"
+        }
+      ],
+      "warmRequestCount": 4,
+      "finalRequestCount": 4,
+      "mutations": [
+        {
+          "name": "manifest.json",
+          "originalSha256": "4727934d55dfc32a58f78f110299c37198a98ddb441e1365a007917d8330f913",
+          "routedSha256": "1d5a75b1104a12539e633bd50e4e9af60b2fa9caf34bc9775acc2e3eb8f55784"
+        },
+        {
+          "name": "manifest.json",
+          "originalSha256": "4727934d55dfc32a58f78f110299c37198a98ddb441e1365a007917d8330f913",
+          "routedSha256": "1d5a75b1104a12539e633bd50e4e9af60b2fa9caf34bc9775acc2e3eb8f55784"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "after-as-before",
+      "warm": false,
+      "passed": true,
+      "targetStage": "before",
+      "panes": [
+        {
+          "bodyId": "",
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        },
+        {
+          "bodyId": "pk:51",
+          "triangles": "96",
+          "u": "5",
+          "v": "5"
+        }
+      ],
+      "warmRequestCount": 1,
+      "finalRequestCount": 1,
+      "mutations": [
+        {
+          "name": "manifest.json",
+          "originalSha256": "4727934d55dfc32a58f78f110299c37198a98ddb441e1365a007917d8330f913",
+          "routedSha256": "6d8e7c34d3101687632bab0c2c5c930c7a16d125f6adb67e573a3999910aa7c6"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "after-as-before",
+      "warm": true,
+      "passed": true,
+      "targetStage": "before",
+      "panes": [
+        {
+          "bodyId": "",
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        },
+        {
+          "bodyId": "pk:51",
+          "triangles": "96",
+          "u": "5",
+          "v": "5"
+        }
+      ],
+      "warmRequestCount": 4,
+      "finalRequestCount": 4,
+      "mutations": [
+        {
+          "name": "manifest.json",
+          "originalSha256": "4727934d55dfc32a58f78f110299c37198a98ddb441e1365a007917d8330f913",
+          "routedSha256": "6d8e7c34d3101687632bab0c2c5c930c7a16d125f6adb67e573a3999910aa7c6"
+        },
+        {
+          "name": "manifest.json",
+          "originalSha256": "4727934d55dfc32a58f78f110299c37198a98ddb441e1365a007917d8330f913",
+          "routedSha256": "6d8e7c34d3101687632bab0c2c5c930c7a16d125f6adb67e573a3999910aa7c6"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "wrong-case",
+      "warm": false,
+      "passed": true,
+      "targetStage": "before",
+      "panes": [
+        {
+          "bodyId": "",
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        },
+        {
+          "bodyId": "",
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        }
+      ],
+      "warmRequestCount": 0,
+      "finalRequestCount": 0,
+      "mutations": [
+        {
+          "name": "manifest.json",
+          "originalSha256": "4727934d55dfc32a58f78f110299c37198a98ddb441e1365a007917d8330f913",
+          "routedSha256": "3ea75eca990fa0c68dff309cd8a40b20ef5fe134b5142f9e538e5107240f1d55"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "wrong-case",
+      "warm": true,
+      "passed": true,
+      "targetStage": "before",
+      "panes": [
+        {
+          "bodyId": "",
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        },
+        {
+          "bodyId": "",
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        }
+      ],
+      "warmRequestCount": 4,
+      "finalRequestCount": 4,
+      "mutations": [
+        {
+          "name": "manifest.json",
+          "originalSha256": "4727934d55dfc32a58f78f110299c37198a98ddb441e1365a007917d8330f913",
+          "routedSha256": "3ea75eca990fa0c68dff309cd8a40b20ef5fe134b5142f9e538e5107240f1d55"
+        },
+        {
+          "name": "manifest.json",
+          "originalSha256": "4727934d55dfc32a58f78f110299c37198a98ddb441e1365a007917d8330f913",
+          "routedSha256": "3ea75eca990fa0c68dff309cd8a40b20ef5fe134b5142f9e538e5107240f1d55"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "wrong-step",
+      "warm": false,
+      "passed": true,
+      "targetStage": "before",
+      "panes": [
+        {
+          "bodyId": "",
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        },
+        {
+          "bodyId": "",
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        }
+      ],
+      "warmRequestCount": 0,
+      "finalRequestCount": 0,
+      "mutations": [
+        {
+          "name": "manifest.json",
+          "originalSha256": "4727934d55dfc32a58f78f110299c37198a98ddb441e1365a007917d8330f913",
+          "routedSha256": "e818b624343f3b2808a7fca2cbfb8417b1a72bad582c9549f6f33e35204ee08a"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "wrong-step",
+      "warm": true,
+      "passed": true,
+      "targetStage": "before",
+      "panes": [
+        {
+          "bodyId": "",
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        },
+        {
+          "bodyId": "",
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        }
+      ],
+      "warmRequestCount": 4,
+      "finalRequestCount": 4,
+      "mutations": [
+        {
+          "name": "manifest.json",
+          "originalSha256": "4727934d55dfc32a58f78f110299c37198a98ddb441e1365a007917d8330f913",
+          "routedSha256": "e818b624343f3b2808a7fca2cbfb8417b1a72bad582c9549f6f33e35204ee08a"
+        },
+        {
+          "name": "manifest.json",
+          "originalSha256": "4727934d55dfc32a58f78f110299c37198a98ddb441e1365a007917d8330f913",
+          "routedSha256": "e818b624343f3b2808a7fca2cbfb8417b1a72bad582c9549f6f33e35204ee08a"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "wrong-kernel",
+      "warm": false,
+      "passed": true,
+      "targetStage": "before",
+      "panes": [
+        {
+          "bodyId": "",
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        },
+        {
+          "bodyId": "pk:51",
+          "triangles": "96",
+          "u": "5",
+          "v": "5"
+        }
+      ],
+      "warmRequestCount": 1,
+      "finalRequestCount": 1,
+      "mutations": [
+        {
+          "name": "manifest.json",
+          "originalSha256": "4727934d55dfc32a58f78f110299c37198a98ddb441e1365a007917d8330f913",
+          "routedSha256": "704e5b0035b6770ce780a143e98b8de4ba8904e25d287320be0619f202913f98"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "wrong-kernel",
+      "warm": true,
+      "passed": true,
+      "targetStage": "before",
+      "panes": [
+        {
+          "bodyId": "",
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        },
+        {
+          "bodyId": "pk:51",
+          "triangles": "96",
+          "u": "5",
+          "v": "5"
+        }
+      ],
+      "warmRequestCount": 4,
+      "finalRequestCount": 4,
+      "mutations": [
+        {
+          "name": "manifest.json",
+          "originalSha256": "4727934d55dfc32a58f78f110299c37198a98ddb441e1365a007917d8330f913",
+          "routedSha256": "704e5b0035b6770ce780a143e98b8de4ba8904e25d287320be0619f202913f98"
+        },
+        {
+          "name": "manifest.json",
+          "originalSha256": "4727934d55dfc32a58f78f110299c37198a98ddb441e1365a007917d8330f913",
+          "routedSha256": "704e5b0035b6770ce780a143e98b8de4ba8904e25d287320be0619f202913f98"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "wrong-package",
+      "warm": false,
+      "passed": true,
+      "targetStage": "before",
+      "panes": [
+        {
+          "bodyId": "",
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        },
+        {
+          "bodyId": "",
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        }
+      ],
+      "warmRequestCount": 0,
+      "finalRequestCount": 0,
+      "mutations": [
+        {
+          "name": "index.json",
+          "originalSha256": "97ba0cf53cf118b60bbdb75a0b1e93253538c20844310fa2f9561d48064810e8",
+          "routedSha256": "f29da16a46a86409859cdac92230e69fb045df4f2a407884098c4d31a821264c"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "wrong-package",
+      "warm": true,
+      "passed": true,
+      "targetStage": "before",
+      "panes": [
+        {
+          "bodyId": "",
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        },
+        {
+          "bodyId": "",
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        }
+      ],
+      "warmRequestCount": 4,
+      "finalRequestCount": 4,
+      "mutations": [
+        {
+          "name": "index.json",
+          "originalSha256": "97ba0cf53cf118b60bbdb75a0b1e93253538c20844310fa2f9561d48064810e8",
+          "routedSha256": "f29da16a46a86409859cdac92230e69fb045df4f2a407884098c4d31a821264c"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "wrong-source-mapping",
+      "warm": false,
+      "passed": true,
+      "targetStage": "before",
+      "panes": [
+        {
+          "bodyId": "",
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        },
+        {
+          "bodyId": "",
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        }
+      ],
+      "warmRequestCount": 2,
+      "finalRequestCount": 2,
+      "mutations": [
+        {
+          "name": "display-manifest.json",
+          "originalSha256": "0875f9b8208db2d248e3a4fc912b0f5a077d75deaba8b3d1553b840dfb732714",
+          "routedSha256": "ca1b7a32a573ef84b122463ed24987af06ceb6a139ed2934f9b035b60b120bcf"
+        },
+        {
+          "name": "display-manifest.json",
+          "originalSha256": "0875f9b8208db2d248e3a4fc912b0f5a077d75deaba8b3d1553b840dfb732714",
+          "routedSha256": "ca1b7a32a573ef84b122463ed24987af06ceb6a139ed2934f9b035b60b120bcf"
+        }
+      ],
+      "errors": []
+    }
+  ]
+}
