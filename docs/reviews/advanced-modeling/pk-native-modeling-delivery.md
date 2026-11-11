@@ -49,6 +49,13 @@ run uses a fresh name; historical measurements are not overwritten.
 | `consumer-inject.log`, `.exit` | compiled integrated runner, allocation injection | exit 0; projected replacement reached, GM 901/failed/zero bodies, all three inputs byte-identical after rollback; same-input PK subtract succeeds/full0 |
 | `transverse.log`, `.exit` | integrated computation | exit 134; self Fix and both actual subtracts publish, strict/full/finite/native witness/material pass; original raw inertia gate fails on the two self cuts, independently |
 | `probes-self.log`, `.exit` | all original 510 coordinates | exit 134; 15 differing rows, zero API errors, zero changed original native classifications |
+| `probes-import.log`, `.exit` | all original 510 coordinates on imported product | exit 134; 16 differing rows, zero changed original native classifications |
+| `full.log`, `.exit`, `.head`, `.diff` | `2922ff5` plus the then-recorded runner diff, same computation source as `a7cf09f`/`962180d` | exit 0, 1885/1885, 19m31s; own-PGID testhost cleanup only |
+| `regular-bore.log`, `.exit` | integrated computation | exit 0; modified NURBS/plane support retains bore, independent fillet/lifecycle/subsequent cut, strict/full/mass |
+| `support-chain.log`, `.exit` | integrated computation | exit 0; separate equivalent support records, independent fillet/lifecycle/subsequent cut, strict/full/mass |
+| `input-rigid.log`, `.exit` | input-first rigid transform, phase .31, radius .6 | exit 0; self construction, finite face domains, strict/full and raw mass `6.067012969047577e-9` |
+| `input-mirror.log`, `.exit` | input-first mirror and scale 1.7, reversed selection | exit 0; self construction, finite face domains, strict/full and raw mass `1.9710593449487946e-8` |
+| `comparator-controls.log`, `.exit` | current shared strict comparator | exit 0; 6 positives and 5 wrong-size/trim/interior/pole negatives |
 
 The clean baseline Boolean success is a new observation, distinct from the
 reviewed failure on the old R3-based branch. Its actual target hash is
@@ -100,6 +107,16 @@ models equivalent. Official Mass Properties section 31.4.1 recommends retaining
 error bounds for such comparisons. Historical rejection controls and their
 limitations remain in the original acceptance record; no alternative gate is
 adopted here.
+
+This is a comparison between the original bytes and **different recharted
+bytes**, not repeated mass measurement of one byte-identical model. The
+supports, original nodes, topology and precision/error fields are retained;
+new native samples and paired UVs change the CHART's projection gauges and can
+change its reconstructed native parameter range. The finite-pair diagnostic
+integrates each receive's actual finite limits and CHART cells separately.
+Numerical convergence and strict/full checks do not alone establish exact
+invariance of its physical properties or prove a PK implementation error.
+The actual first cause of the transverse raw discrepancy is not settled here.
 
 The earlier `native-control.log` exits 134: the opt-in `--finite-controls`
 assumed that *both* refinements of this unreflected input reproduce a raw

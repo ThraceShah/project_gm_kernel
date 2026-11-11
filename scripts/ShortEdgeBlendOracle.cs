@@ -103,6 +103,15 @@ if(outputName!=null)
     Require(name.Length>0&&name.All(c=>char.IsAsciiLetterOrDigit(c)||c is '-' or '_'),"output name must be one local directory name");
     output=Path.Combine(output,name);Require(!Directory.Exists(output),"existing execution artifacts are immutable");
 }
+var shardOption=args.FirstOrDefault(x=>x.StartsWith("--case-shard=",StringComparison.Ordinal));
+var shardIndex=0;var shardCount=1;
+if(shardOption!=null)
+{
+    var parts=shardOption["--case-shard=".Length..].Split('/');
+    Require(parts.Length==2&&int.TryParse(parts[0],out shardIndex)&&int.TryParse(parts[1],out shardCount)
+        &&shardCount>0&&shardCount<=48*(args.Contains("--both-updates")?2:1)&&shardIndex>=0&&shardIndex<shardCount
+        &&args.Contains("--matrix")&&outputName!=null,"case shard requires index/count, matrix and a new output name");
+}
 var floor=NumberOption(args,"--seed-floor=",0);
 var phase=NumberOption(args,"--support-phase=",0);
 var splitRemote=args.Contains("--split-remote-edge");
@@ -170,12 +179,14 @@ using(host)unsafe
     try
     {
         var matrix=args.Contains("--matrix");
+        var matrixIndex=0;
         foreach(var angle in matrix?new[]{.25,.5,1,2}:new[]{NumberOption(args,"--angle=",1)})
         foreach(var radius in matrix?new[]{.25,.5,.6}:new[]{NumberOption(args,"--radius=",.5)})
         foreach(var tolerance in matrix?new[]{1e-7,1e-5}:new[]{NumberOption(args,"--tolerance=",1e-7)})
         foreach(var reverse in matrix?new[]{false,true}:new[]{args.Contains("--reverse-selection")})
         foreach(var procedural in args.Contains("--both-updates")?new[]{false,true}:new[]{args.Contains("--web-procedural")})
         {
+            if(matrixIndex++%shardCount!=shardIndex)continue;
             var name=$"a{angle:R}-r{radius:R}-t{tolerance:R}-reverse{reverse}-"+(procedural?"v261":"default");
             if(floor!=0)name+=$"-floor{floor:R}";
             if(splitRemote)name+="-split-remote";
