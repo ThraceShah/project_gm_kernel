@@ -1,4 +1,5 @@
 using static parasolid;
+using System.Text.Json.Nodes;
 
 internal enum MassAgreement : byte { Verified, Different, Unresolved }
 
@@ -6,6 +7,7 @@ internal enum MassAgreement : byte { Verified, Different, Unresolved }
 internal static unsafe class ParasolidMassProperties
 {
     internal static int UnresolvedCount { get; private set; }
+    internal static Action<JsonObject>? Observer;
     private static string? evidencePath;
 
     internal static void BeginEvidence(string output)
@@ -18,10 +20,34 @@ internal static unsafe class ParasolidMassProperties
 
     internal static MassAgreement Compare(PK_BODY_t reference,PK_BODY_t actual,string label,double accuracy=.99999999999)
     {
+        var observation=Observer==null?null:new JsonObject{["label"]=label,["referenceBody"]=reference,["actualBody"]=actual,["accuracy"]=accuracy,["threshold"]=1e-7,["properties"]=new JsonArray()};
+        try
+        {
+            var result=CompareCore(reference,actual,label,accuracy,observation);
+            if(observation!=null)observation["agreementStatus"]=result.ToString();
+            return result;
+        }
+        catch(Exception error)
+        {
+            if(observation!=null){observation["agreementStatus"]="Unresolved";observation["error"]=error.Message;}
+            throw;
+        }
+        finally
+        {
+            if(observation!=null)try{Observer?.Invoke(observation);}catch(Exception error){Console.Error.WriteLine("MASS_OBSERVATION_ERROR "+error);}
+        }
+    }
+
+    private static MassAgreement CompareCore(PK_BODY_t reference,PK_BODY_t actual,string label,double accuracy,JsonObject? observation)
+    {
         var options=new PK_TOPOL_eval_mass_props_o_t{bound=PK_mass_bound_modulus_c};
         double* a=stackalloc double[20];double* b=stackalloc double[20];
-        ParasolidScriptHost.Check(PK_TOPOL_eval_mass_props(1,&reference,accuracy,&options,a,a+2,a+4,a+8,a+18),label+" reference mass bounds");
-        ParasolidScriptHost.Check(PK_TOPOL_eval_mass_props(1,&actual,accuracy,&options,b,b+2,b+4,b+8,b+18),label+" actual mass bounds");
+        var referenceError=PK_TOPOL_eval_mass_props(1,&reference,accuracy,&options,a,a+2,a+4,a+8,a+18);
+        if(observation!=null)observation["referenceError"]=referenceError;
+        ParasolidScriptHost.Check(referenceError,label+" reference mass bounds");
+        var actualError=PK_TOPOL_eval_mass_props(1,&actual,accuracy,&options,b,b+2,b+4,b+8,b+18);
+        if(observation!=null)observation["actualError"]=actualError;
+        ParasolidScriptHost.Check(actualError,label+" actual mass bounds");
         ReadOnlySpan<int> values=[0,2,4,5,6,8,9,10,11,12,13,14,15,16,18];
         ReadOnlySpan<int> errors=[1,3,7,7,7,17,17,17,17,17,17,17,17,17,19];
         ReadOnlySpan<string> names=["volume","mass","cog.x","cog.y","cog.z","inertia.xx","inertia.xy","inertia.xz","inertia.yx","inertia.yy","inertia.yz","inertia.zx","inertia.zy","inertia.zz","area"];
@@ -30,6 +56,8 @@ internal static unsafe class ParasolidMassProperties
         {
             var v=values[i];var e=errors[i];
             var result=Classify(a[v],a[e],b[v],b[e],out var lower,out var upper);
+            observation?["properties"]!.AsArray().Add((JsonNode)new JsonObject{["property"]=names[i],["referenceEstimate"]=a[v],["referenceModulus"]=a[e],
+                ["actualEstimate"]=b[v],["actualModulus"]=b[e],["normalizedLower"]=lower,["normalizedUpper"]=upper,["agreementStatus"]=result.ToString()});
             if(result==MassAgreement.Different)aggregate=result;
             else if(result==MassAgreement.Unresolved&&aggregate==MassAgreement.Verified)aggregate=result;
             Console.WriteLine($"MASS_BOUND {label} property={names[i]} accuracy={accuracy:R} reference={a[v]:R} reference_modulus={a[e]:R} actual={b[v]:R} actual_modulus={b[e]:R} normalized_lower={lower:R} normalized_upper={upper:R} status={result}");

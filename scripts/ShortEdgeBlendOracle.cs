@@ -268,6 +268,7 @@ using(host)unsafe
                     }
                     var reexport=Transmit(true,imported);File.WriteAllBytes(Path.Combine(output,name+"-native-fresh.x_t"),reexport);
                     var reloaded=Receive(false,reexport);CheckBody(reloaded,"native via managed");
+                    WebProgressCapture.BindQuality("native via managed",imported,reference,reloaded,reexport,result);
                     ParasolidBodyCompare.AssertEquivalent(reference,reloaded,"native via managed");
                     Mass(reference,reloaded,"native via managed");
                     if(args.Contains("--geometry"))Geometry(imported,reference);
@@ -282,6 +283,7 @@ using(host)unsafe
                     Check(Fillet(true,own,angle,radius*inputScale,tolerance*inputScale,reverse,procedural,mappedInput?&inputTransform:null,inputScale,splitSelected,splitEllipse,splitFraction,(int)rotateMarks),"managed fix");
                     var ownResult=Transmit(true,own);File.WriteAllBytes(Path.Combine(output,name+"-self.x_t"),ownResult);
                     var received=Receive(false,ownResult);CheckBody(received,"managed fillet");
+                    WebProgressCapture.BindQuality("independent fillet",own,reference,received,ownResult,result);
                     if(args.Contains("--diagnostics")){ProductEdges(reference,"reference");ProductEdges(received,"self-constructed-product");}
                     ParasolidBodyCompare.AssertEquivalent(reference,received,"independent fillet");
                     CompareFiniteIntersections(reference,received,"independent fillet",inputScale);
@@ -295,7 +297,7 @@ using(host)unsafe
                     }
                     if(materialOwnership)CompareShortEdgeMaterial(reference,own,received,"self-constructed-product",inputScale);
                     if(args.Contains("--geometry")){CheckSelfNativeTrims(own,"self-constructed-product",inputScale);SelfGeometry(own,reference);}
-                    try{Mass(reference,received,"self-constructed-product");}
+                    try{WebProgressCapture.BindQuality("self-constructed-product",own,reference,received,ownResult,result);Mass(reference,received,"self-constructed-product");}
                     catch(Exception ex){failures++;Console.WriteLine("FAIL self-constructed-product mass: "+ex.Message);}
                     if(overlappingTools)failures+=OverlappingToolJunctions(own,reference,output,name+"-overlapping-tools",false);
                     if(singleToolJunction)failures+=OverlappingToolJunctions(own,reference,output,name+"-overlapping-tools-single",true);
@@ -648,6 +650,7 @@ static unsafe int CompareFresh(int own,int reference,string directory,string nam
     var fresh=Transmit(true,own);File.WriteAllBytes(Path.Combine(directory,name+".x_t"),fresh);var received=Receive(false,fresh);
     var referenceBytes=Transmit(false,reference);File.WriteAllBytes(Path.Combine(directory,name+"-native.x_t"),referenceBytes);
     var referenceReload=Receive(false,referenceBytes);
+    WebProgressCapture.BindQuality(name,own,reference,received,fresh,referenceBytes);
     try
     {
         CheckBody(reference,name+" native");
@@ -1725,7 +1728,7 @@ static unsafe void CheckBody(int body,string label)
             Console.WriteLine($"FAULT {label} state={faults[i].state} entities={faults[i].entity_1}/{faults[i].entity_2} class={entityClass}");
             if(entityClass==PK_CLASS_face){int surface,type;Check(PK_FACE_ask_surf(faults[i].entity_1,&surface),"fault support");Check(PK_ENTITY_ask_class(surface,&type),"fault support class");Console.WriteLine($"FAULT support={surface} type={type}");}
         }
-        WebProgressCapture.RecordBodyCheck(label,n,faults);
+        WebProgressCapture.RecordBodyCheck(label,body,n,faults);
         Require(n==0,label+" faults="+n);Console.WriteLine(label+" full check: 0 faults");
     }
     finally{Free(false,faults);}

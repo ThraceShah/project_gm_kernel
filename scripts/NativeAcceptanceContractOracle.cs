@@ -2,6 +2,8 @@
 #:project ../third_party/PKToy/PskernelSharp/PskernelSharp.csproj
 #:property UsePskernelSharpUsings=true
 #:property UseParasolidScriptHost=true
+#:property UseWebProgressCapture=true
+#:property AssemblyName=BooleanOperationOracle
 #:property AllowUnsafeBlocks=true
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
@@ -13,6 +15,7 @@ var output=Path.Combine(root,"temp_docs","native-acceptance-contract",args[0]);
 if(Directory.Exists(output))throw new InvalidOperationException("Existing evidence is immutable");
 Directory.CreateDirectory(output);
 ParasolidMassProperties.BeginEvidence(output);
+WebProgressCapture.Initialize();
 if(!ParasolidScriptHost.TryStartSession("native acceptance contract",out var host,out var reason))throw new Exception(reason);
 using(host)unsafe
 {
@@ -24,6 +27,7 @@ using(host)unsafe
         try
         {
             Full(reference);Full(actual);
+            WebProgressCapture.BindNativeQuality("maximum-native-accuracy",reference,actual,a,b);
             var agreement=ParasolidMassProperties.Compare(reference,actual,"maximum-native-accuracy",accuracy:1);
             Console.WriteLine($"MASS_ONLY_DIAGNOSTIC status={agreement}; no modeling operation acceptance asserted");
             Environment.ExitCode=agreement==MassAgreement.Verified?0:agreement==MassAgreement.Unresolved?2:1;
@@ -40,8 +44,10 @@ using(host)unsafe
     PK_BODY_t correct,wrong;Check(PK_BODY_create_solid_block(2,2,2,null,&correct));Check(PK_BODY_create_solid_block(2.1,2,2,null,&wrong));
     try
     {
+        var correctBytes=Transmit(correct);var wrongBytes=Transmit(wrong);
+        WebProgressCapture.BindNativeQuality("wrong-size-control",correct,wrong,correctBytes,wrongBytes);
         Require(ParasolidMassProperties.Compare(correct,wrong,"wrong-size-control")==MassAgreement.Different,"wrong size must fail mass agreement");
-        var correctReload=Receive(Transmit(correct));var wrongReload=Receive(Transmit(wrong));
+        var correctReload=Receive(correctBytes);var wrongReload=Receive(wrongBytes);
         try
         {
             var p=new PK_VECTOR_t(1.025,0,1);PK_TOPOL_t owner;Span<PK_enclosure_t> values=stackalloc PK_enclosure_t[4];
@@ -51,6 +57,8 @@ using(host)unsafe
                 Check(PK_BODY_contains_vector(wrong,p,v+2,&owner));Check(PK_BODY_contains_vector(wrongReload,p,v+3,&owner));
             }
             Require(values[0]==PK_enclosure_outside_c&&values[2]==PK_enclosure_inside_c,"wrong-size material negative is separated");
+            WebProgressCapture.BindNativeQuality("wrong-size-material",correct,wrong,correctBytes,wrongBytes);
+            WebProgressCapture.RecordMaterial("wrong-size-material",p,0,values[0],0,values[2],"native-control",correct,wrong);
             Require(ParasolidProbeAgreement.Classify(values)==ProbeAgreement.Different,"definite material flip must fail");
             values[2]=PK_enclosure_on_c;values[3]=PK_enclosure_on_c;
             Require(ParasolidProbeAgreement.Classify(values)==ProbeAgreement.Unresolved,"On disagreement must remain pending");
@@ -98,11 +106,12 @@ using(host)unsafe
             }
             Console.WriteLine($"PARTITION regions={topology.Regions}/{after.Regions} shells={topology.Shells}/{after.Shells} faces={topology.Faces}/{after.Faces} original_oriented_supports=True");
             var fresh=Receive(result);
-            try{Full(fresh);Mass(reference,fresh,$"partition-{axis}");ParasolidMassProperties.Compare(reference,fresh,$"partition-{axis}");}
+            try{Full(fresh);Mass(reference,fresh,$"partition-{axis}");WebProgressCapture.BindNativeQuality($"partition-{axis}",reference,fresh,bytes,result);ParasolidMassProperties.Compare(reference,fresh,$"partition-{axis}");}
             finally{Check(PK_ENTITY_delete(1,&fresh));}
         }
         finally{if(plane!=0)Check(PK_ENTITY_delete(1,&plane));Check(PK_ENTITY_delete(1,&split));Check(PK_ENTITY_delete(1,&reference));}
     }
+    Console.WriteLine($"MASS_COUNTER unresolved={ParasolidMassProperties.UnresolvedCount}");
 }
 
 static string Source([CallerFilePath]string path="")=>path;
@@ -138,11 +147,12 @@ static unsafe void Full(PK_BODY_t body)
 }
 static unsafe void RejectGeometry(PK_BODY_t reference,PK_BODY_t wrong,string output,string label,string expectedReason)
 {
-    Full(reference);Full(wrong);Save(output,label+"-reference.x_t",Transmit(reference));var bytes=Transmit(wrong);
+    Full(reference);Full(wrong);var referenceBytes=Transmit(reference);Save(output,label+"-reference.x_t",referenceBytes);var bytes=Transmit(wrong);
     Save(output,label+".x_t",bytes);var received=Receive(bytes);
     try
     {
         Full(received);var rejected=false;
+        WebProgressCapture.BindNativeQuality(label,reference,received,referenceBytes,bytes);
         try{ParasolidBodyCompare.AssertEquivalent(reference,received,label);}
         catch(InvalidOperationException error)when(error.Message.Contains(expectedReason,StringComparison.Ordinal)){rejected=true;}
         Require(rejected,label+" must fail geometry independently of mass uncertainty");

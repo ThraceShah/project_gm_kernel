@@ -1,8 +1,10 @@
 using static parasolid;
+using System.Text.Json.Nodes;
 
 // Both inputs are real-PK bodies: an independent reference and our XT reimport.
 internal static unsafe class ParasolidBodyCompare
 {
+    internal static Action<JsonObject>? Observer;
     // PK returns an arc-length bound, separately from its nominal value.
     // Summing bounds on a partition keeps the same complete native trim.
     internal static (double Value,double Lower,double Upper) FiniteLength(PK_CURVE_t curve,PK_INTERVAL_t range,int pieces)
@@ -23,9 +25,19 @@ internal static unsafe class ParasolidBodyCompare
 
     public static void AssertEquivalent(PK_BODY_t reference, PK_BODY_t actual, string label)
     {
+        var observation=Observer==null?null:new JsonObject{["label"]=label,["referenceBody"]=reference,["actualBody"]=actual,
+            ["globalDiffs"]=new JsonArray(),["localDiffs"]=new JsonArray(),["facePairRecords"]=new JsonArray()};
+        try{AssertEquivalentCore(reference,actual,label,observation);if(observation!=null)observation["status"]="Verified";}
+        catch(Exception error){if(observation!=null){observation["status"]="Rejected";observation["error"]=error.Message;}throw;}
+        finally{if(observation!=null)try{Observer?.Invoke(observation);}catch(Exception error){Console.Error.WriteLine("COMPARISON_OBSERVATION_ERROR "+error);}}
+    }
+
+    private static void AssertEquivalentCore(PK_BODY_t reference,PK_BODY_t actual,string label,JsonObject? observation)
+    {
         PK_BODY_type_t referenceType, actualType;
         Check(PK_BODY_ask_type(reference, &referenceType), "reference type");
         Check(PK_BODY_ask_type(actual, &actualType), "actual type");
+        if(observation!=null){observation["referenceType"]=referenceType;observation["actualType"]=actualType;}
         Require(referenceType == actualType, label + " body type differs");
         AssertRegions(reference, actual, label);
         var options = new PK_DEBUG_BODY_compare_o_t
@@ -37,16 +49,26 @@ internal static unsafe class ParasolidBodyCompare
             non_match_tests = PK_LOGICAL_true,
         };
         PK_DEBUG_BODY_compare_r_t result;
-        Check(PK_DEBUG_BODY_compare(reference, actual, &options, &result), label + " compare");
+        if(observation!=null)observation["mask"]=new JsonObject{["o_t_version"]=options.o_t_version,["max_diffs"]=options.max_diffs,["all_tests"]=options.all_tests==PK_LOGICAL_true,
+            ["acc_dev_tests"]=options.acc_dev_tests==PK_LOGICAL_true,["tol_dev_tests"]=options.tol_dev_tests==PK_LOGICAL_true,["num_tests"]=options.num_tests==PK_LOGICAL_true,
+            ["class_tests"]=options.class_tests==PK_LOGICAL_true,["sense_tests"]=options.sense_tests==PK_LOGICAL_true,["tol_tests"]=options.tol_tests==PK_LOGICAL_true,
+            ["missing_tests"]=options.missing_tests==PK_LOGICAL_true,["non_match_tests"]=options.non_match_tests==PK_LOGICAL_true};
+        var nativeError=PK_DEBUG_BODY_compare(reference,actual,&options,&result);
+        if(observation!=null)observation["nativeError"]=nativeError;
+        Check(nativeError,label+" compare");
         try
         {
             Console.WriteLine($"{label}: global={result.global_result} local={result.local_result} face_pairs={result.n_face_pairs}");
             var provedLocal = result.local_result == PK_DEBUG_local_res_no_diffs_c;
+            if(observation!=null){observation["globalResult"]=result.global_result;observation["localResult"]=result.local_result;observation["facePairs"]=result.n_face_pairs;}
+            if(observation!=null)for(var f=0;f<result.n_face_pairs;f++)observation["facePairRecords"]!.AsArray().Add((JsonNode)new JsonObject{
+                ["masterFace"]=result.face_pairs[f].master_face,["similarFace"]=result.face_pairs[f].similar_face,["localDiffCount"]=result.face_pairs[f].n_local_diffs});
             var localCount = 0;
             var differences = 0;
             for (var i = 0; i < result.n_global_diffs; i++)
             {
                 var diff = result.global_diffs[i];
+                observation?["globalDiffs"]!.AsArray().Add((JsonNode)new JsonObject{["type"]=diff.diff,["masters"]=diff.n_masters,["similars"]=diff.n_similars});
                 if (diff.n_masters != diff.n_similars)
                     Console.WriteLine($"  global diff={diff.diff} counts={diff.n_masters}/{diff.n_similars}");
             }
@@ -58,9 +80,21 @@ internal static unsafe class ParasolidBodyCompare
                     localCount++;
                     // FD 106.7: chart points do not affect the shape of a curve.
                     Console.WriteLine($"  faces={pair.master_face}/{pair.similar_face} diff={diff.diff} entities={diff.master_entity}/{diff.similar_entity} counts={diff.master_int}/{diff.similar_int} values={diff.master_double:R}/{diff.similar_double:R}");
+                    var item=observation==null?null:new JsonObject{["masterFace"]=pair.master_face,["similarFace"]=pair.similar_face,["type"]=diff.diff,
+                        ["masterEntity"]=diff.master_entity,["similarEntity"]=diff.similar_entity,["masterClass"]=diff.master_class,["similarClass"]=diff.similar_class,
+                        ["masterLogical"]=diff.master_logical.Value,["similarLogical"]=diff.similar_logical.Value,
+                        ["masterInt"]=diff.master_int,["similarInt"]=diff.similar_int,["masterDouble"]=double.IsFinite(diff.master_double)?diff.master_double:null,
+                        ["similarDouble"]=double.IsFinite(diff.similar_double)?diff.similar_double:null,["masterDoubleBits"]=BitConverter.DoubleToInt64Bits(diff.master_double).ToString("x16"),
+                        ["similarDoubleBits"]=BitConverter.DoubleToInt64Bits(diff.similar_double).ToString("x16"),["diagnostic"]=diff.diff==PK_DEBUG_diff_n_cht_pts_c};
+                    if(item!=null)observation!["localDiffs"]!.AsArray().Add((JsonNode)item);
                     if (diff.diff == PK_DEBUG_diff_n_cht_pts_c) provedLocal = true;
-                    else if (diff.diff == PK_DEBUG_diff_curve_sense_c && referenceType == PK_BODY_type_solid_c
-                        && ProveFiniteAnalyticDirection(reference, actual, diff.master_entity, diff.similar_entity, in result)) provedLocal = true;
+                    else if (diff.diff == PK_DEBUG_diff_curve_sense_c && referenceType == PK_BODY_type_solid_c)
+                    {
+                        var proof=item==null?null:new JsonObject();if(item!=null)item["conditionalFiniteProof"]=proof;
+                        var established=ProveFiniteAnalyticDirection(reference,actual,diff.master_entity,diff.similar_entity,in result,proof);
+                        if(proof!=null)proof["proved"]=established;
+                        if(established)provedLocal=true;else differences++;
+                    }
                     else differences++;
                 }
             Require(result.global_result == PK_DEBUG_global_res_no_diffs_c && differences == 0
@@ -78,7 +112,7 @@ internal static unsafe class ParasolidBodyCompare
     // parameter map or incident directed uses. Only these analytic classes
     // have a complete coefficient proof here. No output geometry is changed.
     private static bool ProveFiniteAnalyticDirection(PK_BODY_t reference, PK_BODY_t actual, PK_CURVE_t aCurve, PK_CURVE_t bCurve,
-        in PK_DEBUG_BODY_compare_r_t comparison)
+        in PK_DEBUG_BODY_compare_r_t comparison,JsonObject? proof=null)
     {
         var a = UniqueCurveEdge(reference, aCurve); var b = UniqueCurveEdge(actual, bCurve);
         if (a == 0 || b == 0) return false;
@@ -91,6 +125,8 @@ internal static unsafe class ParasolidBodyCompare
         Check(PK_EDGE_ask_precision(a, &ap), "direction reference precision"); Check(PK_EDGE_ask_precision(b, &bp), "direction actual precision");
         if (!(ap > 0) || !double.IsFinite(ap) || ap != bp) return false;
         var tolerance = Math.Min(1e-9, ap);
+        if(proof!=null){proof["sourceEdge"]=a;proof["targetEdge"]=b;proof["class"]=ak;proof["edgePrecision"]=ap;proof["tolerance"]=tolerance;
+            proof["sourceRange"]=new JsonArray(ar.value[0],ar.value[1]);proof["targetRange"]=new JsonArray(br.value[0],br.value[1]);proof["sourceSense"]=ass==PK_LOGICAL_true;proof["targetSense"]=bs==PK_LOGICAL_true;}
         double scale, shift, bound, speed; double turns = 0;
         if (ak == PK_CLASS_line)
         {
@@ -139,10 +175,14 @@ internal static unsafe class ParasolidBodyCompare
         }
         var trimError = Math.Max((first - new Enclosure(br.value[0])).Abs, (last - new Enclosure(br.value[1])).Abs);
         var total = Up(bound + Up(trimError * speed));
+        if(proof!=null){proof["shift"]=shift;proof["scale"]=scale;proof["turns"]=turns;proof["coefficientBound"]=double.IsFinite(bound)?bound:null;
+            proof["trimParameterError"]=double.IsFinite(trimError)?trimError:null;proof["speedBound"]=double.IsFinite(speed)?speed:null;proof["totalBound"]=double.IsFinite(total)?total:null;}
         if (!double.IsFinite(total) || total > tolerance) return false;
         var mapSign = scale > 0 ? 1 : -1;
         var reversedEdge = (ass == PK_LOGICAL_true ? 1 : -1) * mapSign != (bs == PK_LOGICAL_true ? 1 : -1);
-        if (!ProveEndpointUses(a, b, reversedEdge, tolerance) || !ProveFinUses(a, b, ac, bc, ass, bs, mapSign, in comparison)) return false;
+        var endpoints=proof==null?null:new JsonArray();var fins=proof==null?null:new JsonArray();
+        if(proof!=null){proof["endpoints"]=endpoints;proof["directedFinUses"]=fins;proof["edgeReversed"]=reversedEdge;}
+        if (!ProveEndpointUses(a, b, reversedEdge, tolerance,endpoints) || !ProveFinUses(a, b, ac, bc, ass, bs, mapSign, in comparison,fins)) return false;
         Console.WriteLine($"  FINITE_DIRECTION_VERIFIED curves={ac}/{bc} edges={a}/{b} class={ak} map={shift:R}+({scale:R})*t+({turns:R})*2pi trims=[{ar.value[0]:R},{ar.value[1]:R}]/[{br.value[0]:R},{br.value[1]:R}] full_coefficient_and_trim_bound={total:R} tolerance={tolerance:R} edge_reversed={reversedEdge} incident_uses=2");
         return true;
     }
@@ -165,7 +205,7 @@ internal static unsafe class ParasolidBodyCompare
         finally { Free(edges); }
     }
 
-    private static bool ProveEndpointUses(PK_EDGE_t a, PK_EDGE_t b, bool reverse, double tolerance)
+    private static bool ProveEndpointUses(PK_EDGE_t a, PK_EDGE_t b, bool reverse, double tolerance,JsonArray? observation=null)
     {
         PK_VERTEX_t* vertices = stackalloc PK_VERTEX_t[4];
         Check(PK_EDGE_ask_vertices(a, vertices), "direction reference vertices"); Check(PK_EDGE_ask_vertices(b, vertices + 2), "direction actual vertices");
@@ -179,13 +219,15 @@ internal static unsafe class ParasolidBodyCompare
             PK_POINT_t at, bt; PK_POINT_sf_t af, bf;
             Check(PK_VERTEX_ask_point(av, &at), "direction reference point"); Check(PK_VERTEX_ask_point(bv, &bt), "direction actual point");
             Check(PK_POINT_ask(at, &af), "direction reference position"); Check(PK_POINT_ask(bt, &bf), "direction actual position");
-            if ((Lift(Read(af.position)) - Lift(Read(bf.position))).L1 > Math.Min(tolerance, ap)) return false;
+            var distance=(Lift(Read(af.position))-Lift(Read(bf.position))).L1;
+            observation?.Add((JsonNode)new JsonObject{["sourceVertex"]=av,["targetVertex"]=bv,["precision"]=ap,["bound"]=double.IsFinite(distance)?distance:null,["tolerance"]=Math.Min(tolerance,ap)});
+            if (distance > Math.Min(tolerance, ap)) return false;
         }
         return true;
     }
 
     private static bool ProveFinUses(PK_EDGE_t a, PK_EDGE_t b, PK_CURVE_t ac, PK_CURVE_t bc, PK_LOGICAL_t ass, PK_LOGICAL_t bs, int mapSign,
-        in PK_DEBUG_BODY_compare_r_t comparison)
+        in PK_DEBUG_BODY_compare_r_t comparison,JsonArray? observation=null)
     {
         int an, bn; PK_FIN_t* af; PK_FIN_t* bf;
         Check(PK_EDGE_ask_fins(a, &an, &af), "direction reference fins"); Check(PK_EDGE_ask_fins(b, &bn, &bf), "direction actual fins");
@@ -206,6 +248,8 @@ internal static unsafe class ParasolidBodyCompare
                     if (other != paired) continue; if (target != 0) return false; target = bf[j];
                 }
                 if (target == 0 || !FinDirection(af[i], ac, ass, out var ad) || !FinDirection(target, bc, bs, out var bd) || ad * mapSign != bd) return false;
+                observation?.Add((JsonNode)new JsonObject{["sourceFace"]=face,["targetFace"]=paired,["sourceFin"]=af[i],["targetFin"]=target,
+                    ["sourceNaturalDirection"]=ad,["targetNaturalDirection"]=bd,["mapSign"]=mapSign,["finCarrierConsistent"]=true});
                 Console.WriteLine($"    DIRECTED_FIN_USE faces={face}/{paired} fins={af[i]}/{target} natural_directions={ad}/{bd} map_sign={mapSign}");
             }
             return true;

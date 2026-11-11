@@ -74,6 +74,7 @@ using(host)unsafe
                     "modified support retains its native chart");
             }
             var bytes=Transmit(own);File.WriteAllBytes(Path.Combine(directory,name+"-result.x_t"),bytes);var received=Receive(bytes);
+            if(WebProgressCapture.Enabled)WebProgressCapture.BindQuality(name,own,native,received,bytes,TransmitNative(native));
             try
             {
                 CheckBody(native,name+" native");CheckBody(received,name+" received");Compare(native,received,name);
@@ -81,6 +82,7 @@ using(host)unsafe
             finally{Check(PK_ENTITY_delete(1,&received),"delete receive");}
             var restored=ReceiveSelf(bytes);Check(KernelRuntime.EntityDelete(1,&own),"delete before reload");own=restored;
             var reloaded=Receive(Transmit(own));
+            if(WebProgressCapture.Enabled)WebProgressCapture.BindQuality(name+" reload",own,native,reloaded,Transmit(own),TransmitNative(native));
             try{CheckBody(reloaded,name+" reload");Compare(native,reloaded,name+" reload");}
             finally{Check(PK_ENTITY_delete(1,&reloaded),"delete reload check");}
             if(args.Contains("--lifecycle",StringComparer.Ordinal))
@@ -91,12 +93,14 @@ using(host)unsafe
                 bytes=Transmit(own);File.WriteAllBytes(Path.Combine(directory,name+"-lifecycle.x_t"),bytes);
                 File.WriteAllBytes(Path.Combine(directory,name+"-lifecycle-reference.x_t"),TransmitNative(native));
                 reloaded=Receive(bytes);
+                if(WebProgressCapture.Enabled)WebProgressCapture.BindQuality(name+" lifecycle",own,native,reloaded,bytes,TransmitNative(native));
                 try{CheckBody(reloaded,name+" lifecycle");CheckBody(native,name+" lifecycle native");Compare(native,reloaded,name+" lifecycle");}
                 finally{Check(PK_ENTITY_delete(1,&reloaded),"delete lifecycle check");}
             }
             if(!args.Contains("--blend-only",StringComparer.Ordinal))
             {
             Cut(true,own,reflected);Cut(false,native,reflected);bytes=Transmit(own);File.WriteAllBytes(Path.Combine(directory,name+"-cut.x_t"),bytes);received=Receive(bytes);
+            if(WebProgressCapture.Enabled)WebProgressCapture.BindQuality(name+" cut",own,native,received,bytes,TransmitNative(native));
             if(remoteBore)
             {
                 var body=KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(own).Slot];var f=body.FirstFaceBody;var innerRings=0;

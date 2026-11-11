@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using System.Numerics;
 using System.Text.Json.Nodes;
+using System.Security.Cryptography;
+using System.Runtime.CompilerServices;
 using ProjectGmKernel.DisplayBridge;
 using ProjectGmKernel.Native.Runtime;
 using static parasolid;
@@ -20,12 +22,61 @@ internal static unsafe class WebProgressCapture
     private static readonly Dictionary<bool,int> Ordinals=new(){{true,0},{false,0}};
     private static readonly Dictionary<(bool,int),JsonObject> BeforeMeshes=[];
     private static readonly Dictionary<(bool,int),BodyTag[]> AfterBodies=[];
+    private static readonly Dictionary<(BodyTag Reference,BodyTag Actual),JsonObject> QualitySources=[];
+    private static JsonObject? identity;
     private static readonly Dictionary<(bool,int),HashSet<EntityTag>> Supports=[];
     private static readonly JsonArray Timings=[];
     internal static string Context="";
+    internal static JsonObject? ContextSource;
     private static readonly Dictionary<(bool,string),int> ContextCounts=[];
     private static readonly Dictionary<string,int> ContextSteps=[];
     private const double ChordTolerance=.01;
+    static WebProgressCapture()
+    {
+        if(!Enabled)return;
+        ParasolidBodyCompare.Observer=e=>Observe(()=>RecordComparison(e));
+        ParasolidMassProperties.Observer=e=>Observe(()=>RecordMass(e));
+    }
+    internal static void Initialize() { }
+    private static string Hash(byte[] bytes)=>Convert.ToHexStringLower(SHA256.HashData(bytes));
+    private static string CapturePath([CallerFilePath]string path="")=>path;
+    private static JsonObject SourceIdentity()
+    {
+        var first=identity==null;
+        var path=Path.GetDirectoryName(CapturePath())!;
+        identity??=new JsonObject{["calculationCommit"]=Environment.GetEnvironmentVariable("GM_WEB_COMMIT"),["captureCommit"]=Environment.GetEnvironmentVariable("GM_WEB_CAPTURE_COMMIT"),
+            ["captureSourceFileSha256"]=Hash(File.ReadAllBytes(CapturePath())),["bodyCompareSourceFileSha256"]=Hash(File.ReadAllBytes(Path.Combine(path,"ParasolidBodyCompare.cs"))),
+            ["massSourceFileSha256"]=Hash(File.ReadAllBytes(Path.Combine(path,"ParasolidMassProperties.cs"))),
+            ["loadedFileAppAssemblySha256"]=Hash(File.ReadAllBytes(typeof(WebProgressCapture).Assembly.Location)),["loadedKernelAssemblySha256"]=Hash(File.ReadAllBytes(typeof(KernelRuntime).Assembly.Location))};
+        if(first&&(string.IsNullOrWhiteSpace(identity["calculationCommit"]?.GetValue<string>())||string.IsNullOrWhiteSpace(identity["captureCommit"]?.GetValue<string>())))
+            AddCheck("capture-source-identity","Pinned calculation/capture source identity","missing",null,null,null,"","Both source commits must be supplied; actual loaded assembly and source-file hashes are still retained.");
+        return (JsonObject)identity.DeepClone();
+    }
+    internal static void BindQuality(string stage,BodyTag gm,BodyTag reference,BodyTag fresh,byte[] gmXt,byte[] nativeXt)
+    {
+        if(!Enabled)return;
+        Observe(()=>QualitySources[(reference,fresh)]=new JsonObject{["kind"]="GM-fresh-vs-native",["actualOriginKernel"]="GM",["stage"]=stage,["context"]=Context,
+            ["gmLiveBody"]=gm,["referenceNativeBody"]=reference,["freshNativeBody"]=fresh,["gmXtSha256"]=Hash(gmXt),["referenceXtSha256"]=Hash(nativeXt),["identity"]=SourceIdentity()});
+    }
+    internal static void BindArchivedQuality(string stage,BodyTag reference,BodyTag fresh,byte[] gmXt,byte[] nativeXt)
+    {
+        if(!Enabled)return;
+        Observe(()=>QualitySources[(reference,fresh)]=new JsonObject{["kind"]="GM-archived-XT-vs-native",["actualOriginKernel"]="GM",["stage"]=stage,
+            ["referenceNativeBody"]=reference,["freshNativeBody"]=fresh,["gmXtSha256"]=Hash(gmXt),["referenceXtSha256"]=Hash(nativeXt),
+            ["sameInstanceDisplayQualified"]=false,["identity"]=SourceIdentity()});
+    }
+    internal static void BindNativeQuality(string stage,BodyTag reference,BodyTag actual,byte[] referenceXt,byte[] actualXt)
+    {
+        if(!Enabled)return;
+        Observe(()=>QualitySources[(reference,actual)]=new JsonObject{["kind"]="native-control",["actualOriginKernel"]="PK",["stage"]=stage,["referenceNativeBody"]=reference,
+            ["actualNativeBody"]=actual,["referenceXtSha256"]=Hash(referenceXt),["actualXtSha256"]=Hash(actualXt),["identity"]=SourceIdentity()});
+    }
+    private static JsonObject? QualitySource(JsonObject evidence)
+    {
+        if(!QualitySources.TryGetValue((evidence["referenceBody"]!.GetValue<int>(),evidence["actualBody"]!.GetValue<int>()),out var source))return null;
+        var label=evidence["label"]!.GetValue<string>();var stage=source["stage"]!.GetValue<string>();
+        return label==stage||label==stage+" strict"?(JsonObject)source.DeepClone():null;
+    }
     internal static void Before(bool own,BodyTag body,EntityTag[]? selected=null,string operation="PK_BODY_fix_blends",BodyTag[]? tools=null,bool supportBody=false)
     {
         if(!Enabled)return;
@@ -40,6 +91,7 @@ internal static unsafe class WebProgressCapture
                 Ordinals[own]=ordinal+1;
             }
             while(Steps.Count<=ordinal)Steps.Add((JsonNode)new JsonObject{["id"]=$"operation-{Steps.Count+1}",["title"]=(Context.Length>0?Context+" / ":"")+operation,["gm"]=new JsonObject{["before"]=null,["after"]=null},["pk"]=new JsonObject{["before"]=null,["after"]=null}});
+            Steps[ordinal]!["sourceBinding"]=ContextSource?.DeepClone();
             var support=new HashSet<int>();
             foreach(var edge in selected??[])
             {
@@ -167,7 +219,20 @@ internal static unsafe class WebProgressCapture
             foreach(var segment in group){if(first||segment.A!=previous)Vector(positions,segment.A);Vector(positions,segment.B);previous=segment.B;first=false;}
             var entity=group.First().Edge;edges.Add((JsonNode)new JsonObject{["id"]=Id(own,entity),["entityTag"]=entity.EntityTag,["identifier"]=entity.Identifier,["positions"]=positions,["role"]=Role(entity),["roleKnown"]=isBefore||tool||Role(entity)!="unchanged"&&roleKnown});
         }
-        return new JsonObject{["schemaVersion"]=1,["bodyId"]=(own?"gm:":"pk:")+body,["source"]=new JsonObject{["kernel"]=own?"GM":"PK",["geometryAuthor"]=Environment.GetEnvironmentVariable("GM_WEB_GEOMETRY_AUTHOR")??"independent-construction",["tessellator"]="Parasolid PK_TOPOL_facet / PK_GEOM_render_line",["commit"]=Environment.GetEnvironmentVariable("GM_WEB_COMMIT"),["chordTolerance"]=ChordTolerance,["freshXtReceive"]=own},["faces"]=faces,["edges"]=edges};
+        var bytes=own?System.Text.Encoding.UTF8.GetBytes(display.XtText):NativeSnapshotBytes(body);var hash=Hash(bytes);var xtPath=$"evidence/source-{hash}.x_t";
+        var full=Path.Combine(Output!,xtPath);Directory.CreateDirectory(Path.GetDirectoryName(full)!);
+        if(!File.Exists(full))File.WriteAllBytes(full,bytes);else if(Hash(File.ReadAllBytes(full))!=hash)throw new InvalidDataException("immutable source XT changed");
+        return new JsonObject{["schemaVersion"]=1,["bodyId"]=(own?"gm:":"pk:")+body,["source"]=new JsonObject{["kernel"]=own?"GM":"PK",
+            ["geometryAuthor"]=ContextSource?["kind"]?.GetValue<string>()=="same-byte-fork"?"Validated GM upstream product and tool XT":Environment.GetEnvironmentVariable("GM_WEB_GEOMETRY_AUTHOR")??"independent-construction",
+            ["tessellator"]="Parasolid PK_TOPOL_facet / PK_GEOM_render_line",["commit"]=Environment.GetEnvironmentVariable("GM_WEB_COMMIT"),["chordTolerance"]=ChordTolerance,["freshXtReceive"]=own,
+            ["sourceBodyTag"]=body,["snapshotNativeBodyTag"]=display.ParasolidBodyTag,["xtSha256"]=hash,["xtArtifact"]=xtPath,["contextSource"]=ContextSource?.DeepClone(),["captureIdentity"]=SourceIdentity()},["faces"]=faces,["edges"]=edges};
+    }
+    internal static byte[] NativeSnapshotBytes(BodyTag body)
+    {
+        var options=new PK_PART_transmit_o_t{transmit_format=PK_transmit_format_text_c,transmit_version=371};PK_MEMORY_block_t block;
+        Guard(PK_PART_transmit_b(1,&body,&options,&block),"native source XT snapshot");
+        try{using var stream=new MemoryStream();for(var p=&block;p!=null;p=p->next)stream.Write(new ReadOnlySpan<byte>(p->bytes,checked((int)p->n_bytes)));return stream.ToArray();}
+        finally{Guard(PK_MEMORY_block_f(&block),"native source snapshot free");}
     }
     private static void Compare(int ordinal)
     {
@@ -184,24 +249,13 @@ internal static unsafe class WebProgressCapture
         }
         for(var kind=0;kind<5;kind++)
         {var x=Count(received,kind);var y=Count(reference,kind);AddCheck($"{ordinal}-count-{kind}",new[]{"Regions","Shells","Faces","Edges","Vertices"}[kind],x==y?"pass":"fail",x,y,0,"count","");}
-        var mask=new PK_DEBUG_BODY_compare_o_t{max_diffs=1024,all_tests=PK_LOGICAL_false,acc_dev_tests=PK_LOGICAL_false,tol_dev_tests=PK_LOGICAL_true,non_match_tests=PK_LOGICAL_true};PK_DEBUG_BODY_compare_r_t result=default;
-        Guard(PK_DEBUG_BODY_compare(reference,received,&mask,&result),"raw compare");
-        var diffs=new JsonArray();var globals=new JsonArray();
-        try
-        {
-            for(var i=0;i<result.n_global_diffs;i++){var d=result.global_diffs[i];globals.Add((JsonNode)new JsonObject{["type"]=d.diff,["masters"]=d.n_masters,["similars"]=d.n_similars});}
-            for(var f=0;f<result.n_face_pairs;f++)for(var i=0;i<result.face_pairs[f].n_local_diffs;i++)
-            {var p=result.face_pairs[f];var d=p.local_diffs[i];diffs.Add((JsonNode)new JsonObject{["masterFace"]=p.master_face,["similarFace"]=p.similar_face,["type"]=d.diff,["masterEntity"]=d.master_entity,["similarEntity"]=d.similar_entity,["masterClass"]=d.master_class,["similarClass"]=d.similar_class,["masterInt"]=d.master_int,["similarInt"]=d.similar_int,["masterDouble"]=Finite(d.master_double),["similarDouble"]=Finite(d.similar_double),["diagnostic"]=d.diff==PK_DEBUG_diff_n_cht_pts_c});}
-            Write($"evidence/compare-{ordinal}.json",new JsonObject{["globalResult"]=result.global_result,["localResult"]=result.local_result,["facePairs"]=result.n_face_pairs,["globalDiffs"]=globals,["localDiffs"]=diffs,["mask"]=new JsonObject{["max_diffs"]=mask.max_diffs,["all_tests"]=false,["num_tests"]=mask.num_tests==PK_LOGICAL_true,["acc_dev_tests"]=false,["tol_dev_tests"]=true,["tol_tests"]=mask.tol_tests==PK_LOGICAL_true,["class_tests"]=mask.class_tests==PK_LOGICAL_true,["sense_tests"]=mask.sense_tests==PK_LOGICAL_true,["missing_tests"]=mask.missing_tests==PK_LOGICAL_true,["non_match_tests"]=true},["diagnosticWhitelist"]=new JsonArray("n_cht_pts")});
-        }
-        finally{PK_DEBUG_BODY_compare_r_f(&result);}
-        try{ParasolidBodyCompare.AssertEquivalent(reference,received,"web strict fresh XT");AddCheck($"{ordinal}-equivalence","Type, regions and strict BODY_compare","pass",null,null,null,"","Only n_cht_pts is diagnostic.");}
-        catch(Exception e){AddCheck($"{ordinal}-equivalence","Type, regions and strict BODY_compare","fail",null,null,null,"",e.Message);}
-        var mass=new PK_TOPOL_eval_mass_props_o_t();double* xMass=stackalloc double[15];double* yMass=stackalloc double[15];
-        Guard(PK_TOPOL_eval_mass_props(1,&received,.99999999,&mass,xMass,xMass+1,xMass+2,xMass+5,xMass+14),"GM mass");
-        Guard(PK_TOPOL_eval_mass_props(1,&reference,.99999999,&mass,yMass,yMass+1,yMass+2,yMass+5,yMass+14),"PK mass");
-        for(var i=0;i<15;i++)
-        {var delta=Math.Abs(xMass[i]-yMass[i])/(1+Math.Abs(yMass[i]));AddCheck($"{ordinal}-mass-{i}",new[]{"Volume","Mass","Centroid X","Centroid Y","Centroid Z","Inertia XX","Inertia XY","Inertia XZ","Inertia YX","Inertia YY","Inertia YZ","Inertia ZX","Inertia ZY","Inertia ZZ","Area"}[i],double.IsFinite(delta)&&delta<1e-7?"pass":"fail",xMass[i],yMass[i],1e-7,i<2?"model³":i<5?"model":i<14?"model⁵":"model²","abs(GM-PK)/(1+abs(PK)) < threshold; accuracy=.99999999");}
+        QualitySources[(reference,received)]=new JsonObject{["kind"]="same-instance-snapshot-pair",["stage"]="web strict fresh XT",["step"]=ordinal,["context"]=Context,
+            ["gmMesh"]=Steps[ordinal]!["gm"]!["after"]?.DeepClone(),["pkMesh"]=Steps[ordinal]!["pk"]!["after"]?.DeepClone(),["identity"]=SourceIdentity()};
+        // This single current helper call publishes its own mask, differences
+        // and conditional proofs. Mass comes only from the oracle's actual
+        // bounded comparison; observation never runs another integration.
+        try{ParasolidBodyCompare.AssertEquivalent(reference,received,"web strict fresh XT");}
+        catch(Exception error){AddCheck("snapshot-rejected-"+ordinal,"Same-instance snapshot comparison","fail",null,null,null,"",error.Message);Flush();}
     }
     private static int Count(BodyTag body,int kind)
     {int n=0;int* tags=null;Guard(kind switch{0=>PK_BODY_ask_regions(body,&n,&tags),1=>PK_BODY_ask_shells(body,&n,&tags),2=>PK_BODY_ask_faces(body,&n,&tags),3=>PK_BODY_ask_edges(body,&n,&tags),_=>PK_BODY_ask_vertices(body,&n,&tags)},"topology counts");Free(false,tags);return n;}
@@ -265,7 +319,7 @@ internal static unsafe class WebProgressCapture
         Guard(own?KernelRuntime.BodyAskFaces(body,&count,&faces):PK_BODY_ask_faces(body,&count,&faces),"output sheet face IDs");
         try{Complete(own,[body],ms,0,0,new ReadOnlySpan<int>(faces,count).ToArray(),null);}finally{Free(own,faces);}
     }
-    internal static void RecordBodyCheck(string stage,int count,PK_check_fault_t* faults)
+    internal static void RecordBodyCheck(string stage,BodyTag body,int count,PK_check_fault_t* faults)
     {
         if(!Enabled)return;
         Observe(()=>
@@ -278,21 +332,55 @@ internal static unsafe class WebProgressCapture
                 details.Add((JsonNode)new JsonObject{["state"]=faults[i].state,["entity1"]=faults[i].entity_1,["entity2"]=faults[i].entity_2,["entityClass"]=cls,["support"]=support,["supportClass"]=supportClass});
             }
             AddCheck("original-body-"+Checks.Count,stage+" full BODY_check",count==0?"pass":"fail",null,null,0,"faults",details.ToJsonString());
-            Checks[^1]!["stage"]=stage;Checks[^1]!["evaluatedKernel"]="PK";Checks[^1]!["faultCount"]=count;Checks[^1]!["faults"]=details;Flush();
+            Checks[^1]!["stage"]=stage;Checks[^1]!["evaluatedKernel"]="PK";Checks[^1]!["nativeBody"]=body;
+            Checks[^1]!["captureIdentity"]=SourceIdentity();Checks[^1]!["faultCount"]=count;Checks[^1]!["faults"]=details;Flush();
         });
     }
-    internal static void RecordMass(string stage,double accuracy,double* reference,double* actual)
+    private static void RecordComparison(JsonObject evidence)
+    {
+        var source=QualitySource(evidence);var label=evidence["label"]!.GetValue<string>();var path=$"evidence/quality-compare-{Checks.Count}.json";
+        evidence["sourceBinding"]=source;evidence["captureIdentity"]=SourceIdentity();
+        evidence["adjudicationPolicy"]=new JsonObject{["diagnostic"]="n_cht_pts",["curveSense"]="Only the complete current finite analytic direction/trim/endpoint/two-fin proof can establish equivalence; raw differences remain.",
+            ["otherDifferences"]="Hard conditions; see exact mask and helper result."};
+        Write(path,evidence);
+        AddCheck("quality-compare-"+Checks.Count,label+" / current AssertEquivalent",evidence["status"]?.GetValue<string>()=="Verified"?"pass":"fail",null,null,null,"",evidence["error"]?.GetValue<string>()??"Same-call raw native mask, differences and each conditional finite proof retained.");
+        Checks[^1]!["evidence"]=path;Checks[^1]!["sourceBinding"]=source?.DeepClone();
+        if(source==null)AddCheck("quality-source-"+Checks.Count,label+" source binding","missing",null,null,null,"","Actual native pair is recorded; no GM live/source binding was supplied.");
+        Flush();
+    }
+    private static void RecordMass(JsonObject evidence)
+    {
+        var source=QualitySource(evidence);var label=evidence["label"]!.GetValue<string>();var path=$"evidence/quality-mass-{Checks.Count}.json";
+        evidence["sourceBinding"]=source;evidence["captureIdentity"]=SourceIdentity();Write(path,evidence);
+        foreach(var item in evidence["properties"]!.AsArray())
+        {
+            var status=item!["agreementStatus"]!.GetValue<string>();var knownGm=source?["actualOriginKernel"]?.GetValue<string>()=="GM";
+            AddCheck("quality-mass-"+Checks.Count,label+" / "+item["property"]!.GetValue<string>(),status=="Verified"?"pass":status=="Different"?"fail":"missing",
+                knownGm?item["actualEstimate"]!.GetValue<double>():null,knownGm?item["referenceEstimate"]!.GetValue<double>():null,1e-7,"",status+" from native error moduli; no point-value qualification.");
+            var check=Checks[^1]!.AsObject();check["evidence"]=path;check["stage"]=label;check["accuracy"]=evidence["accuracy"]!.DeepClone();
+            foreach(var field in new[]{"referenceEstimate","referenceModulus","actualEstimate","actualModulus","normalizedLower","normalizedUpper","agreementStatus"})check[field]=item[field]?.DeepClone();
+            check["sourceBinding"]=source?.DeepClone();
+        }
+        if(evidence["error"]!=null)AddCheck("quality-mass-error-"+Checks.Count,label+" mass observation","fail",null,null,null,"",evidence["error"]!.GetValue<string>());
+        if(source==null)AddCheck("quality-source-"+Checks.Count,label+" source binding","missing",null,null,null,"","Actual bounded native pair recorded; no inferred GM source identity.");
+        Flush();
+    }
+    internal static void RecordMaterial(string label,PK_VECTOR_t point,int referenceError,PK_enclosure_t reference,int actualError,PK_enclosure_t actual,string kind,BodyTag referenceBody,BodyTag actualBody)
     {
         if(!Enabled)return;
+        var x=point.coord[0];var y=point.coord[1];var z=point.coord[2];
         Observe(()=>
         {
-            for(var i=0;i<15;i++)
-            {
-                var delta=Math.Abs(actual[i]-reference[i])/(1+Math.Abs(reference[i]));
-                AddCheck("original-mass-"+Checks.Count,stage+" mass["+i+"]",double.IsFinite(delta)&&delta<1e-7?"pass":"fail",actual[i],reference[i],1e-7,i<2?"model³":i<5?"model":i<14?"model⁵":"model²","Original final point gate; accuracy="+accuracy.ToString("R",System.Globalization.CultureInfo.InvariantCulture));
-                Checks[^1]!["stage"]=stage;
-            }
-            Flush();
+            Span<PK_enclosure_t> values=stackalloc PK_enclosure_t[4]{reference,reference,actual,actual};
+            var agreement=referenceError!=0||actualError!=0?ProbeAgreement.Different:ParasolidProbeAgreement.Classify(values);
+            AddCheck("quality-material-"+Checks.Count,label,agreement==ProbeAgreement.Verified?"pass":agreement==ProbeAgreement.Different?"fail":"missing",null,null,null,"",agreement+" from actual API errors and classifications.");
+            var check=Checks[^1]!.AsObject();check["agreementStatus"]=agreement.ToString();check["referenceError"]=referenceError;check["actualError"]=actualError;
+            check["referenceClass"]=reference;check["actualClass"]=actual;check["point"]=new JsonArray(x,y,z);check["sourceKind"]=kind;
+            check["referenceBody"]=referenceBody;check["actualBody"]=actualBody;check["captureIdentity"]=SourceIdentity();
+            var matches=QualitySources.Values.Where(s=>s["stage"]?.GetValue<string>()==label&&(kind=="native-control"
+                ?s["referenceNativeBody"]?.GetValue<int>()==referenceBody&&s["actualNativeBody"]?.GetValue<int>()==actualBody
+                :s["gmLiveBody"]?.GetValue<int>()==actualBody&&s["freshNativeBody"]?.GetValue<int>()==referenceBody)).ToArray();
+            check["sourceBinding"]=matches.Length==1?matches[0].DeepClone():null;Flush();
         });
     }
     internal static void FreeBlendTracking(bool own,int count,PK_FACE_array_t* unders,EntityTag* topols)

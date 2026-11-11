@@ -45,7 +45,8 @@ using(host)unsafe
                     {
                         var ownPath=Path.Combine(directory,name+"-"+stage.Key+"-gm.x_t");
                         if(!File.Exists(ownPath))continue;
-                        var received=Receive(File.ReadAllBytes(ownPath));CheckBody(received,name+" "+stage.Key+" received");CheckBody(stage.Value,name+" "+stage.Key+" independent");
+                        var stageBytes=File.ReadAllBytes(ownPath);var received=Receive(stageBytes);CheckBody(received,name+" "+stage.Key+" received");CheckBody(stage.Value,name+" "+stage.Key+" independent");
+                        if(WebProgressCapture.Enabled)WebProgressCapture.BindArchivedQuality(name+" "+stage.Key,stage.Value,received,stageBytes,TransmitNative(stage.Value));
                         Compare(stage.Value,received,name+" "+stage.Key);Console.WriteLine("GEOMETRY_TOPOLOGY_PASS "+name+" "+stage.Key);
                     }
                     finally{var copy=stage.Value;Check(PK_ENTITY_delete(1,&copy),"release intermediate independent product");}
@@ -59,7 +60,8 @@ using(host)unsafe
                     var found=-1;var center=Center(received);
                     for(var j=0;j<reference.Length;j++)if(!matched[j]&&Distance(center,Center(reference[j]))<1e-7){found=j;break;}
                     Require(found>=0,name+" body correspondence");matched[found]=true;CheckBody(reference[found],name+" reference");
-                    File.WriteAllBytes(Path.Combine(directory,name+"-"+i+"-native.x_t"),TransmitNative(reference[found]));
+                    var referenceBytes=TransmitNative(reference[found]);File.WriteAllBytes(Path.Combine(directory,name+"-"+i+"-native.x_t"),referenceBytes);
+                    WebProgressCapture.BindQuality(name,ours[i],reference[found],received,bytes,referenceBytes);
                     Compare(reference[found],received,name);Classify(ours[i],reference[found],name);
                 }
                 passed++;Console.WriteLine("GEOMETRY_TOPOLOGY_PASS "+name);

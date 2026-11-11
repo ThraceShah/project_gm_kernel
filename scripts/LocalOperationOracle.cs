@@ -9,6 +9,7 @@
 
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json.Nodes;
 using ProjectGmKernel.Native.Runtime;
 using M=ProjectGmKernel.Native.Generated;
 using static parasolid;
@@ -23,6 +24,10 @@ Directory.CreateDirectory(directory);var report=new StringBuilder();
 ParasolidMassProperties.BeginEvidence(directory);
 var axialArrangement=args.Contains("--axial-arrangement",StringComparer.Ordinal);
 var blendArrangement=args.Contains("--blend-arrangement",StringComparer.Ordinal);
+var thenBoolean=args.Contains("--then-boolean",StringComparer.Ordinal);
+var booleanInject=args.Contains("--boolean-inject",StringComparer.Ordinal);
+if(thenBoolean&&(!blendArrangement||!args.Contains("--lifecycle",StringComparer.Ordinal))||booleanInject&&!thenBoolean)
+    throw new ArgumentException("post-Blend Boolean requires --blend-arrangement --lifecycle; injection requires --then-boolean");
 var trace=axialArrangement||blendArrangement?new List<KernelRuntime.BoundaryTrace>():null;
 if(trace!=null){KernelRuntime.ForbidLegacyRegularBlendAssembly=true;KernelRuntime.TraceFiniteBoundary=trace.Add;}
 void Log(string message){Console.WriteLine(message);report.AppendLine(message);}
@@ -75,6 +80,8 @@ try
                         NativeGaugeControl(c.Name,c.Shape,c.Operation,c.Amount,c.Selection,c.Oriented,directory,Log);continue;
                     }
                     var ownedBefore=(KernelRuntime.Bodies.AliveCount,KernelRuntime.Curves.AliveCount,KernelRuntime.Surfaces.AliveCount,KernelRuntime.Points.AliveCount,KernelRuntime.ReturnOutstandingBlocks);
+                    WebProgressCapture.Context=c.Name;
+                    WebProgressCapture.ContextSource=new JsonObject{["kind"]="independent-construction",["shape"]=c.Shape,["operation"]=c.Operation,["amount"]=c.Amount,["selection"]=c.Selection,["oriented"]=c.Oriented};
                     var managed=Create(true,c.Shape,c.Oriented);var reference=Create(false,c.Shape,c.Oriented);
                     if(args.Contains("--seed-ownership-control",StringComparer.Ordinal))
                     {
@@ -106,20 +113,23 @@ try
                     var b=Apply(false,reference,c.Shape,c.Operation,c.Amount,c.Selection,c.Oriented);
                     Require(a==b,c.Name+" returned topology/tracking contract differs: "+a+" / "+b);
                     var bytes=TransmitManaged(managed);File.WriteAllBytes(Path.Combine(directory,c.Name+"-managed.x_t"),bytes);
-                    File.WriteAllBytes(Path.Combine(directory,c.Name+"-reference.x_t"),TransmitReference(reference));
+                    var referenceBytes=TransmitReference(reference);File.WriteAllBytes(Path.Combine(directory,c.Name+"-reference.x_t"),referenceBytes);
                     var received=Receive(bytes);
+                    WebProgressCapture.BindQuality(c.Name,managed,reference,received,bytes,referenceBytes);
                     for(var kind=0;kind<5;kind++){var actual=Count(received,kind);var expected=Count(reference,kind);Require(actual==expected,$"{c.Name} topology kind {kind}: {actual}/{expected}");}
                     CheckBody(reference,c.Name+" independent",Log);CheckBody(received,c.Name+" received",Log);CompareMass(reference,received,c.Name,Log);
                     CompareMaterialSense(reference,received,c.Name);
                     CompareManagedPlaneOrientations(managed,received,c.Name,Log,args.Contains("--managed-material",StringComparer.Ordinal));
                     try{ParasolidBodyCompare.AssertEquivalent(reference,received,c.Name+" strict");}
                     catch{RecordFiniteSurfaces(reference,c.Name+" native",Log);RecordFiniteSurfaces(received,c.Name+" GM fresh",Log);RecordFiniteCurves(reference,c.Name+" native",Log);RecordFiniteCurves(received,c.Name+" GM fresh",Log);throw;}
+                    Log($"UPSTREAM_OPERATION_PASS {c.Name} GM_contract={a} PK_contract={b} independent_geometry_topology=True");
                     if(args.Contains("--lifecycle",StringComparer.Ordinal))
                         (managed,reference)=VerifyLifecycle(managed,reference,c.Name,directory,Log,args.Contains("--managed-material",StringComparer.Ordinal));
+                    if(thenBoolean)managed=VerifyFollowingBoolean(managed,c.Name,directory,Log,booleanInject);
                     Check(KernelRuntime.EntityDelete(1,&managed),"delete managed result");Check(PK_ENTITY_delete(1,&reference),"delete reference");Check(PK_ENTITY_delete(1,&received),"delete received");
                     var ownedAfter=(KernelRuntime.Bodies.AliveCount,KernelRuntime.Curves.AliveCount,KernelRuntime.Surfaces.AliveCount,KernelRuntime.Points.AliveCount,KernelRuntime.ReturnOutstandingBlocks);
                     Require(ownedBefore==ownedAfter,$"Blend product geometry/return memory ownership cleanup before={ownedBefore} after={ownedAfter}");
-                    Log("GEOMETRY_TOPOLOGY_PASS "+c.Name);
+                    Log(booleanInject?"ROLLBACK_SCENARIO_PASS "+c.Name+"; upstream Blend/lifecycle passed, GM Boolean failed as injected":"GEOMETRY_TOPOLOGY_PASS "+c.Name);
                 }
                 catch(Exception ex)
                 {
@@ -132,7 +142,7 @@ try
                 }
             }
             if(faceQueryControls)Log("FACE_QUERY_CONTROLS_PASS cases=4; query fixtures, no Blend construction qualified");
-            else Log($"Local operation geometry: {executed-failures} passed, {failures} failed, mass_unresolved={ParasolidMassProperties.UnresolvedCount}.");Require(failures==0,"Local operation oracle failed.");
+            else Log($"{(booleanInject?"Post-Blend rollback controls":"Local operation geometry")}: {executed-failures} passed, {failures} failed, mass_unresolved={ParasolidMassProperties.UnresolvedCount}.");Require(failures==0,"Local operation oracle failed.");
             if(ParasolidMassProperties.UnresolvedCount!=0)Environment.ExitCode=2;
         }
         finally{Check(KernelRuntime.SessionStop(),"managed session stop");}
@@ -434,9 +444,10 @@ static unsafe (PK_BODY_t Managed,PK_BODY_t Reference) VerifyLifecycle(PK_BODY_t 
     Check(PK_BODY_transform(nativeCopy,nativeTransform,0,&count,&replaced,&nativeExact),"transform PK Blend copy");Free(false,replaced);Free(false,nativeExact);
     Check(KernelRuntime.EntityDelete(1,&transform),"delete GM transform");Check(PK_ENTITY_delete(1,&nativeTransform),"delete PK transform");
     var bytes=TransmitManaged(copy);File.WriteAllBytes(Path.Combine(directory,label+"-lifecycle-managed.x_t"),bytes);
-    File.WriteAllBytes(Path.Combine(directory,label+"-lifecycle-reference.x_t"),TransmitReference(nativeCopy));
+    var referenceBytes=TransmitReference(nativeCopy);File.WriteAllBytes(Path.Combine(directory,label+"-lifecycle-reference.x_t"),referenceBytes);
     var reloaded=ReceiveManaged(bytes);Check(KernelRuntime.EntityDelete(1,&copy),"delete pre-reload GM product");
     var received=Receive(TransmitManaged(reloaded));
+    WebProgressCapture.BindQuality(label+" lifecycle",reloaded,nativeCopy,received,bytes,referenceBytes);
     try
     {
         CheckBody(nativeCopy,label+" lifecycle reference",log);CheckBody(received,label+" lifecycle received",log);
@@ -447,6 +458,87 @@ static unsafe (PK_BODY_t Managed,PK_BODY_t Reference) VerifyLifecycle(PK_BODY_t 
     finally{Check(PK_ENTITY_delete(1,&received),"delete lifecycle receive");}
     return(reloaded,nativeCopy);
 }
+static unsafe PK_BODY_t VerifyFollowingBoolean(PK_BODY_t managed,string label,string directory,Action<string> log,bool inject)
+{
+    var stage=label+"-post-blend-boolean";var source=TransmitManaged(managed);var nativeTarget=Receive(source);
+    File.WriteAllBytes(Path.Combine(directory,stage+"-target-before.x_t"),source);
+    var sourceHash=Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(source));
+    log($"BOOLEAN_INPUT stage={stage} target_sha256={sourceHash} GM_live={managed} PK_same_bytes={nativeTarget} after_independent_blend_and_lifecycle=True");
+    PK_BOX_t box;Check(PK_TOPOL_find_box(nativeTarget,&box),"actual Blend product bounds");
+    var dx=box.coord[3]-box.coord[0];var dy=box.coord[4]-box.coord[1];var dz=box.coord[5]-box.coord[2];
+    var pad=Math.Max(dx,Math.Max(dy,dz));Require(double.IsFinite(pad)&&pad>0,"bounded nonempty Blend product");
+    var frame=new PK_AXIS2_sf_t(new((box.coord[0]+box.coord[3])*.5,(box.coord[1]+box.coord[4])*.5,(box.coord[2]+box.coord[5])*.5),new(0,0,1),new(1,0,0));
+    PK_BODY_t tool=0,independentTool=0,nativeTool=0;
+    var ownTrack=new M.PK_TOPOL_track_r_s();var ownResult=new M.PK_boolean_r_s();var nativeTrack=new PK_TOPOL_track_r_t();var nativeResult=new PK_boolean_r_t();
+    try
+    {
+        Check(KernelRuntime.BodyCreateSolidBlock(dx+2*pad,dy+2*pad,dz*.5+pad,(M.PK_AXIS2_sf_s*)&frame,&tool),"GM crossing tool");
+        Check(PK_BODY_create_solid_block(dx+2*pad,dy+2*pad,dz*.5+pad,&frame,&independentTool),"independent PK crossing tool");
+        var toolBytes=TransmitManaged(tool);nativeTool=Receive(toolBytes);File.WriteAllBytes(Path.Combine(directory,stage+"-tool-before.x_t"),toolBytes);
+        CheckBody(independentTool,stage+" independent tool",log);CheckBody(nativeTool,stage+" fresh tool",log);
+        if(WebProgressCapture.Enabled)WebProgressCapture.BindQuality(stage+" independent tool",tool,independentTool,nativeTool,toolBytes,WebProgressCapture.NativeSnapshotBytes(independentTool));
+        ParasolidBodyCompare.AssertEquivalent(independentTool,nativeTool,stage+" independent tool");
+        Check(PK_ENTITY_delete(1,&independentTool),"delete independent tool baseline");independentTool=0;
+        var options=new PK_BODY_boolean_o_t{function=PK_boolean_subtract_c,default_tol=1e-7,tracking=PK_LOGICAL_false};
+        File.WriteAllBytes(Path.Combine(directory,stage+"-options.bin"),new ReadOnlySpan<byte>(&options,sizeof(PK_BODY_boolean_o_t)).ToArray());
+        log($"BOOLEAN_OPTIONS stage={stage} version={options.o_t_version} function={options.function} tolerance={options.default_tol:R} tool_sha256={Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(toolBytes))}");
+        var pools=(KernelRuntime.Bodies.AliveCount,KernelRuntime.Curves.AliveCount,KernelRuntime.Surfaces.AliveCount,KernelRuntime.Points.AliveCount,KernelRuntime.ReturnOutstandingBlocks);
+        WebProgressCapture.Context=stage;
+        WebProgressCapture.ContextSource=new JsonObject{["kind"]="same-byte-fork",["upstream"]=label+" independently verified construction/lifecycle",["targetXtSha256"]=sourceHash,
+            ["toolXtSha256"]=Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(toolBytes))};
+        WebProgressCapture.Before(true,managed,[],"PK_BODY_boolean_2",[tool]);WebProgressCapture.BooleanParameters(true,options);
+        int ownError;var started=System.Diagnostics.Stopwatch.GetTimestamp();
+        try
+        {
+            if(inject)KernelRuntime.InjectAllocationFailure(0);
+            ownError=KernelRuntime.BodyBoolean2(managed,1,&tool,(M.PK_BODY_boolean_o_s*)&options,&ownTrack,&ownResult);
+        }
+        finally{KernelRuntime.InjectAllocationFailure(-1);}
+        var elapsed=System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+        log($"STEP_API stage={stage} side=gm error={ownError} result={ownResult.result} count={ownResult.n_bodies} inject={inject}");
+        WebProgressCapture.BooleanAfter(true,ownError==0?new ReadOnlySpan<int>(ownResult.bodies,ownResult.n_bodies).ToArray():[],elapsed,ownError,ownResult.result,(PK_TOPOL_track_r_t*)&ownTrack);
+        if(ownError==0)tool=0;
+        WebProgressCapture.Before(false,nativeTarget,[],"PK_BODY_boolean_2",[nativeTool]);WebProgressCapture.BooleanParameters(false,options);
+        started=System.Diagnostics.Stopwatch.GetTimestamp();
+        var nativeError=PK_BODY_boolean_2(nativeTarget,1,&nativeTool,&options,&nativeTrack,&nativeResult);
+        elapsed=System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+        log($"STEP_API stage={stage} side=pk error={nativeError} result={nativeResult.result} count={nativeResult.n_bodies}");
+        WebProgressCapture.BooleanAfter(false,nativeError==0?new ReadOnlySpan<int>(nativeResult.bodies,nativeResult.n_bodies).ToArray():[],elapsed,nativeError,nativeResult.result,&nativeTrack);
+        Check(nativeError,"same-byte PK post-Blend Boolean");Require(nativeResult.result==PK_boolean_result_success_c&&nativeResult.n_bodies==1,"PK Boolean result contract");
+        nativeTool=0;nativeTarget=nativeResult.bodies[0];
+        var nativeBytes=TransmitReference(nativeTarget);File.WriteAllBytes(Path.Combine(directory,stage+"-pk-after.x_t"),nativeBytes);CheckBody(nativeTarget,stage+" independent output",log);
+        if(inject)
+        {
+            Require(ownError==M.ParasolidConstants.PK_ERROR_memory_full&&ownResult.result==PK_boolean_result_failed_c&&ownResult.n_bodies==0&&ownResult.bodies==null,"GM injected failure result contract");
+            Require(ownTrack.n_track_records==0&&ownTrack.track_records==null,"no tracking products after rollback");
+            Require(source.AsSpan().SequenceEqual(TransmitManaged(managed))&&toolBytes.AsSpan().SequenceEqual(TransmitManaged(tool)),"both inputs byte-identical after rollback");
+            Require(pools==(KernelRuntime.Bodies.AliveCount,KernelRuntime.Curves.AliveCount,KernelRuntime.Surfaces.AliveCount,KernelRuntime.Points.AliveCount,KernelRuntime.ReturnOutstandingBlocks),"rollback geometry and return ownership");
+            log($"ROLLBACK_CONTROL_PASS {stage} GM_error={ownError} inputs_byte_identical=True PK_success=True; no successful GM Boolean asserted");
+            return managed;
+        }
+        Check(ownError,"GM post-Blend Boolean");Require(ownResult.result==PK_boolean_result_success_c&&ownResult.n_bodies==1,"GM Boolean result contract");managed=ownResult.bodies[0];
+        var bytes=TransmitManaged(managed);File.WriteAllBytes(Path.Combine(directory,stage+"-gm-after.x_t"),bytes);var fresh=Receive(bytes);
+        WebProgressCapture.BindQuality(stage,managed,nativeTarget,fresh,bytes,nativeBytes);
+        try
+        {
+            CheckBody(fresh,stage+" fresh output",log);ParasolidBodyCompare.AssertEquivalent(nativeTarget,fresh,stage+" strict");
+            CompareMaterialSense(nativeTarget,fresh,stage);CompareManagedPlaneOrientations(managed,fresh,stage,log,true);CompareMass(nativeTarget,fresh,stage,log);
+            log($"GEOMETRY_TOPOLOGY_PASS {stage} GM_live={managed} GM_after_sha256={Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(bytes))} PK_after_sha256={Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(nativeBytes))}");
+        }
+        finally{Check(PK_ENTITY_delete(1,&fresh),"delete fresh Boolean output");}
+        return managed;
+    }
+    finally
+    {
+        WebProgressCapture.Context="";WebProgressCapture.ContextSource=null;KernelRuntime.TopolTrackResultFree(&ownTrack);KernelRuntime.BooleanResultFree(&ownResult);
+        PK_TOPOL_track_r_f(&nativeTrack);PK_boolean_r_f(&nativeResult);
+        if(tool!=0)Check(KernelRuntime.EntityDelete(1,&tool),"delete retained Boolean tool");
+        if(nativeTool!=0)Check(PK_ENTITY_delete(1,&nativeTool),"delete retained native tool");
+        if(independentTool!=0)Check(PK_ENTITY_delete(1,&independentTool),"delete tool baseline");
+        if(nativeTarget!=0)Check(PK_ENTITY_delete(1,&nativeTarget),"delete native Boolean product");
+    }
+}
+
 static unsafe int Count(int body,int kind)
 {
     int count=0;int* entities=null;var error=kind switch{0=>PK_BODY_ask_regions(body,&count,&entities),1=>PK_BODY_ask_shells(body,&count,&entities),2=>PK_BODY_ask_faces(body,&count,&entities),3=>PK_BODY_ask_edges(body,&count,&entities),_=>PK_BODY_ask_vertices(body,&count,&entities)};
@@ -455,6 +547,7 @@ static unsafe int Count(int body,int kind)
 static unsafe void CheckBody(int body,string label,Action<string> log)
 {
     var options=new PK_BODY_check_o_t{max_faults=100};int count=0;PK_check_fault_t* faults=null;Check(PK_BODY_check(body,&options,&count,&faults),label+" full PK_BODY_check");
+    WebProgressCapture.RecordBodyCheck(label,body,count,faults);
     try{for(var i=0;i<count;i++)log($"{label} fault={faults[i].state} entity={faults[i].entity_1} other={faults[i].entity_2}");Require(count==0,label+" BODY_check faults: "+count);}finally{Free(false,faults);}
 }
 static unsafe void CompareMass(int reference,int actual,string label,Action<string> log)
@@ -489,6 +582,9 @@ static unsafe void CompareManagedPlaneOrientations(int own,int fresh,string labe
         }
         Require(matched!=0&&used.Add(matched),label+" same-product plane correspondence");
         Require((orientation!=0)==(expected==PK_LOGICAL_true),$"{label} managed FaceAskOrientedSurf differs from same actual XT in PK: faces={face}/{matched} GM={orientation!=0} PK={expected==PK_LOGICAL_true}");count++;
+        var rawFace=KernelRuntime.Faces[KernelRuntime.ResolveTagRecord(face).Slot].Orientation;
+        var rawSurface=KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(surface)].Sense;
+        log($"FACE_DIRECTION_API {label} GM_face={face} face_raw={rawFace} surface_raw={rawSurface} GM_public={orientation!=0} PK_same_frame={expected==PK_LOGICAL_true}");
         if(!checkManagedMaterial)continue;
         var interior=new PK_FACE_find_interior_vec_o_t();PK_VECTOR_t point;PK_UV_t uv;
         Check(PK_FACE_find_interior_vec(matched,&interior,&point,&uv),"native finite plane material witness");
@@ -498,6 +594,7 @@ static unsafe void CompareManagedPlaneOrientations(int own,int fresh,string labe
             int actual=0,native=0,topology=0;
             var actualError=KernelRuntime.BodyContainsVector(own,*(M.PK_VECTOR_s*)&query,&actual,&topology);
             var nativeError=PK_BODY_contains_vector(fresh,query,&native,&topology);
+            WebProgressCapture.RecordMaterial(label,query,nativeError,native,actualError,actual,"GM-live-vs-own-fresh-PK",fresh,own);
             log($"MANAGED_MATERIAL_QUERY {label} faces={face}/{matched} side={side} point=({query.coord[0]:R},{query.coord[1]:R},{query.coord[2]:R}) GM_error={actualError} GM_class={actual} PK_error={nativeError} PK_class={native}");
             Check(nativeError,"PK finite plane material side");
             Require(native==(side<0?PK_enclosure_inside_c:PK_enclosure_outside_c),label+" native finite plane material witness must be separated");

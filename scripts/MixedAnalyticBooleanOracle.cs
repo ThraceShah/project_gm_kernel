@@ -38,7 +38,8 @@ using(host)unsafe
                     try
                     {
                         var path=Path.Combine(directory,name+"-"+stage.Key+"-gm.x_t");if(!File.Exists(path))continue;
-                        var fresh=Receive(File.ReadAllBytes(path),false);CheckBody(fresh,name+" "+stage.Key+" received");CheckBody(stage.Value,name+" "+stage.Key+" independent");
+                        var stageBytes=File.ReadAllBytes(path);var fresh=Receive(stageBytes,false);CheckBody(fresh,name+" "+stage.Key+" received");CheckBody(stage.Value,name+" "+stage.Key+" independent");
+                        if(WebProgressCapture.Enabled)WebProgressCapture.BindArchivedQuality(name+" "+stage.Key,stage.Value,fresh,stageBytes,Transmit(stage.Value,false));
                         Compare(stage.Value,fresh,name+" "+stage.Key);Console.WriteLine("GEOMETRY_TOPOLOGY_PASS "+name+" "+stage.Key);
                     }
                     finally{var copy=stage.Value;Check(PK_ENTITY_delete(1,&copy),"delete independent intermediate copy");}
@@ -48,8 +49,9 @@ using(host)unsafe
                 for(var i=0;i<own.Length;i++)
                 {
                     var bytes=Transmit(own[i]);File.WriteAllBytes(Path.Combine(directory,name+"-"+i+".x_t"),bytes);
-                    File.WriteAllBytes(Path.Combine(directory,name+"-"+i+"-native.x_t"),Transmit(reference[i],false));
+                    var referenceBytes=Transmit(reference[i],false);File.WriteAllBytes(Path.Combine(directory,name+"-"+i+"-native.x_t"),referenceBytes);
                     var received=Receive(bytes,false);CheckBody(received,name+" received");CheckBody(reference[i],name+" reference");
+                    WebProgressCapture.BindQuality(name,own[i],reference[i],received,bytes,referenceBytes);
                     Compare(reference[i],received,name);Classify(own[i],reference[i],name);
                 }
                 Console.WriteLine("GEOMETRY_TOPOLOGY_PASS "+name);passed++;

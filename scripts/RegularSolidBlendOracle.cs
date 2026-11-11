@@ -407,6 +407,7 @@ static unsafe int Block(bool own,double x,double y,double z,double width,double 
 static unsafe void CompareFresh(int own,int reference,string name,string directory)
 {
     var bytes=Transmit(own);File.WriteAllBytes(Path.Combine(directory,name+".x_t"),bytes);var received=Receive(bytes);
+    if(WebProgressCapture.Enabled)WebProgressCapture.BindQuality(name,own,reference,received,bytes,WebProgressCapture.NativeSnapshotBytes(reference));
     try{CheckBody(reference,name+" reference");CheckBody(received,name+" received");Compare(reference,received,name);}
     finally{Check(PK_ENTITY_delete(1,&received),"delete independent received solid");}
 }
