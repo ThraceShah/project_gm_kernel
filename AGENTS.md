@@ -14,45 +14,8 @@
 - `scripts/` 下的单文件 C# 脚本如果需要从 C# 调用真实 Parasolid `pskernel`，必须优先通过 `#:project ../third_party/PKToy/PskernelSharp/PskernelSharp.csproj` 引用 PKToy 的 P/Invoke 绑定，并声明 `#:property UsePskernelSharpUsings=true` 复用 `third_party/PKToy/PskernelSharp/Using.cs` 中的全局别名，同时声明 `#:property UseParasolidScriptHost=true` 复用 `scripts/ParasolidScriptHost.cs` 做动态库探查、`P_SCHEMA` 设置、frustrum/memory callback 注册和 session start/stop；禁止在脚本里复制 `PK_*` 类型别名、手写 C# P/Invoke 函数声明、手写 ABI 结构体或重复 Parasolid session 初始化样板。脚本调用当前项目内核时，默认必须通过 `#:project ../src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj` 直接调用托管 API、`KernelRuntime` 或测试目标对应的项目接口；只有脚本目标明确是验证 C export/ABI 时才允许加载当前项目发布出的 native library 并 P/Invoke（当前为 `scripts/AbiSmoke.cs`）。禁止把 `PskernelSharp` 的 `"pskernel"` 重定向到当前项目 native kernel，以免把 Parasolid oracle 退化成自我对比。例外：生成器模板或专门测试 ABI/export 的脚本。
 - 所有 `int` 语义类型必须通过 `global using` 创建类型别名（如 `BodySlot`、`CurveTag`），禁止在 record/struct 中使用裸 `int` 表示不同含义的实体索引或句柄。定义见 `src/ProjectGmKernel.Native/Runtime/KernelTypes.cs`。
 
-## 1. Think Before Coding
 
-**Don't assume. Don't hide confusion. Surface tradeoffs.**
-
-Before implementing:
-- State your assumptions explicitly. If uncertain, ask.
-- If multiple interpretations exist, present them - don't pick silently.
-- If a simpler approach exists, say so. Push back when warranted.
-- If something is unclear, stop. Name what's confusing. Ask.
-
-## 2. Simplicity First
-
-**Minimum code that solves the problem. Nothing speculative.**
-
-- No features beyond what was asked.
-- No abstractions for single-use code.
-- No "flexibility" or "configurability" that wasn't requested.
-- No error handling for impossible scenarios.
-- If you write 200 lines and it could be 50, rewrite it.
-
-Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
-
-## 3. Surgical Changes
-
-**Touch only what you must. Clean up only your own mess.**
-
-When editing existing code:
-- Don't "improve" adjacent code, comments, or formatting.
-- Don't refactor things that aren't broken.
-- Match existing style, even if you'd do it differently.
-- If you notice unrelated dead code, mention it - don't delete it.
-
-When your changes create orphans:
-- Remove imports/variables/functions that YOUR changes made unused.
-- Don't remove pre-existing dead code unless asked.
-
-The test: Every changed line should trace directly to the user's request.
-
-## 4. dotnet Process Management
+## 1. dotnet Process Management
 
 **dotnet CLI 的 MSBuild worker 和 testhost 进程会在后台驻留，导致 CPU 占用 100% 或资源泄漏。必须遵守以下规则：**
 
@@ -67,25 +30,8 @@ The test: Every changed line should trace directly to the user's request.
 - C ABI 改动包括 C exports 的名称、数量、函数签名、调用约定、ABI 结构体的尺寸/字段偏移/对齐，以及原生调用边界的内存所有权契约变化。纯算法、建模逻辑和内部实现改动不触发 NativeAOT 编译测试。
 - 只有涉及上述 C ABI 改动，或用户明确要求时，才执行 NativeAOT 编译及相应原生 ABI 验证；AOT 兼容性仍须在日常代码设计中保持。
 
-## 5. Goal-Driven Execution
 
-**Define success criteria. Loop until verified.**
-
-Transform tasks into verifiable goals:
-- "Add validation" → "Write tests for invalid inputs, then make them pass"
-- "Fix the bug" → "Write a test that reproduces it, then make it pass"
-- "Refactor X" → "Ensure tests pass before and after"
-
-For multi-step tasks, state a brief plan:
-```
-1. [Step] → verify: [check]
-2. [Step] → verify: [check]
-3. [Step] → verify: [check]
-```
-
-Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
-
-## 6. Parasolid Oracle Tests
+## 2. Parasolid Oracle Tests
 
 **新增或修改会影响 Parasolid 兼容 API、B-rep、几何、`x_t` transmit/receive 的接口时，必须补充 Parasolid oracle 测试。**
 
@@ -109,6 +55,4 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - wire 没有面，body compare 不验证曲线形状；必须额外匹配导出后的有限边，检查曲线类型/sense/端点/裁剪范围及双向几何距离，并保留目标 API 的参数、导数等专项测试。采样不能宣称为任意曲线的完整等价证明。
 - 比较辅助代码必须有负例：同拓扑但尺寸错误的实体、平移或裁剪错误的 wire 必须失败；等价曲面升阶/插结在容差内应通过。结果用 `PK_DEBUG_BODY_compare_r_f` 释放。
 
----
 
-**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
