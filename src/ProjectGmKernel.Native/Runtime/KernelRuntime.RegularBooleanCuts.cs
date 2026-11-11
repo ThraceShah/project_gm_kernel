@@ -168,6 +168,13 @@ internal static unsafe partial class KernelRuntime
                 if(!known&&!lineProof&&certificates.IsEmpty&&curveClass==CurveClass.Line&&surfaceClass==SurfaceClass.BSurface
                     &&!TryAffinePlanarSurface(surfaceSlot,out _,out _,out _))
                     lineProof=IsolateFiniteSurfaceLine(edge,surfaceSlot,roots,nativeRoots,spatialErrors,out n,default,default)==AlgorithmStatus.Success;
+                if(!known&&!lineProof&&certificates.IsEmpty&&curveClass==CurveClass.BCurve&&surfaceClass==SurfaceClass.BSurface
+                    &&!TryAffinePlanarSurface(surfaceSlot,out _,out _,out _))
+                {
+                    var isolated=IsolateFiniteSplineSurface(edge,surfaceSlot,roots,nativeRoots,spatialErrors,out n);
+                    if(isolated!=AlgorithmStatus.Success){LastSheetAlgorithmStatus=isolated;return IntersectionError(isolated);}
+                    lineProof=true;
+                }
                 var conicPlaneProof=!known&&certificates.IsEmpty&&(curveClass is CurveClass.Circle or CurveClass.Ellipse or CurveClass.BCurve)
                     &&TryBoundaryPlane(surfaceSlot,out var plane)
                     &&(curveClass==CurveClass.BCurve?IsolateFiniteSplinePlane(edge,plane,roots,nativeRoots,spatialErrors,out n)

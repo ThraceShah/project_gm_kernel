@@ -216,6 +216,55 @@ internal static unsafe partial class KernelRuntime
         return AlgorithmStatus.Success;
     }
 
+    private static AlgorithmStatus IsolateFiniteSplineSurface(in ModelingEdge edge,SurfaceSlot surface,
+        Span<OperationIntersectionPoint> output,Span<ScalarRootIsolation> parameters,Span<double> errors,out BufferCount count)
+    {
+        count=0;var slot=GetCurveSlotByTag(edge.Curve);var record=Curves[slot];
+        if(record.Class!=CurveClass.BCurve||Surfaces[surface].Class!=SurfaceClass.BSurface)return AlgorithmStatus.Unsupported;
+        var span=new IntersectionCurveSpan{Slot=slot,Scale=1,Lower=edge.Start,Upper=edge.End};
+        var status=RegularSurfaceExtent(surface,out var extent);if(status!=AlgorithmStatus.Success)return status;
+        Span<IntervalNumber> surfacePoles=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars],curvePoles=stackalloc IntervalNumber[4*17],bounds=stackalloc IntervalNumber[9];
+        Span<SurfaceIntersectionNode> roots=stackalloc SurfaceIntersectionNode[64];
+        Span<IsolatedRootCertificate> certificates=stackalloc IsolatedRootCertificate[64],accepted=stackalloc IsolatedRootCertificate[output.Length];
+        Span<KernelVector3> point=stackalloc KernelVector3[2];
+        for(var s=0;s<RegularSurfacePatchCount(surface);s++)
+        {
+            status=RegularSurfacePatch(surface,s,extent,surfacePoles,out var target);if(status!=AlgorithmStatus.Success)return status;
+            var box=target.Domain;if(!(box.U1>box.U0&&box.V1>box.V0))continue;
+            for(var c=0;c<GeneralCurvePieceCount(span);c++)
+            {
+                status=GeneralCurvePiece(span,c,curvePoles,out var degree,out var domain,out var lo,out var hi);if(status!=AlgorithmStatus.Success)return status;
+                if(!(hi>lo))continue;
+                var source=new SurfaceIntersectionPatch(new BezierSurfacePatch(curvePoles[..(4*(degree+1))],degree,0,domain));
+                var search=new ParameterCell{Lower=new(){U=box.U0,V=box.V0,S=lo},Upper=new(){U=box.U1,V=box.V1,S=hi}};
+                status=ParametricSurfaceIntersection.Isolate(target,source,search,3,roots,out var n,certificates);if(status!=AlgorithmStatus.Success)return status;
+                for(var r=0;r<n;r++)
+                {
+                    var proof=certificates[r];var interval=new IntervalNumber(proof.Second.U0,proof.Second.U1);var duplicate=false;
+                    for(var k=0;k<count;k++)
+                    {
+                        if(parameters[k].Root.Upper<interval.Lower||interval.Upper<parameters[k].Root.Lower)continue;
+                        if(!proof.MayShareRoot(accepted[k])||!proof.ProvesSameRoot(accepted[k]))return AlgorithmStatus.NotConverged;
+                        duplicate=true;break;
+                    }
+                    if(duplicate)continue;
+                    if(count==output.Length||count==parameters.Length||count==errors.Length)return AlgorithmStatus.OutputTooSmall;
+                    var t=Math.Clamp(roots[r].S,interval.Lower,interval.Upper);
+                    status=EvaluateCurveCore(in record,t,0,false,point,out _);if(status!=AlgorithmStatus.Success)return status;
+                    status=source.Bound(new(interval.Lower,interval.Upper,0,0),bounds);if(status!=AlgorithmStatus.Success)return status;
+                    var error=(new IntervalVector(bounds[0],bounds[1],bounds[2])-new IntervalVector(point[0])).Norm().Value.Upper;
+                    if(!double.IsFinite(error)||error>OperationIntersection.DistanceTolerance)return AlgorithmStatus.NotConverged;
+                    var at=count++;
+                    while(at>0&&interval.Lower<parameters[at-1].Root.Lower)
+                    {accepted[at]=accepted[at-1];parameters[at]=parameters[at-1];output[at]=output[at-1];errors[at]=errors[at-1];at--;}
+                    accepted[at]=proof;parameters[at]=new(){Root=interval,Certified=true};errors[at]=error;
+                    output[at]=new(){Point=point[0],First=t,U=roots[r].U,V=roots[r].V,Kind=IntersectionVectorKind.Simple};
+                }
+            }
+        }
+        return AlgorithmStatus.Success;
+    }
+
     private static AlgorithmStatus IntersectRegularICurveSurface(SurfaceSlot surface,CurveSlot curve,double first,double last,
         Span<OperationIntersectionPoint> output,out BufferCount count)
     {

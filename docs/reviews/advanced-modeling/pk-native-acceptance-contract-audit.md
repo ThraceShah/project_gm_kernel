@@ -63,3 +63,13 @@ Block single fillet 的旧 oracle 将 curve_sense 差异降级后在重附着的
 `native-contract-complete.{log,exit}` 的真实控制执行 exit 0：错误尺寸的积分区间判 Different；原生错误球半径与错误有限 wire trim 在 fresh XT receive 后均由未修改的 AssertEquivalent 拒绝；明确分离的真实材料翻转判 Different，On 分歧不签通过，API 错误拒绝。控制目录为 `temp_docs/native-acceptance-contract/native-contract-complete-control-v1/`，保留每个实际 XT 与 manifest。这些是负控与合同执行证据，不能冒充 GM 正向建模成功。
 
 以上为已保存的开发窄验，不是最终固定 SHA 全操作验收。后续统一用 `dotnet run --no-cache`，保留实际加载 GM 程序集 SHA256，并集中记录固定候选的完整生命周期、受影响回归、source/artifact hashes 与原始退出码；看板仍使用固定 f9 历史 run，未来新 run 须明确区分几何通过、数值未决与真实硬失败。
+
+## 默认有限 BCurve/BSurface 根的实际修复
+
+`IsolateFiniteSplineSurface` 对实际 native knot span 提取 Bezier 区间，复用现有 Krawczyk 隔离器，保留源 BCurve 参数区间与目标 UV 共同证书；重复根只有在同一组参数化方程的唯一域证明相同时才合并。未解析或有限域外根不被接纳。内部 BCurve 求值即使请求 D0 仍计算 D1，调用方提供两个向量槽；最初单槽导致的 OutputTooSmall 是真实实现错误，保留开发日志，不归因环境。
+
+实际命令：`MSBUILDDISABLENODEREUSE=1 dotnet run --no-cache scripts/RegularCurvedBooleanOracle.cs -c Release -p:BuildInParallel=false -p:UseSharedCompilation=false -p:GmInProcessLinkTasks=true -- nurbs --output-name=default-native-spline-surface-v2`。`temp_docs/pk-native-acceptance-audit/default-spline-surface-native-v2.log` 中三个独立构造 NURBS/NURBS Boolean 的 fresh receive、strict compare、完整体检查和材料检查通过，mass 三项 Unresolved，原 exit 2。加载 GM assembly SHA 为 `0415c20203b4540a4caa42621a604920944e9309608eb462432f93b7dfb713b5`。同范围 managed 回归 `RegularCurvedBooleanTests` 37/37，原 exit 0，记录在 `default-spline-tests.*`；新增三个默认安全路径的实际两实体 Boolean 生命周期回归。
+
+planar single fillet 接触 line 直接克隆原生父 line 并平移原点，保留方向系数和参数 gauge，不再次归一化。`LocalOperationOracle.cs --output-name=native-parent-gauge-single-v1` 实际 block-single-fillet 严格比较零差异、mass Verified，原 exit 0，见 `local-parent-gauge.*`。
+
+完整固定 `0e67b6b` regular oracle 的 45 项实际为 24 项几何拓扑通过、21 项真实建模失败，原 exit 134，见 `temp_docs/pk-native-acceptance-audit/final-0e67b6b/regular.*`。本修复关闭其中 NURBS 三项；continuous/reloaded 六项与 same-domain 系列十二项尚待修复，不能把本节视作 M0–M5 完成。相同固定源的完整横向 shortedge 默认生命周期实际几何拓扑通过，mass 八项未决、原 exit 2，见该目录 `transverse.*`。two-tools 始终表示 target 加两个 tool，共三个输入。

@@ -368,7 +368,25 @@ public unsafe class RegularCurvedBooleanTests:IDisposable
         var free=KernelRuntime.MemoryFree(result);return error==0?free:error;
     }
 
-    internal static int RoofSolid()
+    [Theory]
+    [InlineData(15903)] [InlineData(15901)] [InlineData(15902)]
+    public void TwoTransverseSplineSolidsRetainCertifiedNativeBoundaryRoots(int function)
+    {
+        var previous=KernelRuntime.ForbidSpatialBoundaryReuse;KernelRuntime.ForbidSpatialBoundaryReuse=false;
+        try
+        {
+            var target=RoofSolid();var tool=RoofSolid(.3,.2,.05,.2);
+            var options=BooleanOperationTests.Options(function);int count;int* bodies;
+            var error=KernelRuntime.BodyBoolean(target,1,&tool,&options,&count,&bodies);
+            Assert.True(error==0,$"error={error}, stage={KernelRuntime.LastRegularBooleanStage}, pair={KernelRuntime.LastRegularBooleanFace}/{KernelRuntime.LastRegularBooleanOtherFace}, sheet={KernelRuntime.LastSheetPartitionStage}, status={KernelRuntime.LastSheetAlgorithmStatus}");
+            try{Assert.Equal(1,count);Assert.Equal(target,bodies[0]);Assert.Equal(0,KernelRuntime.EntityDelete(1,&target));}
+            finally{if(bodies!=null)KernelRuntime.MemoryFree(bodies);}
+            Assert.Equal(0,KernelRuntime.Bodies.AliveCount);Assert.Equal(0,KernelRuntime.Curves.AliveCount);Assert.Equal(0,KernelRuntime.Surfaces.AliveCount);
+        }
+        finally{KernelRuntime.ForbidSpatialBoundaryReuse=previous;}
+    }
+
+    internal static int RoofSolid(double x=0,double y=0,double z=0,double bulge=.8)
     {
         int* sheets=stackalloc int[6];double* poles=stackalloc double[27];double* knots=stackalloc double[2]{0,1};int* mult=stackalloc int[2];
         for(var face=0;face<6;face++)
@@ -377,9 +395,9 @@ public unsafe class RegularCurvedBooleanTests:IDisposable
             for(var i=0;i<n;i++)for(var j=0;j<n;j++)
             {
                 var u=(double)i/degree;var v=(double)j/degree;var at=3*(i*n+j);
-                poles[at]=face switch{0 or 1 or 4=>u,2=>0,3=>1,_=>v};
-                poles[at+1]=face switch{0=>1-v,1 or 2=>v,3=>u,4=>0,_=>1};
-                poles[at+2]=face switch{0=>0,1=>1+(i==1&&j==1?.8:0),2 or 5=>u,_=>v};
+                poles[at]=x+(face switch{0 or 1 or 4=>u,2=>0,3=>1,_=>v});
+                poles[at+1]=y+(face switch{0=>1-v,1 or 2=>v,3=>u,4=>0,_=>1});
+                poles[at+2]=z+(face switch{0=>0,1=>1+(i==1&&j==1?bulge:0),2 or 5=>u,_=>v});
             }
             var definition=new PK_BSURF_sf_s{u_degree=degree,v_degree=degree,n_u_vertices=n,n_v_vertices=n,vertex_dim=3,vertex=poles,
                 n_u_knots=2,n_v_knots=2,u_knot=knots,v_knot=knots,u_knot_mult=mult,v_knot_mult=mult,

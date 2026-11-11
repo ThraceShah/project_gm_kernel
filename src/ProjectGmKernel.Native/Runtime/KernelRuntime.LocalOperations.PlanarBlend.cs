@@ -240,8 +240,7 @@ internal static unsafe partial class KernelRuntime
         var squared=Dot(direction,direction);var first=Dot(Sub(a,origin),direction)/squared;var last=Dot(Sub(b,origin),direction)/squared;
         if(first==last)return ParasolidConstants.PK_ERROR_curve_too_short;
         var shifted=Sub(a,Scale(direction,first));
-        var curve=CreateLineCurveTag(shifted.X,shifted.Y,shifted.Z,direction.X,direction.Y,direction.Z);
-        if(curve<=0)return ParasolidConstants.PK_ERROR_memory_full;
+        var clone=TranslateRollingLine(Edges[source].CurveTag,shifted,out var curve);if(clone!=0)return clone;
         // Keep the selected native line gauge on both contact uses. Their
         // opposite topological traversal is represented by curve sense.
         var fin=Edges[source].FirstFinEdge;
