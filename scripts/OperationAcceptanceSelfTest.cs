@@ -102,6 +102,9 @@ Validate(false, "rejects forged parameter hash", o => o["parameterHash"] = "PK_B
 Validate(false, "rejects tag pretending to be hash", o => o["inputHashes"]!["gm"]!["target"] = "tag27");
 Validate(false, "rejects unsupported API", o => o["api"] = "unknown");
 Validate(false,"rejects unknown interpretation version",o=>o["interpretationVersion"]="unknown-version");
+Validate(false,"rejects numeric interpretation version",o=>o["interpretationVersion"]=99);
+Validate(false,"rejects explicit null interpretation version",o=>o["interpretationVersion"]=null);
+Validate(false,"rejects object interpretation version",o=>o["interpretationVersion"]=new JsonObject());
 Validate(false,"rejects Boolean v2 upgrade under legacy interpretation",o=>{o["api"]="PK_BODY_boolean_2";o.Remove("interpretationVersion");});
 Validate(false, "rejects unproven same input", o => o["inputProvenance"] = null);
 Validate(false, "rejects zero GM", o => { o["timing"]!["gmMs"] = 0; o["timing"]!["ratio"] = 0; });

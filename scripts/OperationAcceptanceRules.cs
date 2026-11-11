@@ -42,7 +42,8 @@ internal static class OperationAcceptanceRules
         var api = Text(op["api"]);
         // These requirements are the existing Compare capture checks: body count,
         // both BODY_check calls, five topology counts, strict compare and 15 mass values.
-        var interpretation = Text(op["interpretationVersion"]) ?? "operation-rules-v1";
+        var interpretation = op.ContainsKey("interpretationVersion") ? Text(op["interpretationVersion"]) : "operation-rules-v1";
+        if(interpretation is not ("operation-rules-v1" or "operation-rules-v2"))Reason("unknown-or-invalid-interpretation-version");
         var supportedApi = api is "PK_BODY_boolean" or "PK_BODY_fix_blends" or "PK_SURF_create_blend" || interpretation == "operation-rules-v2" && api == "PK_BODY_boolean_2";
         var supported = (interpretation is "operation-rules-v1" or "operation-rules-v2") && contract == "capture-body-result-v1" && supportedApi;
         var complete = supported;
