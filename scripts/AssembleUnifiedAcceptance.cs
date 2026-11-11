@@ -134,7 +134,7 @@ void AddCase(string id,string title,string status,JsonArray steps,JsonArray chec
         ["execution"]=new JsonObject{["selected"]=true,["attempted"]=true,["exitCode"]=null,["exitCodes"]=new JsonArray(),["timedOut"]=false}
     });
 }
-var evCore=new JsonArray((JsonNode)new JsonObject{["label"]="217fc… 不适用：本 run 原件为 handoff-current-v2（manifest/runner-report/files/source 清单，原字节）",["path"]="evidence/unified-manifest.json"},(JsonNode)new JsonObject{["label"]="逐组显示绑定（56 mesh 哈希/loaded identity/command）",["path"]="evidence/display-binding.json"},(JsonNode)new JsonObject{["label"]="来源/收据回执",["path"]="evidence/run-receipt.json"});
+var evCore=new JsonArray((JsonNode)new JsonObject{["label"]="统一内核原件 handoff-current-v2（manifest/runner-report/files/source 清单，原字节）",["path"]="evidence/unified-manifest.json"},(JsonNode)new JsonObject{["label"]="逐组显示绑定（56 mesh 哈希/loaded identity/command）",["path"]="evidence/display-binding.json"},(JsonNode)new JsonObject{["label"]="来源/收据回执",["path"]="evidence/run-receipt.json"});
 JsonNode NoModelNote()=>JsonValue.Create("报表/诊断类：无实际模型显示，不造模型。");
 JsonNode GroupsNote()=>JsonValue.Create("上游 independent-construction 与下游 same-byte-fork 分列互不代签；shortedge 来源=PK seed→GM receive→GM Fix（不称 GM 独立构造）；curved roles/tracking missing 如实；回滚 901/failed 零产品=负控成功，不写 GM Boolean 成功；mass 只按 Verified/Different/Unresolved，missing 不绿。");
 JsonNode LimitsNote()=>JsonValue.Create("限定保留：510 self15/import16/native7、五产品 BodyContains5000、FaceAttach 未测、curved roles 缺失、各质量 Unresolved；1974 全过不证明这些解决。整体 M0–M5 与 PK 目标仍未完成。");
@@ -197,6 +197,7 @@ File.WriteAllText(Path.Combine(run,"manifest.json"),new JsonObject
             ["fullSuite"]=new JsonObject{{"total",1974},{"passed",1974},{"rawExit",0},{"trxSha256",TrxSha},{"historicalTwoNowPassed",true}},
             ["performanceScope"]="Linux 非正式性能；倍率全 null；217fc/6616 旧倍率不绑定统一内核；GConic 历史 run 独立保留。",
             ["limitsNote"]="510/self15-import16/native7、BodyContains5000×5、FaceAttach 未测、curved roles 缺失、mass Unresolved、M0–M5/PK 目标未完成。",
+            ["historicalArchive"]=new JsonObject{{"retiredRun","20261111T130936Z-f9c59201"},{"originalManifestSha256","f5504e5450c159d69c2fcec503e661477e43d7ce99d050f99178cabd0debeac4"},{"fileCount",58},{"originalBytes",3230189},{"archive","ui-015-tools-1b93597-gconic217fc/retired-data-archive-4 (read-only, manifest sha 7bdf6be31640939de23751782e547013579b66cf1c4d94981280108263891d73)"},{"recoverable","release read-only archive + verified pre-event served snapshot"},{"note","协调容量裁决移出 served/index；非被拒结果——其历史接受与原红项原样保留于归档；统一基线取代其在线主展示；本 run 无指向已下线 run 的死模型链接。"}},
             ["familyTaxonomyNote"]="family 为看板既有粗分类。",
             ["caseStatusDefinitions"]=new JsonObject{{"pass","该 case 现行必需检查通过，仅限所列范围。"},{"fail","存在必需检查失败/未完成目标。"},{"missing","缺失/未决；不推断、不转绿。"},{"diagnostic","诊断/控制/含未决项；不是无条件验收通过。"}}
         }
@@ -211,6 +212,7 @@ File.WriteAllText(Path.Combine(evidenceDir,"run-receipt.json"),new JsonObject
     ["schemaVersion"]=1,["runId"]=runId,["generatedAt"]=now.ToString("O"),["collectorCommit"]=collectorSha,
     ["layers"]=new JsonObject{{"calculation",Candidate},{"runner",Runner},{"review",Review+"/"+ReviewB1},{"package",ZipSha},{"collector",collectorSha}},
     ["originalExits"]=new JsonObject{{"oblique",0},{"mirror8",2},{"shortedge-lifecycle",2},{"controls",0},{"runner-curved",2},{"runner-nurbs",2},{"runner-shortedge",2},{"full-suite",0}},
+    ["historicalArchive"]="retired-data-archive-4: 20261111T130936Z-f9c59201 (58 files, 3230189 B, manifest f5504e54…) frozen read-only; coordinator capacity decision; recoverable from release archive + verified snapshot.",
     ["runBytesBeforeReceiptAndValidation"]=runBytes,["evidenceFiles"]=evidenceManifest,
     ["validation"]="see validation.json"
 }.ToJsonString());
