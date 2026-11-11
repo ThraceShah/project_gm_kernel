@@ -76,6 +76,9 @@ cache 侧减量需先交“任意 matcher 读取前 prepass 使全部可能 scal
 
 ## 4. 逐位 A/B 与负控（合同测试）
 
+（独立 GPT 已接受本节 source 安全范围：q2 新增 2 + cache 原 6 共 8/8 exit 0，
+Mac 25 盒 70 行 A/B 哈希一致；未发现 reachable read-before-write。）
+
 `tests/KernelTests/NestedBlendBoundsInitializationContractTests.cs`：
 5 个程序（analytic-nested 2 级嵌套、spline-supports 稀疏 UV 接触槽、
 curved-spine 曲脊、deep-chain 双层嵌套、singular 退化）× 5 个盒
@@ -86,9 +89,12 @@ witness、`BoundSpine`、`BoundSpineCurvature` 双侧、`BoundSpineProjectedAcce
 
 - **bitwise A/B**：base dump 与 candidate dump **sha256 相同**
   `c5b09e1387b8dafb4cde1a31fd7ea7525e53b36c95d85dbcd244fbbe6980da21`（70 行，0 差异）。
-- **负控（candidate 上全过）**：栈污染（递归 8×8KB 垃圾填充后 dump 相等）、
-  反序探测（逐行集合相等）、早退后再正常调用（失败 dump 后相等）、
-  重复调用/再入（多次相等）、cache 命中/未命中历史（前缀盒结果不随后继失败探测变化）。
+- **负控（candidate 上全过）**：栈污染（递归 8×8KB ≈74KiB 垃圾模式后 dump 相等；
+  注意：该控制只是模式多样性烟测，**没有目标 frame 地址/覆盖率证据**，
+  不构成“226KiB 全污染/NaNInf/Ready 假命中/真实再入已证”；源码安全接受
+  依赖 §2 的静态支配闭包，不依赖此弱测）、反序探测（逐行集合相等）、
+  早退后再正常调用（失败 dump 后相等）、重复调用/再入（多次相等）、
+  cache 命中/未命中历史（前缀盒结果不随后继失败探测变化）。
 - 原九项 A/B 语义由上表 `Bound` 9 项 hex 位覆盖；既有
   `NestedBlendBoundsTests`/`NestedBlendSplineCacheTests` 等原测试保持不动。
 
@@ -108,9 +114,10 @@ base 15 个清零循环的立即数与 scratch 一一对应：448（occurrences�
 （state/rhs/residual）、1008×3（boxes/image/centerF）、2016×2（variables/equations）、
 4544（snapshot）、22176（splineCache）、31760×2（jacobian/inverse）、63504×2
 （intervalJacobian/remainder）= 226,288 B（与 reviewer 声明 226,612 B 对齐，差为对齐/小件）。
-**结论：本切片确定性删除每 call ≈226 KB 隐式清零**；这些字节在 wall-time 中的
-占比由后续受控基准测定，不承诺百分比（trace 显示采样清零主要是 `cache.Clear`，
-本切片收益可能小于估算；若实测无收益如实报告）。
+**口径**：226,288 B 是该方法全部 allocation 路径上的隐式清零删除总量，
+不能按 early-entry 每次调用拆销，也不能据此反推 trace 里 95% inclusive 热点
+中可去除的份额（采样清零主要是 `cache.Clear`，本切片不动它）。
+wall-time 占比由后续受控基准测定，不承诺百分比；若实测无收益如实报告。
 
 ## 6. 测试与基线证据
 
@@ -143,7 +150,25 @@ base 15 个清零循环的立即数与 scratch 一一对应：448（occurrences�
 4. 目标阶梯（内部观测，非承诺）：实测收益决定是否继续 cache 切片；
    对标乃至超越 PK 的最终目标不变，未测不宣称。
 
-## 8. 复现
+## 8. 资格器 v2→v3（qualifier gate，独立小提交）
+
+GPT 在 f2a258b7 的 ignored 副本（q2 `gm-strategy-audit/temp_docs/perf-optA-review/
+QualifierProbe.cs`，原文件未改）追加 4 个负控全部错误 qualified=True：删 steps、
+step id 不可解析、全部 required primary 降级为 diagnostic、额外
+unknown-kernel/error/负时间行。本地等价复现（inputs 与期望不变）见
+`temp_docs/modeling-performance/opta/v2-reproduction-selftest.log`（4 WRONG，exit 3）；
+q2 原 probe 因本机无 ssh 密钥（Permission denied，不使用凭证）未直接拉取，
+按协调端转述的 4 项输入语义 1:1 复刻。v3 为整 capture/steps/timings **闭包合同**：
+steps 非空且 id 合法可解析/唯一、title 严格等于声明 API；timing **逐行**校验
+kernel∈{gm,pk}/owner 可解析且指向存在的 step/error==0/有限正 ms/resultStatus，
+未知行不得静默忽略；每 rep 恰好 1 gm + 1 pk owner、总行数=2×expectedReps；
+required primary 必须 status=="pass"（diagnostic 不得满足必需项），其余行必须
+pass 或在逐 case 白名单 `DiagnosticCheckIds`（当前全空）；无 owner 回退/不从数组
+长度猜 API。v3 自检 `--validate-fixtures`：21 fixtures 0 WRONG
+（4 个 GPT 反例全部拒绝、17 原件期望未改），另 `--revalidate` 对 S0 四个真实
+oracle capture 回归全部 qualified=True（无误杀）。v2 不能作 S1/S2 正式 gate。
+
+## 9. 复现
 
 ```sh
 # 合同测试 + 逐位 dump（base/candidate 各一次，diff 为空）
