@@ -50,8 +50,9 @@
 
 ## 当前待交接
 
-**已交付（2026-11-11）**：计算线完整候选验收快照已实际上线，回执见 `docs/computation-acceptance-publish-receipt.md`（run `20261111T130936Z-f9c59201`，固定 f9c59201+review4c7646e，红项/原 exit 照实，M0–M5 未完成）。owned 发布已切换到新 release `ui-015-tools-1b93597-data-f9c59201`（回退基线=本次更新前 015 整包），自动入口已钉到 `d10c487`（pin 校验+快照验证），自动轮实跑无回退。
+**已交付（2026-11-11，两条完整）**：
 
-awaiting 性能：**发布已触发**（性能完整 review 已接受）；三原包已在 `temp_docs/incoming/mac-performance/`（mac-modeling-performance-6761600-raw.tar.gz SHA256 `85be8a3e…`、mac-modeling-quality-6761600.tar.gz `f51e1cde…`、mac-modeling-baseline-failures.tar.gz `0c93eb4e…`），最终 review 树 `../gm-pk-performance-final-review`。按序先完成计算回执后发布性能独立 run（与 f9 分源，不混签）。Mac 负责人 `ctx_5d80758d2e0b`；来源预告（Native 固定 03931f6 / runner 6761600f… / Native 树 01e03aa9…；基线 ecfff3a / e314cc23…）已由最终接受范围覆盖。
+1. 计算线：run `20261111T130936Z-f9c59201`（f9c59201+review4c7646e）已上线并经协调者独立核验接受；红项/原 exit 照实、M0–M5 未完成。回执 `docs/computation-acceptance-publish-receipt.md`。
+2. 性能线：run `20261111T133805Z-perf6761600`（6761600+review80bde347）已上线（latest）；shortedge -37.2420%/1.59342x/9465.56563x、planar +30.334% 保留、1875/1877+2 既有失败+exit 1、work 计数全部显示；与计算 run 分源不混签。容量方案 A（协调者批准）：两个重复中间 main610 快照已归档至 release `retired-data-archive/`（404 文件/18,094,468B 哈希一致冻结）后移出 served 根。回执 `docs/performance-acceptance-publish-receipt.md`。
 
-收包约定（已执行）：原包由协调者经现有 SSH 拷入本树 `temp_docs/incoming/mac-performance/`（gitignore，原包不入 Git，不公开 XT/整归档）；统一经协调者转发，不搭新通道。
+owned 发布/release `ui-015-tools-1b93597-data-f9c59201` 与自动入口钉定（producer d10c487+快照验证）不变；两轮自动轮均 UI_SKIP_SAME 无回退；浏览器验收 12/12+11/11 真实像素通过。
