@@ -40,7 +40,7 @@ foreach(var bench in cases)foreach(var source in new[]{"baseline","candidate","c
     foreach(var arg in new[]{"run","--file",Path.Combine("scripts",bench.Script),"-c","Release","-p:UseSharedCompilation=false","-p:BuildInParallel=false","--"}.Concat(bench.Args).Concat(["--bench-repeat=3","--bench-profile"]))info.ArgumentList.Add(arg);
     info.Environment["MSBUILDDISABLENODEREUSE"]="1";info.Environment["GM_WEB_ROOT"]=tree;info.Environment["GM_WEB_CAPTURE"]=directory;info.Environment["GM_WEB_COMMIT"]=sha;
     if(bench.Selector!=null)info.Environment["GM_WEB_SELECT"]=bench.Selector;
-    var load=Command(root,"sysctl","-n","vm.loadavg");var started=Stopwatch.GetTimestamp();
+    var load=Command(root,"sysctl","-n","vm.loadavg");var started=Stopwatch.GetTimestamp();var startedUtc=DateTime.UtcNow;
     using var process=Process.Start(info)!;var stdout=process.StandardOutput.ReadToEndAsync();var stderr=process.StandardError.ReadToEndAsync();
     var timeout=!process.WaitForExit(15*60*1000);if(timeout){process.Kill(entireProcessTree:true);process.WaitForExit();}
     var log=await stdout+"\nSTDERR\n"+await stderr;File.WriteAllText(Path.Combine(directory,"oracle.log"),log);
@@ -58,10 +58,23 @@ foreach(var bench in cases)foreach(var source in new[]{"baseline","candidate","c
         }
     }
     foreach(var name in new[]{"export-errors.json","capture-errors.json"})if(File.Exists(Path.Combine(directory,name)))reasons.Add(name);
+    var xtArtifacts=new JsonArray();
+    var artifactDirectory=bench.Id switch{"sphere"=>"analytic-boolean-oracle","planar"=>"boolean-operation-oracle","curved"=>"regular-curved-boolean-oracle","solidblend"=>"regular-solid-blend-oracle",_=>"short-edge-blend-oracle"};
+    var pattern=bench.Id switch{"sphere"=>"equal-overlap-15902-*.x_t","planar"=>"overlap-two-axes-15902-*.x_t","curved"=>"block-15902-*.x_t","solidblend"=>"plane-nurbs-fillet.x_t",_=>"a1-r0.5-t1E-07-reverseFalse-default-*.x_t"};
+    var artifactSource=Path.Combine(tree,"temp_docs",artifactDirectory);
+    if(Directory.Exists(artifactSource))foreach(var file in Directory.EnumerateFiles(artifactSource,pattern).Where(f=>File.GetLastWriteTimeUtc(f)>=startedUtc))
+    {
+        var target=Path.Combine(directory,"xt",Path.GetFileName(file));Directory.CreateDirectory(Path.GetDirectoryName(target)!);File.Copy(file,target);
+        xtArtifacts.Add((JsonNode)new JsonObject{["path"]=Path.GetRelativePath(root,target),["sha256"]=Hash(target),["sourcePath"]=Path.GetRelativePath(tree,file),["repetition"]=2});
+    }
+    if(xtArtifacts.Count==0)reasons.Add("missing current-run final-repetition XT artifact");
     var qualified=reasons.Count==0;all&=qualified;
     samples.Add((JsonNode)new JsonObject{["case"]=bench.Id,["source"]=source,["commit"]=sha,["api"]=bench.Api,["qualified"]=qualified,["reasons"]=new JsonArray(reasons.Select(s=>(JsonNode?)JsonValue.Create(s)).ToArray()),["pairs"]=qualified?pairs:null,
+        ["arguments"]=new JsonArray(bench.Args.Concat(["--bench-repeat=3","--bench-profile"]).Select(a=>(JsonNode?)JsonValue.Create(a)).ToArray()),["selector"]=bench.Selector,["callOrder"]=bench.Blend?"PK then GM":"GM then PK",
+        ["inputProvenance"]=bench.Id=="shortedge"?"PK constructs seed and retains its original; GM receives the unchanged PK seed XT and passes fresh-input comparison":"GM and PK construct inputs independently with identical numeric parameters",
         ["processExit"]=process.ExitCode,["timedOut"]=timeout,["processWallMs"]=Stopwatch.GetElapsedTime(started).TotalMilliseconds,["loadBefore"]=load,["loadAfter"]=Command(root,"sysctl","-n","vm.loadavg"),
         ["directory"]=Path.GetRelativePath(root,directory),["oracleSha256"]=Hash(Path.Combine(tree,"scripts",bench.Script)),["logSha256"]=Hash(Path.Combine(directory,"oracle.log")),["captureSha256"]=File.Exists(capturePath)?Hash(capturePath):null,
+        ["xtArtifactsLastRepetition"]=xtArtifacts,["xtScope"]="Oracle output filenames are overwritten per repetition; these original bytes belong to final repetition 2 only. Every repetition retains its own capture, API checks and meshes.",
         ["work"]=new JsonArray(log.Split('\n').Where(l=>l.StartsWith("PROFILE ",StringComparison.Ordinal)||l.StartsWith("WORK ",StringComparison.Ordinal)).Select(s=>(JsonNode?)JsonValue.Create(s)).ToArray())});
     File.WriteAllText(Path.Combine(output,"report.json"),report.ToJsonString());
     Console.WriteLine($"{bench.Id} {source} qualified={qualified} exit={process.ExitCode} pairs={pairs.ToJsonString()} reasons={string.Join(';',reasons)}");
@@ -81,7 +94,7 @@ static void ValidateQualification()
         for(var i=0;i<5;i++)ids.Add($"{rep}-count-{i}");for(var i=0;i<15;i++)ids.Add($"{rep}-mass-{i}");
         foreach(var id in ids)checks.Add((JsonNode)new JsonObject{["id"]=id,["status"]="pass"});
     }
-    var valid=new JsonObject{["schemaVersion"]=1,["pkVersion"]="38.0.150",["captureErrors"]=new JsonArray(),["steps"]=steps,["timings"]=timings,["checks"]=checks};
+    var valid=new JsonObject{["sessionPrecision"]=1e-8,["pkVersion"]="38.0.150",["captureErrors"]=new JsonArray(),["steps"]=steps,["timings"]=timings,["checks"]=checks};
     var reasons=new List<string>();Qualify(valid,bench,reasons);if(reasons.Count!=0)throw new Exception("Positive qualification rejected: "+string.Join(';',reasons));
     Action<JsonObject>[] changes=[c=>c["timings"]![0]!["step"]=2,c=>c["timings"]![0]!["error"]=1,c=>c["checks"]!.AsArray().RemoveAt(0),c=>c["checks"]![0]!["status"]="diagnostic",c=>c.Remove("captureErrors"),c=>c["steps"]![0]!["title"]="wrong API"];
     foreach(var change in changes){var broken=valid.DeepClone().AsObject();change(broken);reasons.Clear();Qualify(broken,bench,reasons);if(reasons.Count==0)throw new Exception("Negative qualification accepted");}
@@ -90,8 +103,8 @@ static void ValidateQualification()
 
 static void Qualify(JsonObject capture,Bench bench,List<string> reasons)
 {
-    if(capture["schemaVersion"]?.GetValue<int>()!=1)reasons.Add("capture schema must be 1");
     if(capture["pkVersion"]?.GetValue<string>()!="38.0.150")reasons.Add("PK version must be 38.0.150");
+    if(capture["sessionPrecision"]?.GetValue<double>()!=1e-8)reasons.Add("PK session precision must be 1e-8");
     if(capture["captureErrors"] is not JsonArray errors||errors.Count!=0)reasons.Add("missing/nonempty captureErrors");
     if(capture["steps"] is not JsonArray steps||steps.Count!=3){reasons.Add("expected three operation steps");return;}
     var ids=new HashSet<string>();foreach(var step in steps)
