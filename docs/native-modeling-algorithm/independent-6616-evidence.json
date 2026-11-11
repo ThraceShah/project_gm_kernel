@@ -72,5 +72,77 @@
   "checkerRawExit": 0,
   "originalCandidateSuiteRawExit": 1,
   "originalFocusedBaselineRawExit": 1,
-  "formalPerformance": "not executed"
+  "formalPerformance": "not executed",
+  "localIndependentReview": {
+    "nativeTreeUnchanged": "5b4c6104c600b0194bb543e2dc11efa89e2f0f1f",
+    "files": [
+      {
+        "path": "temp_docs/Review6616Evidence.cs",
+        "sha256": "c410efb11c25618a9fb436fdfa4c641b029e126136d438d15cfe1c6f31d83dd7"
+      },
+      {
+        "path": "temp_docs/Review6616Audit.cs",
+        "sha256": "fc71f1ed800cf203bf2c61697209757c9d1a46af25d9db8f8ea03e758ea2f3c0"
+      },
+      {
+        "path": "temp_docs/Review6616Math.cs",
+        "sha256": "1c9b68d99aee6badc26f6f1ea2dff4b97d1daffd271e75c6cb66861942bc1741"
+      },
+      {
+        "path": "temp_docs/Review6616ArchivedProduct.cs",
+        "sha256": "9bd7f470588226597fab4dc4843547acf881facd7bdd2232b4dd41d4d3dc6ce7"
+      },
+      {
+        "path": "temp_docs/review-6616/archive-manifest.tsv",
+        "sha256": "1bda9ce4ba596e5fcf7efa51aacbb73c2fe56fcb62c50ea6d78989780f63e40b"
+      },
+      {
+        "path": "temp_docs/review-6616/evidence-audit.log",
+        "sha256": "2d04be00dca7efb5fc71ece543f6c57ff0a4b7fa7d5f1feedcf51e927905ab14"
+      },
+      {
+        "path": "temp_docs/review-6616/math-review.log",
+        "sha256": "a73bd7941838bb869085cfd67458dc94d7e4bc25c55dfa049663af59cb471f82"
+      },
+      {
+        "path": "temp_docs/review-6616/math-review-run.log",
+        "sha256": "044a2be6381132a6043b08bcb3002c179a005c41825c21c9d866bbd33bcecc98"
+      },
+      {
+        "path": "temp_docs/review-6616/math-review-ready.log",
+        "sha256": "41ce652af91a925a3e0c67828b6abaa41e05131ddcd0fb744a6f29dd43b3f6f5"
+      },
+      {
+        "path": "temp_docs/review-6616/archived-product.log",
+        "sha256": "2bff404bd8ffa20301cb627170e56e9a82dd68466da69d1473d546d1378ee3dd"
+      }
+    ],
+    "toolObservedRawExits": {
+      "archiveExtraction": 0,
+      "evidenceAudit": 0,
+      "initialMathCompilation": 1,
+      "matrixPassThenSessionSetupFailure": 134,
+      "configuredMathAndAllocationReview": 0,
+      "initialPkHarnessCompilation": 1,
+      "actualArchivedProductPkReview": 0
+    },
+    "matrixCases": 288,
+    "matrixSuccesses": 288,
+    "intervalEntriesPerCase": 25,
+    "comparison": "DoubleToInt64Bits on both endpoints",
+    "pkVersion": "38.0.150 Linux x64",
+    "gmArchivedProductSha256": "37ac232e62340c29f4f6ba94807775b7d39ba3a64d445c75791499c1a811b0ba",
+    "pkArchivedReferenceSha256": "b1b0028feca8fd51e0b4b5615d4c34ad81adbee43648dd6c5e320ef9af464655",
+    "pkBodyCheckFaults": 0,
+    "pkCompareGlobal": 21921,
+    "pkCompareLocal": 21931,
+    "finiteICurves": 3,
+    "d1Samples": 27,
+    "mass15MaximumNormalizedResidual": 3.9657217010385984E-09,
+    "newGmFullModelingOperationExecuted": false,
+    "newFormalPerformanceMeasurementExecuted": false,
+    "newFullSuiteExecuted": false,
+    "newNativeAotBuildExecuted": false,
+    "conclusion": "Accepted fixed 270-to-6616 optimization scope with two preserved baseline failures; no new implementation blocker found; formal performance remains unaccepted."
+  }
 }
