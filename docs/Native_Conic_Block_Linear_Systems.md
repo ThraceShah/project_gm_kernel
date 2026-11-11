@@ -1,5 +1,7 @@
 # 原七变量 Conic 分块线性计算（开发候选）
 
+本页保存旧分离源上首次块算法阶段；已转统一84c当前B1门并完成1654完整候选质量，最新状态见 `docs/Unified_Native_Performance_Package.md`。下文历史B1待修及旧source身份不改称当前执行。
+
 本候选基于0684efd/16aca工作区分支，只优化已审G+Conic中严格限定的n7/two-occurrence Circle/Ellipse结构。原P.xyz、Q.xyz、q、七个残差、原生C(q)/CHART/支撑/sense和有限分支保持。没有新几何或参数化、容差/预算放宽、SkipLocalsInit、缓存扩展、历史兼容或失败回退。
 
 ## 数学与实现

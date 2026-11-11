@@ -1,5 +1,7 @@
 # 统一产品基线上的性能开发记录
 
+本页保留5dd/a289早期阶段的实际记录；最终固定计算1654及后续完整套件、栈修复和当前实体闭环见 `docs/Unified_Native_Performance_Package.md`，不得将本页旧中间倍率挂到最终源。
+
 基线固定 `84c558c10135c117bf8be6629a157e6d230f1b2d`，Native `133f56acb0cf485366cd4f13f457dc3b161655eb`。已实际读本树AGENTS、两架构、共有Patch和bda新修复两消费者源码/差异、583及b17独审、84c当前runner diff；Mac私有准备实际ENV_READY。保留有限root/原gauge/event身份/derived弧登记、ExactCorner、scoped cache、face方向及当前Compare/Mass observer。
 
 `perf/unified-conic-block` 直接从已接受统一源建立。16aca scratch候选移植为1cc1511，Conic七未知量块逆/预条件/全七导数及等价nearest为3ba1dd1，84c当前B1门移植为5dd11a2。当前Native树5cf8463a180fa9fc46130384d841612fcb11554b。只纳入这两项候选，没有引入c10等参预备、090点blossom复用或任何旧point-only脚本/回退。16aca旧分离源观察−9.27%不作为统一源倍率；Conic块净收益仍未接受。

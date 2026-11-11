@@ -1,5 +1,7 @@
 # 小角度 section 区间权重的自适应严格余项
 
+本页是余项算法及初始检查记录；最终1654完整实体/lifecycle及套件、实际制品见 `docs/Unified_Native_Performance_Package.md`。
+
 统一固定84c当前合同上的开发候选；与scratch及原七变量Conic分块同在 `perf/unified-conic-block`。保持原生great-circle section、q=1-cosθ、v和全部原几何/拓扑/数值质量条件，不改Series点求值、最大64/128项、参数域或根/SSI预算。
 
 ## 实际依据

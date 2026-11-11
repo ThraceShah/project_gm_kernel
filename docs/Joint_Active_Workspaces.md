@@ -1,5 +1,7 @@
 # Joint 求解器活跃工作区与Mac栈溢出
 
+后续最终1654全套已实际完成2000/1998/2/0、原exit1，原host crash未再出现；两NotConverged与Mac固定基线对照保持。完整实体复验及制品见 `docs/Unified_Native_Performance_Package.md`；下文初始864中止原件不覆盖。
+
 统一整包最终全套第一次在a289源实际完成864pass后testhost Stack overflow，原test/driver exit1、TRX outcome Failed。失败栈为RollingNetworkTests.ProjectedRollingCellFailureRestoresTargetAndBothToolsAfterUnion→Boolean→ClipRegularFacePair→TryStationaryNativePlaneEnd→BoundSharedSpineWitness→BoundSegment；不能用末行864pass补签完整2000。
 
 固定未改统一Native133在Mac也于同一测试窄复现stack overflow；candidate与baseline使用同一份测试DLL/PDB、显式同ENV_READY schema及同Fixtures字节。原同字节app比较的第一次缺Fixtures目录，只得到DirectoryNotFound环境失败，已单列未用于算法归因；补齐白名单Fixture后两边原exit1/host crash。原件在 `../gm-pk-performance-delivery/temp_docs/pk-native-algorithm-work/unified-stack-ready-*`。
