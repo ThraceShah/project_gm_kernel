@@ -33,8 +33,20 @@ internal static partial class JointNestedBlendEvaluation
         var point=IntervalPoint(variables,0);var delta=point-curve;var length=delta.Norm();var speed=tangent.Norm();
         if(!length.Finite||!speed.Finite||!(length.Value.Lower>0&&speed.Value.Lower>0))return AlgorithmStatus.NotConverged;
         blendNormal=delta/length*blend.NormalSense;if(!blendNormal.Finite)return AlgorithmStatus.NotConverged;
-        residual[row]=(length-Math.Abs(blend.Range0))*blend.NormalSense;
+        // Positive radius makes the squared radial equation equivalent to
+        // length-radius, with the same native point and foot parameter.
+        var radius=Math.Abs(blend.Range0);if(!(radius>0)||!double.IsFinite(radius))return AlgorithmStatus.NotConverged;
+        residual[row]=(IntervalDual.Square(delta.X)+IntervalDual.Square(delta.Y)+IntervalDual.Square(delta.Z)-IntervalDual.Square((IntervalDual)radius))*blend.NormalSense;
+        blendNormal=delta*(2*blend.NormalSense);
         status=IntervalNormal(program,other,nodes,0,variables,out residual[1-row],out otherNormal);if(status!=AlgorithmStatus.Success)return status;
+        var otherSource=program.Surfaces[other];
+        if(otherSource.Analytic.Kind==SurfaceClass.Cylinder)
+        {
+            var cylinder=otherSource.Analytic;if(!(cylinder.Radius>0)||!double.IsFinite(cylinder.Radius))return AlgorithmStatus.NotConverged;
+            var relative=point-new IntervalVector(cylinder.Origin);var axis=new IntervalVector(cylinder.Axis);var radial=relative-axis*IntervalVector.Dot(relative,axis);
+            residual[1-row]=(IntervalDual.Square(radial.X)+IntervalDual.Square(radial.Y)+IntervalDual.Square(radial.Z)-IntervalDual.Square((IntervalDual)cylinder.Radius))*otherSource.NormalSense;
+            otherNormal=radial*(2*otherSource.NormalSense);
+        }
         status=SpineParameterMap.Interval(root,Chart(program,nodes[0].Spine)[charts[0]],parameter,point,out residual[2]);if(status!=AlgorithmStatus.Success)return status;
         var explicitResidual=IntervalPoint(variables,3)-curve;residual[3]=explicitResidual.X;residual[4]=explicitResidual.Y;residual[5]=explicitResidual.Z;
         residual[6]=IntervalVector.Dot(delta,tangent);
@@ -74,8 +86,9 @@ internal static partial class JointNestedBlendEvaluation
 
     // At Q=C(q), J_G=(I-A)J_F, where A has the old Q gradients
     // of the Blend and foot rows in the three explicit-residual columns.
-    // A^2=0, so R_G=R_F*(I+A). This is only a point preconditioner;
-    // actual G interval inclusion and the original nearest test still decide.
+    // A^2=0, so R_G=R_F*(I+A), followed by the inverse positive radial
+    // row scales. This is only a point preconditioner; actual G interval
+    // inclusion and the original nearest test still decide.
     private static AlgorithmStatus ConicSubstitutionInverse(in NestedBlendProgram program,ReadOnlySpan<Occurrence> nodes,
         ReadOnlySpan<double> state,Span<double> inverse)
     {
@@ -89,6 +102,9 @@ internal static partial class JointNestedBlendEvaluation
         {
             var a=inverse[i*7+row];var b=inverse[i*7+6];
             inverse[i*7+3]-=a*normal.X+b*t.X;inverse[i*7+4]-=a*normal.Y+b*t.Y;inverse[i*7+5]-=a*normal.Z+b*t.Z;
+            inverse[i*7+row]/=2*Math.Abs(blend.Range0);
+            var other=program.Surfaces[row==0?root.Second:root.First];
+            if(other.Analytic.Kind==SurfaceClass.Cylinder)inverse[i*7+1-row]/=2*other.Analytic.Radius;
         }
         foreach(var value in inverse)if(!double.IsFinite(value))return AlgorithmStatus.NotConverged;
         return AlgorithmStatus.Success;
