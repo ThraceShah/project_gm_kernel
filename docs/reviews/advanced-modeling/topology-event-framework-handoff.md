@@ -1,6 +1,6 @@
 # 求交与圆角拓扑交接
 
-本目标的核心技术实现与验证已完成，主副本在 `main` 分支。依赖保持不变：PKToy `d820719`、真实 Parasolid 38.0.150、.NET SDK 10.0.302。
+2026-11-11 修订：**本目标不能按下文历史总结宣称整体实现/验证完成或所有修复已在main。** 当前main基线为 `610e3ce844bf99c85af6069905f9f3deaab08133`；R1/R2有范围接受，固定9b default uncut blend有已测primary接受，分类/内部端点合同及两tool Boolean组合仍各自开放，相同输入的独立PK Boolean未验证。最新逐操作证据见 [验收账本](operation-acceptance-ledger-610e3ce.md)，后续采用 [S0–S5修订路线](operation-acceptance-strategy-audit-610e3ce.md)；下文“已完成”保留为历史记录，不是当前整体判定。依赖保持不变：PKToy `d820719`、真实 Parasolid 38.0.150、.NET SDK 10.0.302。
 
 ## 已完成并验证
 

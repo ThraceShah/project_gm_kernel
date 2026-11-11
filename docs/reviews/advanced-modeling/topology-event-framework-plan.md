@@ -1,5 +1,7 @@
 # Topology event framework implementation
 
+> 2026-11-11 当前执行规则修订：以 [逐操作审计与修订路线](operation-acceptance-strategy-audit-610e3ce.md) 和 [验收账本](operation-acceptance-ledger-610e3ce.md) 的 S0–S5 顺序及操作分层为准。下面 M0–M5 保留为历史需求，不能据历史完成措辞推断当前全通过；已测单步 primary、分类/内部合同和后续组合分别报告，后步失败不倒扣先前独立通过的操作。self96、原阈值、完整结构/有限域与组合要求继续保留，import-only 不替代 self；R1/R2 接受也不等于代码已合 main。
+
 ## Baseline
 
 - Initial HEAD: `598fac8e079793150bf80f3c8a3dd86c312326b3`, branch `main`, upstream `origin/main`, clean worktree.

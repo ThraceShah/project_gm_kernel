@@ -1,5 +1,7 @@
 # Topology event framework acceptance
 
+> 2026-11-11 归属/状态修订：本文件下文保留各历史快照的原始结果，不作为一个当前全局 pass/fail。最新固定证据和每步状态见 [操作账本](operation-acceptance-ledger-610e3ce.md)，执行顺序见 [修订路线](operation-acceptance-strategy-audit-610e3ce.md)。固定9b default uncut blend 的已测 primary 接受范围应保留；其分类、内部端点合同与后续两tool Boolean组合失败单列，相同输入的独立PK Boolean尚未验证。历史全四列相等的510失败保留，后续按用户批准的同路径逐点比较，保留全510/四列/7点原生诊断与row339；不改坐标、精度或原物性门槛。
+
 Status: in progress. The default self-constructed short-edge fillet and both downstream self Booleans publish through the shared arrangement and pass strict independent geometry, full BODY_check and finite edge checks. The standard default command still fails its original native mass point checks; some mirrored/parameter variants pass every gate. The fixed 510-point suite still reports 15 differences on the self path and 16 on the imported path. General multi-participant association remains incomplete.
 
 The required final result is a **self-constructed** short-edge fillet with successful downstream Boolean, lifecycle and independent PK validation. Imported native products are tracked separately and never establish this gate.
