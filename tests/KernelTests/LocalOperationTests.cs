@@ -14,6 +14,21 @@ public unsafe class LocalOperationTests:IDisposable
     public void Dispose(){KernelRuntime.InjectAllocationFailure(-1);KernelRuntime.SessionStop();}
 
     [Theory]
+    [InlineData(false,false,true)] [InlineData(false,true,false)]
+    [InlineData(true,false,false)] [InlineData(true,true,true)]
+    public void OrientedSurfaceQueryComposesXtFaceAndSurfaceSensesWithoutMutation(bool negativeFace,bool negativeSurface,bool expected)
+    {
+        var body=Block();var face=Record(body).FirstFaceBody;ref var record=ref KernelRuntime.Faces[face];
+        ref var geometry=ref KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(record.SurfTag)];
+        record.Orientation=negativeFace?ParasolidConstants.PK_TOPOL_sense_negative_c:ParasolidConstants.PK_TOPOL_sense_positive_c;
+        geometry.Sense=negativeSurface?ParasolidConstants.PK_TOPOL_sense_negative_c:ParasolidConstants.PK_TOPOL_sense_positive_c;
+        var beforeFace=record.Orientation;var beforeSurface=geometry.Sense;int surface=0;byte orientation=0;
+        Assert.Equal(0,KernelRuntime.FaceAskOrientedSurf(record.Header.Tag,&surface,&orientation));
+        Assert.Equal(record.SurfTag,surface);Assert.Equal(expected,orientation!=0);
+        Assert.Equal(beforeFace,record.Orientation);Assert.Equal(beforeSurface,geometry.Sense);
+    }
+
+    [Theory]
     [InlineData(.5)] [InlineData(-.5)]
     public void ConvexOffsetMovesPlanesAndRetainsEveryBoundaryHandle(double distance)
     {
@@ -81,6 +96,7 @@ public unsafe class LocalOperationTests:IDisposable
     [InlineData(false,false)] [InlineData(true,false)] [InlineData(false,true)] [InlineData(true,true)]
     public void BlendsConstructEdgeAndCornerPatches(bool chamfer,bool all)
     {
+        var before=Counts();
         var body=Block();var originalFaces=Tags(body,0);var edges=Tags(body,1);var selection=all?edges:new[]{edges[0]};
         SetBlend(selection,chamfer,.4);Assert.Equal(6,Record(body).FaceCountBody);
         var count=Fix(body);Assert.Equal(all?20:1,count);var record=Record(body);
@@ -91,6 +107,7 @@ public unsafe class LocalOperationTests:IDisposable
         else{Assert.Equal(all?12:1,classes.Count(x=>x==SurfaceClass.Cylinder));Assert.Equal(all?8:0,classes.Count(x=>x==SurfaceClass.Sphere));}
         if(!all)foreach(var unselected in edges.Skip(1))Assert.Contains(unselected,Tags(body,1));
         Check(body);
+        Assert.Equal(0,KernelRuntime.EntityDelete(1,&body));Assert.Equal(before,Counts());
     }
 
     [Theory]

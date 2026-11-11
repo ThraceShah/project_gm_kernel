@@ -15,7 +15,12 @@ using M=ProjectGmKernel.Native.Generated;
 KernelRuntime.ForbidLegacyRegularBlendAssembly=args.Contains("--event-arrangement",StringComparer.Ordinal);
 var remoteBore=args.Contains("--remote-bore",StringComparer.Ordinal);
 var reversePlaneChart=args.Contains("--reverse-plane-chart",StringComparer.Ordinal);
-var directory=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","support-blend-chain-oracle");Directory.CreateDirectory(directory);
+var outputName=args.Single(x=>x.StartsWith("--output-name=",StringComparison.Ordinal))["--output-name=".Length..];
+Require(outputName.Length>0&&outputName.All(c=>char.IsAsciiLetterOrDigit(c)||c is '-' or '_'),"one new output directory name is required");
+var directory=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","support-blend-chain-oracle",outputName);
+Require(!Directory.Exists(directory),"Existing execution evidence is immutable");Directory.CreateDirectory(directory);
+ParasolidMassProperties.BeginEvidence(directory);
+Console.WriteLine("GM_ASSEMBLY sha256="+Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(typeof(KernelRuntime).Assembly.Location))));
 if(!ParasolidScriptHost.TryStartSession("Independent smooth chain support transitions",out var host,out var message))throw new Exception(message);
 using(host)unsafe
 {
@@ -72,10 +77,25 @@ using(host)unsafe
             try
             {
                 CheckBody(native,name+" native");CheckBody(received,name+" received");Compare(native,received,name);
-                if(remoteBore||reversePlaneChart)ParasolidBodyCompare.AssertEquivalent(native,received,name);
             }
             finally{Check(PK_ENTITY_delete(1,&received),"delete receive");}
             var restored=ReceiveSelf(bytes);Check(KernelRuntime.EntityDelete(1,&own),"delete before reload");own=restored;
+            var reloaded=Receive(Transmit(own));
+            try{CheckBody(reloaded,name+" reload");Compare(native,reloaded,name+" reload");}
+            finally{Check(PK_ENTITY_delete(1,&reloaded),"delete reload check");}
+            if(args.Contains("--lifecycle",StringComparer.Ordinal))
+            {
+                int copied=0,nativeCopy=0;Check(KernelRuntime.EntityCopy(own,&copied),"copy reloaded self Blend");Check(PK_ENTITY_copy(native,&nativeCopy),"copy native Blend");
+                Check(KernelRuntime.EntityDelete(1,&own),"delete self Blend source");Check(PK_ENTITY_delete(1,&native),"delete native Blend source");own=copied;native=nativeCopy;
+                Transform(true,own);Transform(false,native);
+                bytes=Transmit(own);File.WriteAllBytes(Path.Combine(directory,name+"-lifecycle.x_t"),bytes);
+                File.WriteAllBytes(Path.Combine(directory,name+"-lifecycle-reference.x_t"),TransmitNative(native));
+                reloaded=Receive(bytes);
+                try{CheckBody(reloaded,name+" lifecycle");CheckBody(native,name+" lifecycle native");Compare(native,reloaded,name+" lifecycle");}
+                finally{Check(PK_ENTITY_delete(1,&reloaded),"delete lifecycle check");}
+            }
+            if(!args.Contains("--blend-only",StringComparer.Ordinal))
+            {
             Cut(true,own,reflected);Cut(false,native,reflected);bytes=Transmit(own);File.WriteAllBytes(Path.Combine(directory,name+"-cut.x_t"),bytes);received=Receive(bytes);
             if(remoteBore)
             {
@@ -90,9 +110,9 @@ using(host)unsafe
             try
             {
                 CheckBody(native,name+" cut native");CheckBody(received,name+" cut received");Compare(native,received,name+" cut");
-                if(remoteBore||reversePlaneChart)ParasolidBodyCompare.AssertEquivalent(native,received,name+" cut");
             }
             finally{Check(PK_ENTITY_delete(1,&received),"delete cut receive");}
+            }
             Check(KernelRuntime.EntityDelete(1,&own),"delete self");Check(PK_ENTITY_delete(1,&native),"delete native");
             Require(KernelRuntime.Curves.AliveCount==0&&KernelRuntime.Surfaces.AliveCount==0&&KernelRuntime.Points.AliveCount==0,"complete self geometry ownership cleanup");
             Console.WriteLine("PASS "+name);
@@ -100,6 +120,8 @@ using(host)unsafe
     }
     finally{Check(KernelRuntime.SessionStop(),"self session stop");}
 }
+
+if(ParasolidMassProperties.UnresolvedCount!=0)Environment.ExitCode=2;
 
 static unsafe void BoreNative(int body)
 {
@@ -297,28 +319,10 @@ static unsafe void Compare(int reference,int actual,string name)
     for(var kind=0;kind<5;kind++){var a=Count(reference,kind);var b=Count(actual,kind);Console.WriteLine($"{name} topology {kind}: native={a} own={b}");Require(a==b,name+" topology count "+kind);}
     var nativeRegions=RegionSignature(reference);var ownRegions=RegionSignature(actual);Console.WriteLine($"{name} material regions: native={nativeRegions}, own={ownRegions}");
     Require(nativeRegions==ownRegions,name+" material and shell semantics");
-    var options=new PK_DEBUG_BODY_compare_o_t{max_diffs=1024,all_tests=PK_LOGICAL_false,num_tests=PK_LOGICAL_true,tol_dev_tests=PK_LOGICAL_true,tol_tests=PK_LOGICAL_true,
-        class_tests=PK_LOGICAL_true,sense_tests=PK_LOGICAL_true,missing_tests=PK_LOGICAL_true,acc_dev_tests=PK_LOGICAL_false,non_match_tests=PK_LOGICAL_true};PK_DEBUG_BODY_compare_r_t result;
-    Check(PK_DEBUG_BODY_compare(reference,actual,&options,&result),"structural compare");var structuralOk=false;
-    try
-    {
-        var structural=0;Console.WriteLine($"{name} compare={result.global_result}/{result.local_result}, face_pairs={result.n_face_pairs}");
-        for(var i=0;i<result.n_global_diffs;i++)Console.WriteLine($"global diff={result.global_diffs[i].diff}, entities={result.global_diffs[i].n_masters}/{result.global_diffs[i].n_similars}");
-        for(var f=0;f<result.n_face_pairs;f++)for(var i=0;i<result.face_pairs[f].n_local_diffs;i++)
-        {
-            var d=result.face_pairs[f].local_diffs[i];var chart=d.diff==PK_DEBUG_diff_n_cht_pts_c;
-            Console.WriteLine($"{(chart?"CHART":"STRUCTURE")} face={f}, diff={d.diff}, entity={d.master_entity}/{d.similar_entity}, class={d.master_class}/{d.similar_class}, int={d.master_int}/{d.similar_int}, value={d.master_double:R}/{d.similar_double:R}");if(!chart)structural++;
-        }
-        structuralOk=result.global_result==PK_DEBUG_global_res_no_diffs_c&&structural==0;
-    }
-    finally{PK_DEBUG_BODY_compare_r_f(&result);}
-    var massOptions=new PK_TOPOL_eval_mass_props_o_t();double* aMass=stackalloc double[15];double* bMass=stackalloc double[15];
-    Check(PK_TOPOL_eval_mass_props(1,&reference,.99999999,&massOptions,aMass,aMass+1,aMass+2,aMass+5,aMass+14),"native mass properties");
-    Check(PK_TOPOL_eval_mass_props(1,&actual,.99999999,&massOptions,bMass,bMass+1,bMass+2,bMass+5,bMass+14),"received mass properties");
-    var maximum=0.0;
-    for(var i=0;i<15;i++)maximum=Math.Max(maximum,Math.Abs(aMass[i]-bMass[i])/(1+Math.Abs(aMass[i])));
-    Console.WriteLine($"{name} PK mass: volume={aMass[0]:R}/{bMass[0]:R}, area={aMass[14]:R}/{bMass[14]:R}, max normalized residual={maximum:R}");
-    Require(maximum<1e-7,name+" mass properties");Require(structuralOk,name+" structural differences");
+    ParasolidBodyCompare.AssertEquivalent(reference,actual,name);
+    var agreement=ParasolidMassProperties.Compare(reference,actual,name);
+    Require(agreement!=MassAgreement.Different,name+" mass intervals prove a difference");
+    Console.WriteLine($"GEOMETRY_TOPOLOGY_PASS {name} mass={agreement}");
 }
 
 static unsafe int Count(int body,int kind)

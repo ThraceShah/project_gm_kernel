@@ -45,7 +45,12 @@ if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
         }
         Console.WriteLine($"BOUNDARY {trace.Stage} source={trace.Source} face={trace.Face} product={trace.Product} surface={trace.Surface} edge={trace.Edge} carrier={trace.Curve}/{trace.Generation} product_curve={trace.ProductCurve} t=[{trace.First:R},{trace.Last:R}] events={trace.StartEvent}->{trace.EndEvent} forward={trace.Forward} source_edge={trace.SourceEdge} source_fin={trace.SourceFin}");
     };
-var directory=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","regular-solid-blend-oracle");Directory.CreateDirectory(directory);
+var outputName=args.Single(x=>x.StartsWith("--output-name=",StringComparison.Ordinal))["--output-name=".Length..];
+Require(outputName.Length>0&&outputName.All(c=>char.IsAsciiLetterOrDigit(c)||c is '-' or '_'),"one new output directory name is required");
+var directory=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","regular-solid-blend-oracle",outputName);
+Require(!Directory.Exists(directory),"Existing execution evidence is immutable");Directory.CreateDirectory(directory);
+ParasolidMassProperties.BeginEvidence(directory);
+Console.WriteLine("GM_ASSEMBLY sha256="+Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(typeof(KernelRuntime).Assembly.Location))));
 var oracleStarted=Stopwatch.GetTimestamp();
 #if DEBUG
 Console.WriteLine("CONFIG Debug managed oracle/kernel; independent native PK runtime");
@@ -136,6 +141,7 @@ using(host)unsafe
     finally{Check(KernelRuntime.SessionStop(),"own session stop");}
 }
 Console.WriteLine($"TIME total ms={Stopwatch.GetElapsedTime(oracleStarted).TotalMilliseconds:F3}");
+if(ParasolidMassProperties.UnresolvedCount!=0)Environment.ExitCode=2;
 
 static unsafe int Roof(bool own,double bulge=.4,bool curvedWall=false,bool concave=false)
 {
@@ -511,28 +517,10 @@ static unsafe void Compare(int reference,int actual,string name)
     for(var kind=0;kind<5;kind++){var a=Count(reference,kind);var b=Count(actual,kind);Console.WriteLine($"{name} topology {kind}: native={a} own={b}");Require(a==b,name+" topology count "+kind);}
     var nativeRegions=RegionSignature(reference);var ownRegions=RegionSignature(actual);Console.WriteLine($"{name} material regions: native={nativeRegions}, own={ownRegions}");
     Require(nativeRegions==ownRegions,name+" material and shell semantics");
-    var options=new PK_DEBUG_BODY_compare_o_t{max_diffs=1024,all_tests=PK_LOGICAL_false,num_tests=PK_LOGICAL_true,tol_dev_tests=PK_LOGICAL_true,tol_tests=PK_LOGICAL_true,
-        class_tests=PK_LOGICAL_true,sense_tests=PK_LOGICAL_true,missing_tests=PK_LOGICAL_true,acc_dev_tests=PK_LOGICAL_false,non_match_tests=PK_LOGICAL_true};PK_DEBUG_BODY_compare_r_t result;
-    Check(PK_DEBUG_BODY_compare(reference,actual,&options,&result),"structural compare");var structuralOk=false;
-    try
-    {
-        var structural=0;Console.WriteLine($"{name} compare={result.global_result}/{result.local_result}, face_pairs={result.n_face_pairs}");
-        for(var i=0;i<result.n_global_diffs;i++)Console.WriteLine($"global diff={result.global_diffs[i].diff}, entities={result.global_diffs[i].n_masters}/{result.global_diffs[i].n_similars}");
-        for(var f=0;f<result.n_face_pairs;f++)for(var i=0;i<result.face_pairs[f].n_local_diffs;i++)
-        {
-            var d=result.face_pairs[f].local_diffs[i];var chart=d.diff==PK_DEBUG_diff_n_cht_pts_c;
-            Console.WriteLine($"{(chart?"CHART":"STRUCTURE")} face={f}, diff={d.diff}, entity={d.master_entity}/{d.similar_entity}, class={d.master_class}/{d.similar_class}, int={d.master_int}/{d.similar_int}, value={d.master_double:R}/{d.similar_double:R}");if(!chart)structural++;
-        }
-        structuralOk=result.global_result==PK_DEBUG_global_res_no_diffs_c&&structural==0;
-    }
-    finally{PK_DEBUG_BODY_compare_r_f(&result);}
-    var massOptions=new PK_TOPOL_eval_mass_props_o_t();double* aMass=stackalloc double[15];double* bMass=stackalloc double[15];
-    Check(PK_TOPOL_eval_mass_props(1,&reference,.99999999,&massOptions,aMass,aMass+1,aMass+2,aMass+5,aMass+14),"native mass properties");
-    Check(PK_TOPOL_eval_mass_props(1,&actual,.99999999,&massOptions,bMass,bMass+1,bMass+2,bMass+5,bMass+14),"received mass properties");
-    var maximum=0.0;
-    for(var i=0;i<15;i++)maximum=Math.Max(maximum,Math.Abs(aMass[i]-bMass[i])/(1+Math.Abs(aMass[i])));
-    Console.WriteLine($"{name} PK mass: volume={aMass[0]:R}/{bMass[0]:R}, area={aMass[14]:R}/{bMass[14]:R}, max normalized residual={maximum:R}");
-    Require(maximum<1e-7,name+" mass properties");Require(structuralOk,name+" structural differences");
+    ParasolidBodyCompare.AssertEquivalent(reference,actual,name);
+    var agreement=ParasolidMassProperties.Compare(reference,actual,name);
+    Require(agreement!=MassAgreement.Different,name+" mass intervals prove a difference");
+    Console.WriteLine($"GEOMETRY_TOPOLOGY_PASS {name} mass={agreement}");
 }
 
 static unsafe int Count(int body,int kind)
