@@ -20,7 +20,8 @@ internal static unsafe partial class WebProgressCapture
             ["sourceSnapshot"]=snapshot,["kernel"]=own?"gm":"pk",["caseId"]=Environment.GetEnvironmentVariable("GM_WEB_CASE_ID"),
             ["sampleId"]=Environment.GetEnvironmentVariable("GM_WEB_SAMPLE_ID"),["stepId"]=$"operation-{ordinal+1}",["stage"]=stage,
             ["parameterHash"]=OperationsByOrdinal.GetValueOrDefault(ordinal)?.ParameterHash,
-            ["captureSource"]="scripts/WebProgressDisplayReceipts.cs",["captureCodeSha256"]=File.Exists(source)?OperationAcceptanceLedger.HashBytes(File.ReadAllBytes(source)):null,
+            ["captureSource"]="scripts/WebProgressCapture.cs",["captureCodeSha256"]=File.Exists(source)?OperationAcceptanceLedger.HashBytes(File.ReadAllBytes(source)):null,
+            ["receiptSource"]="scripts/WebProgressDisplayReceipts.cs",["receiptCodeSha256"]=ReceiptSourceHash(),
             ["capturedAt"]=DateTimeOffset.UtcNow.ToString("O"),["sourceEntityTag"]=display.BodyTag,
             ["meshPath"]=null,["meshSha256"]=null,["xtPath"]=null,["xtSha256"]=null,["faceBindings"]=null,
             ["surfaceTrimVerification"]="required-by-consumer"
@@ -28,7 +29,7 @@ internal static unsafe partial class WebProgressCapture
         DisplayReceipts.Add(relative,receipt);
         try
         {
-            if(receipt["captureCodeSha256"]==null||receipt["sourceRun"]==null||receipt["caseId"]==null)throw new InvalidDataException("Capture source or run/case identity is unavailable.");
+            if(receipt["captureCodeSha256"]==null||receipt["receiptCodeSha256"]==null||receipt["sourceRun"]==null||receipt["caseId"]==null)throw new InvalidDataException("Capture source or run/case identity is unavailable.");
             var faces=display.Entities.Where(e=>e.Kind==DisplayEntityKind.Face).ToArray();
             if(faces.Any(e=>e.Identifier<=0)||faces.Select(e=>e.Identifier).Distinct().Count()!=faces.Length)throw new InvalidDataException("Missing or ambiguous face identifiers.");
             var bindings=new JsonArray();
@@ -70,6 +71,7 @@ internal static unsafe partial class WebProgressCapture
             // primary checks, raw returns or measured API intervals.
         }
     }
+    private static string? ReceiptSourceHash([CallerFilePath]string source="")=>File.Exists(source)?OperationAcceptanceLedger.HashBytes(File.ReadAllBytes(source)):null;
 
     private static void UpdateDisplayReceipt(string meshPath,JsonNode mesh,string content)
     {

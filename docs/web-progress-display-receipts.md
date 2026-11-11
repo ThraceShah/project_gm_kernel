@@ -22,8 +22,10 @@ Each mesh JSON has `displayReceipt`, relative to that mesh file, e.g. `../displa
   "stepId": "operation-1",
   "stage": "before",
   "parameterHash": null,
-  "captureSource": "scripts/WebProgressDisplayReceipts.cs",
+  "captureSource": "scripts/WebProgressCapture.cs",
   "captureCodeSha256": "actual SHA256 of that source file",
+  "receiptSource": "scripts/WebProgressDisplayReceipts.cs",
+  "receiptCodeSha256": "actual SHA256 of the receipt helper source",
   "capturedAt": "actual UTC timestamp",
   "sourceEntityTag": 7,
   "meshPath": "../meshes/gm-0-before.json",
@@ -43,4 +45,4 @@ Both `meshPath` and `xtPath` resolve relative to the receipt directory. Tags are
 
 When an existing saved before-mesh receives later role/deletion annotations, its receipt mesh hash is updated to the exact rewritten mesh bytes; the geometry snapshot, XT and bindings remain unchanged. The optional evidence never qualifies API performance or proves same input. Original runs are not modified or backfilled.
 
-Initial actual run: `temp_docs/operation-receipt-r2/data/runs/r2-display-receipt-single`, exactly one selected oracle, raw exit 0, Refresh exit 0 and validation errors empty. It produced six available receipts (GM 3 / PK 3). `temp_docs/operation-review-5d/ReceiptAudit.cs` verified every exact mesh/XT SHA256, reloaded all six XT files into real PK, matched all face identifiers and checked the mesh identifiers; exit 0, log `temp_docs/operation-review-5d/receipt-audit.log`. The normal preceding run produced zero receipts. The initial run preceded the final relative mesh-to-receipt link adjustment and addition of the helper to Refresh's source hash list; its own `captureCodeSha256` records the actual initial helper source, and its bytes remain unchanged. A new fixed-commit collection is required for the final interface, rather than grafting this receipt onto historical meshes.
+Initial actual run: `temp_docs/operation-receipt-r2/data/runs/r2-display-receipt-single`, exactly one selected oracle, raw exit 0, Refresh exit 0 and validation errors empty. It produced six available receipts (GM 3 / PK 3). `temp_docs/operation-review-5d/ReceiptAudit.cs` verified every exact mesh/XT SHA256, reloaded all six XT files into real PK, matched all face identifiers and checked the mesh identifiers; exit 0, log `temp_docs/operation-review-5d/receipt-audit.log`. The normal preceding run produced zero receipts. The initial run preceded the final relative mesh-to-receipt link adjustment and addition of the helper to Refresh's source hash list. A subsequent `r2-display-receipt-fixed-1b8151a` run also had raw/Refresh/audit exits 0, but inspection found that CallerFilePath correctly hashed the calling Capture source while the source label incorrectly named the receipt helper. Those receipt source labels are invalid and were not rewritten. The corrected interface names the actual caller source and separately hashes the receipt helper, and must be collected again; old receipts must not be grafted onto new or historical meshes.
