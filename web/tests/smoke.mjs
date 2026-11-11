@@ -30,6 +30,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, '../..');
 const distDir = path.resolve(__dirname, '../dist');
+// Optional overrides for verifying a hosted deployment: point the same
+// substantive assertions at an externally served base URL and its data root
+// (e.g. the read-only gm-kernel-progress host) instead of the local dist.
+const dataDir = process.env.SMOKE_DATA_DIR ? path.resolve(process.env.SMOKE_DATA_DIR) : path.join(distDir, 'data');
 const tempDocsDir = path.resolve(projectRoot, 'temp_docs');
 
 if (!fs.existsSync(tempDocsDir)) {
@@ -119,10 +123,10 @@ function startServer(port) {
 // Real statistics from shipped data (never hardcoded)
 // ============================================================
 function loadRealStats() {
-  const index = JSON.parse(fs.readFileSync(path.join(distDir, 'data', 'index.json'), 'utf8'));
+  const index = JSON.parse(fs.readFileSync(path.join(dataDir, 'index.json'), 'utf8'));
   const runs = {};
   for (const r of index.runs) {
-    const manifestPath = path.join(distDir, 'data', r.manifest);
+    const manifestPath = path.join(dataDir, r.manifest);
     const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
     const counts = { pass: 0, fail: 0, missing: 0, unsupported: 0, timeout: 0, diagnostic: 0 };
     for (const c of manifest.cases) {
@@ -140,7 +144,7 @@ function loadRealStats() {
 }
 
 function meshJson(runEntry, relPath) {
-  return JSON.parse(fs.readFileSync(path.join(distDir, 'data', runEntry.dir, relPath), 'utf8'));
+  return JSON.parse(fs.readFileSync(path.join(dataDir, runEntry.dir, relPath), 'utf8'));
 }
 
 // Expected drawn geometry (mirrors the documented mesh contract: a face needs
@@ -384,8 +388,9 @@ function keepBestShot(poses, best, destName) {
 async function run() {
   const chromePath = resolveBrowserPath();
   const port = 8089;
-  const server = await startServer(port);
-  const baseUrl = `http://127.0.0.1:${port}`;
+  const externalBase = process.env.SMOKE_BASE_URL || null;
+  const server = externalBase ? null : await startServer(port);
+  const baseUrl = externalBase || `http://127.0.0.1:${port}`;
   const { index, runs } = loadRealStats();
   const latestId = index.latestRunId;
   const latest = runs[latestId];
@@ -964,11 +969,11 @@ async function run() {
     check('dist: no dev fixture files bundled', !distFiles.some((f) => /devfixture/i.test(path.basename(f))));
     check('dist: no DEV_FIXTURE data in code', !codeFiles.some((f) => fs.readFileSync(f, 'utf8').includes('DEV_FIXTURE')));
     check('dist: real data index + all run manifests shipped',
-      fs.existsSync(path.join(distDir, 'data', 'index.json')) &&
-        index.runs.every((r) => fs.existsSync(path.join(distDir, 'data', r.manifest))));
+      fs.existsSync(path.join(dataDir, 'index.json')) &&
+        index.runs.every((r) => fs.existsSync(path.join(dataDir, r.manifest))));
   } finally {
     await browser.close();
-    server.close();
+    if (server) server.close();
   }
 
   check('runtime: no uncaught page errors', pageErrors.length === 0, pageErrors.slice(0, 3).join(' | '));

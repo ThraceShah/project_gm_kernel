@@ -1,0 +1,35 @@
+[Unit]
+Description=Read-only hosted GM Kernel progress site (immutable UI release + validated data cache)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+# Persistent read-only product host for the gm-kernel-progress workbench. It
+# serves exactly two safe public roots: the atomically activated immutable UI
+# release under %h/.local/share/gm-kernel-progress-host/site/ui-releases and the
+# validated data cache at the absolute path recorded in that site's site.json
+# pointer (re-checked for full reference closure on every activation). There is
+# no upload/API endpoint and no directory listing; only GET/HEAD. Activation is
+# performed by scripts/ActivateHostedWebProgressSite.cs (drop-in of the refresh
+# unit), so this service is never a build worker and needs no credentials.
+#
+# Production binds the node's Tailscale IP for the portal proxy target plus a
+# loopback address for health probing. Wildcard binds are refused by the host.
+# Replace the listen addresses if the node's Tailscale IP changes.
+WorkingDirectory=%h/code/project_gm_kernel-progress-publisher
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=DOTNET_CLI_TELEMETRY_OPTOUT=1
+Environment=MSBUILDDISABLENODEREUSE=1
+ExecStart=dotnet run --project web/host -- --site %h/.local/share/gm-kernel-progress-host/site --listen 127.0.0.1:8790 --listen 100.97.117.95:8790
+Restart=always
+RestartSec=5s
+CPUQuota=100%
+MemoryHigh=384M
+MemoryMax=512M
+TasksMax=128
+TimeoutStopSec=30s
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

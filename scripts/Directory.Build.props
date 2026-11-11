@@ -25,15 +25,15 @@
     <Compile Include="$(MSBuildThisFileDirectory)WebProgressCapture.cs" Link="WebProgressCapture.cs" />
     <ProjectReference Include="$(MSBuildThisFileDirectory)../src/ProjectGmKernel.DisplayBridge/ProjectGmKernel.DisplayBridge.csproj" />
   </ItemGroup>
-  <ItemGroup Condition="'$(UseWebProgressValidation)' == 'true'">
+  <ItemGroup Condition="'$(UseWebProgressValidation)' == 'true' Or '$(UseWebProgressScheduler)' == 'true'">
     <Compile Include="$(MSBuildThisFileDirectory)WebProgressDataValidation.cs" Link="WebProgressDataValidation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebProgressPublishing.cs" Link="WebProgressPublishing.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebProgressMetadata.cs" Link="WebProgressMetadata.cs" />
   </ItemGroup>
   <ItemGroup Condition="'$(UseWebProgressScheduler)' == 'true'">
     <Compile Include="$(MSBuildThisFileDirectory)WebProgressScheduler.cs" Link="WebProgressScheduler.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)WebProgressDataValidation.cs" Link="WebProgressDataValidation.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)WebProgressPublishing.cs" Link="WebProgressPublishing.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)WebProgressMetadata.cs" Link="WebProgressMetadata.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UseHostedWebProgressSite)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)HostedWebProgressSite.cs" Link="HostedWebProgressSite.cs" />
   </ItemGroup>
 </Project>
