@@ -32,7 +32,7 @@
 
 自检仍覆盖漏侧、重复 timing owner、孤儿 owner、重复check ID、缺required、required diagnostic、unknown kernel、非正/非有限时间、API error；合法换序的期望仍是通过并得正确统计。合成 checks=pass 只证明 JSON 合同，不冒称这些合成 body 做过真实几何比较。
 
-正常 runner 的 expected samples 由 resolved cases 和冷/热请求数导出（118-169）；每 sample 保存 expectedRepetitions / 实际 pairs 数及失败原因，最后按 attempted / qualified / unqualified 计数，缺样本或任一不合格使 overall=false 并 return4（182）。Summarize 可以保留成功子集供诊断，不能用其局部 qualified=true 覆盖 runSummary 的否决。
+正常 runner 的 expected samples 由 resolved cases 和冷/热请求数导出（118-169）；每 sample 保存 expectedRepetitions / 实际 pairs 数及失败原因，最后按 attempted / qualified / unqualified 计数，缺样本或任一不合格使 overall=false 并 return4（183）。Summarize 可以保留成功子集供诊断，不能用其局部 qualified=true 覆盖 runSummary 的否决。
 
 ## 原输入指纹与两个重验 scope
 
