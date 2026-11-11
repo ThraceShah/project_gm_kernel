@@ -94,3 +94,36 @@ Chromium 使用 ephemeral loopback server，不访问 live。Before 两侧96 tri
 与424及610分别比较 `web/data/index.json`、`web/data/runs`、`scripts/WebProgressCapture.cs`、`scripts/RefreshWebProgress.cs` 均无差异；原 oracle exit/checkVersion/quality 未改，原建模结论未继承为新样例结果。没有刷新采集、宽范围测试、性能或平台结论。
 
 交接：先修当前选择上下文绑定并复核两个反例，随后由协调端另派串行layout集成、必要回归与最终发布容量验收。本次独立审查完成，候选 consumer 门保持 **BLOCKED**；没有合并或部署交付。
+
+## 追加窄复验：固定 1eb9308 的原 P1 定向接受
+
+本节仅针对 `1eb9308bc400aa7b4cfac44222fc9ec66738a4fb` 的选择上下文修复，结论为 **原 P1 修复定向接受**。前文对旧 f3 的 BLOCKED 及 `67b5a4edbc23582c23d75f4e8ecce9b14265d42a` 的原证据保持有效，未撤销或改写；不把该窄接受扩展为布局、其他几何能力、串行集成或发布接受。
+
+固定源码放在本 review tree 内独立 detached worktree `temp_docs/uv-1eb-source/`，HEAD 实核为上述完整 SHA，未追作者树后续变化。原 review 分支只追加文档和本轮证据；未 cherry-pick 生产源码。固定提交相对 f3 仅改变 `web/src/App.tsx`、`web/src/api/dataLoader.ts`，新增 `web/src/api/realUvDisplay.ts`；`git diff f3fb943 1eb9308 -- web/data scripts src` 为空。故全部原 mesh、ISO、display-manifest、summary、历史资产以及 Capture/内核源字节未变，原曲面/trim/来源动态证明仍指向同一资产。
+
+静态契约复核：
+
+- 独立编译描述符固定 run、case、step、sourceRun/sourceCase/sourceStep/sample/producer，分别固定 GM/PK × before/after 的 meshPath 和 sourceSnapshot；display-manifest SHA 固定为 `0875f9b8208db2d248e3a4fc912b0f5a077d75deaba8b3d1553b840dfb732714`，与原完整文件实核一致。
+- App 从当前选择取 `selectedRunId`、`currentCase.id`、`step.id` 和 `subState`，按 pane 的固定 GM/PK 传 selection；这些字段在载入边界与独立描述符比较，未从待验 item 填回 expected。mesh render key 增加 runId，防止选择变更期间沿用旧结果。
+- `fetchStepMeshes` 与 `fetchMeshData` 均在 path 解引用/缓存命中之前校验独立选择和阶段路径；缺失映射与该显示源未定义的 tool 映射会拒绝。缓存键包含 fixture、directory、path、runId、caseId、stepId、kernel、stage，无法仅靠相同路径复用其他上下文。descriptor pin、item/source 身份与既有 ISO/mesh 校验共同构成验证链。
+- legacy 普通 runs 走原兼容路径，不被要求拥有 display receipt；没有把新显示源严格契约强加到历史网格。
+
+在固定 worktree 内独立执行锁文件安装及 production build，TypeScript/Vite exit0，仍只有原大 chunk warning。原 `scripts/ReviewWebRealUvF3Consumer.cs` 在原 tree 和执行副本中的 SHA 均为 **`4278d8ef82e0fd565c6554c1cb6eb715140c0f14867074ff45d471555bd5ebb4`**，逐字节未改；只复制到固定 worktree 的 scripts 目录运行，没有改任何断言或生产代码。执行 `MSBUILDDISABLENODEREUSE=1 dotnet run temp_docs/uv-1eb-source/scripts/ReviewWebRealUvF3Consumer.cs` 返回 **0**：未改包正例、错 case/step 拒绝、warm Before 后把 gm.after 指到 gm.before 的拒绝均通过，三页均无 uncaught error；旧反例在新候选中清空错误 pane 的 geometry/lines，未悄悄使用旧网格。
+
+有限浏览器复核共12项通过，原探针3场景另列于 `docs/reviews/web-real-uv-1eb-evidence.json`：
+
+| 针对性检查 | 实测 |
+|---|---|
+| 正常四份 snapshot | Before GM/PK 各96 triangles、U5/V5；After GM220/PK130、U5/V5；标题仍为目标 case，provenance 分别为 GM snapshot-2/3、PK snapshot-0/1，与所选 Before/After 一致 |
+| Before 同位置真实变化像素 | GM 青3144、紫253；PK 青3035、紫257；开关时相机与96 triangles不变 |
+| After 同位置真实变化像素 | GM 青228、紫552；PK 青145、紫547；相机收敛且220/130 triangles不变，恢复后U5/V5 |
+| GM Before 被指向真实 GM After | Before GM拒绝、PK正常；再选合法 After，双侧220/130与U5/V5恢复 |
+| GM/PK Before 路径对调 | 错 pane均0 geometry/0 lines；合法 After 仍正常，未全局禁用正确快照 |
+| display-manifest 仅追加一个空白字节 | JSON语义及其内mesh/ISO SHA未变，两侧仍因独立descriptor全文SHA不匹配拒绝 |
+| 原路径已 warm 后改 context | case、step、stage、kernel、run 任一错均 data=null并有明确error；warm GM After作为Before亦拒绝；合法Before/After及拒绝后的合法Before仍available |
+| 缺失映射 | `fetchStepMeshes` 的 undefined ref在该严格显示源返回data=null及mapping error |
+| legacy17无receipt | 原默认run `20261110T180347Z-90acd4a9` 的目标case原mesh确无displayReceipt，两侧各96 triangles正常绘制、lines=0且显示“无等参线” |
+
+warm-cache 边界复核使用固定原始 `dataLoader.ts` 另行 esbuild bundle 成 browser ESM，`import.meta.env.DEV=false`，由临时 `/__review_loader.mjs` 提供，不向产品dist写探针、暴露调试接口或替换生产代码。先合法请求使实际模块缓存变热，再逐项以相同path调用导出的真实加载API并改变selection，最后验证合法调用仍成功；不能将这些拒绝归因于冷缓存或错误item自证。App映射、真实像素与旧反例则使用独立production build验证。
+
+`temp_docs/uv-1eb-review/before-valid.png`、`temp_docs/uv-1eb-review/after-valid.png` 已打开自看，双向线落在可见曲面上；截图SHA及原探针结果保存在新增evidence文档中。未重跑 PK/surface 导出、采集、全38 browser、AOT、性能或其他平台测试；未修改布局、拾取、历史数据、live/unit/portal/main或发布。余下串行layout集成、必要集成回归与最终30MiB/32MiB装配发布门仍由协调端另派，不能用本节接受代替。

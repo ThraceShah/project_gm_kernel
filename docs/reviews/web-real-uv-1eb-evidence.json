@@ -1,0 +1,625 @@
+{
+  "candidate": "1eb9308bc400aa7b4cfac44222fc9ec66738a4fb",
+  "priorRejectedFinal": "f3fb9432ae97609f34391cffef819f62a9dd161d",
+  "priorReview": "67b5a4edbc23582c23d75f4e8ecce9b14265d42a",
+  "scope": "Narrow independent original P1 selected-context recheck only; prior f3 rejection retained",
+  "originalProbeSha256": "4278d8ef82e0fd565c6554c1cb6eb715140c0f14867074ff45d471555bd5ebb4",
+  "originalProbeExit": 0,
+  "originalProbeResults": [
+    {
+      "mode": "unaltered",
+      "passed": true,
+      "panes": [
+        {
+          "testid": "viewer-canvas-host",
+          "bodyId": "gm:27",
+          "faceCount": "6",
+          "edgeCount": "12",
+          "triangleCount": "96",
+          "roleFaces": "{\"unchanged\":4,\"support\":2}",
+          "roleEdges": "{\"unchanged\":11,\"selected\":1}",
+          "hasIsoparametrics": "true",
+          "isoparametricsCount": "10",
+          "uLineCount": "5",
+          "vLineCount": "5",
+          "dimmedOpacity": "0.25",
+          "cameraPos": "1.78,1.46,2.14",
+          "cameraTarget": "0.50,0.50,0.54"
+        },
+        {
+          "testid": "viewer-canvas-host",
+          "bodyId": "pk:51",
+          "faceCount": "6",
+          "edgeCount": "12",
+          "triangleCount": "96",
+          "roleFaces": "{\"support\":2,\"unchanged\":4}",
+          "roleEdges": "{\"selected\":1,\"deleted\":1,\"unchanged\":10}",
+          "hasIsoparametrics": "true",
+          "isoparametricsCount": "10",
+          "uLineCount": "5",
+          "vLineCount": "5",
+          "dimmedOpacity": "0.25",
+          "cameraPos": "1.78,1.46,2.14",
+          "cameraTarget": "0.50,0.50,0.54"
+        }
+      ],
+      "provenance": [
+        "U = 常数 u · V = 常数 v · snapshot-2 / before1 个非平面；仅精确矩形 trim；5 面未覆盖。采样弦差 ≤ 0.001，无解析全局界。来源 / 面参数 / trim / 误差证据 · mesh f19b18867e17",
+        "U = 常数 u · V = 常数 v · snapshot-0 / before1 个非平面；仅精确矩形 trim；5 面未覆盖。采样弦差 ≤ 0.001，无解析全局界。来源 / 面参数 / trim / 误差证据 · mesh 555d53765eb2"
+      ],
+      "errors": [],
+      "mutation": "Only display manifest case/step/ref changed; mesh/ISO/display-manifest asset bytes untouched"
+    },
+    {
+      "mode": "wrong-case-step",
+      "passed": true,
+      "panes": [
+        {
+          "testid": "viewer-canvas-host",
+          "bodyId": "",
+          "faceCount": "0",
+          "edgeCount": "0",
+          "triangleCount": "0",
+          "roleFaces": "{}",
+          "roleEdges": "{}",
+          "hasIsoparametrics": "false",
+          "isoparametricsCount": "0",
+          "uLineCount": "0",
+          "vLineCount": "0",
+          "dimmedOpacity": "0.25"
+        },
+        {
+          "testid": "viewer-canvas-host",
+          "bodyId": "",
+          "faceCount": "0",
+          "edgeCount": "0",
+          "triangleCount": "0",
+          "roleFaces": "{}",
+          "roleEdges": "{}",
+          "hasIsoparametrics": "false",
+          "isoparametricsCount": "0",
+          "uLineCount": "0",
+          "vLineCount": "0",
+          "dimmedOpacity": "0.25"
+        }
+      ],
+      "provenance": [],
+      "errors": [],
+      "mutation": "Only display manifest case/step/ref changed; mesh/ISO/display-manifest asset bytes untouched"
+    },
+    {
+      "mode": "before-as-after",
+      "passed": true,
+      "panes": [
+        {
+          "testid": "viewer-canvas-host",
+          "bodyId": "",
+          "faceCount": "0",
+          "edgeCount": "0",
+          "triangleCount": "0",
+          "roleFaces": "{}",
+          "roleEdges": "{}",
+          "hasIsoparametrics": "false",
+          "isoparametricsCount": "0",
+          "uLineCount": "0",
+          "vLineCount": "0",
+          "dimmedOpacity": "0.25",
+          "cameraPos": "1.78,1.46,2.14",
+          "cameraTarget": "0.50,0.50,0.54"
+        },
+        {
+          "testid": "viewer-canvas-host",
+          "bodyId": "pk:51",
+          "faceCount": "7",
+          "edgeCount": "15",
+          "triangleCount": "130",
+          "roleFaces": "{\"modified\":2,\"unchanged\":4,\"newBlend\":1}",
+          "roleEdges": "{\"unchanged\":15}",
+          "hasIsoparametrics": "true",
+          "isoparametricsCount": "10",
+          "uLineCount": "5",
+          "vLineCount": "5",
+          "dimmedOpacity": "0.25",
+          "cameraPos": "1.78,1.46,2.14",
+          "cameraTarget": "0.50,0.50,0.54"
+        }
+      ],
+      "provenance": [
+        "U = 常数 u · V = 常数 v · snapshot-1 / after1 个非平面；仅精确矩形 trim；6 面未覆盖。采样弦差 ≤ 0.001，无解析全局界。来源 / 面参数 / trim / 误差证据 · mesh 1024e741e3f4"
+      ],
+      "errors": [],
+      "mutation": "Only display manifest case/step/ref changed; mesh/ISO/display-manifest asset bytes untouched"
+    }
+  ],
+  "allOriginalSourceAssetBytesUnchanged": true,
+  "displayManifestSha256": "0875f9b8208db2d248e3a4fc912b0f5a077d75deaba8b3d1553b840dfb732714",
+  "build": {
+    "frozenPnpm": true,
+    "typescriptAndViteExit": 0
+  },
+  "directLoaderProbe": "Bundled unchanged fixed web/src/api/dataLoader.ts with esbuild as browser ESM, production DEV=false; separate ephemeral /__review_loader.mjs outside production artifact",
+  "boundedChecks": [
+    {
+      "name": "unaltered 1eb Before both panes",
+      "ok": true,
+      "detail": {
+        "stats": [
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "gm:27",
+            "faceCount": "6",
+            "edgeCount": "12",
+            "triangleCount": "96",
+            "roleFaces": "{\"unchanged\":4,\"support\":2}",
+            "roleEdges": "{\"unchanged\":11,\"selected\":1}",
+            "hasIsoparametrics": "true",
+            "isoparametricsCount": "10",
+            "uLineCount": "5",
+            "vLineCount": "5",
+            "dimmedOpacity": "0.25",
+            "cameraPos": "1.78,1.46,2.14",
+            "cameraTarget": "0.50,0.50,0.54"
+          },
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "pk:51",
+            "faceCount": "6",
+            "edgeCount": "12",
+            "triangleCount": "96",
+            "roleFaces": "{\"support\":2,\"unchanged\":4}",
+            "roleEdges": "{\"selected\":1,\"deleted\":1,\"unchanged\":10}",
+            "hasIsoparametrics": "true",
+            "isoparametricsCount": "10",
+            "uLineCount": "5",
+            "vLineCount": "5",
+            "dimmedOpacity": "0.25",
+            "cameraPos": "1.78,1.46,2.14",
+            "cameraTarget": "0.50,0.50,0.54"
+          }
+        ],
+        "title": "Plane / NURBS · 真实 U/V 显示样例\n(solid-blend.plane-nurbs)\n诊断测试 (DIAGNOSTIC)\n真实曲面 U/V（仅显示）\n比率: N/A",
+        "provenance": [
+          "U = 常数 u · V = 常数 v · snapshot-2 / before1 个非平面；仅精确矩形 trim；5 面未覆盖。采样弦差 ≤ 0.001，无解析全局界。来源 / 面参数 / trim / 误差证据 · mesh f19b18867e17",
+          "U = 常数 u · V = 常数 v · snapshot-0 / before1 个非平面；仅精确矩形 trim；5 面未覆盖。采样弦差 ≤ 0.001，无解析全局界。来源 / 面参数 / trim / 误差证据 · mesh 555d53765eb2"
+        ]
+      }
+    },
+    {
+      "name": "warm cache cannot bypass independently selected run/case/step/kernel/stage",
+      "ok": true,
+      "detail": [
+        {
+          "name": "warm legal GM before",
+          "data": true,
+          "error": null,
+          "faces": 6,
+          "uv": "available"
+        },
+        {
+          "name": "wrong case",
+          "data": false,
+          "error": "真实 U/V unavailable：当前 run/case/step/kernel/stage 与独立显示源不匹配"
+        },
+        {
+          "name": "wrong step",
+          "data": false,
+          "error": "真实 U/V unavailable：当前 run/case/step/kernel/stage 与独立显示源不匹配"
+        },
+        {
+          "name": "wrong stage",
+          "data": false,
+          "error": "真实 U/V unavailable：当前选择的快照路径与独立阶段映射不匹配"
+        },
+        {
+          "name": "wrong kernel",
+          "data": false,
+          "error": "真实 U/V unavailable：当前选择的快照路径与独立阶段映射不匹配"
+        },
+        {
+          "name": "wrong run",
+          "data": false,
+          "error": "真实 U/V unavailable：当前 run/case/step/kernel/stage 与独立显示源不匹配"
+        },
+        {
+          "name": "warm still valid",
+          "data": true,
+          "error": null,
+          "faces": 6,
+          "uv": "available"
+        },
+        {
+          "name": "legal GM after",
+          "data": true,
+          "error": null,
+          "faces": 7,
+          "uv": "available"
+        },
+        {
+          "name": "warm after-as-before",
+          "data": false,
+          "error": "真实 U/V unavailable：当前选择的快照路径与独立阶段映射不匹配"
+        },
+        {
+          "name": "missing mapping",
+          "data": false,
+          "error": "真实 U/V unavailable：当前选择的快照路径与独立阶段映射不匹配"
+        },
+        {
+          "name": "legal GM before after all rejections",
+          "data": true,
+          "error": null,
+          "faces": 6,
+          "uv": "available"
+        }
+      ]
+    },
+    {
+      "name": "legitimate Before paired real U and V pixels both panes",
+      "ok": true,
+      "detail": [
+        {
+          "changed": 4465,
+          "cyan": 3144,
+          "purple": 253,
+          "camera": "1.78,1.46,2.14",
+          "triangles": "96"
+        },
+        {
+          "changed": 4358,
+          "cyan": 3035,
+          "purple": 257,
+          "camera": "1.78,1.46,2.14",
+          "triangles": "96"
+        }
+      ]
+    },
+    {
+      "name": "legitimate After paired real U and V pixels both panes",
+      "ok": true,
+      "detail": [
+        {
+          "changed": 3856,
+          "cyan": 228,
+          "purple": 552,
+          "camera": "0.50,-1.38,1.92",
+          "triangles": "220"
+        },
+        {
+          "changed": 3149,
+          "cyan": 145,
+          "purple": 547,
+          "camera": "0.50,-1.38,1.92",
+          "triangles": "130"
+        }
+      ]
+    },
+    {
+      "name": "legitimate After independently bound snapshots",
+      "ok": true,
+      "detail": {
+        "stats": [
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "gm:27",
+            "faceCount": "7",
+            "edgeCount": "15",
+            "triangleCount": "220",
+            "roleFaces": "{\"unchanged\":4,\"modified\":2,\"newBlend\":1}",
+            "roleEdges": "{\"unchanged\":15}",
+            "hasIsoparametrics": "true",
+            "isoparametricsCount": "10",
+            "uLineCount": "5",
+            "vLineCount": "5",
+            "dimmedOpacity": "0.25",
+            "cameraPos": "0.50,-1.38,1.92",
+            "cameraTarget": "0.50,0.50,0.54"
+          },
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "pk:51",
+            "faceCount": "7",
+            "edgeCount": "15",
+            "triangleCount": "130",
+            "roleFaces": "{\"modified\":2,\"unchanged\":4,\"newBlend\":1}",
+            "roleEdges": "{\"unchanged\":15}",
+            "hasIsoparametrics": "true",
+            "isoparametricsCount": "10",
+            "uLineCount": "5",
+            "vLineCount": "5",
+            "dimmedOpacity": "0.25",
+            "cameraPos": "0.50,-1.38,1.92",
+            "cameraTarget": "0.50,0.50,0.54"
+          }
+        ],
+        "title": "Plane / NURBS · 真实 U/V 显示样例\n(solid-blend.plane-nurbs)\n诊断测试 (DIAGNOSTIC)\n真实曲面 U/V（仅显示）\n比率: N/A",
+        "provenance": [
+          "U = 常数 u · V = 常数 v · snapshot-3 / after1 个非平面；仅精确矩形 trim；6 面未覆盖。采样弦差 ≤ 0.001，无解析全局界。来源 / 面参数 / trim / 误差证据 · mesh ee8ef5dbb75f",
+          "U = 常数 u · V = 常数 v · snapshot-1 / after1 个非平面；仅精确矩形 trim；6 面未覆盖。采样弦差 ≤ 0.001，无解析全局界。来源 / 面参数 / trim / 误差证据 · mesh 1024e741e3f4"
+        ]
+      }
+    },
+    {
+      "name": "after-as-before independently rejects",
+      "ok": true,
+      "detail": {
+        "before": [
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "",
+            "faceCount": "0",
+            "edgeCount": "0",
+            "triangleCount": "0",
+            "roleFaces": "{}",
+            "roleEdges": "{}",
+            "hasIsoparametrics": "false",
+            "isoparametricsCount": "0",
+            "uLineCount": "0",
+            "vLineCount": "0",
+            "dimmedOpacity": "0.25",
+            "cameraPos": "1.78,1.46,2.14",
+            "cameraTarget": "0.50,0.50,0.54"
+          },
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "pk:51",
+            "faceCount": "6",
+            "edgeCount": "12",
+            "triangleCount": "96",
+            "roleFaces": "{\"support\":2,\"unchanged\":4}",
+            "roleEdges": "{\"selected\":1,\"deleted\":1,\"unchanged\":10}",
+            "hasIsoparametrics": "true",
+            "isoparametricsCount": "10",
+            "uLineCount": "5",
+            "vLineCount": "5",
+            "dimmedOpacity": "0.25",
+            "cameraPos": "1.78,1.46,2.14",
+            "cameraTarget": "0.50,0.50,0.54"
+          }
+        ],
+        "error": [
+          "真实 U/V unavailable：当前选择的快照路径与独立阶段映射不匹配几何切片请求异常或网络错误，旧网格已被清除"
+        ]
+      }
+    },
+    {
+      "name": "after-as-before rejection does not disable legitimate After",
+      "ok": true,
+      "detail": [
+        {
+          "testid": "viewer-canvas-host",
+          "bodyId": "gm:27",
+          "faceCount": "7",
+          "edgeCount": "15",
+          "triangleCount": "220",
+          "roleFaces": "{\"unchanged\":4,\"modified\":2,\"newBlend\":1}",
+          "roleEdges": "{\"unchanged\":15}",
+          "hasIsoparametrics": "true",
+          "isoparametricsCount": "10",
+          "uLineCount": "5",
+          "vLineCount": "5",
+          "dimmedOpacity": "0.25",
+          "cameraPos": "1.78,1.46,2.14",
+          "cameraTarget": "0.50,0.50,0.54"
+        },
+        {
+          "testid": "viewer-canvas-host",
+          "bodyId": "pk:51",
+          "faceCount": "7",
+          "edgeCount": "15",
+          "triangleCount": "130",
+          "roleFaces": "{\"modified\":2,\"unchanged\":4,\"newBlend\":1}",
+          "roleEdges": "{\"unchanged\":15}",
+          "hasIsoparametrics": "true",
+          "isoparametricsCount": "10",
+          "uLineCount": "5",
+          "vLineCount": "5",
+          "dimmedOpacity": "0.25",
+          "cameraPos": "1.78,1.46,2.14",
+          "cameraTarget": "0.50,0.50,0.54"
+        }
+      ]
+    },
+    {
+      "name": "swap-kernel-before independently rejects",
+      "ok": true,
+      "detail": {
+        "before": [
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "",
+            "faceCount": "0",
+            "edgeCount": "0",
+            "triangleCount": "0",
+            "roleFaces": "{}",
+            "roleEdges": "{}",
+            "hasIsoparametrics": "false",
+            "isoparametricsCount": "0",
+            "uLineCount": "0",
+            "vLineCount": "0",
+            "dimmedOpacity": "0.25"
+          },
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "",
+            "faceCount": "0",
+            "edgeCount": "0",
+            "triangleCount": "0",
+            "roleFaces": "{}",
+            "roleEdges": "{}",
+            "hasIsoparametrics": "false",
+            "isoparametricsCount": "0",
+            "uLineCount": "0",
+            "vLineCount": "0",
+            "dimmedOpacity": "0.25"
+          }
+        ],
+        "error": [
+          "真实 U/V unavailable：当前选择的快照路径与独立阶段映射不匹配几何切片请求异常或网络错误，旧网格已被清除",
+          "真实 U/V unavailable：当前选择的快照路径与独立阶段映射不匹配几何切片请求异常或网络错误，旧网格已被清除"
+        ]
+      }
+    },
+    {
+      "name": "swap-kernel-before rejection does not disable legitimate After",
+      "ok": true,
+      "detail": [
+        {
+          "testid": "viewer-canvas-host",
+          "bodyId": "gm:27",
+          "faceCount": "7",
+          "edgeCount": "15",
+          "triangleCount": "220",
+          "roleFaces": "{\"unchanged\":4,\"modified\":2,\"newBlend\":1}",
+          "roleEdges": "{\"unchanged\":15}",
+          "hasIsoparametrics": "true",
+          "isoparametricsCount": "10",
+          "uLineCount": "5",
+          "vLineCount": "5",
+          "dimmedOpacity": "0.25",
+          "cameraPos": "1.78,1.46,2.14",
+          "cameraTarget": "0.50,0.50,0.54"
+        },
+        {
+          "testid": "viewer-canvas-host",
+          "bodyId": "pk:51",
+          "faceCount": "7",
+          "edgeCount": "15",
+          "triangleCount": "130",
+          "roleFaces": "{\"modified\":2,\"unchanged\":4,\"newBlend\":1}",
+          "roleEdges": "{\"unchanged\":15}",
+          "hasIsoparametrics": "true",
+          "isoparametricsCount": "10",
+          "uLineCount": "5",
+          "vLineCount": "5",
+          "dimmedOpacity": "0.25",
+          "cameraPos": "1.78,1.46,2.14",
+          "cameraTarget": "0.50,0.50,0.54"
+        }
+      ]
+    },
+    {
+      "name": "descriptor-sha independently rejects",
+      "ok": true,
+      "detail": {
+        "before": [
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "",
+            "faceCount": "0",
+            "edgeCount": "0",
+            "triangleCount": "0",
+            "roleFaces": "{}",
+            "roleEdges": "{}",
+            "hasIsoparametrics": "false",
+            "isoparametricsCount": "0",
+            "uLineCount": "0",
+            "vLineCount": "0",
+            "dimmedOpacity": "0.25"
+          },
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "",
+            "faceCount": "0",
+            "edgeCount": "0",
+            "triangleCount": "0",
+            "roleFaces": "{}",
+            "roleEdges": "{}",
+            "hasIsoparametrics": "false",
+            "isoparametricsCount": "0",
+            "uLineCount": "0",
+            "vLineCount": "0",
+            "dimmedOpacity": "0.25"
+          }
+        ],
+        "error": [
+          "真实 U/V unavailable：显示包与独立来源描述符不匹配几何切片请求异常或网络错误，旧网格已被清除",
+          "真实 U/V unavailable：显示包与独立来源描述符不匹配几何切片请求异常或网络错误，旧网格已被清除"
+        ]
+      }
+    },
+    {
+      "name": "legacy17 no-receipt still draws original geometry with UV unavailable",
+      "ok": true,
+      "detail": {
+        "run": "20261110T180347Z-90acd4a9",
+        "stats": [
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "gm:27",
+            "faceCount": "6",
+            "edgeCount": "12",
+            "triangleCount": "96",
+            "roleFaces": "{\"unchanged\":4,\"support\":2}",
+            "roleEdges": "{\"unchanged\":11,\"selected\":1}",
+            "hasIsoparametrics": "false",
+            "isoparametricsCount": "0",
+            "uLineCount": "0",
+            "vLineCount": "0",
+            "dimmedOpacity": "0.25",
+            "cameraPos": "1.78,1.46,2.14",
+            "cameraTarget": "0.50,0.50,0.54"
+          },
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "pk:51",
+            "faceCount": "6",
+            "edgeCount": "12",
+            "triangleCount": "96",
+            "roleFaces": "{\"support\":2,\"unchanged\":4}",
+            "roleEdges": "{\"selected\":1,\"deleted\":1,\"unchanged\":10}",
+            "hasIsoparametrics": "false",
+            "isoparametricsCount": "0",
+            "uLineCount": "0",
+            "vLineCount": "0",
+            "dimmedOpacity": "0.25",
+            "cameraPos": "1.78,1.46,2.14",
+            "cameraTarget": "0.50,0.50,0.54"
+          }
+        ],
+        "rawMeshes": [
+          {
+            "kernel": "gm",
+            "hasReceipt": false,
+            "expectedTriangles": 96
+          },
+          {
+            "kernel": "pk",
+            "hasReceipt": false,
+            "expectedTriangles": 96
+          }
+        ],
+        "badges": [
+          "无等参线",
+          "无等参线"
+        ]
+      }
+    },
+    {
+      "name": "no uncaught errors on finite positive paths",
+      "ok": true,
+      "detail": []
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "temp_docs/uv-1eb-review/before-valid.png",
+      "sha256": "344eba2237077c9d7fb83d7949c46671f6bd2d2890c0832e54a419bff058e441",
+      "visuallyInspected": true
+    },
+    {
+      "path": "temp_docs/uv-1eb-review/after-valid.png",
+      "sha256": "51578ba18a4adf4689d60f806fd163488238eeaa97dc9554340e34e70ec12c4a",
+      "visuallyInspected": true
+    }
+  ],
+  "notRun": [
+    "PK reload/eval/export",
+    "case capture",
+    "full 38 browser suite",
+    "NativeAOT",
+    "layout integration",
+    "live/portal/unit/main changes",
+    "deployment"
+  ],
+  "verdict": "ACCEPT original P1 fix for fixed 1eb9308 only; serial layout integration and final publication gates remain separate"
+}
