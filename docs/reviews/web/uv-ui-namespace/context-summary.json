@@ -1,0 +1,274 @@
+{
+  "candidate": "015cd308e147356fecac96bb7354ab1e92c36a03",
+  "originalProbeSha256": "57b3b89e2fd512677fff9002374cd748a2b06ee4454511c435c48fa8e73952ba",
+  "adaptedProbeSha256": "cb7b39bbd32df46cf5aabc496b618fadd1bcad54859e3e0a09faf2321eb0b64d",
+  "change": "Only assetRoot filesystem literal: data/display/real-uv -> display/real-uv; route globs and assertions unchanged",
+  "rows": [
+    {
+      "mode": "normal-four",
+      "warm": false,
+      "passed": true,
+      "mutations": 0,
+      "panes": [
+        {
+          "triangles": "96",
+          "u": "5",
+          "v": "5"
+        },
+        {
+          "triangles": "96",
+          "u": "5",
+          "v": "5"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "before-as-after",
+      "warm": false,
+      "passed": true,
+      "mutations": 1,
+      "panes": [
+        {
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        },
+        {
+          "triangles": "130",
+          "u": "5",
+          "v": "5"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "before-as-after",
+      "warm": true,
+      "passed": true,
+      "mutations": 2,
+      "panes": [
+        {
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        },
+        {
+          "triangles": "130",
+          "u": "5",
+          "v": "5"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "after-as-before",
+      "warm": false,
+      "passed": true,
+      "mutations": 1,
+      "panes": [
+        {
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        },
+        {
+          "triangles": "96",
+          "u": "5",
+          "v": "5"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "after-as-before",
+      "warm": true,
+      "passed": true,
+      "mutations": 2,
+      "panes": [
+        {
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        },
+        {
+          "triangles": "96",
+          "u": "5",
+          "v": "5"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "wrong-case",
+      "warm": false,
+      "passed": true,
+      "mutations": 1,
+      "panes": [
+        {
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        },
+        {
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "wrong-case",
+      "warm": true,
+      "passed": true,
+      "mutations": 2,
+      "panes": [
+        {
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        },
+        {
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "wrong-step",
+      "warm": false,
+      "passed": true,
+      "mutations": 1,
+      "panes": [
+        {
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        },
+        {
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "wrong-step",
+      "warm": true,
+      "passed": true,
+      "mutations": 2,
+      "panes": [
+        {
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        },
+        {
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "wrong-kernel",
+      "warm": false,
+      "passed": true,
+      "mutations": 1,
+      "panes": [
+        {
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        },
+        {
+          "triangles": "96",
+          "u": "5",
+          "v": "5"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "wrong-kernel",
+      "warm": true,
+      "passed": true,
+      "mutations": 2,
+      "panes": [
+        {
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        },
+        {
+          "triangles": "96",
+          "u": "5",
+          "v": "5"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "wrong-package",
+      "warm": false,
+      "passed": true,
+      "mutations": 1,
+      "panes": [
+        {
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        },
+        {
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "wrong-package",
+      "warm": true,
+      "passed": true,
+      "mutations": 1,
+      "panes": [
+        {
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        },
+        {
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "wrong-source-mapping",
+      "warm": false,
+      "passed": true,
+      "mutations": 2,
+      "panes": [
+        {
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        },
+        {
+          "triangles": "0",
+          "u": "0",
+          "v": "0"
+        }
+      ],
+      "errors": []
+    }
+  ]
+}

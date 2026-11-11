@@ -1,0 +1,68 @@
+{
+  "candidate": "015cd308e147356fecac96bb7354ab1e92c36a03",
+  "tools": "1b935972eff529e13b46cb9b08ad9550e0a6aeb5",
+  "fixtureReviewPin": "0000000000000000000000000000000000000000",
+  "published": false,
+  "uiHash": "f0593760ed1e22dd73e94f609e9e2353366370b542019a90cb8f486f796a4dd6",
+  "uiFiles": 18,
+  "historicalFiles": 607,
+  "indexSha256": "117bb8e7ad20ea90aee004eb18428d2a220e5270795ab9ce81eff380843e3990",
+  "toolHashes": {
+    "Directory.Build.props": "df2e230137288fc076fe5d73b95c51589c69a6d5c5a62ac365c61927a2f01352",
+    "FreezeReviewedWebProgressUi.cs": "c6c00b10c19ec9d27a429338b46b51164acd7d870d49202ed279492517ad0a96",
+    "PublishReviewedWebProgressUi.cs": "2d5efee97dacc6e1f2dca4bea087957ed97aff1cd0ca4de44608b6bfce6d675e",
+    "ConfigureReviewedWebProgressUiHook.cs": "929082a9771efc025aadfb19b55c98b4007f7e0623c1c071ccba6fe0e72d2173",
+    "ReviewedWebProgressRelease.cs": "45066e44d3b497bdfdea9f605bce3fa7d68f6db7f1a53a710d84bd31203b060e",
+    "WebProgressDataValidation.cs": "ea1b96fedacf5a305ba14cc4c8d776b2c0871724ecfac2f63b3b479c0efdb54e",
+    "WebProgressPublishing.cs": "73b049a6155e9dd912cfaa1770a3142440d689acdd47ce97b88e55c67e921b04",
+    "WebProgressMetadata.cs": "be9c13609deec59311ff005d543fb931433a7b8bb3f18d4591acbfdcde981cc1"
+  },
+  "rounds": [
+    {
+      "name": "round1",
+      "bundle": "temp_docs/uv-static/two-round/release/round1/bundle-2485083f33719217",
+      "bundleHash": "8dca4b3500652fe0ff5161a8a5943abdcc5a69d0a40b472de17e95b1ca583069",
+      "files": 625,
+      "bytes": 28214939,
+      "retainedUv": 15,
+      "producerFiles": 607,
+      "prepared": {
+        "schemaVersion": 1,
+        "uiCommit": "015cd308e147356fecac96bb7354ab1e92c36a03",
+        "uiHash": "f0593760ed1e22dd73e94f609e9e2353366370b542019a90cb8f486f796a4dd6",
+        "review": "0000000000000000000000000000000000000000",
+        "fingerprint": "015cd308e147356fecac96bb7354ab1e92c36a03:f0593760ed1e22dd73e94f609e9e2353366370b542019a90cb8f486f796a4dd6:fbb68a2aacd7eebb910f63a51a23954eec340e9bc3960e000448c699565d7390",
+        "bundle": "bundle-2485083f33719217",
+        "files": 625,
+        "bytes": 28214939,
+        "dataIndexSha256": "117bb8e7ad20ea90aee004eb18428d2a220e5270795ab9ce81eff380843e3990",
+        "sourceIndexSha256": "117bb8e7ad20ea90aee004eb18428d2a220e5270795ab9ce81eff380843e3990",
+        "sourceDataTreeHash": "fbb68a2aacd7eebb910f63a51a23954eec340e9bc3960e000448c699565d7390",
+        "baselineIndexReused": true
+      }
+    },
+    {
+      "name": "round2",
+      "bundle": "temp_docs/uv-static/two-round/release/round2/bundle-2485083f33719217",
+      "bundleHash": "8dca4b3500652fe0ff5161a8a5943abdcc5a69d0a40b472de17e95b1ca583069",
+      "files": 625,
+      "bytes": 28214939,
+      "retainedUv": 15,
+      "producerFiles": 607,
+      "prepared": {
+        "schemaVersion": 1,
+        "uiCommit": "015cd308e147356fecac96bb7354ab1e92c36a03",
+        "uiHash": "f0593760ed1e22dd73e94f609e9e2353366370b542019a90cb8f486f796a4dd6",
+        "review": "0000000000000000000000000000000000000000",
+        "fingerprint": "015cd308e147356fecac96bb7354ab1e92c36a03:f0593760ed1e22dd73e94f609e9e2353366370b542019a90cb8f486f796a4dd6:fbb68a2aacd7eebb910f63a51a23954eec340e9bc3960e000448c699565d7390",
+        "bundle": "bundle-2485083f33719217",
+        "files": 625,
+        "bytes": 28214939,
+        "dataIndexSha256": "117bb8e7ad20ea90aee004eb18428d2a220e5270795ab9ce81eff380843e3990",
+        "sourceIndexSha256": "117bb8e7ad20ea90aee004eb18428d2a220e5270795ab9ce81eff380843e3990",
+        "sourceDataTreeHash": "fbb68a2aacd7eebb910f63a51a23954eec340e9bc3960e000448c699565d7390",
+        "baselineIndexReused": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+[
+  {
+    "oldPath": "web/data/display/real-uv/display/snapshot-0.receipt.json",
+    "newPath": "web/public/display/real-uv/display/snapshot-0.receipt.json",
+    "sha256": "d6e82fe0e9a08037ab8a733f41eb1a1f183b4a6236c92066dc6774c3dbfc223f",
+    "bytes": 1100
+  },
+  {
+    "oldPath": "web/data/display/real-uv/display/snapshot-1.receipt.json",
+    "newPath": "web/public/display/real-uv/display/snapshot-1.receipt.json",
+    "sha256": "8a810b64401cf7a93a354f3d077be9058dfa80284d9b3cd39acd27b77d17ecf5",
+    "bytes": 1097
+  },
+  {
+    "oldPath": "web/data/display/real-uv/display/snapshot-2.receipt.json",
+    "newPath": "web/public/display/real-uv/display/snapshot-2.receipt.json",
+    "sha256": "9038b391a4f133a70b17bafde43fd01bb37026a8b26ecff1de3ed12cb00df962",
+    "bytes": 1100
+  },
+  {
+    "oldPath": "web/data/display/real-uv/display/snapshot-3.receipt.json",
+    "newPath": "web/public/display/real-uv/display/snapshot-3.receipt.json",
+    "sha256": "e2dba548ee557cc39725b2908d6b1833e8f834a0906912f936af13c711f5697c",
+    "bytes": 1097
+  },
+  {
+    "oldPath": "web/data/display/real-uv/display-manifest.json",
+    "newPath": "web/public/display/real-uv/display-manifest.json",
+    "sha256": "0875f9b8208db2d248e3a4fc912b0f5a077d75deaba8b3d1553b840dfb732714",
+    "bytes": 3788
+  },
+  {
+    "oldPath": "web/data/display/real-uv/gm-after.iso.json",
+    "newPath": "web/public/display/real-uv/gm-after.iso.json",
+    "sha256": "d12092402e590ce680233bcddb1bb1fa528d99b44df5a3eeae59becb8b6a82a5",
+    "bytes": 19886
+  },
+  {
+    "oldPath": "web/data/display/real-uv/gm-before.iso.json",
+    "newPath": "web/public/display/real-uv/gm-before.iso.json",
+    "sha256": "6c36c4d940cf7d6178afe5f550a51f26561b27e4a2c6bb2ec7d537eaa685ec13",
+    "bytes": 15162
+  },
+  {
+    "oldPath": "web/data/display/real-uv/index.json",
+    "newPath": "web/public/display/real-uv/index.json",
+    "sha256": "97ba0cf53cf118b60bbdb75a0b1e93253538c20844310fa2f9561d48064810e8",
+    "bytes": 361
+  },
+  {
+    "oldPath": "web/data/display/real-uv/manifest.json",
+    "newPath": "web/public/display/real-uv/manifest.json",
+    "sha256": "4727934d55dfc32a58f78f110299c37198a98ddb441e1365a007917d8330f913",
+    "bytes": 2195
+  },
+  {
+    "oldPath": "web/data/display/real-uv/meshes/gm-after.mesh.json",
+    "newPath": "web/public/display/real-uv/meshes/gm-after.mesh.json",
+    "sha256": "ee8ef5dbb75f97a7942c5647e315b942743550c71994ec62f0992fbcc3f495f1",
+    "bytes": 37668
+  },
+  {
+    "oldPath": "web/data/display/real-uv/meshes/gm-before.mesh.json",
+    "newPath": "web/public/display/real-uv/meshes/gm-before.mesh.json",
+    "sha256": "f19b18867e17ae47fac8b2b2a0489b27f3049da6c3f03d9e87fcd5bbd0d06b22",
+    "bytes": 13081
+  },
+  {
+    "oldPath": "web/data/display/real-uv/meshes/pk-after.mesh.json",
+    "newPath": "web/public/display/real-uv/meshes/pk-after.mesh.json",
+    "sha256": "1024e741e3f4c4daadbef671e43c3aa78a05966861e80a5d9cea41716f36baed",
+    "bytes": 22151
+  },
+  {
+    "oldPath": "web/data/display/real-uv/meshes/pk-before.mesh.json",
+    "newPath": "web/public/display/real-uv/meshes/pk-before.mesh.json",
+    "sha256": "555d53765eb2ef485d38c3e8da70b08f66b6e808da1ece1fc9a11b9b21d7b3b3",
+    "bytes": 13126
+  },
+  {
+    "oldPath": "web/data/display/real-uv/pk-after.iso.json",
+    "newPath": "web/public/display/real-uv/pk-after.iso.json",
+    "sha256": "9fa3bb4313eb0cf98e9c8aadf54610697197de6a0c7d3c1d4b1f3bd231dbe6a3",
+    "bytes": 20253
+  },
+  {
+    "oldPath": "web/data/display/real-uv/pk-before.iso.json",
+    "newPath": "web/public/display/real-uv/pk-before.iso.json",
+    "sha256": "94cbcddfac053c4971a4dffa77ece2daeccecf0ddc95734620d3f3c3eee5a8fb",
+    "bytes": 15103
+  }
+]
