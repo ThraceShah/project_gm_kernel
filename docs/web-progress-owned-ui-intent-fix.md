@@ -2,6 +2,8 @@
 
 本轮修复独立 review `ctx_9769a077886d` 对工具 `d9fd0605f9beb3e23630c6b54fed3642b2d842da` 的 missing-hook 降级阻断。原最终文档提交 `de87c8b68b9f31e5359919116288b203b95ab01b` 和原失败证据保留，不能用前轮 173 项通过宣称 d9 已接受。本轮不改变其他发布设计或 hosted 迁移，不操作 live/systemd/portal/main。
 
+修复固定 Git SHA：`1b935972eff529e13b46cb9b08ad9550e0a6aeb5`，已推送 `fix/reviewed-ui-owned-upgrade`。独立 reviewer 应固定此对象窄复验原 probe 与受影响 first install/owned restore；本报告的后续文字提交不改变该工具源码对象。
+
 ## 原证据及 before
 
 正式独立 review 已固定在 `8d7d90d6fed1a0d6ea16c92a7121ac40dbbaa947`。原 repro 位于 `../gm-publishing-integration-review/docs/owned-ui-d9-review/MissingOwnedProbe.cs`；正式固定字节 SHA256 为 `26d1039ce7322273ae5102a00810bd9a21712e71cf2eaad37dbd984336d2d646`，已从固定 Git 对象只读提取到 `temp_docs/owned-ui-intent-original-MissingOwnedProbe.cs`，未编辑 reviewer 文件。任务开始读取的尚未提交版本 SHA 为 `b16adb7e421d7189fe4c94751c2370291f25403c6340d3b7f9d18e05e8929d46`；reviewer 随后增加了删除前的路径/pin 校验并提交正式版本，这两者不混称。
