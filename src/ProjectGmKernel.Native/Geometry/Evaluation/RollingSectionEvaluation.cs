@@ -9,6 +9,7 @@ namespace ProjectGmKernel.Native.Geometry.Evaluation;
 /// undefined normalisation of their transverse vector.</summary>
 internal static class RollingSectionEvaluation
 {
+    [ThreadStatic] internal static long ProbeCalls,ProbeTerms,ProbeTicks;
     internal static AlgorithmStatus Series(in TaylorVector first,in TaylorVector last,double v,
         out TaylorVector point,out TaylorVector dv,out TaylorVector dvv)
     {
@@ -65,8 +66,12 @@ internal static class RollingSectionEvaluation
 
     private static AlgorithmStatus Weight(IntervalDual q,IntervalDual v,out IntervalDual value)
     {
+        var probeStarted=System.Diagnostics.Stopwatch.GetTimestamp();ProbeCalls++;
+        try
+        {
         value=default;if(q.Value.Lower<0||q.Value.Upper>=2)return AlgorithmStatus.NotConverged;
         var terms=q.Value.Upper<=1?64:128;if(v.Value.Magnitude>terms)return AlgorithmStatus.NotConverged;
+        ProbeTerms+=terms;
         var term=v;value=term;
         for(var k=1;k<=terms;k++)
         {
@@ -85,5 +90,7 @@ internal static class RollingSectionEvaluation
         if(!tail.Finite||!derivative.Finite)return AlgorithmStatus.NotConverged;
         value=new(value.Value+new IntervalNumber(-tail.Upper,tail.Upper),value.Derivative+new IntervalNumber(-derivative.Upper,derivative.Upper));
         return value.Finite?AlgorithmStatus.Success:AlgorithmStatus.NotConverged;
+        }
+        finally{ProbeTicks+=System.Diagnostics.Stopwatch.GetTimestamp()-probeStarted;}
     }
 }

@@ -1713,10 +1713,12 @@ static unsafe int Fillet(bool own,int body,double angle,double radius,double tol
     WebProgressCapture.Context="";
     WebProgressCapture.Before(own,body,selected);
     WebProgressCapture.BlendParameters(own,fix,radius,mark.properties.tolerance);
+    if(own)RollingSectionEvaluation.ProbeCalls=RollingSectionEvaluation.ProbeTerms=RollingSectionEvaluation.ProbeTicks=0;
     int* made;int fault,edgeFault,topolFault;var started=Stopwatch.GetTimestamp();
     PK_FACE_array_t* webUnders=null;int* webTopols=null;
     var error=own?KernelRuntime.BodyFixBlends(body,(M.PK_BODY_fix_blends_o_s*)&fix,&count,&made,WebProgressCapture.Enabled?(M.PK_FACE_array_s**)&webUnders:null,WebProgressCapture.Enabled?&webTopols:null,&fault,&edgeFault,&topolFault):PK_BODY_fix_blends(body,&fix,&count,&made,WebProgressCapture.Enabled?&webUnders:null,WebProgressCapture.Enabled?&webTopols:null,&fault,&edgeFault,&topolFault);
     var webElapsed=Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+    if(own)Console.WriteLine($"SECTION_WEIGHT_PROBE calls={RollingSectionEvaluation.ProbeCalls} terms={RollingSectionEvaluation.ProbeTerms} inclusive-wall-ms={1000.0*RollingSectionEvaluation.ProbeTicks/Stopwatch.Frequency:R}");
     WebProgressCapture.After(own,body,webElapsed,error,count,made,fault,webUnders,webTopols);
     WebProgressCapture.FreeBlendTracking(own,count,webUnders,webTopols);
     Console.WriteLine($"FIX {(own?"self":"PK")} error={error} faces={count} fault={fault} edge={edgeFault} topol={topolFault} stage={KernelRuntime.LastRegularBlendStage} network={KernelRuntime.LastRollingNetworkStage} SSI={KernelRuntime.LastGeneralIntersectionStage}/{KernelRuntime.LastGeneralIntersectionStatus}/{KernelRuntime.LastGeneralIntersectionNodes}/{KernelRuntime.LastGeneralIntersectionSegments} ms={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F3}");

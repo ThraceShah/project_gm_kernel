@@ -33,6 +33,9 @@ internal static class SurfaceIsoPlaneRoots
         Span<double> lower=stackalloc double[128],upper=stackalloc double[128];Span<BufferCount> depths=stackalloc BufferCount[128];
         lower[0]=first;upper[0]=last;depths[0]=0;var pending=1;var visited=0;
         Span<IntervalNumber> bounds=stackalloc IntervalNumber[9],at=stackalloc IntervalNumber[9];
+        var probeSuccess=false;
+        try
+        {
         while(pending>0)
         {
             ModelingPerformance.Cell(true);
@@ -143,7 +146,12 @@ internal static class SurfaceIsoPlaneRoots
             lower[pending]=lo;upper[pending]=mid;depths[pending++]=depth+1;
             lower[pending]=mid;upper[pending]=hi;depths[pending++]=depth+1;
         }
-        return AlgorithmStatus.Success;
+        probeSuccess=true;return AlgorithmStatus.Success;
+        }
+        finally
+        {
+            if(!probeSuccess)Console.Error.WriteLine($"ROOTFAIL use={use} {curve.ProbeDescription()} level={plane.Kind} cells={visited} reason={LastFailure} domain={first:R}/{last:R} origin={plane.Origin.X:R}/{plane.Origin.Y:R}/{plane.Origin.Z:R} axis={plane.Axis.X:R}/{plane.Axis.Y:R}/{plane.Axis.Z:R}");
+        }
     }
 
     private static AlgorithmStatus TryInternalBoundaryBracket(in SurfaceIntersectionPatch curve,in AnalyticSurface support,

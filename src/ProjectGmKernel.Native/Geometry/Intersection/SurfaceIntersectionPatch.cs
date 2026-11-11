@@ -55,6 +55,15 @@ internal readonly ref struct SurfaceIntersectionPatch
     {this=curve;sweepAxis=(byte)(axis+1);Domain=new(curve.Domain.U0,curve.Domain.U1,-height,height);cache=default;}
     internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,double u,double v,double du,double dv,double lower,double upper)
     {this=source;parameterLine=true;lineU=u;lineV=v;lineDU=du;lineDV=dv;Domain=new(lower,upper,0,1);cache=default;}
+    internal string ProbeDescription()
+    {
+        if(!isBlend)return $"Bezier/{bezier.UDegree}/{bezier.VDegree} iso={isoAxis}/{isoParameter:R}";
+        var index=isSpine?surface:blend.Surfaces[surface].Spine;var root=blend.Spines[index];
+        var first=blend.Surfaces[root.First];var second=blend.Surfaces[root.Second];
+        var f=first.IsBlend?"Blend":first.IsBSpline?"BSpline":first.Analytic.Kind.ToString();
+        var s=second.IsBlend?"Blend":second.IsBSpline?"BSpline":second.Analytic.Kind.ToString();
+        return $"spine={isSpine} root={root.Curve.Kind} first={f} second={s} iso={isoAxis}/{isoParameter:R} offset={normalOffset:R}";
+    }
     internal bool ExactCorner(double u,double v,Span<IntervalNumber> homogeneous)
     {
         if(isBlend||normalOffset!=0||isoAxis!=0||sweepAxis!=0||parameterLine||supportParameterSide!=0)return false;
