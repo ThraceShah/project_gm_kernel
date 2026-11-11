@@ -1,0 +1,270 @@
+[
+  {
+    "path": "after-first-failure.json",
+    "sha256": "6c7c3624223cc30311f6ad7ede61560b2062d7e2f207a8a6d2ae65fa7a1fe81c"
+  },
+  {
+    "path": "after.exit",
+    "sha256": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9"
+  },
+  {
+    "path": "after.log",
+    "sha256": "e090672a8963f8b8dadc63f5fb40598c676bc7b65aa89ee43a6d775301d13328"
+  },
+  {
+    "path": "after/docs/reviews/advanced-modeling/operation-2c06-evidence/Directory.Build.props",
+    "sha256": "2cac11410b81e7dfd7ac5c2d46daa9c19ca29a6d0bd62e9892f2b65c1c6b331a"
+  },
+  {
+    "path": "after/docs/reviews/advanced-modeling/operation-2c06-evidence/FirstFailureProbe.cs",
+    "sha256": "8ee9dc3e339c90164128a18bdc7b218bdac4e3b49451270f0579aed7d304b48c"
+  },
+  {
+    "path": "after/scripts/Directory.Build.props",
+    "sha256": "7fa884fe655a224b8c9cb35e31ef57ffd09d9fe241446f84ad455ca5542e3357"
+  },
+  {
+    "path": "after/scripts/OperationAcceptanceLedger.cs",
+    "sha256": "f1697b6fd1f36998a93802f3e606a097897500122e1721a317363778360a4500"
+  },
+  {
+    "path": "after/scripts/OperationAcceptanceRules.cs",
+    "sha256": "9ba16afa7e0bac18c86167aac8cdcf71fab14b7e2861033b20818d9823cf0a66"
+  },
+  {
+    "path": "after/temp_docs/operation-2c06-review/first-failure.json",
+    "sha256": "6c7c3624223cc30311f6ad7ede61560b2062d7e2f207a8a6d2ae65fa7a1fe81c"
+  },
+  {
+    "path": "author-inventory.json",
+    "sha256": "a1410fec7acbf3ad3d4d2584ceb6c44122ec2ffa4ddfc62079dbb3026990f470"
+  },
+  {
+    "path": "author-original/after-first-failure.json",
+    "sha256": "6c7c3624223cc30311f6ad7ede61560b2062d7e2f207a8a6d2ae65fa7a1fe81c"
+  },
+  {
+    "path": "author-original/after.log",
+    "sha256": "69fdd5fada8119c4072caa4e00482be11421c1e04c59eeb22cba914597dd3704"
+  },
+  {
+    "path": "author-original/before-first-failure.json",
+    "sha256": "db8e77e95fa32e6354b912789662606036d88b477d59b2bcf9a29a389bb38988"
+  },
+  {
+    "path": "author-original/before.log",
+    "sha256": "f7b4f625242c7fefbe0475ec4e4d2d7aeced4718d381aadcad1b9d0d237e3354"
+  },
+  {
+    "path": "author-original/controls/child-before-parent-own-check/ledger.json",
+    "sha256": "f70c92561a945eb9e6ea8d76c5cb70df2a4f560116f98b8845110ad9bb247a40"
+  },
+  {
+    "path": "author-original/controls/child-before-propagation/ledger.json",
+    "sha256": "f798db0c57ee366e56e11efe70d31b148ae615674c0c53758e11a6fb95b56098"
+  },
+  {
+    "path": "author-original/controls/normal/ledger.json",
+    "sha256": "ca55dd1943f148bac33bcd871e2137e7cea5e06017e8812dd61582232b0b077e"
+  },
+  {
+    "path": "author-original/controls/parent-before-cleanup/ledger.json",
+    "sha256": "788b6ea8bcde6e4a1430b9dc05cdbce324e92b47e2818d06b5b7b78f9a637292"
+  },
+  {
+    "path": "author-original/controls/parent-pass-cleanup-fail/ledger.json",
+    "sha256": "b5a2c943522159509ea5be771f70f634cb77d75dc2272370dc1344cf67463095"
+  },
+  {
+    "path": "author-original/evidence-check.log",
+    "sha256": "541765636c439ae46453c10b61a52aa86aafa9e2e4dd320eeed8762776eb8a21"
+  },
+  {
+    "path": "author-original/original-first-failure.json",
+    "sha256": "db8e77e95fa32e6354b912789662606036d88b477d59b2bcf9a29a389bb38988"
+  },
+  {
+    "path": "before-first-failure.json",
+    "sha256": "db8e77e95fa32e6354b912789662606036d88b477d59b2bcf9a29a389bb38988"
+  },
+  {
+    "path": "before.exit",
+    "sha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+  },
+  {
+    "path": "before.log",
+    "sha256": "c1083ddc1270c475aae19b46aa0894d9fd18892998ca5188d63711b8ea5667a4"
+  },
+  {
+    "path": "before/docs/reviews/advanced-modeling/operation-2c06-evidence/Directory.Build.props",
+    "sha256": "2cac11410b81e7dfd7ac5c2d46daa9c19ca29a6d0bd62e9892f2b65c1c6b331a"
+  },
+  {
+    "path": "before/docs/reviews/advanced-modeling/operation-2c06-evidence/FirstFailureProbe.cs",
+    "sha256": "8ee9dc3e339c90164128a18bdc7b218bdac4e3b49451270f0579aed7d304b48c"
+  },
+  {
+    "path": "before/scripts/Directory.Build.props",
+    "sha256": "7fa884fe655a224b8c9cb35e31ef57ffd09d9fe241446f84ad455ca5542e3357"
+  },
+  {
+    "path": "before/scripts/OperationAcceptanceLedger.cs",
+    "sha256": "a780760600aa775daa44bd9725ca771d7363d53333c3edc6e749274a13930f05"
+  },
+  {
+    "path": "before/scripts/OperationAcceptanceRules.cs",
+    "sha256": "9ba16afa7e0bac18c86167aac8cdcf71fab14b7e2861033b20818d9823cf0a66"
+  },
+  {
+    "path": "before/temp_docs/operation-2c06-review/first-failure.json",
+    "sha256": "db8e77e95fa32e6354b912789662606036d88b477d59b2bcf9a29a389bb38988"
+  },
+  {
+    "path": "boundary-facts.json",
+    "sha256": "ca567d9e86c3e5181a5369c67cccd3cf4574a3bbd7c676c5e61206a0efcf8e3e"
+  },
+  {
+    "path": "controls.exit",
+    "sha256": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9"
+  },
+  {
+    "path": "controls.log",
+    "sha256": "16297aa22ee65b7edfa94a3ce13e82eb33391e6d1548da5b58673f5cefeb26c2"
+  },
+  {
+    "path": "controls/child-before-parent-owned/ledger.json",
+    "sha256": "6cd18f68410900987cac935a844f1157b146be2819099ec864b33973e66c067a"
+  },
+  {
+    "path": "controls/normal-second-rep/ledger.json",
+    "sha256": "e9e5fae6e437a3c4e8d68a4a5de242b65c1dc7d11535d202d57504eb6e7eedb0"
+  },
+  {
+    "path": "controls/parent-before-cleanup/ledger.json",
+    "sha256": "93ea6934f80a8257ecd9ff0cd08e476162bd380aaa44c3610be558b677019d6c"
+  },
+  {
+    "path": "controls/parent-pass-cleanup-fail/ledger.json",
+    "sha256": "4ba45d148adceb17620523e0118557b7b389394e6611a2664009514cbf7f67e2"
+  },
+  {
+    "path": "controls/propagation-only/ledger.json",
+    "sha256": "2be468700c9c931b8758eb3f746ac122ae4f282cdeace3f22c94c41b5ebdc18d"
+  },
+  {
+    "path": "disk-after-first-failure.exit",
+    "sha256": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9"
+  },
+  {
+    "path": "disk-after-first-failure.log",
+    "sha256": "ee25eed4df0a63bab00b310930312992b3b8e4d4961058a8b6cdcb8a484bfac1"
+  },
+  {
+    "path": "disk-before-first-failure.exit",
+    "sha256": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9"
+  },
+  {
+    "path": "disk-before-first-failure.log",
+    "sha256": "981431342b64422e356ca01133481711dd120ce310baf29e7a90ef2c854e4958"
+  },
+  {
+    "path": "disk-child-before-parent-owned.exit",
+    "sha256": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9"
+  },
+  {
+    "path": "disk-child-before-parent-owned.log",
+    "sha256": "ee25eed4df0a63bab00b310930312992b3b8e4d4961058a8b6cdcb8a484bfac1"
+  },
+  {
+    "path": "disk-normal-second-rep.exit",
+    "sha256": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9"
+  },
+  {
+    "path": "disk-normal-second-rep.log",
+    "sha256": "ee25eed4df0a63bab00b310930312992b3b8e4d4961058a8b6cdcb8a484bfac1"
+  },
+  {
+    "path": "disk-parent-before-cleanup.exit",
+    "sha256": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9"
+  },
+  {
+    "path": "disk-parent-before-cleanup.log",
+    "sha256": "ee25eed4df0a63bab00b310930312992b3b8e4d4961058a8b6cdcb8a484bfac1"
+  },
+  {
+    "path": "disk-parent-pass-cleanup-fail.exit",
+    "sha256": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9"
+  },
+  {
+    "path": "disk-parent-pass-cleanup-fail.log",
+    "sha256": "ee25eed4df0a63bab00b310930312992b3b8e4d4961058a8b6cdcb8a484bfac1"
+  },
+  {
+    "path": "disk-propagation-only.exit",
+    "sha256": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9"
+  },
+  {
+    "path": "disk-propagation-only.log",
+    "sha256": "ee25eed4df0a63bab00b310930312992b3b8e4d4961058a8b6cdcb8a484bfac1"
+  },
+  {
+    "path": "disk/after-first-failure/index.json",
+    "sha256": "e9698f0c65a2ac864d619d870b8d5f69e02e6838f9a2c9add31f27cd36128c90"
+  },
+  {
+    "path": "disk/after-first-failure/runs/test/manifest.json",
+    "sha256": "3feb8a3e93dc346cd002eac51f3ae0c71d35f7b75d292b2577895de82669edfc"
+  },
+  {
+    "path": "disk/before-first-failure/index.json",
+    "sha256": "e9698f0c65a2ac864d619d870b8d5f69e02e6838f9a2c9add31f27cd36128c90"
+  },
+  {
+    "path": "disk/before-first-failure/runs/test/manifest.json",
+    "sha256": "4d481b7edc78a3756aa5177e36a3b2581a7a78b26027da51244fd5a2335450d4"
+  },
+  {
+    "path": "disk/child-before-parent-owned/index.json",
+    "sha256": "e9698f0c65a2ac864d619d870b8d5f69e02e6838f9a2c9add31f27cd36128c90"
+  },
+  {
+    "path": "disk/child-before-parent-owned/runs/test/manifest.json",
+    "sha256": "bbbdda9215ee3908f3bd3e8b4b27b640779af18a4a011043fd2aafc33d06e401"
+  },
+  {
+    "path": "disk/normal-second-rep/index.json",
+    "sha256": "e9698f0c65a2ac864d619d870b8d5f69e02e6838f9a2c9add31f27cd36128c90"
+  },
+  {
+    "path": "disk/normal-second-rep/runs/test/manifest.json",
+    "sha256": "c650727fab1803e73dc34944506d080e1ba7cd8fe4828ac1c6636f96ff70edbc"
+  },
+  {
+    "path": "disk/parent-before-cleanup/index.json",
+    "sha256": "e9698f0c65a2ac864d619d870b8d5f69e02e6838f9a2c9add31f27cd36128c90"
+  },
+  {
+    "path": "disk/parent-before-cleanup/runs/test/manifest.json",
+    "sha256": "12aaf813e7a18aa134d97760a4cde5d3d1ff4cab8293d4f908850a1de3e4999c"
+  },
+  {
+    "path": "disk/parent-pass-cleanup-fail/index.json",
+    "sha256": "e9698f0c65a2ac864d619d870b8d5f69e02e6838f9a2c9add31f27cd36128c90"
+  },
+  {
+    "path": "disk/parent-pass-cleanup-fail/runs/test/manifest.json",
+    "sha256": "98ec7cd9e8e3cd78b5b5db3474cf82769ea2f4be02c262352b6a5d2a8f7ce164"
+  },
+  {
+    "path": "disk/propagation-only/index.json",
+    "sha256": "e9698f0c65a2ac864d619d870b8d5f69e02e6838f9a2c9add31f27cd36128c90"
+  },
+  {
+    "path": "disk/propagation-only/runs/test/manifest.json",
+    "sha256": "ed5fc33ed8184a87fbeeffd0a7222e6f5d7b984215cd5928df3a236fef78d21f"
+  },
+  {
+    "path": "replay-facts.json",
+    "sha256": "e408d9618b0d3f643b847e55d0fc3b64ac0b7b138a22ac6243a49de5f2cc9456"
+  }
+]

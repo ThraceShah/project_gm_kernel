@@ -1,0 +1,74 @@
+[
+  {
+    "entry": "before",
+    "exit": 1,
+    "logSha256": "c1083ddc1270c475aae19b46aa0894d9fd18892998ca5188d63711b8ea5667a4"
+  },
+  {
+    "stage": "before",
+    "revision": "2c06b9da80737f2d501bd5e1886c3ea1494908c7",
+    "sourceHashes": {
+      "scripts/Directory.Build.props": "7fa884fe655a224b8c9cb35e31ef57ffd09d9fe241446f84ad455ca5542e3357",
+      "scripts/OperationAcceptanceLedger.cs": "a780760600aa775daa44bd9725ca771d7363d53333c3edc6e749274a13930f05",
+      "scripts/OperationAcceptanceRules.cs": "9ba16afa7e0bac18c86167aac8cdcf71fab14b7e2861033b20818d9823cf0a66"
+    },
+    "probeSha256": "8ee9dc3e339c90164128a18bdc7b218bdac4e3b49451270f0579aed7d304b48c",
+    "jsonSha256": "db8e77e95fa32e6354b912789662606036d88b477d59b2bcf9a29a389bb38988"
+  },
+  {
+    "entry": "after",
+    "exit": 0,
+    "logSha256": "e090672a8963f8b8dadc63f5fb40598c676bc7b65aa89ee43a6d775301d13328"
+  },
+  {
+    "stage": "after",
+    "revision": "0d611d174c65b30f66383526e374fd841ded39c5",
+    "sourceHashes": {
+      "scripts/Directory.Build.props": "7fa884fe655a224b8c9cb35e31ef57ffd09d9fe241446f84ad455ca5542e3357",
+      "scripts/OperationAcceptanceLedger.cs": "f1697b6fd1f36998a93802f3e606a097897500122e1721a317363778360a4500",
+      "scripts/OperationAcceptanceRules.cs": "9ba16afa7e0bac18c86167aac8cdcf71fab14b7e2861033b20818d9823cf0a66"
+    },
+    "probeSha256": "8ee9dc3e339c90164128a18bdc7b218bdac4e3b49451270f0579aed7d304b48c",
+    "jsonSha256": "6c7c3624223cc30311f6ad7ede61560b2062d7e2f207a8a6d2ae65fa7a1fe81c"
+  },
+  {
+    "entry": "controls",
+    "exit": 0,
+    "logSha256": "16297aa22ee65b7edfa94a3ce13e82eb33391e6d1548da5b58673f5cefeb26c2"
+  },
+  {
+    "entry": "disk-before-first-failure",
+    "exit": 0,
+    "logSha256": "981431342b64422e356ca01133481711dd120ce310baf29e7a90ef2c854e4958"
+  },
+  {
+    "entry": "disk-after-first-failure",
+    "exit": 0,
+    "logSha256": "ee25eed4df0a63bab00b310930312992b3b8e4d4961058a8b6cdcb8a484bfac1"
+  },
+  {
+    "entry": "disk-propagation-only",
+    "exit": 0,
+    "logSha256": "ee25eed4df0a63bab00b310930312992b3b8e4d4961058a8b6cdcb8a484bfac1"
+  },
+  {
+    "entry": "disk-parent-before-cleanup",
+    "exit": 0,
+    "logSha256": "ee25eed4df0a63bab00b310930312992b3b8e4d4961058a8b6cdcb8a484bfac1"
+  },
+  {
+    "entry": "disk-parent-pass-cleanup-fail",
+    "exit": 0,
+    "logSha256": "ee25eed4df0a63bab00b310930312992b3b8e4d4961058a8b6cdcb8a484bfac1"
+  },
+  {
+    "entry": "disk-normal-second-rep",
+    "exit": 0,
+    "logSha256": "ee25eed4df0a63bab00b310930312992b3b8e4d4961058a8b6cdcb8a484bfac1"
+  },
+  {
+    "entry": "disk-child-before-parent-owned",
+    "exit": 0,
+    "logSha256": "ee25eed4df0a63bab00b310930312992b3b8e4d4961058a8b6cdcb8a484bfac1"
+  }
+]

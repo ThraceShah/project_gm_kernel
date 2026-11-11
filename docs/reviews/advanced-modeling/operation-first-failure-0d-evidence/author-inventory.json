@@ -1,0 +1,46 @@
+[
+  {
+    "path": "original-first-failure.json",
+    "sha256": "db8e77e95fa32e6354b912789662606036d88b477d59b2bcf9a29a389bb38988"
+  },
+  {
+    "path": "before-first-failure.json",
+    "sha256": "db8e77e95fa32e6354b912789662606036d88b477d59b2bcf9a29a389bb38988"
+  },
+  {
+    "path": "after-first-failure.json",
+    "sha256": "6c7c3624223cc30311f6ad7ede61560b2062d7e2f207a8a6d2ae65fa7a1fe81c"
+  },
+  {
+    "path": "before.log",
+    "sha256": "f7b4f625242c7fefbe0475ec4e4d2d7aeced4718d381aadcad1b9d0d237e3354"
+  },
+  {
+    "path": "after.log",
+    "sha256": "69fdd5fada8119c4072caa4e00482be11421c1e04c59eeb22cba914597dd3704"
+  },
+  {
+    "path": "evidence-check.log",
+    "sha256": "541765636c439ae46453c10b61a52aa86aafa9e2e4dd320eeed8762776eb8a21"
+  },
+  {
+    "path": "controls/child-before-parent-own-check/ledger.json",
+    "sha256": "f70c92561a945eb9e6ea8d76c5cb70df2a4f560116f98b8845110ad9bb247a40"
+  },
+  {
+    "path": "controls/normal/ledger.json",
+    "sha256": "ca55dd1943f148bac33bcd871e2137e7cea5e06017e8812dd61582232b0b077e"
+  },
+  {
+    "path": "controls/parent-before-cleanup/ledger.json",
+    "sha256": "788b6ea8bcde6e4a1430b9dc05cdbce324e92b47e2818d06b5b7b78f9a637292"
+  },
+  {
+    "path": "controls/child-before-propagation/ledger.json",
+    "sha256": "f798db0c57ee366e56e11efe70d31b148ae615674c0c53758e11a6fb95b56098"
+  },
+  {
+    "path": "controls/parent-pass-cleanup-fail/ledger.json",
+    "sha256": "b5a2c943522159509ea5be771f70f634cb77d75dc2272370dc1344cf67463095"
+  }
+]

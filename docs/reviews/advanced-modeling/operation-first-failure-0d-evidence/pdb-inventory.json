@@ -1,0 +1,109 @@
+[
+  {
+    "cachePath": "ValidateWebProgress-1d004c62b499994cead6de171ff514ef3678566a15aaf723089d8f63f213af6f/bin/release/ValidateWebProgress.pdb",
+    "dllSha256": "ee34d83877bbcddd3f146f5b1ea1e4f6777fcd746a43b16fad3bb4307725a2a5",
+    "pdbSha256": "7788fe4a30157ff8a6b0fd137803a6a0a2267020ae449e6c20bf07b7cc48c3ce",
+    "guidMatches": true,
+    "documents": [
+      {
+        "path": "scripts/WebProgressDataValidation.cs",
+        "checksum": "d600bef75107ba2f947aa9a201507dc92bfe6113d2214363ae1d56b8094f8979",
+        "matchesCurrentBytes": true
+      },
+      {
+        "path": "scripts/WebProgressPublishing.cs",
+        "checksum": "99844f1b42543f4e099325af5dcef4d37fa981e43a0d52c101ee0652cc78aa25",
+        "matchesCurrentBytes": true
+      },
+      {
+        "path": "scripts/WebProgressMetadata.cs",
+        "checksum": "be9c13609deec59311ff005d543fb931433a7b8bb3f18d4591acbfdcde981cc1",
+        "matchesCurrentBytes": true
+      },
+      {
+        "path": "scripts/OperationAcceptanceLedger.cs",
+        "checksum": "f1697b6fd1f36998a93802f3e606a097897500122e1721a317363778360a4500",
+        "matchesCurrentBytes": true
+      },
+      {
+        "path": "scripts/OperationAcceptanceRules.cs",
+        "checksum": "9ba16afa7e0bac18c86167aac8cdcf71fab14b7e2861033b20818d9823cf0a66",
+        "matchesCurrentBytes": true
+      },
+      {
+        "path": "scripts/ValidateWebProgress.cs",
+        "checksum": "ed966b7a14447fb05433061db0983d5cd162328f8afcdf2be491fdd3eb421420",
+        "matchesCurrentBytes": true
+      }
+    ]
+  },
+  {
+    "cachePath": "FirstFailureProbe-f150e49c4ed5a005fb9f00455c2a48a6f78698650bb41940953457158bf13ed4/bin/release/FirstFailureProbe.pdb",
+    "dllSha256": "f3ab0add306a68e791938efe11604a37199a40bea22e34f67e61a14a45a948e2",
+    "pdbSha256": "cda04288114b4c3688d9e8d9b3df2e85e1010b8385e116e318af55ace06ae8a3",
+    "guidMatches": true,
+    "documents": [
+      {
+        "path": "temp_docs/operation-first-failure-0d-review/before/scripts/OperationAcceptanceLedger.cs",
+        "checksum": "a780760600aa775daa44bd9725ca771d7363d53333c3edc6e749274a13930f05",
+        "matchesCurrentBytes": true
+      },
+      {
+        "path": "temp_docs/operation-first-failure-0d-review/before/scripts/OperationAcceptanceRules.cs",
+        "checksum": "9ba16afa7e0bac18c86167aac8cdcf71fab14b7e2861033b20818d9823cf0a66",
+        "matchesCurrentBytes": true
+      },
+      {
+        "path": "temp_docs/operation-first-failure-0d-review/before/docs/reviews/advanced-modeling/operation-2c06-evidence/FirstFailureProbe.cs",
+        "checksum": "8ee9dc3e339c90164128a18bdc7b218bdac4e3b49451270f0579aed7d304b48c",
+        "matchesCurrentBytes": true
+      }
+    ]
+  },
+  {
+    "cachePath": "Controls-db50b356a5fb6e9024b76476092ed6251f54e5a3341427f3e5924a20f9727d69/bin/release/Controls.pdb",
+    "dllSha256": "7ae55662824a7f03ae68df102a1fcf905e70e7859892762fef9bf7877606dc50",
+    "pdbSha256": "25d189081217a8a25710305b1742aee8ddab42ad33fee4a2c631a41125611df1",
+    "guidMatches": true,
+    "documents": [
+      {
+        "path": "scripts/OperationAcceptanceLedger.cs",
+        "checksum": "f1697b6fd1f36998a93802f3e606a097897500122e1721a317363778360a4500",
+        "matchesCurrentBytes": true
+      },
+      {
+        "path": "scripts/OperationAcceptanceRules.cs",
+        "checksum": "9ba16afa7e0bac18c86167aac8cdcf71fab14b7e2861033b20818d9823cf0a66",
+        "matchesCurrentBytes": true
+      },
+      {
+        "path": "docs/reviews/advanced-modeling/operation-first-failure-0d-evidence/Controls.cs",
+        "checksum": "a82b58b88151bd386457d5b370b65fac5c36bbf43d4a6809004e66b463a0f558",
+        "matchesCurrentBytes": true
+      }
+    ]
+  },
+  {
+    "cachePath": "FirstFailureProbe-e9a74b85c071174e21d82d6df51e8f5679a05d9e3fee17ef264fbf7ff54250e1/bin/release/FirstFailureProbe.pdb",
+    "dllSha256": "3de9501718b0c61cc4c4da8f2801a647bb2979897d6d9ec452c3548932777542",
+    "pdbSha256": "52d66f136d11e4cdc4ad53f869c7ff8fd1e61687dbd50d2f122f93869167ad29",
+    "guidMatches": true,
+    "documents": [
+      {
+        "path": "temp_docs/operation-first-failure-0d-review/after/scripts/OperationAcceptanceLedger.cs",
+        "checksum": "f1697b6fd1f36998a93802f3e606a097897500122e1721a317363778360a4500",
+        "matchesCurrentBytes": true
+      },
+      {
+        "path": "temp_docs/operation-first-failure-0d-review/after/scripts/OperationAcceptanceRules.cs",
+        "checksum": "9ba16afa7e0bac18c86167aac8cdcf71fab14b7e2861033b20818d9823cf0a66",
+        "matchesCurrentBytes": true
+      },
+      {
+        "path": "temp_docs/operation-first-failure-0d-review/after/docs/reviews/advanced-modeling/operation-2c06-evidence/FirstFailureProbe.cs",
+        "checksum": "8ee9dc3e339c90164128a18bdc7b218bdac4e3b49451270f0579aed7d304b48c",
+        "matchesCurrentBytes": true
+      }
+    ]
+  }
+]
