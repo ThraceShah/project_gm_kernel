@@ -26,6 +26,23 @@ internal static unsafe class WebProgressCapture
     private static readonly Dictionary<(bool,string),int> ContextCounts=[];
     private static readonly Dictionary<string,int> ContextSteps=[];
     private static readonly Dictionary<int,OperationRecord> OperationsByOrdinal=[];
+    private static string? ObservationOwner;
+    private static readonly Dictionary<string,OperationRecord> RequestedOperations=[];
+    internal static OperationRecord BeginObservedOperation(string id,string name,string role,string api)
+    {
+        if(!Enabled)return OperationAcceptanceLedger.Current.BeginOperation(id,name,role,api);
+        var key=Context+":"+api+":"+ContextCounts.GetValueOrDefault((true,Context+":"+api));
+        if(ContextSteps.TryGetValue(key,out var ordinal)&&OperationsByOrdinal.TryGetValue(ordinal,out var paired))return paired;
+        var op=OperationAcceptanceLedger.Current.BeginOperation(id,name,role,api);
+        RequestedOperations.Add(key,op);return op;
+    }
+    internal static void Checkpoint(){if(Enabled)Observe(Flush);}
+    private static void SetParameters(bool own,JsonObject parameters)
+    {
+        if(!OperationsByOrdinal.TryGetValue(Ordinals[own]-1,out var op))return;
+        var pair=op.Options??new JsonObject{["gm"]=null,["pk"]=null};
+        pair[own?"gm":"pk"]=parameters.DeepClone();op.Options=pair;
+    }
     private const double ChordTolerance=.01;
     private static string SanitizeOpId(string s)=>new string(s.Select(c=>char.IsLetterOrDigit(c)?char.ToLowerInvariant(c):'-').ToArray()).Trim('-');
     internal static void Before(bool own,BodyTag body,EntityTag[]? selected=null,string operation="PK_BODY_fix_blends",BodyTag[]? tools=null,bool supportBody=false)
@@ -44,11 +61,18 @@ internal static unsafe class WebProgressCapture
             if(!OperationsByOrdinal.TryGetValue(ordinal,out var opRecord))
             {
                 var role=Context.Contains("lifecycle",StringComparison.OrdinalIgnoreCase)||Context.Contains("cut",StringComparison.OrdinalIgnoreCase)?"lifecycle":"primary";
-                var prov=new JsonObject{["target"]=Environment.GetEnvironmentVariable("GM_WEB_GEOMETRY_AUTHOR")??"independent GM and PK construction, identical numeric parameters",["context"]=Context};
-                opRecord=new OperationRecord(opId,ordinal,(Context.Length>0?Context+" / ":"")+operation,role,operation,null,prov,true){StepRef=ordinal};
+                var prov=new JsonObject{["scope"]="integration-step",["constructionSource"]=Environment.GetEnvironmentVariable("GM_WEB_GEOMETRY_AUTHOR"),["context"]=Context,["gm"]=null,["pk"]=null,["sameInputEvidence"]=null};
+                opRecord=RequestedOperations.Remove(logicalKey,out var requested)?requested:OperationAcceptanceLedger.Current.BeginOperation(opId,(Context.Length>0?Context+" / ":"")+operation,role,operation,null,prov);
+                opRecord.InputProvenance=prov;
+                opRecord.StepRef=ordinal;
+                opRecord.PrimaryContract="capture-body-result-v1";
                 OperationsByOrdinal[ordinal]=opRecord;
             }
-            opRecord.InputHashes[side]=new JsonObject{["bodyTag"]=body};
+            ObservationOwner=opRecord.Id;
+            var toolRefs=new JsonArray();foreach(var tool in tools??[])toolRefs.Add((JsonNode)new JsonObject{["entityTag"]=tool,["kernel"]=side});
+            var input=new JsonObject{["entityTag"]=body,["kernel"]=side,["tools"]=toolRefs,["predecessorOperationId"]=OperationsByOrdinal.Where(p=>p.Key<ordinal&&p.Value.EntityReferences[side]?["outputs"] is JsonArray outputs&&outputs.Any(o=>o?["entityTag"]?.GetValue<int>()==body)).OrderByDescending(p=>p.Key).FirstOrDefault().Value?.Id};
+            var provenance=opRecord.InputProvenance!.AsObject();provenance[side]=input.DeepClone();opRecord.InputProvenance=provenance;
+            opRecord.EntityReferences[side]=new JsonObject{["input"]=input};
 
             while(Steps.Count<=ordinal)Steps.Add((JsonNode)new JsonObject{["id"]=$"operation-{Steps.Count+1}",["title"]=(Context.Length>0?Context+" / ":"")+operation,["gm"]=new JsonObject{["before"]=null,["after"]=null},["pk"]=new JsonObject{["before"]=null,["after"]=null}});
             var support=new HashSet<int>();
@@ -99,11 +123,14 @@ internal static unsafe class WebProgressCapture
         Observe(()=>
         {
             var ordinal=Ordinals[own]-1;var side=own?"gm":"pk";
-            Timings.Add((JsonNode)new JsonObject{["step"]=ordinal,["kernel"]=side,["ms"]=ms,["error"]=error,["resultStatus"]=status});
+            Timings.Add((JsonNode)new JsonObject{["step"]=ordinal,["kernel"]=side,["ms"]=Finite(ms),["invalidMeasurement"]=!double.IsFinite(ms)||ms<=0,["error"]=error,["resultStatus"]=status});
             if(OperationsByOrdinal.TryGetValue(ordinal,out var opRec))
             {
+                ObservationOwner=opRec.Id;
                 if(own){opRec.GmMs=ms;opRec.Returns["gm"]=error;}
                 else{opRec.PkMs=ms;opRec.Returns["pk"]=error;}
+                var outputs=new JsonArray();foreach(var body in bodies)outputs.Add((JsonNode)new JsonObject{["kernel"]=side,["entityTag"]=body});
+                opRec.EntityReferences[side]!["outputs"]=outputs;
             }
             AddCheck($"{side}-{ordinal}-api",side+" API error",error==0?"pass":"fail",own?error:null,own?null:error,0,"code","API error, zero means success",ordinal:ordinal,category:"auxiliary");
             var tracks=new JsonArray();var products=new HashSet<int>();var deleted=new HashSet<int>();
@@ -188,11 +215,6 @@ internal static unsafe class WebProgressCapture
     private static void Compare(int ordinal)
     {
         var a=AfterBodies[(true,ordinal)];var b=AfterBodies[(false,ordinal)];
-        if(OperationsByOrdinal.TryGetValue(ordinal,out var opOut))
-        {
-            if(a.Length>0)opOut.OutputHashes["gm"]=new JsonObject{["bodyTag"]=a[0]};
-            if(b.Length>0)opOut.OutputHashes["pk"]=new JsonObject{["bodyTag"]=b[0]};
-        }
         AddCheck($"{ordinal}-body-count","Result body count",a.Length==b.Length?"pass":"fail",a.Length,b.Length,0,"count","",ordinal:ordinal,category:"primary");
         if(a.Length!=1||b.Length!=1)
         {AddCheck($"{ordinal}-correspondence","Multi-body correspondence","missing",null,null,null,"","No guessed body pairing; oracle log retains its own matching checks.",ordinal:ordinal,category:"primary");return;}
@@ -232,24 +254,30 @@ internal static unsafe class WebProgressCapture
         if(ordinal.HasValue&&OperationsByOrdinal.TryGetValue(ordinal.Value,out var op))owner=op.Id;
         else if(int.TryParse(id.Split('-')[0],out var parsedOrdinal)&&OperationsByOrdinal.TryGetValue(parsedOrdinal,out var op2))owner=op2.Id;
 
-        var checkObj=new JsonObject{["id"]=id,["owner"]=owner,["category"]=category,["label"]=label,["status"]=status,["gm"]=Finite(gm),["pk"]=Finite(pk),["absDelta"]=gm.HasValue&&pk.HasValue?Finite(Math.Abs(gm.Value-pk.Value)):null,["normalizedDelta"]=gm.HasValue&&pk.HasValue?Finite(Math.Abs(gm.Value-pk.Value)/(1+Math.Abs(pk.Value))):null,["threshold"]=threshold,["unit"]=unit,["evidence"]=evidence,["note"]=note};
-        Checks.Add((JsonNode)checkObj);
-        if(owner!=null){var targetOp=OperationsByOrdinal.Values.FirstOrDefault(o=>o.Id==owner);targetOp?.AddCheck(category,checkObj);}
+        owner??=ObservationOwner;
+        if(owner==null)
+        {
+            owner="capture-internal-"+Errors.Count;
+            OperationAcceptanceLedger.Current.BeginOperation(owner,"Capture internal failure","auxiliary","capture-observer");
+        }
+        var checkObj=OperationAcceptanceLedger.Current.RecordCheck(owner,category,id,label,status,gm,pk,threshold,unit,note,evidence);
+        Checks.Add(checkObj.DeepClone());
     }
     private static void Flush()
     {
         var version=new PK_SESSION_kernel_version_t();Guard(PK_SESSION_ask_kernel_version(&version),"PK version");double precision=0;Guard(PK_SESSION_ask_precision(&precision),"PK precision");
         var ops=new JsonArray();
-        foreach(var kvp in OperationsByOrdinal.OrderBy(k=>k.Key))
+        foreach(var op in OperationAcceptanceLedger.Current.Operations)
         {
-            kvp.Value.EvaluateStatus();
-            ops.Add((JsonNode)kvp.Value.ToJsonObject());
+            ops.Add((JsonNode)op.ToJsonObject());
         }
-        Write("capture.json",new JsonObject{["operationSchemaVersion"]="operation-layered-v1",["operations"]=ops,["steps"]=Steps.DeepClone(),["checks"]=Checks.DeepClone(),["timings"]=Timings.DeepClone(),["captureErrors"]=Errors.DeepClone(),["pkVersion"]=$"{version.major_revision}.{version.minor_revision}.{version.build_number}",["sessionPrecision"]=precision});
+        var allChecks=new JsonArray();foreach(var check in OperationAcceptanceLedger.Current.AllChecks)allChecks.Add(check.DeepClone());
+        Write("capture.json",new JsonObject{["operationSchemaVersion"]="operation-layered-v1",["checkVersion"]=null,["checkDefinition"]=new JsonObject{["version"]="web-capture-compare-v1",["source"]="scripts/WebProgressCapture.cs",["sourceSha256"]=CaptureSourceHash(),["primaryContract"]="capture-body-result-v1",["massNormalizedThreshold"]=1e-7,["bodyCompareDiagnosticWhitelist"]=new JsonArray("n_cht_pts")},["operations"]=ops,["steps"]=Steps.DeepClone(),["checks"]=allChecks,["timings"]=Timings.DeepClone(),["captureErrors"]=Errors.DeepClone(),["pkVersion"]=$"{version.major_revision}.{version.minor_revision}.{version.build_number}",["sessionPrecision"]=precision});
     }
+    private static string? CaptureSourceHash([System.Runtime.CompilerServices.CallerFilePath]string source="")=>File.Exists(source)?OperationAcceptanceLedger.HashBytes(File.ReadAllBytes(source)):null;
     private static void Observe(Action action)
     {try{action();}catch(Exception e){Errors.Add((JsonNode?)JsonValue.Create(e.ToString()));Console.Error.WriteLine("WEB_EXPORT_ERROR "+e);Directory.CreateDirectory(Output!);File.WriteAllText(Path.Combine(Output!,"capture-errors.json"),Sanitize(Errors.ToJsonString()));
-        AddCheck("capture-error-"+Errors.Count,"Snapshot or comparison could not complete","fail",null,null,null,"",e.GetType().Name+": "+e.Message);
+        AddCheck("capture-error-"+Errors.Count,"Snapshot or comparison could not complete","fail",null,null,null,"",e.GetType().Name+": "+e.Message,category:"auxiliary");
         try{Flush();}catch(Exception io){File.WriteAllText(Path.Combine(Output!,"export-errors.json"),io.ToString());}}}
     private static void Write(string path,JsonNode node)
     {var file=Path.Combine(Output!,path);Directory.CreateDirectory(Path.GetDirectoryName(file)!);File.WriteAllText(file+".tmp",Sanitize(node.ToJsonString()));File.Move(file+".tmp",file,true);}
@@ -267,7 +295,7 @@ internal static unsafe class WebProgressCapture
         Observe(()=>{
             var paramsObj=new JsonObject{["mark"]=new JsonObject{["name"]=markApi,["radius"]=markApi=="PK_EDGE_set_blend_constant"?JsonValue.Create(radius):null,["range0"]=markApi=="PK_EDGE_set_blend_constant"?null:JsonValue.Create(radius),["range1"]=secondRange,["designatedFace"]=designatedFace,["tolerance"]=markTolerance},["operation"]=new JsonObject{["name"]="PK_BODY_fix_blends",["o_t_version"]=fix.o_t_version,["update"]=fix.update,["tolerance"]=fix.tolerance,["local_check"]=fix.local_check==PK_LOGICAL_true},["otherOptions"]="Unmodified defaults of the pinned PskernelSharp option constructor; see source hash and binding revision."};
             Steps[Ordinals[own]-1]![own?"gm":"pk"]!["apiParameters"]=paramsObj.DeepClone();
-            if(OperationsByOrdinal.TryGetValue(Ordinals[own]-1,out var opRec))opRec.Options=(JsonObject)paramsObj.DeepClone();
+            SetParameters(own,paramsObj);
             Flush();
         });
     }
@@ -277,7 +305,7 @@ internal static unsafe class WebProgressCapture
         Observe(()=>{
             var paramsObj=new JsonObject{["o_t_version"]=options.o_t_version,["function"]=options.function,["default_tol"]=options.default_tol,["max_tol"]=options.max_tol,["tracking"]=options.tracking==PK_LOGICAL_true,["tracking_type"]=options.tracking_type,["track_regions"]=options.track_regions,["merge_imprinted"]=options.merge_imprinted==PK_LOGICAL_true,["allow_disjoint"]=options.allow_disjoint==PK_LOGICAL_true,["fence"]=options.fence,["target_material_side"]=options.target_material_side,["tool_material_side"]=options.tool_material_side,["update"]=options.update,["otherOptions"]="Unmodified defaults of the pinned PskernelSharp option constructor."};
             Steps[Ordinals[own]-1]![own?"gm":"pk"]!["apiParameters"]=paramsObj.DeepClone();
-            if(OperationsByOrdinal.TryGetValue(Ordinals[own]-1,out var opRec))opRec.Options=(JsonObject)paramsObj.DeepClone();
+            SetParameters(own,paramsObj);
             Flush();
         });
     }

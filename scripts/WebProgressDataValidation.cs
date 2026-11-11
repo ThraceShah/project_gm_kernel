@@ -165,7 +165,8 @@ internal static class WebProgressDataValidation
                 else if(perf?["ratioGmOverPk"]!=null)
                 {
                     var gm=perf["gmMs"]?.GetValue<double>();var pk=perf["pkMs"]?.GetValue<double>();var ratio=perf["ratioGmOverPk"]!.GetValue<double>();
-                    if(status!="pass"||perf["correctnessQualified"]?.GetValue<bool>()!=true||gm is null||pk is not >0||!double.IsFinite(ratio)||Math.Abs(ratio-gm.Value/pk.Value)>1e-12*Math.Max(1,ratio))Error(caseId+": invalid/unqualified ratio");
+                    if(status!="pass"||perf["correctnessQualified"]?.GetValue<bool>()!=true||gm is not >0||pk is not >0||!double.IsFinite(gm.Value)||!double.IsFinite(pk.Value)||!double.IsFinite(ratio)||ratio<=0||Math.Abs(ratio-gm.Value/pk.Value)>1e-12*Math.Max(1,ratio))Error(caseId+": invalid/unqualified ratio");
+                    if(c["operations"] is JsonArray caseOps&&caseOps.Count>0&&caseOps.Any(o=>!OperationAcceptanceRules.IsTrue(o?["timing"]?["correctnessQualified"])))Error(caseId+": case ratio contains an unqualified operation");
                 }
             }
         }

@@ -256,7 +256,9 @@ using(host)unsafe
                 catch(Exception ex){failures++;Console.WriteLine("FAIL native editable roundtrip: "+ex.Message);}
                 if(!args.Contains("--native-only")&&!args.Contains("--import-only"))
                 {
-                    var filletOp=OperationAcceptanceLedger.Current.BeginOperation($"op-{name}-fillet",$"{name} fillet","primary","PK_BODY_fix_blends");
+                    var filletOp=WebProgressCapture.BeginObservedOperation($"op-{name}-fillet",$"{name} fillet","primary","PK_BODY_fix_blends");
+                    try
+                    {
                     Check(Fillet(true,own,angle,radius*inputScale,tolerance*inputScale,reverse,procedural,mappedInput?&inputTransform:null,inputScale,splitSelected,splitEllipse,splitFraction,(int)rotateMarks),"managed fix");
                     var ownResult=Transmit(true,own);File.WriteAllBytes(Path.Combine(output,name+"-self.x_t"),ownResult);
                     var received=Receive(false,ownResult);CheckBody(received,"managed fillet");
@@ -277,6 +279,14 @@ using(host)unsafe
                     try{Mass(reference,received,"self-constructed-product");OperationAcceptanceLedger.Current.RecordCheck(filletOp.Id,"primary",$"{filletOp.Id}-mass","Mass props","pass");}
                     catch(Exception ex){failures++;OperationAcceptanceLedger.Current.RecordCheck(filletOp.Id,"primary",$"{filletOp.Id}-mass","Mass props","fail",note:ex.Message);Console.WriteLine("FAIL self-constructed-product mass: "+ex.Message);}
                     OperationAcceptanceLedger.Current.EndOperation(filletOp.Id);
+                    WebProgressCapture.Checkpoint();
+                    }
+                    catch
+                    {
+                        OperationAcceptanceLedger.Current.EndOperation(filletOp.Id,"fail");
+                        WebProgressCapture.Checkpoint();
+                        throw;
+                    }
                     if(overlappingTools)failures+=OverlappingToolJunctions(own,reference,output,name+"-overlapping-tools",false);
                     if(singleToolJunction)failures+=OverlappingToolJunctions(own,reference,output,name+"-overlapping-tools-single",true);
                     if(args.Contains("--lifecycle"))failures+=Lifecycle(ref own,reference,output,name+"-self-constructed-product",mappedInput?&inputTransform:null,inputScale,localCut,transverseCut,transversePlaneDifference,materialOwnership,requireNativeCutWitness,reloadBeforeLocalCut,args.Contains("--geometry"),proofOnlyLifecycle,requireCutterChartWitness,requireNativeFinBoxes,requireNativeFaceDomains);
@@ -289,6 +299,7 @@ using(host)unsafe
     }
     finally{Check(KernelRuntime.SessionStop(),"managed stop");}
     OperationAcceptanceLedger.Current.EndScenario(failures==0?0:1);
+    WebProgressCapture.Checkpoint();
     OperationAcceptanceLedger.Current.SaveSidecar(Path.Combine(output,"ledger.json"));
     OperationAcceptanceLedger.Current.PrintConsoleSummary();
     Require(failures==0,$"{failures} short-edge acceptance checks failed");

@@ -38,7 +38,7 @@ foreach(var entry in registry["cases"]!.AsArray().OfType<JsonObject>())
     var requested=Option("--case","representatives");var selected=(Option("--family","all") is "all"||Option("--family","all")==family)&&(Option("--suite","all") is "all"||Option("--suite","all")==suite)&&(requested=="all"||requested=="representatives"&&entry["representative"]?.GetValue<bool>()==true||requested.Split(',').Contains(caseId,StringComparer.Ordinal));
     var parameters=entry["parameters"]!.DeepClone();var api=entry["api"]!.GetValue<string>();
     var checks=new JsonArray();var evidence=new JsonArray();var notes=new JsonArray();
-    var c=new JsonObject{["id"]=caseId,["title"]=entry["title"]?.DeepClone()??JsonValue.Create(caseId),["family"]=family,["operation"]=entry["operation"]!.DeepClone(),["status"]="missing",["operationSchemaVersion"]="operation-layered-v1",["scenarioId"]=caseId,["scenarioStatus"]="missing",["scenarioElapsedMs"]=null,["firstFailedOperationId"]=null,["legacyExitCode"]=null,["checkVersion"]="operation-layered-v1",["parameters"]=parameters,["parameterHash"]=Hash(Encoding.UTF8.GetBytes(parameters.ToJsonString())),["apis"]=new JsonObject{["gm"]=new JsonObject{["name"]=api,["parameters"]=parameters.DeepClone()},["pk"]=new JsonObject{["name"]=api,["parameters"]=parameters.DeepClone()}},["operations"]=new JsonArray(),["steps"]=new JsonArray(),["checks"]=checks,["performance"]=new JsonObject{["kind"]="single-operation",["gmMs"]=null,["pkMs"]=null,["ratioGmOverPk"]=null,["samples"]=0,["warmup"]=0,["scope"]="operation-only; ratio = GM elapsed ms / PK elapsed ms; input construction, export, tessellation, comparison and I/O excluded",["correctnessQualified"]=false,["host"]=host.DeepClone(),["configuration"]=configuration.DeepClone(),["note"]="Not executed"},["evidence"]=evidence,["notes"]=notes,["source"]=new JsonObject{["path"]=entry["source"]!.DeepClone(),["revision"]=commit},["suite"]=suite,["execution"]=new JsonObject{["selected"]=selected,["attempted"]=false,["exitCode"]=null}};
+    var c=new JsonObject{["id"]=caseId,["title"]=entry["title"]?.DeepClone()??JsonValue.Create(caseId),["family"]=family,["operation"]=entry["operation"]!.DeepClone(),["status"]="missing",["operationSchemaVersion"]="operation-layered-v1",["scenarioId"]=caseId,["scenarioStatus"]="missing",["scenarioElapsedMs"]=null,["scenarioWallElapsedMs"]=null,["scenarioCapturedApiMs"]=new JsonObject{["gm"]=null,["pk"]=null},["samples"]=new JsonArray(),["firstFailedOperationId"]=null,["legacyExitCode"]=null,["checkVersion"]=null,["parameters"]=parameters,["parameterHash"]=Hash(Encoding.UTF8.GetBytes(parameters.ToJsonString())),["apis"]=new JsonObject{["gm"]=new JsonObject{["name"]=api,["parameters"]=parameters.DeepClone()},["pk"]=new JsonObject{["name"]=api,["parameters"]=parameters.DeepClone()}},["operations"]=new JsonArray(),["steps"]=new JsonArray(),["checks"]=checks,["performance"]=new JsonObject{["kind"]="single-operation",["gmMs"]=null,["pkMs"]=null,["ratioGmOverPk"]=null,["samples"]=0,["warmup"]=0,["scope"]="operation-only; ratio = GM elapsed ms / PK elapsed ms; input construction, export, tessellation, comparison and I/O excluded",["correctnessQualified"]=false,["host"]=host.DeepClone(),["configuration"]=configuration.DeepClone(),["note"]="Not executed"},["evidence"]=evidence,["notes"]=notes,["source"]=new JsonObject{["path"]=entry["source"]!.DeepClone(),["revision"]=commit},["suite"]=suite,["execution"]=new JsonObject{["selected"]=selected,["attempted"]=false,["exitCode"]=null}};
     cases.Add((JsonNode)c);
  }
 Save();
@@ -60,6 +60,8 @@ foreach(var entry in registry["cases"]!.AsArray().OfType<JsonObject>())
         foreach(var arg in new[]{"run","--file",entry["source"]!.GetValue<string>(),"-c",config,"-p:UseSharedCompilation=false","--"})info.ArgumentList.Add(arg);
         foreach(var arg in entry["arguments"]!.AsArray())info.ArgumentList.Add(arg!.GetValue<string>());
         info.Environment["MSBUILDDISABLENODEREUSE"]="1";
+        info.Environment["GM_WEB_CASE_ID"]=caseId;info.Environment["GM_WEB_SAMPLE_ID"]="sample-"+sample;
+        if(args.Contains("--display-receipts"))info.Environment["GM_WEB_DISPLAY_RECEIPTS"]="1";
         info.Environment["GM_WEB_ROOT"]=root;info.Environment["GM_WEB_CAPTURE"]=caseDir;info.Environment["GM_WEB_COMMIT"]=commit;info.Environment["GM_WEB_SELECT"]=entry["selector"]?.GetValue<string>();info.Environment["GM_WEB_GEOMETRY_AUTHOR"]=entry["geometryAuthor"]?.GetValue<string>()??"independent GM and PK construction, identical numeric parameters";
         using var process=new Process{StartInfo=info};var processStarted=Stopwatch.GetTimestamp();process.Start();
         var stdout=process.StandardOutput.ReadToEndAsync();var stderr=process.StandardError.ReadToEndAsync();
@@ -72,7 +74,10 @@ foreach(var entry in registry["cases"]!.AsArray().OfType<JsonObject>())
         File.WriteAllText(Path.Combine(caseDir,"oracle.log"),text);exitCodes.Add((JsonNode?)JsonValue.Create(process.ExitCode));anyTimeout|=timedOut;
         var prefix=$"cases/{caseId}/sample-{sample}/";
         evidence.Add((JsonNode)new JsonObject{["label"]=$"Oracle sample {sample} raw exit={process.ExitCode}"+(timedOut?" timeout":""),["path"]=prefix+"oracle.log"});
-        File.WriteAllText(Path.Combine(caseDir,"execution.json"),new JsonObject{["exitCode"]=process.ExitCode,["timedOut"]=timedOut,["processElapsedMs"]=Stopwatch.GetElapsedTime(processStarted).TotalMilliseconds,["budgetSeconds"]=remaining,["arguments"]=Args(info),["sourceHashes"]=sampleSources,["logSha256"]=Hash(Encoding.UTF8.GetBytes(text))}.ToJsonString());
+        var processElapsedMs=Stopwatch.GetElapsedTime(processStarted).TotalMilliseconds;
+        File.WriteAllText(Path.Combine(caseDir,"execution.json"),new JsonObject{["exitCode"]=process.ExitCode,["timedOut"]=timedOut,["processElapsedMs"]=processElapsedMs,["budgetSeconds"]=remaining,["arguments"]=Args(info),["sourceHashes"]=sampleSources,["logSha256"]=Hash(Encoding.UTF8.GetBytes(text))}.ToJsonString());
+        c["scenarioWallElapsedMs"]=(c["scenarioWallElapsedMs"]?.GetValue<double>()??0)+processElapsedMs;
+        c["scenarioElapsedMs"]=c["scenarioWallElapsedMs"]!.DeepClone();
         evidence.Add((JsonNode)new JsonObject{["label"]="Execution provenance",["path"]=prefix+"execution.json"});
         c["execution"]!["exitCode"]=process.ExitCode;
         var capturePath=Path.Combine(caseDir,"capture.json");JsonObject? capture=File.Exists(capturePath)?JsonNode.Parse(File.ReadAllText(capturePath))!.AsObject():null;
@@ -82,9 +87,26 @@ foreach(var entry in registry["cases"]!.AsArray().OfType<JsonObject>())
             anyCapture=true;
             manifest["run"]!["pkVersion"]=capture["pkVersion"]!.DeepClone();
             c["sessionPrecision"]=capture["sessionPrecision"]!.DeepClone();
+            c["checkVersion"]=capture["checkVersion"]?.DeepClone();
+            c["checkDefinition"]=new JsonObject{["sourceHashes"]=sampleSources.DeepClone(),["captureDefinition"]=capture["checkDefinition"]?.DeepClone()};
+            var sampleOperations=capture["operations"] as JsonArray??new JsonArray();
+            foreach(var item in sampleOperations)
+            {
+                var op=item!.DeepClone().AsObject();var originalId=op["operationId"]!.GetValue<string>();var sampleId="sample-"+sample;
+                op["operationId"]=sampleId+":"+originalId;op["sampleId"]=sampleId;
+                op["ordinal"]=c["operations"]!.AsArray().Count;
+                foreach(var category in new[]{"primaryChecks","auxiliaryChecks","representationContracts"})
+                    foreach(var check in op[category] as JsonArray??[])
+                    {
+                        check!["owner"]=sampleId+":"+check["owner"]!.GetValue<string>();
+                        if(check["evidence"]!=null)check["evidence"]=prefix+check["evidence"]!.GetValue<string>();
+                    }
+                foreach(var side in new[]{"gm","pk"})
+                    if(op["inputProvenance"]?[side] is JsonObject provenance&&provenance["predecessorOperationId"]!=null)provenance["predecessorOperationId"]=sampleId+":"+provenance["predecessorOperationId"]!.GetValue<string>();
+                c["operations"]!.AsArray().Add((JsonNode)op);
+            }
             if(sample==0)
             {
-                c["operations"]=capture["operations"]?.DeepClone().AsArray()??new JsonArray();
                 var steps=capture["steps"]!.DeepClone().AsArray();
                 foreach(var step in steps)foreach(var side in new[]{"gm","pk"})
                 {
@@ -97,15 +119,27 @@ foreach(var entry in registry["cases"]!.AsArray().OfType<JsonObject>())
                     var actualParameters=new JsonArray();foreach(var step in steps)if(step![side]?["apiParameters"]!=null)actualParameters.Add(step[side]!["apiParameters"]!.DeepClone());
                     c["apis"]![side]!["parameters"]!["actualOperations"]=actualParameters;
                 }
-                foreach(var check in capture["checks"]!.AsArray()){var copy=check!.DeepClone();copy["evidence"]=prefix+"capture.json";checks.Add(copy);}
             }
+            foreach(var check in capture["checks"]!.AsArray()){var copy=check!.DeepClone();copy["owner"]="sample-"+sample+":"+copy["owner"]!.GetValue<string>();copy["evidence"]=prefix+"capture.json";checks.Add(copy);}
             var timings=capture["timings"]!.AsArray();var gm=timings.Where(t=>t!["kernel"]!.GetValue<string>()=="gm").ToArray();var pk=timings.Where(t=>t!["kernel"]!.GetValue<string>()=="pk").ToArray();
-            if(gm.Length>0&&gm.Length==pk.Length&&timings.All(t=>t!["error"]!.GetValue<int>()==0)){durationsGm.Add(gm.Sum(t=>t!["ms"]!.GetValue<double>()));durationsPk.Add(pk.Sum(t=>t!["ms"]!.GetValue<double>()));}
+            double? Sum(JsonNode?[] rows)
+            {
+                if(rows.Length==0||rows.Any(t=>OperationAcceptanceRules.Number(t?["ms"]) is not >0||!double.IsFinite(OperationAcceptanceRules.Number(t?["ms"])!.Value)))return null;
+                var sum=rows.Sum(t=>t!["ms"]!.GetValue<double>());return double.IsFinite(sum)&&sum>0?sum:null;
+            }
+            var sumGm=Sum(gm);var sumPk=Sum(pk);
+            c["samples"]!.AsArray().Add((JsonNode)new JsonObject{["sampleId"]="sample-"+sample,["scenarioWallElapsedMs"]=processElapsedMs,["scenarioCapturedApiMs"]=new JsonObject{["gm"]=sumGm,["pk"]=sumPk},["execution"]=prefix+"execution.json",["capture"]=prefix+"capture.json"});
+            foreach(var side in new[]{"gm","pk"})
+            {
+                var value=side=="gm"?sumGm:sumPk;var previous=c["scenarioCapturedApiMs"]![side]?.GetValue<double>();
+                c["scenarioCapturedApiMs"]![side]=value.HasValue&&(sample==0||previous.HasValue)?OperationAcceptanceLedger.Finite((previous??0)+value.Value):null;
+            }
+            if(sumGm.HasValue&&sumPk.HasValue&&timings.All(t=>t!["error"]!.GetValue<int>()==0)){durationsGm.Add(sumGm.Value);durationsPk.Add(sumPk.Value);}
             allValid&=capture["checks"]!.AsArray().Count>0&&capture["checks"]!.AsArray().All(ch=>ch!["status"]!.GetValue<string>() is "pass" or "diagnostic")&&gm.Length>0&&gm.Length==pk.Length;
             evidence.Add((JsonNode)new JsonObject{["label"]=$"Structured capture sample {sample}",["path"]=prefix+"capture.json"});
             foreach(var f in Directory.EnumerateFiles(caseDir,"*.json",SearchOption.AllDirectories).Where(f=>f.Contains(Path.DirectorySeparatorChar+"evidence"+Path.DirectorySeparatorChar)))evidence.Add((JsonNode)new JsonObject{["label"]="Raw comparison mask and differences",["path"]=prefix+Path.GetRelativePath(caseDir,f).Replace('\\','/')});
         }
-        else allValid=false;
+        else {allValid=false;c["scenarioCapturedApiMs"]!["gm"]=null;c["scenarioCapturedApiMs"]!["pk"]=null;}
         var processAccepted=process.ExitCode==0&&!timedOut&&!text.Contains("FAIL ",StringComparison.Ordinal);
         oraclePassed&=processAccepted;allValid&=processAccepted;
         if(timedOut||clock.Elapsed.TotalSeconds>=budget)break;
@@ -128,6 +162,7 @@ foreach(var entry in registry["cases"]!.AsArray().OfType<JsonObject>())
                 ["role"]="primary",
                 ["api"]="unknown",
                 ["status"]="not-run",
+                ["terminalStatus"]="not-run",
                 ["returns"]=new JsonObject{["gm"]=null,["pk"]=null},
                 ["primaryChecks"]=new JsonArray(),
                 ["auxiliaryChecks"]=new JsonArray(),
@@ -151,10 +186,10 @@ foreach(var entry in registry["cases"]!.AsArray().OfType<JsonObject>())
     exporterBroken|=anyExportError;
     var perf=c["performance"]!;perf["samples"]=durationsGm.Count;
     if(durationsGm.Count>0){perf["gmMs"]=Median(durationsGm);perf["pkMs"]=Median(durationsPk);}
-    if(opsList.Count==1)
+    if(opsList.Count==samples&&opsList.All(o=>o?["stepRef"]?.GetValue<int>()==0))
     {
         var singleOp=opsList[0]!.AsObject();
-        var singleQualified=singleOp["timing"]?["correctnessQualified"]?.GetValue<bool>()==true&&allValid&&!anyExportError;
+        var singleQualified=opsList.All(o=>o?["timing"]?["correctnessQualified"]?.GetValue<bool>()==true)&&allValid&&!anyExportError;
         perf["kind"]="single-operation";
         perf["correctnessQualified"]=singleQualified;
         if(singleQualified&&durationsPk.Count>0&&Median(durationsPk)>0)
@@ -204,7 +239,7 @@ void Save()
 }
 string Option(string name,string fallback){var at=Array.IndexOf(args,name);return at<0?fallback:at+1<args.Length?args[at+1]:throw new ArgumentException(name+" requires a value");}
 int Number(string name,int fallback)=>int.Parse(Option(name,fallback.ToString()),System.Globalization.CultureInfo.InvariantCulture);
-JsonObject SourceHashes(){var hashes=new JsonObject();foreach(var path in registry["cases"]!.AsArray().Select(c=>c!["source"]!.GetValue<string>()).Concat(new[]{"scripts/RefreshWebProgress.cs","scripts/WebProgressCapture.cs","scripts/WebProgressDataValidation.cs","scripts/WebProgressPublishing.cs","scripts/WebProgressMetadata.cs","scripts/Directory.Build.props","scripts/ParasolidScriptHost.cs","scripts/ParasolidBodyCompare.cs","src/ProjectGmKernel.DisplayBridge/ParasolidDisplayBridge.cs"}).Distinct())if(File.Exists(path))hashes[path]=Hash(File.ReadAllBytes(path));return hashes;}
+JsonObject SourceHashes(){var hashes=new JsonObject();foreach(var path in registry["cases"]!.AsArray().Select(c=>c!["source"]!.GetValue<string>()).Concat(new[]{"scripts/RefreshWebProgress.cs","scripts/WebProgressCapture.cs","scripts/OperationAcceptanceLedger.cs","scripts/OperationAcceptanceRules.cs","scripts/WebProgressDataValidation.cs","scripts/WebProgressPublishing.cs","scripts/WebProgressMetadata.cs","scripts/Directory.Build.props","scripts/ParasolidScriptHost.cs","scripts/ParasolidBodyCompare.cs","src/ProjectGmKernel.DisplayBridge/ParasolidDisplayBridge.cs"}).Distinct())if(File.Exists(path))hashes[path]=Hash(File.ReadAllBytes(path));return hashes;}
 static string ScriptPath([CallerFilePath]string path="")=>path;
 static string Hash(byte[] bytes)=>Convert.ToHexStringLower(SHA256.HashData(bytes));
 static double Median(List<double> values){var array=values.Order().ToArray();return array.Length%2==1?array[array.Length/2]:(array[array.Length/2-1]+array[array.Length/2])/2;}

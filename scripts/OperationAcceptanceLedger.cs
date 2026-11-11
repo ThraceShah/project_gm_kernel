@@ -294,6 +294,7 @@ internal sealed class OperationRecord
 
     private readonly JsonObject _inputHashes = new() { ["gm"] = new JsonObject(), ["pk"] = new JsonObject() };
     public JsonObject InputHashes => (JsonObject)_inputHashes.DeepClone();
+    public JsonObject EntityReferences { get; } = new();
     internal void SetInputHashes(string side, JsonObject hashes) => _inputHashes[side] = hashes.DeepClone();
     public JsonArray Preconditions { get; } = [];
     private readonly JsonObject _outputHashes = new() { ["gm"] = new JsonObject(), ["pk"] = new JsonObject() };
@@ -420,6 +421,7 @@ internal sealed class OperationRecord
             ["parameterHash"] = ParameterHash,
             ["inputProvenance"] = InputProvenance?.DeepClone(),
             ["inputHashes"] = InputHashes.DeepClone(),
+            ["entityReferences"] = EntityReferences.DeepClone(),
             ["preconditions"] = Preconditions.DeepClone(),
             ["outputHashes"] = OutputHashes.DeepClone(),
             ["returns"] = Returns.DeepClone(),
