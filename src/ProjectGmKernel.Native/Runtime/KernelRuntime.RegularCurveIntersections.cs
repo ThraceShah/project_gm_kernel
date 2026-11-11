@@ -217,7 +217,8 @@ internal static unsafe partial class KernelRuntime
     }
 
     private static AlgorithmStatus IsolateFiniteSplineSurface(in ModelingEdge edge,SurfaceSlot surface,
-        Span<OperationIntersectionPoint> output,Span<ScalarRootIsolation> parameters,Span<double> errors,out BufferCount count)
+        Span<OperationIntersectionPoint> output,Span<ScalarRootIsolation> parameters,Span<double> errors,out BufferCount count,
+        Span<IsolatedRootCertificate> outputProofs=default)
     {
         count=0;var slot=GetCurveSlotByTag(edge.Curve);var record=Curves[slot];
         if(record.Class!=CurveClass.BCurve||Surfaces[surface].Class!=SurfaceClass.BSurface)return AlgorithmStatus.Unsupported;
@@ -225,7 +226,8 @@ internal static unsafe partial class KernelRuntime
         var status=RegularSurfaceExtent(surface,out var extent);if(status!=AlgorithmStatus.Success)return status;
         Span<IntervalNumber> surfacePoles=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars],curvePoles=stackalloc IntervalNumber[4*17],bounds=stackalloc IntervalNumber[9];
         Span<SurfaceIntersectionNode> roots=stackalloc SurfaceIntersectionNode[64];
-        Span<IsolatedRootCertificate> certificates=stackalloc IsolatedRootCertificate[64],accepted=stackalloc IsolatedRootCertificate[output.Length];
+        Span<IsolatedRootCertificate> certificates=stackalloc IsolatedRootCertificate[64];
+        Span<IsolatedRootCertificate> accepted=outputProofs.IsEmpty?stackalloc IsolatedRootCertificate[output.Length]:outputProofs;
         Span<KernelVector3> point=stackalloc KernelVector3[2];
         for(var s=0;s<RegularSurfacePatchCount(surface);s++)
         {

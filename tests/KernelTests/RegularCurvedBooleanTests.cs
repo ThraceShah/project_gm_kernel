@@ -369,6 +369,28 @@ public unsafe class RegularCurvedBooleanTests:IDisposable
     }
 
     [Theory]
+    [InlineData(15903,false)] [InlineData(15901,false)] [InlineData(15902,false)]
+    [InlineData(15903,true)] [InlineData(15901,true)] [InlineData(15902,true)]
+    public void TrimmedSplineSolidContinuesWithASecondSplineBoolean(int function,bool reload)
+    {
+        var target=RoofSolid();var tool=BooleanOperationTests.Block(.25,.25,.25,1,1,1);
+        var subtract=BooleanOperationTests.Options(15902);int count;int* bodies;
+        Assert.Equal(0,KernelRuntime.BodyBoolean(target,1,&tool,&subtract,&count,&bodies));
+        try{Assert.Equal(1,count);Assert.Equal(target,bodies[0]);}finally{KernelRuntime.MemoryFree(bodies);}
+        if(reload)
+        {
+            Assert.Equal(0,XtBrepImportTests.Receive(XtBrepImportTests.Transmit(target),out var loaded));
+            Assert.Equal(0,KernelRuntime.EntityDelete(1,&target));target=loaded;
+        }
+        tool=RoofSolid(.4,.35,.1,.2);var options=BooleanOperationTests.Options(function);
+        var error=KernelRuntime.BodyBoolean(target,1,&tool,&options,&count,&bodies);
+        Assert.True(error==0,$"error={error}, stage={KernelRuntime.LastRegularBooleanStage}, pair={KernelRuntime.LastRegularBooleanFace}/{KernelRuntime.LastRegularBooleanOtherFace}, sheet={KernelRuntime.LastSheetPartitionStage}, curve={KernelRuntime.LastSheetCurve}, parameter={KernelRuntime.LastSheetParameter:R}, query={KernelRuntime.LastSheetRayU:R}/{KernelRuntime.LastSheetRayV:R}");
+        try{Assert.Equal(1,count);Assert.Equal(target,bodies[0]);Assert.Equal(0,KernelRuntime.EntityDelete(1,&target));}
+        finally{if(bodies!=null)KernelRuntime.MemoryFree(bodies);}
+        Assert.Equal(0,KernelRuntime.Bodies.AliveCount);Assert.Equal(0,KernelRuntime.Curves.AliveCount);Assert.Equal(0,KernelRuntime.Surfaces.AliveCount);
+    }
+
+    [Theory]
     [InlineData(15903)] [InlineData(15901)] [InlineData(15902)]
     public void TwoTransverseSplineSolidsRetainCertifiedNativeBoundaryRoots(int function)
     {

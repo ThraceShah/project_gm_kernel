@@ -18,6 +18,7 @@ internal static unsafe partial class KernelRuntime
     private const byte PlanePairBlendLineCertificate=5;
     private const byte PlanePairCylinderLineCertificate=6;
     private const byte PlanePairSplineLineCertificate=7;
+    private const byte NativeTripleCertificate=8;
     private struct RegularBoundaryRoot
     {
         internal CurveTag Curve;
@@ -26,7 +27,8 @@ internal static unsafe partial class KernelRuntime
         internal SurfTag ContactSurface,ContactSupport,CuttingSurface;
         internal FiniteCurveSurfaceRoot Root;
         internal IntervalNumber BlendStation;
-        internal SurfaceParameterBox SplineDomain;
+        internal SurfaceParameterBox SplineDomain,CuttingDomain,SplineUniqueDomain,CuttingUniqueDomain;
+        internal byte NativeBoundaryAxis;
         internal BufferOffset InputCoedge;
         internal BoundaryRootWitnessId Witness;
         internal byte Certified;
@@ -113,6 +115,8 @@ internal static unsafe partial class KernelRuntime
         Span<ScalarRootIsolation> nativeRoots=stackalloc ScalarRootIsolation[IntersectionPointCapacity];
         Span<double> spatialErrors=stackalloc double[IntersectionPointCapacity];
         Span<IntervalNumber> linePoles=stackalloc IntervalNumber[8],blendStations=stackalloc IntervalNumber[IntersectionPointCapacity];
+        Span<SurfaceParameterBox> commonUv=stackalloc SurfaceParameterBox[IntersectionPointCapacity],targetUv=stackalloc SurfaceParameterBox[IntersectionPointCapacity];
+        Span<IsolatedRootCertificate> splineProofs=stackalloc IsolatedRootCertificate[IntersectionPointCapacity];
         for(var l=0;l<record.LoopCount;l++)
         {
             var loop=input.Loops[record.FirstLoop+l];
@@ -152,7 +156,7 @@ internal static unsafe partial class KernelRuntime
                     roots[1]=new(){Point=lastPoint,First=edge.End,Kind=IntersectionVectorKind.End};
                 }
                 var conicProof=!known&&rollingSurface&&curveClass==CurveClass.Ellipse&&cylinder;
-                var lineProof=false;var planePairLine=false;var planePairCylinder=false;byte exactPositionAxes=0;
+                var lineProof=false;var splineBoundaryProof=false;var planePairLine=false;var planePairCylinder=false;byte exactPositionAxes=0;
                 if(!known&&certificates.IsEmpty&&curveClass==CurveClass.Line&&cylinder)
                 {
                     lineProof=TryIsolateInteriorLineCylinder(edge,surface,roots,nativeRoots,spatialErrors,out n);
@@ -184,22 +188,28 @@ internal static unsafe partial class KernelRuntime
                 if(!known&&!lineProof&&certificates.IsEmpty&&curveClass==CurveClass.BCurve&&surfaceClass==SurfaceClass.BSurface
                     &&!TryAffinePlanarSurface(surfaceSlot,out _,out _,out _))
                 {
-                    var isolated=IsolateFiniteSplineSurface(edge,surfaceSlot,roots,nativeRoots,spatialErrors,out n);
+                    var isolated=IsolateFiniteSplineSurface(edge,surfaceSlot,roots,nativeRoots,spatialErrors,out n,splineProofs);
                     if(isolated!=AlgorithmStatus.Success){LastSheetAlgorithmStatus=isolated;return IntersectionError(isolated);}
-                    lineProof=true;
+                    lineProof=true;splineBoundaryProof=true;
                 }
                 var conicPlaneProof=!known&&certificates.IsEmpty&&(curveClass is CurveClass.Circle or CurveClass.Ellipse or CurveClass.BCurve)
                     &&TryBoundaryPlane(surfaceSlot,out var plane)
                     &&(curveClass==CurveClass.BCurve?IsolateFiniteSplinePlane(edge,plane,roots,nativeRoots,spatialErrors,out n)
                         :IsolateFiniteExplicitLevelSet(edge,plane,roots,nativeRoots,spatialErrors,out n))==AlgorithmStatus.Success
                     &&AllNativePlaneRoots(edge,nativeRoots[..n]);
-                var nativeProof=!known&&!lineProof&&!conicPlaneProof&&certificates.IsEmpty&&TryNativeCurvePlaneEvents(edge,surface,roots,nativeRoots,spatialErrors,out n);
+                var tripleProof=!known&&!lineProof&&!conicPlaneProof&&certificates.IsEmpty&&NativeTripleSurfaceApplicable(edge.Curve,surfaceSlot);
+                if(tripleProof)
+                {
+                    var isolated=IsolateFiniteNativeTriple(edge,record.Surface,surfaceSlot,roots,nativeRoots,spatialErrors,commonUv,targetUv,out n);
+                    if(isolated!=AlgorithmStatus.Success){LastSheetAlgorithmStatus=isolated;return IntersectionError(isolated);}
+                }
+                var nativeProof=!tripleProof&&!known&&!lineProof&&!conicPlaneProof&&certificates.IsEmpty&&TryNativeCurvePlaneEvents(edge,surface,roots,nativeRoots,spatialErrors,out n);
                 FiniteCurveSurfaceRoot endpoint=default;
-                if(!nativeProof&&!known&&!lineProof&&!conicPlaneProof&&certificates.IsEmpty&&!originals.IsEmpty&&curveClass==CurveClass.ICurve)
+                if(!tripleProof&&!nativeProof&&!known&&!lineProof&&!conicPlaneProof&&certificates.IsEmpty&&!originals.IsEmpty&&curveClass==CurveClass.ICurve)
                     nativeProof=TryStationaryNativePlaneEnd(edge,surface,originals,roots,nativeRoots,spatialErrors,out n,out endpoint);
-                if(!nativeProof&&!known&&!lineProof&&!conicPlaneProof&&certificates.IsEmpty&&!originals.IsEmpty)
+                if(!tripleProof&&!nativeProof&&!known&&!lineProof&&!conicPlaneProof&&certificates.IsEmpty&&!originals.IsEmpty)
                     nativeProof=TryExplicitNativePlaneEnd(edge,surface,originals,roots,nativeRoots,spatialErrors,out n,out endpoint);
-                var status=known||nativeProof||lineProof||conicPlaneProof?AlgorithmStatus.Success:conicProof?IsolateFiniteExplicitCylinder(edge,surface,roots,nativeRoots,spatialErrors,out n)
+                var status=known||tripleProof||nativeProof||lineProof||conicPlaneProof?AlgorithmStatus.Success:conicProof?IsolateFiniteExplicitCylinder(edge,surface,roots,nativeRoots,spatialErrors,out n)
                     :IntersectRegularSurfaceCurve(surface,edge.Curve,edge.Start,edge.End,roots,out n);
                 LastSheetAlgorithmStatus=status;if(status!=AlgorithmStatus.Success)return IntersectionError(status);
                 for(var r=0;r<n;r++)
@@ -210,7 +220,7 @@ internal static unsafe partial class KernelRuntime
                     // own support and provenance even when the event joins.
                     var duplicate=false;for(var i=count-1;i>=0&&points[i].InputCoedge==inputCoedge;i--)
                         duplicate|=points[i].Root.Parameter==roots[r].First;
-                    if(duplicate&&(known||nativeProof||conicProof||lineProof||conicPlaneProof))return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                    if(duplicate&&(known||tripleProof||nativeProof||conicProof||lineProof||conicPlaneProof))return ParasolidConstants.PK_ERROR_cant_do_intersect;
                     if(!duplicate)
                     {
                         if(count==points.Length)return ParasolidConstants.PK_ERROR_not_implemented;
@@ -219,7 +229,7 @@ internal static unsafe partial class KernelRuntime
                         {contactSupport=certificate.Surface;break;}
                         var witness=known?(r==0?proof.FirstRoot:proof.SecondRoot):new FiniteCurveSurfaceRoot
                             {Point=roots[r].Point,Vertex=-1,Parameter=roots[r].First,Kind=roots[r].Kind};
-                        if(nativeProof||conicProof||lineProof||conicPlaneProof)
+                        if(tripleProof||nativeProof||conicProof||lineProof||conicPlaneProof)
                         {
                             witness.Lower=nativeRoots[r].Root.Lower;witness.Upper=nativeRoots[r].Root.Upper;witness.SpatialError=spatialErrors[r];
                         }
@@ -237,13 +247,22 @@ internal static unsafe partial class KernelRuntime
                             }
                         }
                         if(endpoint.NativeEnd!=FiniteNativeEnd.None&&endpoint.Parameter==witness.Parameter)witness=endpoint;
+                        var domain=default(SurfaceParameterBox);var uniqueDomain=default(SurfaceParameterBox);byte boundaryAxis=0;
+                        var mappedSplineBoundary=splineBoundaryProof&&BoundNativeSplineBoundaryRoot(edge,GetSurfaceSlotByTag(record.Surface),nativeRoots[r].Root,
+                            new(splineProofs[r].SecondDomain.U0,splineProofs[r].SecondDomain.U1),out domain,out uniqueDomain,out boundaryAxis);
+                        if(splineBoundaryProof&&ExactNativeSplineBoundaryContact(edge,GetSurfaceSlotByTag(record.Surface))&&!mappedSplineBoundary)
+                        {
+                            return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                        }
                         points[count++]=new(){Curve=edge.Curve,InputEdge=inputEdge,InputCoedge=inputCoedge,TangentSupport=proof.TangentSupport,ContactSurface=record.Surface,ContactSupport=contactSupport,CuttingSurface=surface,
-                            Certified=linePlane||conicPlaneProof?ExplicitPlaneCertificate:nativeProof?NativePlaneCertificate:planePairLine?PlanePairBlendLineCertificate
+                            Certified=tripleProof?NativeTripleCertificate:linePlane||conicPlaneProof?ExplicitPlaneCertificate:nativeProof?NativePlaneCertificate:planePairLine?PlanePairBlendLineCertificate
                                 :planePairCylinder?PlanePairCylinderLineCertificate
                                 :lineProof?LineSurfaceCertificate:known||conicProof?(byte)1:(byte)0,Root=witness,
                             BlendStation=planePairLine?blendStations[r]:default,
+                            SplineDomain=tripleProof?commonUv[r]:domain,CuttingDomain=tripleProof?targetUv[r]:mappedSplineBoundary?splineProofs[r].First:default,
+                            SplineUniqueDomain=uniqueDomain,CuttingUniqueDomain=mappedSplineBoundary?splineProofs[r].FirstDomain:default,NativeBoundaryAxis=boundaryAxis,
                             ExactPositionAxes=exactPositionAxes,
-                            Witness=cached||splineContact||conicProof||lineProof||linePlane||conicPlaneProof||nativeProof?1+inputEdge*IntersectionPointCapacity+r:0};
+                            Witness=cached||tripleProof||splineContact||conicProof||lineProof||linePlane||conicPlaneProof||nativeProof?1+inputEdge*IntersectionPointCapacity+r:0};
                     }
                 }
             }

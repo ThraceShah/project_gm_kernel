@@ -1,19 +1,32 @@
 using System.Runtime.CompilerServices;
 using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Computation.Numerics;
+using ProjectGmKernel.Native.Geometry.Bounds;
 
 namespace ProjectGmKernel.Native.Geometry.Intersection;
 
 /// <summary>Complete regular roots of A(u,v)=B(s,t)=C(p,q). Charts select
 /// geometry; interval exclusion and Krawczyk inclusion certify every root.</summary>
+internal struct SurfaceTripleRootCertificate
+{
+    internal SurfaceParameterBox First,Second,Third,FirstDomain,SecondDomain,ThirdDomain;
+    internal readonly bool MayShareRoot(in SurfaceTripleRootCertificate other)
+        =>IsolatedRootCertificate.Overlaps(First,other.First)&&IsolatedRootCertificate.Overlaps(Second,other.Second)&&IsolatedRootCertificate.Overlaps(Third,other.Third);
+    internal readonly bool ProvesSameRoot(in SurfaceTripleRootCertificate other)
+        =>Contains(FirstDomain,SecondDomain,ThirdDomain,other)||Contains(other.FirstDomain,other.SecondDomain,other.ThirdDomain,this);
+    private static bool Contains(in SurfaceParameterBox a,in SurfaceParameterBox b,in SurfaceParameterBox c,in SurfaceTripleRootCertificate root)
+        =>IsolatedRootCertificate.Contains(a,root.First)&&IsolatedRootCertificate.Contains(b,root.Second)&&IsolatedRootCertificate.Contains(c,root.Third);
+}
+
 internal static class SurfaceTripleRoots
 {
     [InlineArray(6)] private struct Parameters{private double value;}
     private struct Cell{internal Parameters Lower,Upper;internal BufferCount Depth;}
 
     internal static AlgorithmStatus Find(in SurfaceIntersectionPatch aSource,in SurfaceIntersectionPatch bSource,in SurfaceIntersectionPatch cSource,
-        Span<SurfaceIntersectionNode> roots,out BufferCount count)
+        Span<SurfaceIntersectionNode> roots,out BufferCount count,Span<SurfaceTripleRootCertificate> certificates=default)
     {
+        Span<SurfaceTripleRootCertificate> accepted=certificates.IsEmpty?stackalloc SurfaceTripleRootCertificate[roots.Length]:certificates;
         count=0;Span<SurfaceBoundCacheEntry> ac=stackalloc SurfaceBoundCacheEntry[128],bc=stackalloc SurfaceBoundCacheEntry[128],cc=stackalloc SurfaceBoundCacheEntry[128];ac.Clear();bc.Clear();cc.Clear();
         var a=new SurfaceIntersectionPatch(aSource,ac);var b=new SurfaceIntersectionPatch(bSource,bc);var c=new SurfaceIntersectionPatch(cSource,cc);
         var domain=new Cell();
@@ -49,7 +62,7 @@ internal static class SurfaceTripleRoots
                     extended.Lower[d]-=margin;extended.Upper[d]+=margin;
                 }
                 status=Bounds(a,b,c,extended,f,jac);if(status==AlgorithmStatus.NotConverged)goto Split;if(status!=AlgorithmStatus.Success)return status;
-                var unique=Invert(cj,inverse);empty=false;
+                var unique=Invert(cj,inverse);empty=false;var enclosure=point;
                 for(var r=0;r<6&&unique;r++)
                 {
                     IntervalNumber image=point.Lower[r];for(var k=0;k<6;k++)image-=inverse[6*r+k]*cf[k];
@@ -58,16 +71,26 @@ internal static class SurfaceTripleRoots
                         IntervalNumber m=r==d?1:0;for(var k=0;k<6;k++)m-=inverse[6*r+k]*jac[6*k+d];
                         image+=m*(new IntervalNumber(extended.Lower[d],extended.Upper[d])-point.Lower[d]);
                     }
+                    enclosure.Lower[r]=image.Lower;enclosure.Upper[r]=image.Upper;
                     empty|=image.Upper<cell.Lower[r]||image.Lower>cell.Upper[r];
                     unique&=image.Lower>extended.Lower[r]&&image.Upper<extended.Upper[r];
                 }
                 if(empty)continue;var residual=0.0;for(var r=0;r<6;r++)residual=Math.Max(residual,cf[r].Magnitude);
                 if(unique&&residual<1e-9)
                 {
+                    if(Contraction(jac,inverse,extended)>=1)goto Split;
+                    for(var d=0;d<6;d++)if(enclosure.Lower[d]<domain.Lower[d]||enclosure.Upper[d]>domain.Upper[d])goto Split;
+                    status=Refine(a,b,c,point,inverse,cf,ref enclosure,f,jac);if(status!=AlgorithmStatus.Success)return status;
+                    var certificate=new SurfaceTripleRootCertificate{First=Box(enclosure,0),Second=Box(enclosure,2),Third=Box(enclosure,4),
+                        FirstDomain=Box(extended,0),SecondDomain=Box(extended,2),ThirdDomain=Box(extended,4)};
                     status=a.Bound(new(point.Lower[0],point.Lower[0],point.Lower[1],point.Lower[1]),position);if(status!=AlgorithmStatus.Success)return status;
                     var root=new SurfaceIntersectionNode{Point=new(){X=position[0].Midpoint,Y=position[1].Midpoint,Z=position[2].Midpoint},U=point.Lower[0],V=point.Lower[1],S=point.Lower[2],T=point.Lower[3]};
-                    var duplicate=false;for(var i=0;i<count;i++)duplicate|=Math.Abs(roots[i].U-root.U)<2e-9&&Math.Abs(roots[i].V-root.V)<2e-9&&Math.Abs(roots[i].S-root.S)<2e-9&&Math.Abs(roots[i].T-root.T)<2e-9;
-                    if(!duplicate){if(count==roots.Length)return AlgorithmStatus.OutputTooSmall;roots[count++]=root;}continue;
+                    var duplicate=false;for(var i=0;i<count;i++)
+                    {
+                        if(!certificate.MayShareRoot(accepted[i]))continue;
+                        if(!certificate.ProvesSameRoot(accepted[i]))goto Split;duplicate=true;
+                    }
+                    if(!duplicate){if(count==roots.Length||count==accepted.Length)return AlgorithmStatus.OutputTooSmall;accepted[count]=certificate;roots[count++]=root;}continue;
                 }
             }
             Split:
@@ -77,6 +100,35 @@ internal static class SurfaceTripleRoots
             var middle=cell.Lower[axis]+(cell.Upper[axis]-cell.Lower[axis])*.4931471805599453;
             if(!(middle>cell.Lower[axis]&&middle<cell.Upper[axis]))return AlgorithmStatus.NumericalFailure;
             var right=cell;cell.Upper[axis]=middle;right.Lower[axis]=middle;cell.Depth++;right.Depth=cell.Depth;pending[n++]=right;pending[n++]=cell;
+        }
+        return AlgorithmStatus.Success;
+    }
+
+    private static SurfaceParameterBox Box(in Cell cell,BufferOffset axis)
+        =>new(cell.Lower[axis],cell.Upper[axis],cell.Lower[axis+1],cell.Upper[axis+1]);
+
+    private static AlgorithmStatus Refine(in SurfaceIntersectionPatch a,in SurfaceIntersectionPatch b,in SurfaceIntersectionPatch c,
+        in Cell point,ReadOnlySpan<double> inverse,ReadOnlySpan<IntervalNumber> residual,ref Cell enclosure,Span<IntervalNumber> f,Span<IntervalNumber> jac)
+    {
+        for(var iteration=0;iteration<12;iteration++)
+        {
+            var hull=enclosure;
+            for(var d=0;d<6;d++){hull.Lower[d]=Math.Min(hull.Lower[d],point.Lower[d]);hull.Upper[d]=Math.Max(hull.Upper[d],point.Lower[d]);}
+            var status=Bounds(a,b,c,hull,f,jac);if(status!=AlgorithmStatus.Success)return status;
+            var next=enclosure;var shrank=false;
+            for(var r=0;r<6;r++)
+            {
+                IntervalNumber image=point.Lower[r];for(var k=0;k<6;k++)image-=inverse[6*r+k]*residual[k];
+                for(var d=0;d<6;d++)
+                {
+                    IntervalNumber m=r==d?1:0;for(var k=0;k<6;k++)m-=inverse[6*r+k]*jac[6*k+d];
+                    image+=m*(new IntervalNumber(enclosure.Lower[d],enclosure.Upper[d])-point.Lower[d]);
+                }
+                var lo=Math.Max(enclosure.Lower[r],image.Lower);var hi=Math.Min(enclosure.Upper[r],image.Upper);
+                if(!double.IsFinite(lo)||!double.IsFinite(hi)||hi<lo)return AlgorithmStatus.NotConverged;
+                next.Lower[r]=lo;next.Upper[r]=hi;shrank|=hi-lo<.75*(enclosure.Upper[r]-enclosure.Lower[r]);
+            }
+            enclosure=next;if(!shrank)break;
         }
         return AlgorithmStatus.Success;
     }

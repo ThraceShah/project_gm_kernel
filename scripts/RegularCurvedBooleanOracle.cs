@@ -36,7 +36,22 @@ using(host)unsafe
             var name=$"{kind}-{function}";if(!WebProgressCapture.Select(name))continue;if(filter!=null&&!name.Contains(filter,StringComparison.Ordinal))continue;
             try
             {
-                var ours=Produce(true,kind,function);var reference=Produce(false,kind,function);Require(ours.Length==reference.Length,name+" body count");
+                Exception? ownFailure=null,nativeFailure=null;int[] ours=[],reference=[];var intermediate=new Dictionary<string,int>();
+                try{ours=Produce(true,kind,function,evidenceDirectory:directory);}catch(Exception ex){ownFailure=ex;}
+                try{reference=Produce(false,kind,function,evidenceDirectory:directory,intermediate:intermediate);}catch(Exception ex){nativeFailure=ex;}
+                foreach(var stage in intermediate)
+                {
+                    try
+                    {
+                        var ownPath=Path.Combine(directory,name+"-"+stage.Key+"-gm.x_t");
+                        if(!File.Exists(ownPath))continue;
+                        var received=Receive(File.ReadAllBytes(ownPath));CheckBody(received,name+" "+stage.Key+" received");CheckBody(stage.Value,name+" "+stage.Key+" independent");
+                        Compare(stage.Value,received,name+" "+stage.Key);Console.WriteLine("GEOMETRY_TOPOLOGY_PASS "+name+" "+stage.Key);
+                    }
+                    finally{var copy=stage.Value;Check(PK_ENTITY_delete(1,&copy),"release intermediate independent product");}
+                }
+                if(ownFailure!=null||nativeFailure!=null)throw new AggregateException(new[]{ownFailure,nativeFailure}.OfType<Exception>());
+                Require(ours.Length==reference.Length,name+" body count");
                 var matched=new bool[reference.Length];
                 for(var i=0;i<ours.Length;i++)
                 {
@@ -57,7 +72,7 @@ using(host)unsafe
     finally{KernelRuntime.TraceFiniteBoundary=null;Check(KernelRuntime.SessionStop(),"own session stop");}
 }
 
-static unsafe int[] Produce(bool own,string kind,int function,double tolerance=1e-5,double scale=1)
+static unsafe int[] Produce(bool own,string kind,int function,double tolerance=1e-5,double scale=1,string? evidenceDirectory=null,Dictionary<string,int>? intermediate=null)
 {
     var target=Roof(own,0,0,0,.8);int tool;
     if(kind.StartsWith("same-domain",StringComparison.Ordinal))
@@ -77,12 +92,15 @@ static unsafe int[] Produce(bool own,string kind,int function,double tolerance=1
     if(kind is "continuous" or "reloaded" or "reloaded-block")
     {
         var first=options;first.function=PK_boolean_subtract_c;
-        Check(own?KernelRuntime.BodyBoolean(target,1,&tool,(M.PK_BODY_boolean_o_s*)&first,&count,&bodies):PK_BODY_boolean(target,1,&tool,&first,&count,&bodies),"first continuous subtraction");
+        var firstError=own?KernelRuntime.BodyBoolean(target,1,&tool,(M.PK_BODY_boolean_o_s*)&first,&count,&bodies):PK_BODY_boolean(target,1,&tool,&first,&count,&bodies);
+        Console.WriteLine($"STEP_API side={(own?"gm":"pk")} case={kind}-{function} operation=first-subtract error={firstError} count={count}");Check(firstError,"first continuous subtraction");
         try{Require(count==1,"continuous source component");target=bodies[0];}finally{Check(own?KernelRuntime.MemoryFree(bodies):PK_MEMORY_free(bodies),"first continuous result");}
+        if(evidenceDirectory!=null)File.WriteAllBytes(Path.Combine(evidenceDirectory,$"{kind}-{function}-first-subtract-{(own?"gm":"pk")}.x_t"),own?Transmit(target):TransmitNative(target));
+        if(!own&&intermediate!=null){int copy;Check(PK_ENTITY_copy(target,&copy),"retain independent first product");intermediate.Add("first-subtract",copy);}
         if(own&&kind.StartsWith("reloaded",StringComparison.Ordinal))
         {
             var bytes=Transmit(target);
-            File.WriteAllBytes(Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","regular-curved-boolean-oracle",$"{kind}-{function}-source.x_t"),bytes);
+            if(evidenceDirectory!=null)File.WriteAllBytes(Path.Combine(evidenceDirectory,$"{kind}-{function}-reload-source.x_t"),bytes);
             var old=target;target=ReceiveOwn(bytes);Check(KernelRuntime.EntityDelete(1,&old),"delete serialized source");
             Require(KernelRuntime.TryResolveBodySlot(target,out var restored)&&!KernelRuntime.Xt.IsOpaque(restored),"editable self-received curved solid");
             var point=new M.PK_VECTOR_s();point.coord[0]=point.coord[1]=.9;point.coord[2]=.5;int enclosure,topology;
@@ -96,6 +114,12 @@ static unsafe int[] Produce(bool own,string kind,int function,double tolerance=1
         tools[0]=Block(own,.25,.35,.2,1,1,1.1);
         tools[1]=kind=="two-tools"?Block(own,.83,.62,.17,.8,.7,.91):Block(own,3,3,.25,1,1,1);toolCount=2;
         Check(own?KernelRuntime.EntityDelete(1,&tool):PK_ENTITY_delete(1,&tool),"unused initial tool");
+    }
+    if(evidenceDirectory!=null)
+    {
+        var side=own?"gm":"pk";
+        File.WriteAllBytes(Path.Combine(evidenceDirectory,$"{kind}-{function}-{side}-target-before.x_t"),own?Transmit(target):TransmitNative(target));
+        for(var i=0;i<toolCount;i++)File.WriteAllBytes(Path.Combine(evidenceDirectory,$"{kind}-{function}-{side}-tool{i+1}-before.x_t"),own?Transmit(tools[i]):TransmitNative(tools[i]));
     }
     if(WebProgressCapture.Enabled)
     {
@@ -113,7 +137,9 @@ static unsafe int[] Produce(bool own,string kind,int function,double tolerance=1
         }
         finally {if(own){KernelRuntime.TopolTrackResultFree((M.PK_TOPOL_track_r_s*)&tracking);KernelRuntime.BooleanResultFree((M.PK_boolean_r_s*)&result);}else{PK_TOPOL_track_r_f(&tracking);PK_boolean_r_f(&result);}}
     }
-    Check(own?KernelRuntime.BodyBoolean(target,toolCount,tools,(M.PK_BODY_boolean_o_s*)&options,&count,&bodies):PK_BODY_boolean(target,toolCount,tools,&options,&count,&bodies),$"{(own?"own":"native")} {kind} Boolean");
+    var finalError=own?KernelRuntime.BodyBoolean(target,toolCount,tools,(M.PK_BODY_boolean_o_s*)&options,&count,&bodies):PK_BODY_boolean(target,toolCount,tools,&options,&count,&bodies);
+    Console.WriteLine($"STEP_API side={(own?"gm":"pk")} case={kind}-{function} operation=final-boolean error={finalError} count={count}");
+    Check(finalError,$"{(own?"own":"native")} {kind} Boolean");
     try{var result=new int[count];new ReadOnlySpan<int>(bodies,count).CopyTo(result);if(kind=="mixed-disjoint"&&function==PK_boolean_unite_c)Require(result.Contains(tools[1]),"disjoint tool body identity");return result;}
     finally{if(bodies!=null)Check(own?KernelRuntime.MemoryFree(bodies):PK_MEMORY_free(bodies),"Boolean buffers");}
 }

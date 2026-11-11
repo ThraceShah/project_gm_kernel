@@ -10,7 +10,7 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
-    private enum CutConstruction:byte { None, AnalyticPlanePair, FiniteCylinderPlane, AnalyticCylinderPlaneConic }
+    private enum CutConstruction:byte { None, AnalyticPlanePair, FiniteCylinderPlane, AnalyticCylinderPlaneConic, NativeSurfacePair }
 
     private struct SheetCutCurve
     {
@@ -80,7 +80,7 @@ internal static unsafe partial class KernelRuntime
             {
                 if (error != 0) return error;
                 if (nc > cuts.Length) return ParasolidConstants.PK_ERROR_not_implemented;
-                for (var i=0;i<nc;i++) cuts[i]=new(){Curve=curves[i],First=intervals[i].value[0],Last=intervals[i].value[1],Closed=ProfileClosedICurve(curves[i],intervals[i].value[0],intervals[i].value[1])?(byte)1:(byte)0};
+                for (var i=0;i<nc;i++) cuts[i]=new(){Curve=curves[i],First=intervals[i].value[0],Last=intervals[i].value[1],Closed=ProfileClosedICurve(curves[i],intervals[i].value[0],intervals[i].value[1])?(byte)1:(byte)0,Construction=CutConstruction.NativeSurfacePair};
                 count=nc;return 0;
             }
             finally { if(curves!=null)MemoryFree(curves);if(intervals!=null)MemoryFree(intervals);if(kinds!=null)MemoryFree(kinds); }

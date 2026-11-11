@@ -12,6 +12,8 @@ internal static unsafe partial class KernelRuntime
     private static int LocateCertifiedCut(in SheetCutCurve cut,in RegularBoundaryRoot root,out double parameter,out IntervalNumber isolation,out bool handled)
     {
         parameter=0;isolation=new(double.NaN,double.NaN);handled=false;
+        if(root.Certified==NativeTripleCertificate||root.NativeBoundaryAxis!=0&&cut.Construction==CutConstruction.NativeSurfacePair)
+            return LocateNativeTripleCut(cut,root,out parameter,out isolation,out handled);
         if(root.Certified==ExplicitPlaneCertificate)
             return LocateCertifiedLineCut(cut,root,ref parameter,ref isolation,out handled);
         if(root.Certified==PlanePairBlendLineCertificate)
