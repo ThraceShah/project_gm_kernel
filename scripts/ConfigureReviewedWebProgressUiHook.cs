@@ -38,7 +38,9 @@ void Safe(string path)
     if (Directory.Exists(path)) foreach (var entry in Directory.EnumerateFileSystemEntries(path, "*", SearchOption.AllDirectories))
         if ((File.GetAttributes(entry) & FileAttributes.ReparsePoint) != 0) throw new IOException("UI_HOOK_PATH_UNSAFE");
 }
-foreach (var path in new[] { work, units }) Safe(path);
+Safe(work);
+if (!WebProgressSafePath.IsSafeChain(units, out _)) throw new IOException("UI_HOOK_PATH_UNSAFE unit root");
+Safe(dropins); // unrelated systemd enablement links are outside our write set
 if (WebProgressSafePath.IsWithin(work, units) || WebProgressSafePath.IsWithin(units, work)) throw new IOException("UI_HOOK_PATH_OVERLAP");
 Directory.CreateDirectory(work);
 using var lease = new FileStream(Path.Combine(work, "hook.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
@@ -50,10 +52,21 @@ async Task<(int Exit, string Text)> Systemctl(params string[] arguments)
     var output = process.StandardOutput.ReadToEndAsync(); var error = process.StandardError.ReadToEndAsync();
     await process.WaitForExitAsync();
     var result = (process.ExitCode, (await output).Trim());
-    Console.WriteLine("systemctl --user " + string.Join(" ", arguments) + " exit=" + result.ExitCode + " " + result.Item2);
+    Console.WriteLine("systemctl --user " + string.Join(" ", arguments) + " exit=" + result.ExitCode + (arguments[0] == "cat" ? " [saved privately]" : " " + result.Item2));
     Console.Error.WriteLine((await error).Trim()); return result;
 }
 async Task Require(params string[] arguments) { if ((await Systemctl(arguments)).Exit != 0) throw new IOException("systemctl failed"); }
+async Task RequireIdleWriter()
+{
+    var result = await Systemctl("show", service, "--property=ActiveState", "--property=SubState", "--property=MainPID", "--property=Job", "--property=TasksCurrent", "--property=ControlGroup");
+    var values = result.Text.Split('\n').Select(s => s.Split('=', 2)).Where(p => p.Length == 2).ToDictionary(p => p[0], p => p[1], StringComparer.Ordinal);
+    if (result.Exit != 0 || !values.TryGetValue("ActiveState", out var active) || active is not ("inactive" or "failed")
+        || !values.TryGetValue("SubState", out var sub) || sub is not ("dead" or "failed")
+        || !values.TryGetValue("MainPID", out var pid) || pid != "0"
+        || !values.TryGetValue("Job", out var job) || job.Length != 0
+        || !values.TryGetValue("ControlGroup", out var group) || !values.TryGetValue("TasksCurrent", out var tasks)
+        || group.Length > 0 && tasks != "0") throw new IOException("UI_WRITER_NOT_IDLE wait for no active/transitional writer or pending service job; timer remains stopped");
+}
 string Sha(byte[] bytes) => Convert.ToHexStringLower(SHA256.HashData(bytes));
 Dictionary<string, string> Hashes(string path) => Directory.Exists(path) ? Directory.GetFiles(path, "*", SearchOption.AllDirectories).ToDictionary(f => Path.GetRelativePath(path, f), f => Sha(File.ReadAllBytes(f)), StringComparer.Ordinal) : new(StringComparer.Ordinal);
 string TreeHash(Dictionary<string, string> hashes) => Sha(Encoding.UTF8.GetBytes(string.Join("\n", hashes.OrderBy(p => p.Key, StringComparer.Ordinal).Select(p => p.Key + ":" + p.Value))));
@@ -83,10 +96,11 @@ if (mode is "restore" or "resume")
         var published = JsonNode.Parse(File.ReadAllBytes(Path.Combine(work, "published.json")))!;
         foreach (var field in new[] { "uiCommit", "uiHash", "review" })
             if (!JsonNode.DeepEquals(published[field], state[field])) throw new IOException("successful publication does not match installed fixed hook");
+        await RequireIdleWriter();
         await RestoreActive(state); return 0;
     }
     await Require("stop", timer);
-    if ((await Systemctl("is-active", service)).Exit == 0) throw new IOException("refresh still running; wait before restore");
+    await RequireIdleWriter();
     var original = Hashes(Path.Combine(backup, "dropins"));
     if (TreeHash(original) != state["originalDropinsHash"]!.GetValue<string>()) throw new IOException("backup changed");
     var expected = new Dictionary<string, string>(original) { [ownName] = state["hookHash"]!.GetValue<string>() };
@@ -108,16 +122,18 @@ var tool = Path.Combine(scripts, "PublishReviewedWebProgressUi.cs");
 var homeRelative = Path.GetRelativePath(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), tool).Replace('\\', '/');
 if (homeRelative.StartsWith("..", StringComparison.Ordinal) || homeRelative.Any(c => !(char.IsAsciiLetterOrDigit(c) || c is '/' or '.' or '_' or '-'))) throw new IOException("tool path must be safe and under current home");
 var command = new StringBuilder("[Service]\nExecStartPost=\nExecStartPost=dotnet run --file %h/").Append(homeRelative).Append(" -- --mode publish --execute");
-foreach (var name in new[] { "--dist", "--data", "--work", "--portalctl", "--previous-bundle" }) command.Append(' ').Append(name).Append(' ').Append(Relative(name));
+foreach (var name in new[] { "--dist", "--data", "--baseline-data", "--work", "--portalctl", "--previous-bundle" }) command.Append(' ').Append(name).Append(' ').Append(Relative(name));
 command.Append(" --ui-commit ").Append(ui).Append(" --dist-hash ").Append(hash).Append(" --review ").Append(review).Append('\n');
 var timerActive = (await Systemctl("is-active", timer)).Exit == 0;
 var timerEnabled = (await Systemctl("is-enabled", timer)).Text;
 var effective = await Systemctl("cat", service); if (effective.Exit != 0) throw new IOException("expected existing refresh unit");
 Directory.CreateDirectory(backup); Copy(dropins, Path.Combine(backup, "dropins"));
 File.WriteAllText(Path.Combine(backup, "effective-before.txt"), effective.Text);
+if (TreeHash(Hashes(dropins)) != TreeHash(Hashes(Path.Combine(backup, "dropins")))) throw new IOException("drop-ins changed during backup; no hook installed");
 var record = new JsonObject { ["schemaVersion"] = 1, ["unitDir"] = Path.GetRelativePath(scripts, units), ["uiCommit"] = ui, ["uiHash"] = hash, ["review"] = review, ["timerActive"] = timerActive, ["timerEnabled"] = timerEnabled, ["dropinsExisted"] = Directory.Exists(dropins), ["originalDropinsHash"] = TreeHash(Hashes(dropins)), ["hookHash"] = Sha(Encoding.UTF8.GetBytes(command.ToString())) };
 Save(record); await Require("stop", timer);
-if ((await Systemctl("is-active", service)).Exit == 0) throw new IOException("refresh still running; wait before installing hook, backup retained");
+await RequireIdleWriter();
+if (TreeHash(Hashes(dropins)) != record["originalDropinsHash"]!.GetValue<string>()) throw new IOException("drop-ins changed after backup; no hook installed");
 Directory.CreateDirectory(dropins); File.WriteAllText(Path.Combine(dropins, ownName), command.ToString());
 await Require("daemon-reload");
 var after = await Systemctl("show", service, "--property=ExecStartPost", "--value");

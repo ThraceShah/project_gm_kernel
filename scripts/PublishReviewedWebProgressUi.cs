@@ -158,12 +158,33 @@ var validation = WebProgressDataValidation.Validate(data);
 if (validation["errors"]!.AsArray().Count > 0) throw new InvalidDataException(validation.ToJsonString());
 var dataFiles = Hashes(data);
 if (dataFiles.Keys.Any(p => Path.GetExtension(p) is not (".json" or ".log"))) throw new InvalidDataException("data allowlist");
-var fingerprint = uiCommit + ":" + uiHash + ":" + TreeHash(dataFiles);
+var indexBytes = File.ReadAllBytes(Path.Combine(data, "index.json"));
+var baselineReused = false;
+var baselineOption = Option("--baseline-data", "");
+if (baselineOption.Length > 0)
+{
+    var baseline = Resolve("--baseline-data"); SafeTree(baseline); Separate(data, baseline);
+    var baselineFiles = Hashes(baseline);
+    var sourceRuns = dataFiles.Where(p => p.Key != "index.json").ToDictionary(p => p.Key, p => p.Value, StringComparer.Ordinal);
+    var baselineRuns = baselineFiles.Where(p => p.Key != "index.json").ToDictionary(p => p.Key, p => p.Value, StringComparer.Ordinal);
+    var sourceIndex = JsonNode.Parse(indexBytes)!.AsObject(); sourceIndex.Remove("generatedAt");
+    var baselineBytes = File.ReadAllBytes(Path.Combine(baseline, "index.json"));
+    var baselineIndex = JsonNode.Parse(baselineBytes)!.AsObject(); baselineIndex.Remove("generatedAt");
+    if (TreeHash(sourceRuns) == TreeHash(baselineRuns) && JsonNode.DeepEquals(sourceIndex, baselineIndex))
+    { indexBytes = baselineBytes; baselineReused = true; }
+}
+var snapshotFiles = new Dictionary<string, string>(dataFiles, StringComparer.Ordinal) { ["index.json"] = HashHex(indexBytes) };
+var fingerprint = uiCommit + ":" + uiHash + ":" + TreeHash(snapshotFiles);
 var candidate = Path.Combine(work, "bundle-" + HashHex(Encoding.UTF8.GetBytes(fingerprint))[..16]);
-if (!Directory.Exists(candidate)) { Copy(dist, candidate, uiFiles); Copy(data, Path.Combine(candidate, "data"), dataFiles); }
+if (!Directory.Exists(candidate))
+{
+    Copy(dist, candidate, uiFiles);
+    Copy(data, Path.Combine(candidate, "data"), dataFiles.Where(p => p.Key != "index.json").ToDictionary(p => p.Key, p => p.Value, StringComparer.Ordinal));
+    File.WriteAllBytes(Path.Combine(candidate, "data", "index.json"), indexBytes);
+}
 SafeTree(candidate);
 var expectedFiles = new Dictionary<string, string>(uiFiles, StringComparer.Ordinal);
-foreach (var pair in dataFiles) expectedFiles.Add("data/" + pair.Key, pair.Value);
+foreach (var pair in snapshotFiles) expectedFiles.Add("data/" + pair.Key, pair.Value);
 if (TreeHash(Hashes(candidate)) != TreeHash(expectedFiles)) throw new IOException("candidate incomplete/changed; preserve evidence and choose a new --work");
 if (TreeHash(Hashes(data)) != TreeHash(dataFiles) || TreeHash(Hashes(dist, true)) != uiHash) throw new IOException("UI_SNAPSHOT_CHANGED reprepare from a completed producer snapshot");
 var snapshotValidation = WebProgressDataValidation.Validate(Path.Combine(candidate, "data"));
@@ -172,8 +193,8 @@ var files = Directory.GetFiles(candidate, "*", SearchOption.AllDirectories);
 var bytes = files.Sum(f => new FileInfo(f).Length);
 if (files.Length > 5000 || bytes > 30L * 1024 * 1024) throw new InvalidDataException("UI_BUNDLE_CAPACITY files=" + files.Length + " bytes=" + bytes + "; preserve current bundle, no evidence pruning");
 var metadataPath = Path.Combine(work, "prepared.json");
-WriteAtomic(metadataPath, new JsonObject { ["schemaVersion"] = 1, ["uiCommit"] = uiCommit, ["uiHash"] = uiHash, ["review"] = review, ["fingerprint"] = fingerprint, ["bundle"] = Path.GetRelativePath(work, candidate), ["files"] = files.Length, ["bytes"] = bytes, ["dataIndexSha256"] = dataFiles["index.json"] });
-Console.WriteLine("UI_PREPARED ui=" + uiCommit + " uiHash=" + uiHash + " files=" + files.Length + " bytes=" + bytes + " dataIndexSha=" + dataFiles["index.json"]);
+WriteAtomic(metadataPath, new JsonObject { ["schemaVersion"] = 1, ["uiCommit"] = uiCommit, ["uiHash"] = uiHash, ["review"] = review, ["fingerprint"] = fingerprint, ["bundle"] = Path.GetRelativePath(work, candidate), ["files"] = files.Length, ["bytes"] = bytes, ["dataIndexSha256"] = snapshotFiles["index.json"], ["sourceIndexSha256"] = dataFiles["index.json"], ["sourceDataTreeHash"] = TreeHash(dataFiles), ["baselineIndexReused"] = baselineReused });
+Console.WriteLine("UI_PREPARED ui=" + uiCommit + " uiHash=" + uiHash + " files=" + files.Length + " bytes=" + bytes + " dataIndexSha=" + snapshotFiles["index.json"] + " sourceIndexSha=" + dataFiles["index.json"] + " baselineIndexReused=" + baselineReused);
 if (mode == "prepare") return 0;
 var published = ReadObject(Path.Combine(work, "published.json"));
 if (ExistingBackup() is null)

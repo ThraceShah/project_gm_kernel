@@ -16,6 +16,14 @@ MSBUILDDISABLENODEREUSE=1 dotnet run --no-cache --file scripts/PublishReviewedWe
 
 脚本本身固定在经独立 review 的工具 checkout；每次 hook 指向相同 UI commit/dist hash，仅 data 来自原专用 publisher。该 companion 从不 enable/disable timer，只恢复记录的 active 状态；若 enabled 状态被用户改变则拒绝擅自启动。resume 要求 published.json 的 UI commit/hash/review 与安装记录一致。上述 unit 模式尚未执行且需独立运维脚本复核，不可据 prepare/compile 通过宣布可部署。
 
+协调端已 review 固定 `1c492a84ce642289359556070d290cad4167b205` 的备份容器及两份发布脚本，随后要求补齐 writer 过渡态 gate 和真实 producer 数据路径后，在本任务内授权 UI-only 实际同 slug 更新；此授权不包含 A+B host/proxy 迁移或 main 合并。后补 gate 由 `scripts/VerifyReviewedWebProgressUiHook.cs` 的隔离 PATH/C# systemctl stub **31/31** 验证：inactive/enabled、inactive/disabled、active/enabled 的 install→匹配 published→resume→restore，activating/deactivating/reloading（MainPID0 但仍在旧 post）、pending job、外部 drop-in 修改拒绝；不调用真实 systemd。检查明确读取 ActiveState/SubState/MainPID/Job/TasksCurrent/ControlGroup，停 timer 后仅允许 inactive/failed 且无 writer/tasks/job。源 drop-in 和备份 hash 必须一致后才写 hook；无关 systemd enablement 链接不属于写集合。
+
+实际只读核查：live 主 `WatchWebProgress.cs` 以 `--output ../temp_docs/web-progress-publish/generated --publish-data-to ../temp_docs/web-progress-publish/data` 更新完整 validated 根。旧两个 post 仅做 Prepare UI/dist 与 Portal 上传。新 hook 的 `--data` 必须指向这个持续更新的 `data`，而不是固定 `bundle/data`；reset 不会移除数据生产步骤。源 index SHA 为 `bf46829ee02f2d6a48cdad042a52861fd234ddf25b1e24ea7961ad29045d80e3`，与已服务 `117bb...` 仅发布 generatedAt/属性顺序不同，所有 run 文件相同。
+
+`--baseline-data` 指向冻结的旧静态 data。只有全部非 index 文件 hash 及去除 generatedAt 的 index 身份完全一致时，才沿用旧 index 的精确字节，避免 UI-only 改动无谓变更当前数据；任何新 run/对象/索引身份变化都会采用真实新 producer 快照并记录新 SHA。source 原始 index/tree SHA 与 baselineIndexReused 一并进入 prepared.json，不伪称源字节相同。本任务 producer 根 prepare 已实测 baselineIndexReused=true，仍为 610 files / 27,998,665 bytes / data index `117bb...`。
+
+`scripts/FreezeReviewedWebProgressUi.cs` 只从固定 tools Git 对象提取 6 个必要源码文件，复制 accepted UI hash 和 exact 旧 bundle，生成逐文件 SHA 白名单与 release.json；tools/UI/previous-static 设为只读，发布 work/state 独立。timer 使用冻结 release 的脚本和 UI，不能指向仍会编辑的工作树或作者 web/dist。冻结、实际发布和浏览器结果另记在最终整合报告中。
+
 首次 publish 使用独立 UI release work 目录，`--previous-bundle` 指向真实当前同 slug bundle，脚本核其 index.html/data index 与当前 HTTPS 相同后备份。旧 bundle 全树 hash 为 `d513528c167a8e0c2d47fd35ae955569abb178a8f00594173f4b331c6538ce94`（610 files / 27,976,183 bytes；463 registrations / 17 attempted）。完整旧文件和 metadata 先写入独立 staging container，逐字节核验后以一次目录 rename 提交到 `previous-snapshot/{bundle,metadata.json}`；不得仅以目录存在当备份成功。中断、缺 metadata、损坏快照会保留 `.incomplete-*` 或 staging 证据并从确切旧源重建；已有 metadata 指定旧 hash 时，错误的新源不能替换旧历史。有效 legacy `previous-bundle` + `previous.json` 只读复用。
 
 `--mode backup --previous-bundle <relative> --work <relative>` 是纯本地备份恢复入口，不调用 portal；`scripts/VerifyReviewedWebProgressUiBackup.cs` 用小型 BCL fixture 经真实 CLI 检查中断、缺 metadata、损坏、错误修复源与正常重试。publish/skip 都要求可校验的完整回退备份；新成功指纹包括 UI commit、UI content hash、完整 data tree hash，故相同 run 也能发布新 UI；portal 或 HTTP 校验失败不写 `published.json`。新旧包都使用原 `gm-kernel-progress` slug，凭证由既有 portalctl 自行读取。
