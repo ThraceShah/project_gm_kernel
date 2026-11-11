@@ -14,6 +14,7 @@ namespace KernelTests;
 // hit/miss history. The dump is written for cross-build bitwise A/B; the
 // controls assert intra-binary invariants. See
 // docs/Interval_Bounds_Initialization_OptA.md for the dominance inventory.
+[Collection("KernelTests")]
 public class NestedBlendBoundsInitializationContractTests
 {
     [Fact]
@@ -33,7 +34,18 @@ public class NestedBlendBoundsInitializationContractTests
         // Repeated dumps stay bit-identical (no reentry or generation drift).
         Assert.Equal(clean,Dump());
         var path=Environment.GetEnvironmentVariable("NESTED_BLEND_BOUNDS_DUMP");
-        if(!string.IsNullOrEmpty(path))File.WriteAllText(path,clean);
+        if(!string.IsNullOrEmpty(path))File.WriteAllText(path,clean+failing);
+    }
+
+    [Fact]
+    public void OptionalConsumersAreBitwiseStableWithSplineContactReuseDisabled()
+    {
+        try
+        {
+            JointNestedBlendEvaluation.ReuseSplineContactBounds=true;var expected=Dump();
+            JointNestedBlendEvaluation.ReuseSplineContactBounds=false;Assert.Equal(expected,Dump());
+        }
+        finally{JointNestedBlendEvaluation.ReuseSplineContactBounds=true;}
     }
 
     [Fact]
@@ -84,6 +96,19 @@ public class NestedBlendBoundsInitializationContractTests
             .Append(Line(JointNestedBlendEvaluation.BoundSpineProjectedAcceleration(program,spine,domain,new KernelVector3{Z=1},out var acceleration),acceleration.Lower,acceleration.Upper)).Append('\n');
         builder.Append(name).Append("|reach|")
             .Append(JointNestedBlendEvaluation.CertifySplineReach(program,spine,domain.U0,domain.U1).ToString()).Append('\n');
+        Span<IntervalNumber> support=stackalloc IntervalNumber[4];
+        for(var side=0;side<2;side++)
+        {
+            var root=program.Spines[spine];if(!program.Surfaces[side==0?root.First:root.Second].IsBlend)continue;
+            var status=JointNestedBlendEvaluation.BoundSpineSupportUv(program,spine,.37,.37,side,support);
+            builder.Append(name).Append("|support-uv|").Append(side).Append('|').Append(status);
+            foreach(var value in support)builder.Append('|').Append(Hex(value.Lower)).Append(',').Append(Hex(value.Upper));
+            builder.Append('\n');
+            status=JointNestedBlendEvaluation.BoundSpineSupportU(program,spine,.37,.37,side,support[..2]);
+            builder.Append(name).Append("|support-u|").Append(side).Append('|').Append(status);
+            foreach(var value in support[..2])builder.Append('|').Append(Hex(value.Lower)).Append(',').Append(Hex(value.Upper));
+            builder.Append('\n');
+        }
     }
 
     private static string[] SortedLines(string dump)=>dump.Split('\n').Where(l=>l.Length>0).Order(StringComparer.Ordinal).ToArray();

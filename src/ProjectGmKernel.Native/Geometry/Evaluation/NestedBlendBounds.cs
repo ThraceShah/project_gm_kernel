@@ -365,7 +365,7 @@ internal static partial class JointNestedBlendEvaluation
         IntervalNumber parameter,Span<IntervalNumber> matrix,Span<IntervalDual> variables,Span<IntervalDual> equations,ReadOnlySpan<BufferOffset> fixedCharts,Span<IntervalSplineContact> cache)
     {
         var n=boxes.Length;for(var i=0;i<n;i++)variables[i]=new(boxes[i],0);
-        cache.Clear();
+        if(HasAnyUv(nodes))cache.Clear();
         foreach(var node in nodes)for(var side=0;side<2;side++)
         {
             var uv=side==0?node.FirstUv:node.SecondUv;if(uv<0)continue;var spine=program.Spines[node.Spine];var source=program.Surfaces[side==0?spine.First:spine.Second];
@@ -378,6 +378,11 @@ internal static partial class JointNestedBlendEvaluation
             for(var row=0;row<n;row++)matrix[row*n+column]=equations[row].Derivative;variables[column]=new(boxes[column],0);
         }
         return AlgorithmStatus.Success;
+    }
+    private static bool HasAnyUv(ReadOnlySpan<Occurrence> nodes)
+    {
+        foreach(var node in nodes)if(node.FirstUv>=0||node.SecondUv>=0)return true;
+        return false;
     }
     private static void Precondition(ReadOnlySpan<double> inverse,ReadOnlySpan<IntervalNumber> jacobian,BufferCount n,Span<IntervalNumber> result)
     {
