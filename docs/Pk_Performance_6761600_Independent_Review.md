@@ -4,7 +4,7 @@ Review branch: `review/pk-performance-6761600`. This is the performance candidat
 
 ## Status and fixed sources
 
-Source and independent Linux correctness review: no blocking implementation defect found within the stated applicability. The immutable Mac operation package and its 20 processes / 60 pairs have now passed independent raw-evidence audit, within the fixed-window scope below. **Final delivery acceptance still awaits the author's full-suite original settlement/TRX/exit receipt**; no full-suite success or PK-target achievement is granted.
+Source and independent Linux correctness review: no blocking implementation defect found within the stated applicability. The immutable Mac operation package and its 20 processes / 60 pairs have passed independent raw-evidence audit, within the fixed-window scope below. The full-suite original receipt has also been audited: **1877 total, 1875 passed, 2 failed, 0 skipped, raw external exit 1**. Same-platform original baseline evidence is pending to finish classification of those failures; no full-suite success or PK-target achievement is granted.
 
 | Role | Commit | `src` tree |
 |---|---|---|
@@ -78,7 +78,7 @@ Raw local logs, exits, TRX and fresh capture remain under `temp_docs/pk-performa
 
 The independent fresh comparison's effective mask has max_diffs=1024, all_tests=false, acc_dev_tests=false, tol_dev_tests=true, and num/tol/class/sense/missing/non_match all true. Counts are 2 regions / 2 shells / 10 faces / 23 edges / 15 vertices. Finite ICurve comparison covers three edges, endpoint maximum about 3.32e-12 and length delta maximum about 4.70e-12; these checks are additional to body comparison. Original oracle's worst normalized mass value is about 3.97e-9, below 1e-7. This is a single correctness execution, not a speed measurement qualification.
 
-The documented Mac baseline has `BlendIntersectionTests.NativeCurveTubeBoundsItsSupportingBlendParameterAndDerivative` returning `NotConverged`; its reuse-disabled wrapper exposes the same behavior. In this Linux filtered execution both tests passed. This platform/run difference does not erase historical Mac failures, prove their resolution, or establish full-suite success. The author's final suite and fixed baseline comparison remain to be audited.
+The documented Mac baseline has `BlendIntersectionTests.NativeCurveTubeBoundsItsSupportingBlendParameterAndDerivative` returning `NotConverged`; its reuse-disabled wrapper exposes the same behavior. In this Linux filtered execution both tests passed. This platform/run difference does not erase historical Mac failures, prove their resolution, or establish full-suite success. The final Mac suite failed these two tests as detailed below; attribution to a prior Mac baseline requires original same-platform evidence.
 
 ## Final package/performance audit
 
@@ -113,8 +113,33 @@ For shortedge warm rep 1, original residual directions fall from 10,113,178 to 2
 
 Archived focused TRX contains twelve passing record tests. The added fifteen-variable capacity test belongs to author documentation/test head `9ddc2fbaecab4aee63e8fe7cc305ce30dc23c6b7`, not the formally measured test set at `6761600`; production tree remains identical. Its first run has an actual failed TRX and external exit 1: decimal `-.3` was outside the exact supplied plane coordinate `-.1*3` enclosure. The corrected test uses the actual supplied coefficient and has a passing TRX and external exit 0; no bound, tolerance or production source was changed. Both original records remain in the tar. The sparse-test TRX/log show twelve passes, but this tar has no separate sparse-test external-exit file; none is invented.
 
-The earlier excluded `controlled/` attempt is not part of the formal 20/60 result; its stopped qualifier/schema mismatch remains historical, without inheriting formal qualification. The full-suite was running when this tar was sealed; its mutable log is intentionally absent. A separate immutable settlement/TRX/original-exit receipt is still required before this overall review is closed.
+The earlier excluded `controlled/` attempt is not part of the formal 20/60 result; its stopped qualifier/schema mismatch remains historical, without inheriting formal qualification. The full-suite was running when the performance tar was sealed; its mutable log is intentionally absent from that original tar. Its later additive immutable package is audited separately below.
 
 **Scoped package conclusion:** accept the immutable evidence for these five fixed independent operations and the observed shortedge elapsed improvement, subject to the stated warm/cold, profiling, small-sample and per-repetition artifact limits. The PK performance target remains unmet for curved Boolean, solidblend and shortedge. This does not sign general-model performance, downstream combinations, computational candidate `f9c5920`, full-suite success, integration or publication.
+
+## Full-suite original settlement
+
+Additive package `../gm-delivery-board/temp_docs/incoming/mac-performance/mac-modeling-quality-6761600.tar.gz` has independently verified SHA-256 `f51e1cde728f63bfd6af64520b5e5f2267813dc828be0cba394c472b3113887c`, 517,329 bytes, 8 regular relative members and 2,797,231 file bytes. Each independently extracted file under `temp_docs/pk-performance-review/mac-quality-original/` matches its archive stream. The original performance tar is unchanged.
+
+`scripts/ReviewSuiteSettlement6761600.cs` audited the original log, external exit file, TRX and referenced evidence hashes, returning audit exit 0. That checker result means **the audit completed**, not that the failed suite passed. Original artifacts are:
+
+| Original artifact (inside quality package) | SHA-256 |
+|---|---|
+| `temp_docs/pk-native-work-reduction/complete-suite.log` | `7d806e9aab200d5b1b83f7fbf20976de0ac20bdbc1197e731814012964305df2` |
+| `temp_docs/pk-native-work-reduction/complete-suite.exit` | `4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865` |
+| `temp_docs/pk-native-work-reduction/test-results/complete-suite.trx` | `fce633b02e4d9cdd6654a29a2eb3904150a65cb95ac45650cc4788f099a9769d` |
+
+The log reports natural completion in 15m49s and external exit **1**; TRX has 1877 unique executions, 1875 passed, 2 failed, 0 skipped, with no timeout/aborted/error counters. The two failed results both say Expected Success / Actual NotConverged:
+
+1. `KernelTests.BlendIntersectionTests.NativeCurveTubeBoundsItsSupportingBlendParameterAndDerivative`.
+2. `KernelTests.NestedBlendCacheEmptyReadSetTests.SupportingBlendSectionConsumersKeepIndependentChecksWithReuseDisabled`.
+
+The second stack trace calls the first test. Actual source confirms it sets `ReuseSplineContactBounds=false`, invokes that same independent check, then restores the setting in `finally`. The underlying fixture requests `BoundSpineSupportU` and `BoundSpineSupportUv` from the native ICurve program and checks support parameters/derivatives; the original assertions are unchanged across `610e3ce`, `ecfff3a` and `6761600`. This explains the relationship of the failures but, by itself, does not prove the candidate did not introduce a Mac regression.
+
+The twelve record arithmetic/support tests are actually present in this TRX and passed. The later capacity test is absent from all 1877 results, and remains a **separate one-test passing run with its own original exit 0**. Thirteen lifecycle/allocation-failure/copy/source-deletion/undo cases listed in the author receipt are each present and passed in the actual TRX. No count was inflated by adding the separate capacity test to the suite.
+
+The author's receipt declares source `6761600` / `src` tree `01e03aa9…` at launch. No compiled test-assembly hash was captured then; neither a subsequent source manifest nor current rebuilt DLL hashes can retroactively attest to that run. Acceptance of the historical suite is therefore limited to the archived execution and declared source context, with this source-binding gap explicit. No new Mac suite, Linux full-suite replacement or launch attestation was manufactured.
+
+The supplied `ecfff3a` document records an earlier failure, but the two received packages do not contain its original Mac baseline failure run. Review `957ce708` is a Linux guard review and cannot fill that gap. The coordinator was asked to relay already-saved same-Mac baseline log/TRX/exit/source provenance; final “existing, not newly introduced” classification is held pending that evidence. Derived audit: `docs/Pk_Performance_6761600_Suite_Audit.json`.
 
 No implementation was repaired, no thresholds/expected results changed, no author evidence removed, and no deployment/merge/hostproxy action performed. The benchmark's own qualification must not be extended to general modeling, the computational candidate's known failures, or achievement of the PK performance target.

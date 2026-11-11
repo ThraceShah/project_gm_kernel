@@ -1,0 +1,27 @@
+{
+  "format": "independent-6761600-suite-audit-v1",
+  "archiveSha256": "f51e1cde728f63bfd6af64520b5e5f2267813dc828be0cba394c472b3113887c",
+  "archiveMembers": 8,
+  "expandedOriginalBytes": 2797231,
+  "rawSuiteExit": 1,
+  "total": 1877,
+  "passed": 1875,
+  "failed": 2,
+  "skipped": 0,
+  "recordTestsIncluded": 12,
+  "separateCapacityTestIncluded": false,
+  "failures": [
+    {
+      "test": "KernelTests.BlendIntersectionTests.NativeCurveTubeBoundsItsSupportingBlendParameterAndDerivative",
+      "message": "Assert.Equal() Failure: Values differ\nExpected: Success\nActual:   NotConverged"
+    },
+    {
+      "test": "KernelTests.NestedBlendCacheEmptyReadSetTests.SupportingBlendSectionConsumersKeepIndependentChecksWithReuseDisabled",
+      "message": "Assert.Equal() Failure: Values differ\nExpected: Success\nActual:   NotConverged"
+    }
+  ],
+  "authorDeclaredSource": "6761600fef20602342cd9dc81bd4f7e4fb85d939",
+  "compiledTestAssemblyShaAtLaunch": null,
+  "sourceBindingLimit": "No launch DLL hash was retained; current rebuilt assemblies cannot bind this historical execution.",
+  "baselineFailureClassification": "Pending original same-platform baseline evidence; no author label or Linux pass substitutes for it."
+}
