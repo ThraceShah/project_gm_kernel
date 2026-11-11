@@ -1,0 +1,727 @@
+{
+  "product": "6a433222da0775dcb5524d7751d94e8f096fe797",
+  "layoutParent": "53f9871e55574ec66a96f12904293515ce40c23c",
+  "uvParent": "e8dd252b2a1baa848c2c59ad9c9b43dd9dc845ba",
+  "rows": [
+    {
+      "name": "prepared root index retains exact dispatched bytes",
+      "ok": true
+    },
+    {
+      "name": "published source remains 610 and exactly 17 drawable cases",
+      "ok": true,
+      "detail": {
+        "run": "20261110T195008Z-610e3ce8",
+        "commit": "610e3ce844bf99c85af6069905f9f3deaab08133",
+        "count": 17
+      }
+    },
+    {
+      "name": "legacy solid-blend.plane-nurbs: original geometry with UV unavailable",
+      "ok": true,
+      "detail": {
+        "expected": [
+          96,
+          96
+        ],
+        "actual": [
+          {
+            "triangles": "96",
+            "u": "0",
+            "v": "0"
+          },
+          {
+            "triangles": "96",
+            "u": "0",
+            "v": "0"
+          }
+        ]
+      }
+    },
+    {
+      "name": "legacy short-edge.a1-r0.5-t1e-07-reversefalse-default: original geometry with UV unavailable",
+      "ok": true,
+      "detail": {
+        "expected": [
+          60,
+          60
+        ],
+        "actual": [
+          {
+            "triangles": "60",
+            "u": "0",
+            "v": "0"
+          },
+          {
+            "triangles": "60",
+            "u": "0",
+            "v": "0"
+          }
+        ]
+      }
+    },
+    {
+      "name": "legacy blend-chain.chain-2-base-self-source: original geometry with UV unavailable",
+      "ok": true,
+      "detail": {
+        "expected": [
+          98,
+          98
+        ],
+        "actual": [
+          {
+            "triangles": "98",
+            "u": "0",
+            "v": "0"
+          },
+          {
+            "triangles": "98",
+            "u": "0",
+            "v": "0"
+          }
+        ]
+      }
+    },
+    {
+      "name": "legacy support-chain.asymmetric43-base: original geometry with UV unavailable",
+      "ok": true,
+      "detail": {
+        "expected": [
+          102,
+          102
+        ],
+        "actual": [
+          {
+            "triangles": "102",
+            "u": "0",
+            "v": "0"
+          },
+          {
+            "triangles": "102",
+            "u": "0",
+            "v": "0"
+          }
+        ]
+      }
+    },
+    {
+      "name": "legacy trivalent-corner.base-self: original geometry with UV unavailable",
+      "ok": true,
+      "detail": {
+        "expected": [
+          92,
+          92
+        ],
+        "actual": [
+          {
+            "triangles": "92",
+            "u": "0",
+            "v": "0"
+          },
+          {
+            "triangles": "92",
+            "u": "0",
+            "v": "0"
+          }
+        ]
+      }
+    },
+    {
+      "name": "legacy planar-boolean.overlap-two-axes-subtract: original geometry with UV unavailable",
+      "ok": true,
+      "detail": {
+        "expected": [
+          24,
+          24
+        ],
+        "actual": [
+          {
+            "triangles": "24",
+            "u": "0",
+            "v": "0"
+          },
+          {
+            "triangles": "24",
+            "u": "0",
+            "v": "0"
+          }
+        ]
+      }
+    },
+    {
+      "name": "legacy analytic-boolean.equal-overlap-subtract: original geometry with UV unavailable",
+      "ok": true,
+      "detail": {
+        "expected": [
+          3960,
+          3960
+        ],
+        "actual": [
+          {
+            "triangles": "3960",
+            "u": "0",
+            "v": "0"
+          },
+          {
+            "triangles": "3960",
+            "u": "0",
+            "v": "0"
+          }
+        ]
+      }
+    },
+    {
+      "name": "legacy mixed-analytic.basic-subtract: original geometry with UV unavailable",
+      "ok": true,
+      "detail": {
+        "expected": [
+          64,
+          64
+        ],
+        "actual": [
+          {
+            "triangles": "64",
+            "u": "0",
+            "v": "0"
+          },
+          {
+            "triangles": "64",
+            "u": "0",
+            "v": "0"
+          }
+        ]
+      }
+    },
+    {
+      "name": "legacy regular-curved.block-subtract: original geometry with UV unavailable",
+      "ok": true,
+      "detail": {
+        "expected": [
+          200,
+          212
+        ],
+        "actual": [
+          {
+            "triangles": "200",
+            "u": "0",
+            "v": "0"
+          },
+          {
+            "triangles": "212",
+            "u": "0",
+            "v": "0"
+          }
+        ]
+      }
+    },
+    {
+      "name": "legacy mixed-curved.symmetric-subtract: original geometry with UV unavailable",
+      "ok": true,
+      "detail": {
+        "expected": [
+          232,
+          142
+        ],
+        "actual": [
+          {
+            "triangles": "232",
+            "u": "0",
+            "v": "0"
+          },
+          {
+            "triangles": "142",
+            "u": "0",
+            "v": "0"
+          }
+        ]
+      }
+    },
+    {
+      "name": "legacy exterior-contact.0.015625-subtract: original geometry with UV unavailable",
+      "ok": true,
+      "detail": {
+        "expected": [
+          398,
+          398
+        ],
+        "actual": [
+          {
+            "triangles": "398",
+            "u": "0",
+            "v": "0"
+          },
+          {
+            "triangles": "398",
+            "u": "0",
+            "v": "0"
+          }
+        ]
+      }
+    },
+    {
+      "name": "legacy surface-blend.open-swapFalse-r1-1: original geometry with UV unavailable",
+      "ok": true,
+      "detail": {
+        "expected": [
+          62,
+          62
+        ],
+        "actual": [
+          {
+            "triangles": "62",
+            "u": "0",
+            "v": "0"
+          },
+          {
+            "triangles": "62",
+            "u": "0",
+            "v": "0"
+          }
+        ]
+      }
+    },
+    {
+      "name": "legacy local-blend.block-single-fillet: original geometry with UV unavailable",
+      "ok": true,
+      "detail": {
+        "expected": [
+          12,
+          12
+        ],
+        "actual": [
+          {
+            "triangles": "12",
+            "u": "0",
+            "v": "0"
+          },
+          {
+            "triangles": "12",
+            "u": "0",
+            "v": "0"
+          }
+        ]
+      }
+    },
+    {
+      "name": "legacy short-edge.standard-strict-lifecycle: original geometry with UV unavailable",
+      "ok": true,
+      "detail": {
+        "expected": [
+          60,
+          60
+        ],
+        "actual": [
+          {
+            "triangles": "60",
+            "u": "0",
+            "v": "0"
+          },
+          {
+            "triangles": "60",
+            "u": "0",
+            "v": "0"
+          }
+        ]
+      }
+    },
+    {
+      "name": "legacy short-edge.transverse-witness-lifecycle: original geometry with UV unavailable",
+      "ok": true,
+      "detail": {
+        "expected": [
+          60,
+          60
+        ],
+        "actual": [
+          {
+            "triangles": "60",
+            "u": "0",
+            "v": "0"
+          },
+          {
+            "triangles": "60",
+            "u": "0",
+            "v": "0"
+          }
+        ]
+      }
+    },
+    {
+      "name": "legacy solid-blend.plane-nurbs-modified-support-bore: original geometry with UV unavailable",
+      "ok": true,
+      "detail": {
+        "expected": [
+          128,
+          128
+        ],
+        "actual": [
+          {
+            "triangles": "128",
+            "u": "0",
+            "v": "0"
+          },
+          {
+            "triangles": "128",
+            "u": "0",
+            "v": "0"
+          }
+        ]
+      }
+    },
+    {
+      "name": "legacy support-chain.asymmetric43-separate-support: original geometry with UV unavailable",
+      "ok": true,
+      "detail": {
+        "expected": [
+          102,
+          102
+        ],
+        "actual": [
+          {
+            "triangles": "102",
+            "u": "0",
+            "v": "0"
+          },
+          {
+            "triangles": "102",
+            "u": "0",
+            "v": "0"
+          }
+        ]
+      }
+    },
+    {
+      "name": "six groups exactly retain independent audit membership and 29 rows",
+      "ok": true,
+      "detail": [
+        {
+          "title": "操作契约：API return / blend fault / 输出体数量 · 5 条 · 5 通过 / 0 失败 / 0 其他",
+          "ids": [
+            "gm-0-api",
+            "0-True-blend-fault",
+            "pk-0-api",
+            "0-body-count",
+            "0-False-blend-fault"
+          ]
+        },
+        {
+          "title": "BODY_check 有效性 · 2 条 · 2 通过 / 0 失败 / 0 其他",
+          "ids": [
+            "0-True-body-check",
+            "0-False-body-check"
+          ]
+        },
+        {
+          "title": "拓扑重复计数 · 5 条 · 5 通过 / 0 失败 / 0 其他",
+          "ids": [
+            "0-count-0",
+            "0-count-1",
+            "0-count-2",
+            "0-count-3",
+            "0-count-4"
+          ]
+        },
+        {
+          "title": "原主比较验收记录（PK_DEBUG_BODY_compare + type / regions） · 1 条 · 1 通过 / 0 失败 / 0 其他",
+          "ids": [
+            "0-equivalence"
+          ]
+        },
+        {
+          "title": "物性量 · 15 条 · 15 通过 / 0 失败 / 0 其他",
+          "ids": [
+            "0-mass-0",
+            "0-mass-1",
+            "0-mass-2",
+            "0-mass-3",
+            "0-mass-4",
+            "0-mass-5",
+            "0-mass-6",
+            "0-mass-7",
+            "0-mass-8",
+            "0-mass-9",
+            "0-mass-10",
+            "0-mass-11",
+            "0-mass-12",
+            "0-mass-13",
+            "0-mass-14"
+          ]
+        },
+        {
+          "title": "原进程 / 场景 exit · 1 条 · 1 通过 / 0 失败 / 0 其他",
+          "ids": [
+            "oracle-exit"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "UV is explicitly render-only without published baseline label",
+      "ok": true
+    },
+    {
+      "name": "UV before: actual four-snapshot triangles/U5V5 and receipt kernel/stage",
+      "ok": true,
+      "detail": {
+        "expected": [
+          {
+            "triangles": 96,
+            "snapshot": "snapshot-2"
+          },
+          {
+            "triangles": 96,
+            "snapshot": "snapshot-0"
+          }
+        ],
+        "actual": [
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "gm:27",
+            "faceCount": "6",
+            "edgeCount": "12",
+            "triangleCount": "96",
+            "roleFaces": "{\"unchanged\":4,\"support\":2}",
+            "roleEdges": "{\"unchanged\":11,\"selected\":1}",
+            "hasIsoparametrics": "true",
+            "isoparametricsCount": "10",
+            "uLineCount": "5",
+            "vLineCount": "5",
+            "dimmedOpacity": "0.25",
+            "featureVisibility": "{\"samples\":48,\"visible\":48,\"visibleFraction\":1,\"projectedPixels\":673.3488535222575,\"projectionUnit\":\"length-px\",\"bounds\":{\"min\":[72.22329609329206,479.5000000000001],\"max\":[750.776703906708,479.5000000000001]},\"reason\":\"选中边 · 可见性采样\"}",
+            "cameraPos": "0.50,-1.23,2.13",
+            "cameraTarget": "0.50,0.00,1.00"
+          },
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "pk:51",
+            "faceCount": "6",
+            "edgeCount": "12",
+            "triangleCount": "96",
+            "roleFaces": "{\"support\":2,\"unchanged\":4}",
+            "roleEdges": "{\"selected\":1,\"deleted\":1,\"unchanged\":10}",
+            "hasIsoparametrics": "true",
+            "isoparametricsCount": "10",
+            "uLineCount": "5",
+            "vLineCount": "5",
+            "dimmedOpacity": "0.25",
+            "featureVisibility": "{\"samples\":48,\"visible\":48,\"visibleFraction\":1,\"projectedPixels\":673.3488535222575,\"projectionUnit\":\"length-px\",\"bounds\":{\"min\":[71.723296093292,479.5000000000001],\"max\":[750.276703906708,479.5000000000001]},\"reason\":\"选中边 · 可见性采样\"}",
+            "cameraPos": "0.50,-1.23,2.13",
+            "cameraTarget": "0.50,0.00,1.00"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UV after: actual four-snapshot triangles/U5V5 and receipt kernel/stage",
+      "ok": true,
+      "detail": {
+        "expected": [
+          {
+            "triangles": 220,
+            "snapshot": "snapshot-3"
+          },
+          {
+            "triangles": 130,
+            "snapshot": "snapshot-1"
+          }
+        ],
+        "actual": [
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "gm:27",
+            "faceCount": "7",
+            "edgeCount": "15",
+            "triangleCount": "220",
+            "roleFaces": "{\"unchanged\":4,\"modified\":2,\"newBlend\":1}",
+            "roleEdges": "{\"unchanged\":15}",
+            "hasIsoparametrics": "true",
+            "isoparametricsCount": "10",
+            "uLineCount": "5",
+            "vLineCount": "5",
+            "dimmedOpacity": "0.25",
+            "featureVisibility": "{\"samples\":0,\"visible\":0,\"visibleFraction\":null,\"projectedPixels\":0,\"projectionUnit\":\"area-px2\",\"bounds\":null,\"reason\":\"全模型：无几何\"}",
+            "cameraPos": "0.50,-1.23,2.13",
+            "cameraTarget": "0.50,0.00,1.00"
+          },
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "pk:51",
+            "faceCount": "7",
+            "edgeCount": "15",
+            "triangleCount": "130",
+            "roleFaces": "{\"modified\":2,\"unchanged\":4,\"newBlend\":1}",
+            "roleEdges": "{\"unchanged\":15}",
+            "hasIsoparametrics": "true",
+            "isoparametricsCount": "10",
+            "uLineCount": "5",
+            "vLineCount": "5",
+            "dimmedOpacity": "0.25",
+            "featureVisibility": "{\"samples\":0,\"visible\":0,\"visibleFraction\":null,\"projectedPixels\":0,\"projectionUnit\":\"area-px2\",\"bounds\":null,\"reason\":\"全模型：无几何\"}",
+            "cameraPos": "0.50,-1.23,2.13",
+            "cameraTarget": "0.50,0.00,1.00"
+          }
+        ]
+      }
+    },
+    {
+      "name": "merged camera exposes real UV pixels in both panes; toggle removes actual lines",
+      "ok": true,
+      "detail": [
+        {
+          "changed": 6648,
+          "cyan": 344,
+          "purple": 730
+        },
+        {
+          "changed": 6613,
+          "cyan": 303,
+          "purple": 705
+        }
+      ]
+    },
+    {
+      "name": "UV package time is never relabeled capture time",
+      "ok": true
+    },
+    {
+      "name": "UV drawer has no inherited ratio or measurement",
+      "ok": true
+    },
+    {
+      "name": "UV 320: shared external legend and usable dual canvases",
+      "ok": true,
+      "detail": [
+        {
+          "h": 189,
+          "w": 320
+        },
+        {
+          "h": 188,
+          "w": 320
+        }
+      ]
+    },
+    {
+      "name": "UV 320: drawer overlays without shrinking and receives focus",
+      "ok": true
+    },
+    {
+      "name": "UV 320: Escape closes, restores focus and retains actual U5/V5",
+      "ok": true
+    },
+    {
+      "name": "UV 390: shared external legend and usable dual canvases",
+      "ok": true,
+      "detail": [
+        {
+          "h": 205,
+          "w": 390
+        },
+        {
+          "h": 204,
+          "w": 390
+        }
+      ]
+    },
+    {
+      "name": "UV 390: drawer overlays without shrinking and receives focus",
+      "ok": true
+    },
+    {
+      "name": "UV 390: Escape closes, restores focus and retains actual U5/V5",
+      "ok": true
+    },
+    {
+      "name": "all UV original mesh/line/safe-summary references fetch in final bundle",
+      "ok": true,
+      "detail": [
+        {
+          "path": "/data/display/real-uv/meshes/pk-before.mesh.json",
+          "status": 200
+        },
+        {
+          "path": "/data/display/real-uv/pk-before.iso.json",
+          "status": 200
+        },
+        {
+          "path": "/data/display/real-uv/display/snapshot-0.receipt.json",
+          "status": 200
+        },
+        {
+          "path": "/data/display/real-uv/meshes/pk-before.mesh.json",
+          "status": 200
+        },
+        {
+          "path": "/data/display/real-uv/pk-before.iso.json",
+          "status": 200
+        },
+        {
+          "path": "/data/display/real-uv/meshes/pk-after.mesh.json",
+          "status": 200
+        },
+        {
+          "path": "/data/display/real-uv/pk-after.iso.json",
+          "status": 200
+        },
+        {
+          "path": "/data/display/real-uv/display/snapshot-1.receipt.json",
+          "status": 200
+        },
+        {
+          "path": "/data/display/real-uv/meshes/pk-after.mesh.json",
+          "status": 200
+        },
+        {
+          "path": "/data/display/real-uv/pk-after.iso.json",
+          "status": 200
+        },
+        {
+          "path": "/data/display/real-uv/meshes/gm-before.mesh.json",
+          "status": 200
+        },
+        {
+          "path": "/data/display/real-uv/gm-before.iso.json",
+          "status": 200
+        },
+        {
+          "path": "/data/display/real-uv/display/snapshot-2.receipt.json",
+          "status": 200
+        },
+        {
+          "path": "/data/display/real-uv/meshes/gm-before.mesh.json",
+          "status": 200
+        },
+        {
+          "path": "/data/display/real-uv/gm-before.iso.json",
+          "status": 200
+        },
+        {
+          "path": "/data/display/real-uv/meshes/gm-after.mesh.json",
+          "status": 200
+        },
+        {
+          "path": "/data/display/real-uv/gm-after.iso.json",
+          "status": 200
+        },
+        {
+          "path": "/data/display/real-uv/display/snapshot-3.receipt.json",
+          "status": 200
+        },
+        {
+          "path": "/data/display/real-uv/meshes/gm-after.mesh.json",
+          "status": 200
+        },
+        {
+          "path": "/data/display/real-uv/gm-after.iso.json",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "name": "no uncaught fused browser errors",
+      "ok": true,
+      "detail": []
+    }
+  ],
+  "errors": []
+}

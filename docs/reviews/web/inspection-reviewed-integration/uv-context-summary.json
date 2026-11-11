@@ -1,0 +1,285 @@
+{
+  "product": "6a433222da0775dcb5524d7751d94e8f096fe797",
+  "rows": [
+    {
+      "mode": "normal-four",
+      "warm": false,
+      "passed": true,
+      "triangles": [
+        "96",
+        "96"
+      ],
+      "u": [
+        "5",
+        "5"
+      ],
+      "v": [
+        "5",
+        "5"
+      ],
+      "warmRequests": 4,
+      "finalRequests": 4,
+      "errors": []
+    },
+    {
+      "mode": "before-as-after",
+      "warm": false,
+      "passed": true,
+      "triangles": [
+        "0",
+        "130"
+      ],
+      "u": [
+        "0",
+        "5"
+      ],
+      "v": [
+        "0",
+        "5"
+      ],
+      "warmRequests": 2,
+      "finalRequests": 3,
+      "errors": []
+    },
+    {
+      "mode": "before-as-after",
+      "warm": true,
+      "passed": true,
+      "triangles": [
+        "0",
+        "130"
+      ],
+      "u": [
+        "0",
+        "5"
+      ],
+      "v": [
+        "0",
+        "5"
+      ],
+      "warmRequests": 4,
+      "finalRequests": 4,
+      "errors": []
+    },
+    {
+      "mode": "after-as-before",
+      "warm": false,
+      "passed": true,
+      "triangles": [
+        "0",
+        "96"
+      ],
+      "u": [
+        "0",
+        "5"
+      ],
+      "v": [
+        "0",
+        "5"
+      ],
+      "warmRequests": 1,
+      "finalRequests": 1,
+      "errors": []
+    },
+    {
+      "mode": "after-as-before",
+      "warm": true,
+      "passed": true,
+      "triangles": [
+        "0",
+        "96"
+      ],
+      "u": [
+        "0",
+        "5"
+      ],
+      "v": [
+        "0",
+        "5"
+      ],
+      "warmRequests": 4,
+      "finalRequests": 4,
+      "errors": []
+    },
+    {
+      "mode": "wrong-case",
+      "warm": false,
+      "passed": true,
+      "triangles": [
+        "0",
+        "0"
+      ],
+      "u": [
+        "0",
+        "0"
+      ],
+      "v": [
+        "0",
+        "0"
+      ],
+      "warmRequests": 0,
+      "finalRequests": 0,
+      "errors": []
+    },
+    {
+      "mode": "wrong-case",
+      "warm": true,
+      "passed": true,
+      "triangles": [
+        "0",
+        "0"
+      ],
+      "u": [
+        "0",
+        "0"
+      ],
+      "v": [
+        "0",
+        "0"
+      ],
+      "warmRequests": 4,
+      "finalRequests": 4,
+      "errors": []
+    },
+    {
+      "mode": "wrong-step",
+      "warm": false,
+      "passed": true,
+      "triangles": [
+        "0",
+        "0"
+      ],
+      "u": [
+        "0",
+        "0"
+      ],
+      "v": [
+        "0",
+        "0"
+      ],
+      "warmRequests": 0,
+      "finalRequests": 0,
+      "errors": []
+    },
+    {
+      "mode": "wrong-step",
+      "warm": true,
+      "passed": true,
+      "triangles": [
+        "0",
+        "0"
+      ],
+      "u": [
+        "0",
+        "0"
+      ],
+      "v": [
+        "0",
+        "0"
+      ],
+      "warmRequests": 4,
+      "finalRequests": 4,
+      "errors": []
+    },
+    {
+      "mode": "wrong-kernel",
+      "warm": false,
+      "passed": true,
+      "triangles": [
+        "0",
+        "96"
+      ],
+      "u": [
+        "0",
+        "5"
+      ],
+      "v": [
+        "0",
+        "5"
+      ],
+      "warmRequests": 1,
+      "finalRequests": 1,
+      "errors": []
+    },
+    {
+      "mode": "wrong-kernel",
+      "warm": true,
+      "passed": true,
+      "triangles": [
+        "0",
+        "96"
+      ],
+      "u": [
+        "0",
+        "5"
+      ],
+      "v": [
+        "0",
+        "5"
+      ],
+      "warmRequests": 4,
+      "finalRequests": 4,
+      "errors": []
+    },
+    {
+      "mode": "wrong-package",
+      "warm": false,
+      "passed": true,
+      "triangles": [
+        "0",
+        "0"
+      ],
+      "u": [
+        "0",
+        "0"
+      ],
+      "v": [
+        "0",
+        "0"
+      ],
+      "warmRequests": 0,
+      "finalRequests": 0,
+      "errors": []
+    },
+    {
+      "mode": "wrong-package",
+      "warm": true,
+      "passed": true,
+      "triangles": [
+        "0",
+        "0"
+      ],
+      "u": [
+        "0",
+        "0"
+      ],
+      "v": [
+        "0",
+        "0"
+      ],
+      "warmRequests": 4,
+      "finalRequests": 4,
+      "errors": []
+    },
+    {
+      "mode": "wrong-source-mapping",
+      "warm": false,
+      "passed": true,
+      "triangles": [
+        "0",
+        "0"
+      ],
+      "u": [
+        "0",
+        "0"
+      ],
+      "v": [
+        "0",
+        "0"
+      ],
+      "warmRequests": 2,
+      "finalRequests": 2,
+      "errors": []
+    }
+  ]
+}

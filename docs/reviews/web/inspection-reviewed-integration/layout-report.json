@@ -1,0 +1,1136 @@
+{
+  "run": {
+    "id": "20261110T195008Z-610e3ce8",
+    "commit": "610e3ce844bf99c85af6069905f9f3deaab08133",
+    "generatedAt": "2026-11-10T19:50:08.4502366+00:00",
+    "pkVersion": "38.0.150",
+    "host": {
+      "os": "Ubuntu 26.04.1 LTS",
+      "architecture": "X64",
+      "processArchitecture": "X64",
+      "logicalProcessors": 2,
+      "cpu": "model name\t: AMD Ryzen 7 7840HS w/ Radeon 780M Graphics",
+      "memoryBytes": null,
+      "sdk": "10.0.302",
+      "runtime": ".NET 10.0.10",
+      "stopwatchFrequency": 1000000000
+    },
+    "configuration": {
+      "build": "Release",
+      "nativeAot": false,
+      "timing": "Stopwatch elapsed wall time around API only",
+      "tieredCompilation": "0",
+      "cache": "oracle defaults, fresh process per sample",
+      "parallelism": "serial PK sessions",
+      "samplesRequested": 1,
+      "resourceLimits": "systemd CPUQuota=200%; MemoryMax=12G; serial oracle processes"
+    },
+    "scope": {
+      "registryVersion": "2026-11-11.default-recipes-v5",
+      "registered": 463,
+      "family": "all",
+      "suite": "all",
+      "case": "representatives",
+      "seconds": 1200,
+      "caseSeconds": 300,
+      "executed": 17
+    },
+    "provenance": {
+      "pkToyCommit": "d820719b6d8510d623972ab9d8efc65edbc312f9",
+      "dirtyAtStart": false,
+      "sourceHashes": {
+        "scripts/RegularSolidBlendOracle.cs": "1b931e42b772cb45ac123dae417d7f47b04aa8cdaa2bce1012fb5f382c43f6a5",
+        "scripts/ShortEdgeBlendOracle.cs": "7d08b2c9ddbdf53012d14949dd31a8ac6f49344d8c1c5925d23897d69be33bc3",
+        "scripts/BlendChainOracle.cs": "1a28d54801a838d52cacdec1013b12744ee8739b5a2b2b1f4865bb473fc578ab",
+        "scripts/SupportBlendChainOracle.cs": "9dea35ad1d4b5a85a8198e1797e4723c6df92e10e47b8641f7d9a5f3265f6c6b",
+        "scripts/TrivalentBlendCornerOracle.cs": "092b3ffac80291e632aa5ea907388a19b17118ddd153ffdbd8d8b845a686b6c0",
+        "scripts/BooleanOperationOracle.cs": "80ac4ca6bc35c0917bc8311dd9c22cfc4a0b40d822b05011be40782466d4f6e0",
+        "scripts/AnalyticBooleanOracle.cs": "2eeda310e9e92e92a403c68010968f43262fd81d8c4b560660675c15ff8198db",
+        "scripts/MixedAnalyticBooleanOracle.cs": "39693a361109170b8053e46a6bf0a44d4f91d163186dea0e65b42c7d7dca36ed",
+        "scripts/RegularCurvedBooleanOracle.cs": "45e96b5d2ae6cd0ed95dc261223ae27e40e7c2e9866949b62a094b8dbcd55c05",
+        "scripts/MixedCurvedBooleanOracle.cs": "e2817ed437fb8dd30205a4aa7de33a0944c781d3676726f37658ef3f64add425",
+        "scripts/ExteriorContactBooleanOracle.cs": "c1c6384fa76da83d2328c9d3c42b460fc40059c109cb1dcfb4e66664fe96dddd",
+        "scripts/NestedBlendOracle.cs": "b6f53147798896c23eb7a435822c9e4ef4b6fd72b83b2083280dde579c76480d",
+        "scripts/BlendCoverageOracle.cs": "d71b2e7c52f3a82c3c367ccd5e8f601c4a95bb801bc74c2597255c4da7e488cc",
+        "scripts/NestedBlendExtendedOracle.cs": "60ec447c098851174b7a2e492447b3bf01273feadc06253decf1585e9c6e9119",
+        "scripts/BlendOperationOracle.cs": "1d9489ccb8de9c4f272e1d4651b1d9be0868743eb3bfae481bd45e2e2218f142",
+        "scripts/LocalOperationOracle.cs": "c55da221b63707c6516a17d61cdfc5bca9c37f4f3882d2ab518a5b4a89be1114",
+        "scripts/ParasolidXtCorpusCases/FaceBlends.cs": "8e675332da9848e0736c75ff63d7983706311dffccfd9ef529ebdd5416a13f2d",
+        "scripts/ParasolidXtCorpusCases/BlendMatrix.cs": "8d1cc54125dfecc73bde50e9ac6e0e31c93708acabba88f2dca4d2fe35a2264f",
+        "scripts/NestedBlendBenchmark.cs": "bb01d060d592a4eec24c3b33f168da27204f0a144c963df1b42bd5136bb56671",
+        "scripts/RefreshWebProgress.cs": "307b89b453a44aff0c1e45659c6f2db5bf8aacae5fc75eaac63b0dcfe05a3d30",
+        "scripts/WebProgressCapture.cs": "8b705c1a0e3b79b981785c4759d22858bd3096bc1feb9b544a0000a5b3bafb75",
+        "scripts/WebProgressDataValidation.cs": "53951ca69fd301aaea7ca22798561c551bc7adb33ec9040223707d6ab86c0f18",
+        "scripts/WebProgressPublishing.cs": "99844f1b42543f4e099325af5dcef4d37fa981e43a0d52c101ee0652cc78aa25",
+        "scripts/WebProgressMetadata.cs": "be9c13609deec59311ff005d543fb931433a7b8bb3f18d4591acbfdcde981cc1",
+        "scripts/Directory.Build.props": "be2e9634f208ae5a120d83e851b1492bb84d7afb6635c9a3fcffe3e0b6e07b6d",
+        "scripts/ParasolidScriptHost.cs": "62687b1f71d64b0255035a48885bf0718bd8787e6bf489ffe43f8707c49a3670",
+        "scripts/ParasolidBodyCompare.cs": "38fdcac891ba99221bb778af8848761daf1b847d74db0bf6de12d714c290635e",
+        "src/ProjectGmKernel.DisplayBridge/ParasolidDisplayBridge.cs": "88e48ff49aacd86198ac71298b129857013bc5e62050efa06fd36e1e2b7cb857"
+      },
+      "registryHash": "58e863df13cffd2f1d9406c03b371056b6004089f039bd143ddcb53c1ec72277",
+      "workingDiffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceMode": "direct managed KernelRuntime plus independent PskernelSharp real PK",
+      "registry": "registry.json",
+      "reviewSources": [
+        {
+          "implementation": "a1e4500",
+          "revision": "a3e9a489d17d374bb756fe65e6efb5407f1f896b",
+          "path": "docs/reviews/advanced-modeling/topology-event-framework-independent-review-a1e4500.md",
+          "url": "https://github.com/ThraceShah/project_gm_kernel/blob/a3e9a489d17d374bb756fe65e6efb5407f1f896b/docs/reviews/advanced-modeling/topology-event-framework-independent-review-a1e4500.md",
+          "note": "Separate reviewer/host evidence; not executed by this Mac data run."
+        }
+      ],
+      "implementationTree": "7d516f6c16c762581f0ba2d87df4df5e263c6cc4",
+      "limitations": [
+        "Open-ended CLI transforms, cut stations, phase/split/proof/lifecycle flags are not exhaustively enumerated; registered defaults must not be presented as all possible project behavior.",
+        "Unit tests and their inline/member data are source coverage, not automatically independent GM/PK modeling cases.",
+        "Unsupported adapters retain named registrations and source paths; no pass is inferred from historical documents.",
+        "PK corpus fixtures are not GM/PK independent modeling equivalence; those registrations remain unsupported.",
+        "Historical topology-event documents disagree; current raw oracle evidence supersedes neither deleted evidence nor unexecuted scope."
+      ],
+      "caseStatusDefinitions": {
+        "pass": "Current required checks passed for these parameters only.",
+        "fail": "A current required check failed; original oracle exit is recorded independently.",
+        "missing": "Not executed, unreached, or current artifact unavailable.",
+        "unsupported": "Web export adapter not implemented; no kernel capability conclusion.",
+        "timeout": "Owned execution exceeded its configured budget.",
+        "diagnostic": "Diagnostic scope; not a qualified acceptance pass."
+      }
+    },
+    "capabilityScope": "Declared finite web recipes; export adapter coverage is separate from kernel API capability.",
+    "finishedAt": "2026-11-10T19:59:58.6901827+00:00",
+    "collectionElapsedSeconds": 590.1497805
+  },
+  "rows": [
+    {
+      "name": "capture before",
+      "ok": true,
+      "pose": [
+        {
+          "body": "gm:37",
+          "triangles": 102,
+          "position": "0.50,-1.25,2.17",
+          "target": "0.50,0.00,1.00",
+          "feature": {
+            "samples": 48,
+            "visible": 48,
+            "visibleFraction": 1,
+            "projectedPixels": 675.3720828925162,
+            "projectionUnit": "length-px",
+            "bounds": {
+              "min": [
+                71.53183306779829,
+                491.56988252784777
+              ],
+              "max": [
+                751.237405505571,
+                492.4298255197544
+              ]
+            },
+            "reason": "选中边 · 可见性采样"
+          }
+        },
+        {
+          "body": "pk:51",
+          "triangles": 102,
+          "position": "0.50,-1.25,2.17",
+          "target": "0.50,0.00,1.00",
+          "feature": {
+            "samples": 48,
+            "visible": 48,
+            "visibleFraction": 1,
+            "projectedPixels": 675.3720828925162,
+            "projectionUnit": "length-px",
+            "bounds": {
+              "min": [
+                71.03183306779819,
+                491.56988252784777
+              ],
+              "max": [
+                750.7374055055711,
+                492.4298255197544
+              ]
+            },
+            "reason": "选中边 · 可见性采样"
+          }
+        }
+      ],
+      "metrics": [
+        {
+          "yellow": 1499,
+          "green": 18,
+          "greenRegion": 0,
+          "signature": 878327917,
+          "width": 823,
+          "height": 984
+        },
+        {
+          "yellow": 1502,
+          "green": 17,
+          "greenRegion": 0,
+          "signature": 575614512,
+          "width": 822,
+          "height": 984
+        }
+      ]
+    },
+    {
+      "name": "initial evidence collapsed",
+      "ok": true
+    },
+    {
+      "name": "shared legend once outside both canvases",
+      "ok": true
+    },
+    {
+      "name": "selected edge visible in both panes",
+      "ok": true,
+      "detail": {
+        "pose": [
+          {
+            "body": "gm:37",
+            "triangles": 102,
+            "position": "0.50,-1.25,2.17",
+            "target": "0.50,0.00,1.00",
+            "feature": {
+              "samples": 48,
+              "visible": 48,
+              "visibleFraction": 1,
+              "projectedPixels": 675.3720828925162,
+              "projectionUnit": "length-px",
+              "bounds": {
+                "min": [
+                  71.53183306779829,
+                  491.56988252784777
+                ],
+                "max": [
+                  751.237405505571,
+                  492.4298255197544
+                ]
+              },
+              "reason": "选中边 · 可见性采样"
+            }
+          },
+          {
+            "body": "pk:51",
+            "triangles": 102,
+            "position": "0.50,-1.25,2.17",
+            "target": "0.50,0.00,1.00",
+            "feature": {
+              "samples": 48,
+              "visible": 48,
+              "visibleFraction": 1,
+              "projectedPixels": 675.3720828925162,
+              "projectionUnit": "length-px",
+              "bounds": {
+                "min": [
+                  71.03183306779819,
+                  491.56988252784777
+                ],
+                "max": [
+                  750.7374055055711,
+                  492.4298255197544
+                ]
+              },
+              "reason": "选中边 · 可见性采样"
+            }
+          }
+        ],
+        "metrics": [
+          {
+            "yellow": 1499,
+            "green": 18,
+            "greenRegion": 0,
+            "signature": 878327917,
+            "width": 823,
+            "height": 984
+          },
+          {
+            "yellow": 1502,
+            "green": 17,
+            "greenRegion": 0,
+            "signature": 575614512,
+            "width": 822,
+            "height": 984
+          }
+        ]
+      }
+    },
+    {
+      "name": "linked initial pose and target identical",
+      "ok": true
+    },
+    {
+      "name": "main summary names actual PK comparison",
+      "ok": true
+    },
+    {
+      "name": "historical timing absent from primary view",
+      "ok": true
+    },
+    {
+      "name": "drawer overlays without shrinking canvas",
+      "ok": true
+    },
+    {
+      "name": "drawer internal scroll",
+      "ok": true
+    },
+    {
+      "name": "close receives keyboard focus",
+      "ok": true
+    },
+    {
+      "name": "original global/local, facePairs and exact flags retained",
+      "ok": true
+    },
+    {
+      "name": "all check groups collapsed by default",
+      "ok": true
+    },
+    {
+      "name": "all 29 original check records retained",
+      "ok": true
+    },
+    {
+      "name": "tiny nonzero values and original exit preserved",
+      "ok": true
+    },
+    {
+      "name": "close button closes overlay",
+      "ok": true
+    },
+    {
+      "name": "Tab wraps from last native summary to first dialog control",
+      "ok": true
+    },
+    {
+      "name": "Shift+Tab wraps back inside dialog",
+      "ok": true
+    },
+    {
+      "name": "keyboard stays inside dialog",
+      "ok": true
+    },
+    {
+      "name": "Escape closes and returns tab focus",
+      "ok": true,
+      "detail": "<button class=\"flex items-center gap-1.5 py-2 px-3 text-xs font-semibold border-b-2 transition-colors border-transparent text-slate-600 hover:text-slate-900\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"non"
+    },
+    {
+      "name": "data version uses run capture time, code, scope and samples",
+      "ok": true
+    },
+    {
+      "name": "ratio only inside qualified historical performance detail",
+      "ok": true
+    },
+    {
+      "name": "step preserves initial camera",
+      "ok": true
+    },
+    {
+      "name": "capture after-focus",
+      "ok": true,
+      "pose": [
+        {
+          "body": "gm:37",
+          "triangles": 246,
+          "position": "0.50,-1.28,2.13",
+          "target": "0.50,0.05,0.96",
+          "feature": {
+            "samples": 48,
+            "visible": 48,
+            "visibleFraction": 1,
+            "projectedPixels": 57172.934170424545,
+            "projectionUnit": "area-px2",
+            "bounds": {
+              "min": [
+                85.00709011784967,
+                463.7377344671082
+              ],
+              "max": [
+                738.4163631281148,
+                528.474889727207
+              ]
+            },
+            "reason": "newBlend 面 · 可见性采样"
+          }
+        },
+        {
+          "body": "pk:51",
+          "triangles": 156,
+          "position": "0.50,-1.28,2.13",
+          "target": "0.50,0.05,0.96",
+          "feature": {
+            "samples": 48,
+            "visible": 48,
+            "visibleFraction": 1,
+            "projectedPixels": 57273.06016773064,
+            "projectionUnit": "area-px2",
+            "bounds": {
+              "min": [
+                83.62748430148719,
+                463.6720592829403
+              ],
+              "max": [
+                714.6944980315143,
+                528.5764489648103
+              ]
+            },
+            "reason": "newBlend 面 · 可见性采样"
+          }
+        }
+      ],
+      "metrics": [
+        {
+          "yellow": 0,
+          "green": 59411,
+          "greenRegion": 59392,
+          "signature": 206466632,
+          "width": 823,
+          "height": 984
+        },
+        {
+          "yellow": 0,
+          "green": 59397,
+          "greenRegion": 59376,
+          "signature": 722355709,
+          "width": 822,
+          "height": 984
+        }
+      ]
+    },
+    {
+      "name": "after generated face visible in both panes",
+      "ok": true,
+      "detail": {
+        "pose": [
+          {
+            "body": "gm:37",
+            "triangles": 246,
+            "position": "0.50,-1.28,2.13",
+            "target": "0.50,0.05,0.96",
+            "feature": {
+              "samples": 48,
+              "visible": 48,
+              "visibleFraction": 1,
+              "projectedPixels": 57172.934170424545,
+              "projectionUnit": "area-px2",
+              "bounds": {
+                "min": [
+                  85.00709011784967,
+                  463.7377344671082
+                ],
+                "max": [
+                  738.4163631281148,
+                  528.474889727207
+                ]
+              },
+              "reason": "newBlend 面 · 可见性采样"
+            }
+          },
+          {
+            "body": "pk:51",
+            "triangles": 156,
+            "position": "0.50,-1.28,2.13",
+            "target": "0.50,0.05,0.96",
+            "feature": {
+              "samples": 48,
+              "visible": 48,
+              "visibleFraction": 1,
+              "projectedPixels": 57273.06016773064,
+              "projectionUnit": "area-px2",
+              "bounds": {
+                "min": [
+                  83.62748430148719,
+                  463.6720592829403
+                ],
+                "max": [
+                  714.6944980315143,
+                  528.5764489648103
+                ]
+              },
+              "reason": "newBlend 面 · 可见性采样"
+            }
+          }
+        ],
+        "metrics": [
+          {
+            "yellow": 0,
+            "green": 59411,
+            "greenRegion": 59392,
+            "signature": 206466632,
+            "width": 823,
+            "height": 984
+          },
+          {
+            "yellow": 0,
+            "green": 59397,
+            "greenRegion": 59376,
+            "signature": 722355709,
+            "width": 822,
+            "height": 984
+          }
+        ]
+      }
+    },
+    {
+      "name": "linked after uses same pose and target",
+      "ok": true
+    },
+    {
+      "name": "capture local-blend.block-single-fillet",
+      "ok": true,
+      "pose": [
+        {
+          "body": "gm:27",
+          "triangles": 12,
+          "position": "11.40,12.40,4.00",
+          "target": "2.00,3.00,4.00",
+          "feature": {
+            "samples": 48,
+            "visible": 48,
+            "visibleFraction": 1,
+            "projectedPixels": 694.3209354447401,
+            "projectionUnit": "length-px",
+            "bounds": {
+              "min": [
+                61.5543478260869,
+                492.00000000000034
+              ],
+              "max": [
+                761.445652173913,
+                492.00000000000034
+              ]
+            },
+            "reason": "选中边 · 可见性采样"
+          }
+        },
+        {
+          "body": "pk:51",
+          "triangles": 12,
+          "position": "11.40,12.40,4.00",
+          "target": "2.00,3.00,4.00",
+          "feature": {
+            "samples": 48,
+            "visible": 48,
+            "visibleFraction": 1,
+            "projectedPixels": 694.3209354447401,
+            "projectionUnit": "length-px",
+            "bounds": {
+              "min": [
+                61.05434782608691,
+                492.00000000000034
+              ],
+              "max": [
+                760.945652173913,
+                492.00000000000034
+              ]
+            },
+            "reason": "选中边 · 可见性采样"
+          }
+        }
+      ],
+      "metrics": [
+        {
+          "yellow": 1485,
+          "green": 0,
+          "greenRegion": 0,
+          "signature": 783829055,
+          "width": 823,
+          "height": 984
+        },
+        {
+          "yellow": 1486,
+          "green": 0,
+          "greenRegion": 0,
+          "signature": 820164768,
+          "width": 822,
+          "height": 984
+        }
+      ]
+    },
+    {
+      "name": "local-blend.block-single-fillet: features visible or explicit fallback",
+      "ok": true,
+      "detail": [
+        {
+          "body": "gm:27",
+          "triangles": 12,
+          "position": "11.40,12.40,4.00",
+          "target": "2.00,3.00,4.00",
+          "feature": {
+            "samples": 48,
+            "visible": 48,
+            "visibleFraction": 1,
+            "projectedPixels": 694.3209354447401,
+            "projectionUnit": "length-px",
+            "bounds": {
+              "min": [
+                61.5543478260869,
+                492.00000000000034
+              ],
+              "max": [
+                761.445652173913,
+                492.00000000000034
+              ]
+            },
+            "reason": "选中边 · 可见性采样"
+          }
+        },
+        {
+          "body": "pk:51",
+          "triangles": 12,
+          "position": "11.40,12.40,4.00",
+          "target": "2.00,3.00,4.00",
+          "feature": {
+            "samples": 48,
+            "visible": 48,
+            "visibleFraction": 1,
+            "projectedPixels": 694.3209354447401,
+            "projectionUnit": "length-px",
+            "bounds": {
+              "min": [
+                61.05434782608691,
+                492.00000000000034
+              ],
+              "max": [
+                760.945652173913,
+                492.00000000000034
+              ]
+            },
+            "reason": "选中边 · 可见性采样"
+          }
+        }
+      ]
+    },
+    {
+      "name": "capture trivalent-corner.base-self",
+      "ok": true,
+      "pose": [
+        {
+          "body": "gm:115",
+          "triangles": 92,
+          "position": "-1.12,-1.12,2.12",
+          "target": "0.50,0.50,0.50",
+          "feature": {
+            "samples": 48,
+            "visible": 48,
+            "visibleFraction": 1,
+            "projectedPixels": 1118.6423457402786,
+            "projectionUnit": "length-px",
+            "bounds": {
+              "min": [
+                85.61004365912167,
+                115.6946919607969
+              ],
+              "max": [
+                737.3899563408785,
+                680.1526540196014
+              ]
+            },
+            "reason": "选中边 · 可见性采样"
+          }
+        },
+        {
+          "body": "pk:51",
+          "triangles": 92,
+          "position": "-1.12,-1.12,2.12",
+          "target": "0.50,0.50,0.50",
+          "feature": {
+            "samples": 48,
+            "visible": 48,
+            "visibleFraction": 1,
+            "projectedPixels": 1118.6423457402786,
+            "projectionUnit": "length-px",
+            "bounds": {
+              "min": [
+                85.11004365912163,
+                115.6946919607969
+              ],
+              "max": [
+                736.8899563408785,
+                680.1526540196014
+              ]
+            },
+            "reason": "选中边 · 可见性采样"
+          }
+        }
+      ],
+      "metrics": [
+        {
+          "yellow": 3128,
+          "green": 960,
+          "greenRegion": 0,
+          "signature": 96811484,
+          "width": 823,
+          "height": 984
+        },
+        {
+          "yellow": 2740,
+          "green": 958,
+          "greenRegion": 0,
+          "signature": 876369441,
+          "width": 822,
+          "height": 984
+        }
+      ]
+    },
+    {
+      "name": "trivalent-corner.base-self: features visible or explicit fallback",
+      "ok": true,
+      "detail": [
+        {
+          "body": "gm:115",
+          "triangles": 92,
+          "position": "-1.12,-1.12,2.12",
+          "target": "0.50,0.50,0.50",
+          "feature": {
+            "samples": 48,
+            "visible": 48,
+            "visibleFraction": 1,
+            "projectedPixels": 1118.6423457402786,
+            "projectionUnit": "length-px",
+            "bounds": {
+              "min": [
+                85.61004365912167,
+                115.6946919607969
+              ],
+              "max": [
+                737.3899563408785,
+                680.1526540196014
+              ]
+            },
+            "reason": "选中边 · 可见性采样"
+          }
+        },
+        {
+          "body": "pk:51",
+          "triangles": 92,
+          "position": "-1.12,-1.12,2.12",
+          "target": "0.50,0.50,0.50",
+          "feature": {
+            "samples": 48,
+            "visible": 48,
+            "visibleFraction": 1,
+            "projectedPixels": 1118.6423457402786,
+            "projectionUnit": "length-px",
+            "bounds": {
+              "min": [
+                85.11004365912163,
+                115.6946919607969
+              ],
+              "max": [
+                736.8899563408785,
+                680.1526540196014
+              ]
+            },
+            "reason": "选中边 · 可见性采样"
+          }
+        }
+      ]
+    },
+    {
+      "name": "capture planar-boolean.overlap-two-axes-subtract",
+      "ok": true,
+      "pose": [
+        {
+          "body": "gm:27",
+          "triangles": 24,
+          "position": "3.50,3.50,4.89",
+          "target": "0.25,0.25,1.00",
+          "feature": {
+            "samples": 0,
+            "visible": 0,
+            "visibleFraction": null,
+            "projectedPixels": 0,
+            "projectionUnit": "area-px2",
+            "bounds": null,
+            "reason": "全模型：未记录可靠修改标记"
+          }
+        },
+        {
+          "body": "pk:600",
+          "triangles": 24,
+          "position": "3.50,3.50,4.89",
+          "target": "0.25,0.25,1.00",
+          "feature": {
+            "samples": 0,
+            "visible": 0,
+            "visibleFraction": null,
+            "projectedPixels": 0,
+            "projectionUnit": "area-px2",
+            "bounds": null,
+            "reason": "全模型：未记录可靠修改标记"
+          }
+        }
+      ],
+      "metrics": [
+        {
+          "yellow": 107,
+          "green": 334,
+          "greenRegion": 0,
+          "signature": 967596976,
+          "width": 823,
+          "height": 984
+        },
+        {
+          "yellow": 107,
+          "green": 335,
+          "greenRegion": 0,
+          "signature": 293709950,
+          "width": 822,
+          "height": 984
+        }
+      ]
+    },
+    {
+      "name": "planar-boolean.overlap-two-axes-subtract: features visible or explicit fallback",
+      "ok": true,
+      "detail": [
+        {
+          "body": "gm:27",
+          "triangles": 24,
+          "position": "3.50,3.50,4.89",
+          "target": "0.25,0.25,1.00",
+          "feature": {
+            "samples": 0,
+            "visible": 0,
+            "visibleFraction": null,
+            "projectedPixels": 0,
+            "projectionUnit": "area-px2",
+            "bounds": null,
+            "reason": "全模型：未记录可靠修改标记"
+          }
+        },
+        {
+          "body": "pk:600",
+          "triangles": 24,
+          "position": "3.50,3.50,4.89",
+          "target": "0.25,0.25,1.00",
+          "feature": {
+            "samples": 0,
+            "visible": 0,
+            "visibleFraction": null,
+            "projectedPixels": 0,
+            "projectionUnit": "area-px2",
+            "bounds": null,
+            "reason": "全模型：未记录可靠修改标记"
+          }
+        }
+      ]
+    },
+    {
+      "name": "linked orbit identical",
+      "ok": true
+    },
+    {
+      "name": "manual orbit survives step",
+      "ok": true,
+      "detail": {
+        "manual": [
+          {
+            "body": "gm:37",
+            "triangles": 102,
+            "position": "0.21,-1.66,1.30",
+            "target": "0.50,0.00,1.00",
+            "feature": {
+              "samples": 48,
+              "visible": 48,
+              "visibleFraction": 1,
+              "projectedPixels": 667.7884760791196,
+              "projectionUnit": "length-px",
+              "bounds": {
+                "min": [
+                  154.78364305454053,
+                  251.3314758894814
+                ],
+                "max": [
+                  644.8251298017598,
+                  710.7395275292685
+                ]
+              },
+              "reason": "选中边 · 可见性采样"
+            }
+          },
+          {
+            "body": "pk:51",
+            "triangles": 102,
+            "position": "0.21,-1.66,1.30",
+            "target": "0.50,0.00,1.00",
+            "feature": {
+              "samples": 48,
+              "visible": 48,
+              "visibleFraction": 1,
+              "projectedPixels": 667.7884760791196,
+              "projectionUnit": "length-px",
+              "bounds": {
+                "min": [
+                  154.28364305454045,
+                  251.3314758894814
+                ],
+                "max": [
+                  644.3251298017598,
+                  710.7395275292685
+                ]
+              },
+              "reason": "选中边 · 可见性采样"
+            }
+          }
+        ],
+        "now": [
+          {
+            "body": "gm:37",
+            "triangles": 246,
+            "position": "0.21,-1.66,1.30",
+            "target": "0.50,0.00,1.00",
+            "feature": {
+              "samples": 48,
+              "visible": 48,
+              "visibleFraction": 1,
+              "projectedPixels": 48508.348077570554,
+              "projectionUnit": "area-px2",
+              "bounds": {
+                "min": [
+                  132.7850836820943,
+                  281.47526055196687
+                ],
+                "max": [
+                  619.9769985134351,
+                  725.9535209621846
+                ]
+              },
+              "reason": "newBlend 面 · 可见性采样"
+            }
+          },
+          {
+            "body": "pk:51",
+            "triangles": 156,
+            "position": "0.21,-1.66,1.30",
+            "target": "0.50,0.00,1.00",
+            "feature": {
+              "samples": 48,
+              "visible": 48,
+              "visibleFraction": 1,
+              "projectedPixels": 50453.31919573119,
+              "projectionUnit": "area-px2",
+              "bounds": {
+                "min": [
+                  127.07180482226126,
+                  254.38486378862595
+                ],
+                "max": [
+                  615.4927308503578,
+                  709.2343819540735
+                ]
+              },
+              "reason": "newBlend 面 · 可见性采样"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "manual orbit survives playback",
+      "ok": true,
+      "detail": {
+        "manual": [
+          {
+            "body": "gm:37",
+            "triangles": 102,
+            "position": "0.21,-1.66,1.30",
+            "target": "0.50,0.00,1.00",
+            "feature": {
+              "samples": 48,
+              "visible": 48,
+              "visibleFraction": 1,
+              "projectedPixels": 667.7884760791196,
+              "projectionUnit": "length-px",
+              "bounds": {
+                "min": [
+                  154.78364305454053,
+                  251.3314758894814
+                ],
+                "max": [
+                  644.8251298017598,
+                  710.7395275292685
+                ]
+              },
+              "reason": "选中边 · 可见性采样"
+            }
+          },
+          {
+            "body": "pk:51",
+            "triangles": 102,
+            "position": "0.21,-1.66,1.30",
+            "target": "0.50,0.00,1.00",
+            "feature": {
+              "samples": 48,
+              "visible": 48,
+              "visibleFraction": 1,
+              "projectedPixels": 667.7884760791196,
+              "projectionUnit": "length-px",
+              "bounds": {
+                "min": [
+                  154.28364305454045,
+                  251.3314758894814
+                ],
+                "max": [
+                  644.3251298017598,
+                  710.7395275292685
+                ]
+              },
+              "reason": "选中边 · 可见性采样"
+            }
+          }
+        ],
+        "now": [
+          {
+            "body": "gm:37",
+            "triangles": 246,
+            "position": "0.21,-1.66,1.30",
+            "target": "0.50,0.00,1.00",
+            "feature": {
+              "samples": 48,
+              "visible": 48,
+              "visibleFraction": 1,
+              "projectedPixels": 48508.348077570554,
+              "projectionUnit": "area-px2",
+              "bounds": {
+                "min": [
+                  132.7850836820943,
+                  281.47526055196687
+                ],
+                "max": [
+                  619.9769985134351,
+                  725.9535209621846
+                ]
+              },
+              "reason": "newBlend 面 · 可见性采样"
+            }
+          },
+          {
+            "body": "pk:51",
+            "triangles": 156,
+            "position": "0.21,-1.66,1.30",
+            "target": "0.50,0.00,1.00",
+            "feature": {
+              "samples": 48,
+              "visible": 48,
+              "visibleFraction": 1,
+              "projectedPixels": 50453.31919573119,
+              "projectionUnit": "area-px2",
+              "bounds": {
+                "min": [
+                  127.07180482226126,
+                  254.38486378862595
+                ],
+                "max": [
+                  615.4927308503578,
+                  709.2343819540735
+                ]
+              },
+              "reason": "newBlend 面 · 可见性采样"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "unlinked orbit remains independent",
+      "ok": true
+    },
+    {
+      "name": "relink adopts one current fair pose",
+      "ok": true
+    },
+    {
+      "name": "320: no document overflow",
+      "ok": true
+    },
+    {
+      "name": "320: legend scrolls in own row",
+      "ok": true
+    },
+    {
+      "name": "320: tab opens dialog",
+      "ok": true
+    },
+    {
+      "name": "320: wide check tables scroll inside overlay",
+      "ok": true
+    },
+    {
+      "name": "320: case drawer opens above evidence overlay",
+      "ok": true
+    },
+    {
+      "name": "390: no document overflow",
+      "ok": true
+    },
+    {
+      "name": "390: legend scrolls in own row",
+      "ok": true
+    },
+    {
+      "name": "390: tab opens dialog",
+      "ok": true
+    },
+    {
+      "name": "390: wide check tables scroll inside overlay",
+      "ok": true
+    },
+    {
+      "name": "390: case drawer opens above evidence overlay",
+      "ok": true
+    },
+    {
+      "name": "missing raw comparison never claims pass",
+      "ok": true
+    },
+    {
+      "name": "pending comparison never borrows previous pass",
+      "ok": true
+    },
+    {
+      "name": "oldV3b delayed destination clears previous snapshot",
+      "ok": true
+    },
+    {
+      "name": "oldV3b owned fit equals explicit reset",
+      "ok": true
+    },
+    {
+      "name": "history run uses fresh owned shared pose",
+      "ok": true
+    },
+    {
+      "name": "new run starts with evidence collapsed",
+      "ok": true
+    },
+    {
+      "name": "new run return fits only owned geometry",
+      "ok": true
+    },
+    {
+      "name": "missing destination clears both panes",
+      "ok": true
+    },
+    {
+      "name": "aborted destination clears both panes",
+      "ok": true
+    },
+    {
+      "name": "request recovery restores fair owned fit",
+      "ok": true
+    },
+    {
+      "name": "no uncaught browser errors",
+      "ok": true,
+      "detail": []
+    }
+  ],
+  "errors": []
+}
