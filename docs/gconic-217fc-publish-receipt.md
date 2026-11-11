@@ -37,3 +37,13 @@
 ## 回退
 
 rollback 基线=事件前 integrated1887 整包（gconic217fc release `work/previous-snapshot`）：先 `--mode rollback --execute` 再 `--mode restore`；producer/base unit 从 `temp_docs/cutover-backup-6/` 与 8d0d01a 原状恢复；缺陷 run 可由 `retired-data-archive/` 原字节恢复。
+
+## 派生标签元数据修订（第二版，2026-11-12）
+
+协调 HTTPS 核出 210306 manifest 仍有 54 处复制残留：operation 文本 `controlled measurement (270 vs 6616)`、`parameters.acceptanceReview` 误指 `../gm-performance-6616-review/.../independent-6616-review.md`、四 evidence.label 写 `03e`、report SHA 写 `fef5e9a8…`，以及错窗口物性归属。一次修正全部为真实链：operation `controlled measurement (6616 vs G+Conic 74c29e0)`、review `../gm-conic-substitution-review/docs/Native_Conic_Independent_Review.md @ 6a7dfa15…`、`217fc 原 …`、report `c5b2cbba…`、物性=本窗口 900 项 PK 点值门；合法历史描述“270 公共点值检查”未盲改。数字/状态/原件字节未动。
+
+- 修订 run：`20261111T211605Z-gconic217fc`（collector `81b1083b1ef128b7e36f2c6881cb890f8facb82a`）；输出 JSON 全文遍历确认无残留（4 处 `03e` 命中均为 SHA 子串假阳性）。
+- 210306 缺陷 run **完整归档** `retired-data-archive-2/`（36 文件哈希一致、manifest SHA `9f89570e…`、冻结只读）后按授权移出 served/index（同 210025 方式），其余历史未动。
+- 26 个 rep2 mesh 与 4 份证据 JSON 经 HTTPS/本地双侧 hash 全同原件（26/26、4/4）。
+- owned 同 release `ui-015-tools-1b93597-gconic217fc` 发布：容量 570 files / 31,364,000B ≤ 30MiB；producer 钉 `81b1083b…`。
+- 自动轮（2026-11-12 05:20:45 CST）UI_PREPARED（dataIndex `3c4694d4…`）→UI_SKIP_SAME 无回退。
