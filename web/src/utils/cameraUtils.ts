@@ -9,6 +9,14 @@ export interface CameraPose {
   far: number;
 }
 
+interface FeatureSample {
+  point: THREE.Vector3;
+  tangent?: THREE.Vector3;
+  normal?: THREE.Vector3;
+  weight: number;
+}
+interface Occluder { box: THREE.Box3; triangles: THREE.Triangle[] }
+interface FeatureSet { samples: FeatureSample[]; occluders: Occluder[] }
 export interface OperationFocusInfo {
   hasOperationFeatures: boolean;
   focusBox: THREE.Box3;
@@ -16,274 +24,213 @@ export interface OperationFocusInfo {
   focusNormal: THREE.Vector3;
   focusCenter: THREE.Vector3;
   fullCenter: THREE.Vector3;
+  sets: FeatureSet[];
+  reason: string;
 }
 
-/**
- * Derives focus and bounding information from real selected topology, modified result,
- * tool entities, and affected bounds with face normals.
- */
-export function extractOperationFocus(
-  meshData: MeshData | null,
-  toolMeshes?: MeshData[] | null
-): OperationFocusInfo {
-  const fullBox = new THREE.Box3();
-  const focusBox = new THREE.Box3();
-  const focusNormal = new THREE.Vector3(0, 0, 0);
-  let focusNormalWeight = 0;
-  let hasFeatures = false;
+// Bounded deterministic samples, with every occluding triangle retained. Large
+// snapshots fall back explicitly rather than claiming visibility from partial solids.
+const MAX_TRIANGLES = 30000;
+const MAX_SAMPLES = 48;
 
-  const processMesh = (mesh: MeshData, isTool = false) => {
-    // 1. Process Faces
-    if (Array.isArray(mesh.faces)) {
-      mesh.faces.forEach((face) => {
-        const isFocusFace =
-          isTool ||
-          face.role === 'newBlend' ||
-          face.role === 'modified' ||
-          face.role === 'selected' ||
-          face.role === 'support' ||
-          face.role === 'deleted';
-
-        const pos = face.positions;
-        if (!pos || pos.length < 9) return;
-
-        // Bounding box calculation
-        for (let i = 0; i < pos.length; i += 3) {
-          const pt = new THREE.Vector3(pos[i], pos[i + 1], pos[i + 2]);
-          fullBox.expandByPoint(pt);
-          if (isFocusFace) {
-            focusBox.expandByPoint(pt);
-            hasFeatures = true;
-          }
-        }
-
-        // Weighted normal calculation for focus faces
-        if (isFocusFace && face.indices && face.indices.length >= 3) {
-          for (let i = 0; i < face.indices.length; i += 3) {
-            const iA = face.indices[i] * 3;
-            const iB = face.indices[i + 1] * 3;
-            const iC = face.indices[i + 2] * 3;
-
-            if (iC + 2 < pos.length) {
-              const pA = new THREE.Vector3(pos[iA], pos[iA + 1], pos[iA + 2]);
-              const pB = new THREE.Vector3(pos[iB], pos[iB + 1], pos[iB + 2]);
-              const pC = new THREE.Vector3(pos[iC], pos[iC + 1], pos[iC + 2]);
-
-              const triNormal = new THREE.Vector3()
-                .crossVectors(
-                  new THREE.Vector3().subVectors(pB, pA),
-                  new THREE.Vector3().subVectors(pC, pA)
-                );
-              const triArea = triNormal.length() * 0.5;
-              if (triArea > 1e-8) {
-                triNormal.normalize();
-                focusNormal.addScaledVector(triNormal, triArea);
-                focusNormalWeight += triArea;
-              }
-            }
-          }
-        }
-      });
+export function extractOperationFocus(mesh: MeshData | null, tools?: MeshData[] | null): OperationFocusInfo {
+  const fullBox = new THREE.Box3(), focusBox = new THREE.Box3();
+  const focusNormal = new THREE.Vector3();
+  const occluders: Occluder[] = [];
+  const samples: FeatureSample[] = [];
+  const point = (p: number[], i: number) => new THREE.Vector3(p[i], p[i + 1], p[i + 2]);
+  let triangleCount = 0;
+  for (const part of [mesh, ...(tools ?? [])]) {
+    if (!part) continue;
+    for (const entity of [...(part.faces ?? []), ...(part.edges ?? [])]) {
+      for (let i = 0; i + 2 < entity.positions.length; i += 3) fullBox.expandByPoint(point(entity.positions, i));
     }
-
-    // 2. Process Edges (especially selected edges)
-    if (Array.isArray(mesh.edges)) {
-      mesh.edges.forEach((edge) => {
-        const pos = edge.positions;
-        if (!pos || pos.length < 6) return;
-
-        const isFocusEdge =
-          edge.role === 'selected' ||
-          edge.role === 'newBlend' ||
-          edge.role === 'modified' ||
-          edge.role === 'support' ||
-          edge.role === 'deleted';
-
-        for (let i = 0; i < pos.length; i += 3) {
-          const pt = new THREE.Vector3(pos[i], pos[i + 1], pos[i + 2]);
-          fullBox.expandByPoint(pt);
-          if (isFocusEdge) {
-            focusBox.expandByPoint(pt);
-            hasFeatures = true;
-          }
-        }
-      });
+    triangleCount += part.faces.reduce((n, f) => n + f.indices.length / 3, 0);
+  }
+  const finish = (reason: string): OperationFocusInfo => {
+    const hasOperationFeatures = samples.length > 0;
+    if (!hasOperationFeatures) focusBox.copy(fullBox);
+    return { hasOperationFeatures, fullBox, focusBox, focusNormal: focusNormal.normalize(),
+      focusCenter: focusBox.isEmpty() ? new THREE.Vector3() : focusBox.getCenter(new THREE.Vector3()),
+      fullCenter: fullBox.isEmpty() ? new THREE.Vector3() : fullBox.getCenter(new THREE.Vector3()),
+      sets: hasOperationFeatures ? [{ samples, occluders }] : [], reason };
+  };
+  if (!mesh || triangleCount > MAX_TRIANGLES) return finish(triangleCount > MAX_TRIANGLES ? '全模型：超出可见性计算预算' : '全模型：无几何');
+  for (const part of [mesh, ...(tools ?? [])]) {
+    for (const face of part?.faces ?? []) {
+      const triangles: THREE.Triangle[] = [], box = new THREE.Box3();
+      for (let i = 0; i + 2 < face.indices.length; i += 3) {
+        const tri = new THREE.Triangle(...face.indices.slice(i, i + 3).map((index) => point(face.positions, index * 3)) as [THREE.Vector3, THREE.Vector3, THREE.Vector3]);
+        triangles.push(tri); box.expandByPoint(tri.a).expandByPoint(tri.b).expandByPoint(tri.c);
+      }
+      occluders.push({ box, triangles });
     }
-  };
-
-  if (meshData) {
-    processMesh(meshData, false);
   }
-  if (Array.isArray(toolMeshes)) {
-    toolMeshes.forEach((tool) => processMesh(tool, true));
-  }
-
-  // Normalize focus normal
-  if (focusNormalWeight > 1e-8) {
-    focusNormal.normalize();
-  } else {
-    focusNormal.set(0, 0, 0);
-  }
-
-  // If no features found or focus box empty, fall back to fullBox
-  if (!hasFeatures || focusBox.isEmpty()) {
-    focusBox.copy(fullBox);
-  }
-
-  const focusCenter = focusBox.isEmpty()
-    ? new THREE.Vector3(0, 0, 0)
-    : focusBox.getCenter(new THREE.Vector3());
-  const fullCenter = fullBox.isEmpty()
-    ? new THREE.Vector3(0, 0, 0)
-    : fullBox.getCenter(new THREE.Vector3());
-
-  return {
-    hasOperationFeatures: hasFeatures && !focusBox.isEmpty(),
-    focusBox,
-    fullBox,
-    focusNormal,
-    focusCenter,
-    fullCenter,
-  };
-}
-
-/**
- * Candidate directions for isometric inspection.
- * Deterministic scoring considers feature normal alignment, overhead elevation,
- * projected visibility and avoidance of grazing angles.
- */
-export function determineOptimalViewDirection(
-  focusInfo: OperationFocusInfo
-): THREE.Vector3 {
-  const { hasOperationFeatures, focusNormal, focusCenter, fullCenter } = focusInfo;
-
-  // Candidates: 8 octants with CAD overhead elevation
-  const candidates: THREE.Vector3[] = [
-    new THREE.Vector3(1, 1, 1).normalize(),
-    new THREE.Vector3(-1, 1, 1).normalize(),
-    new THREE.Vector3(1, 1, -1).normalize(),
-    new THREE.Vector3(-1, 1, -1).normalize(),
-    new THREE.Vector3(1, 0.75, 1.25).normalize(),
-    new THREE.Vector3(-1, 0.75, 1.25).normalize(),
-    new THREE.Vector3(1, 0.75, -1.25).normalize(),
-    new THREE.Vector3(-1, 0.75, -1.25).normalize(),
-    new THREE.Vector3(1.25, 1, 0.5).normalize(),
-    new THREE.Vector3(-1.25, 1, 0.5).normalize(),
-    new THREE.Vector3(0.5, 1, 1.25).normalize(),
-    new THREE.Vector3(-0.5, 1, 1.25).normalize(),
-  ];
-
-  // If no specific features, return standard CAD isometric
-  if (!hasOperationFeatures) {
-    return new THREE.Vector3(1, 1, 1.2).normalize();
-  }
-
-  // Target direction from full center to focus center (helps find outward-facing side)
-  const outwardDir = new THREE.Vector3().subVectors(focusCenter, fullCenter);
-  const outwardDist = outwardDir.length();
-  if (outwardDist > 1e-4) {
-    outwardDir.normalize();
-  } else {
-    outwardDir.set(0, 0, 0);
-  }
-
-  let bestDir = candidates[0];
-  let bestScore = -Infinity;
-
-  for (const dir of candidates) {
-    let score = 0;
-
-    // 1. Normal alignment: positive dot product means viewing the front of the feature
-    if (focusNormal.lengthSq() > 0.1) {
-      const normalDot = dir.dot(focusNormal);
-      score += normalDot * 4.0;
-
-      // Penalize grazing angles where feature becomes edge-on
-      if (Math.abs(normalDot) < 0.15) {
-        score -= 2.0;
+  // A blue support face can be much larger than the actual operation. Never use
+  // its bounding box to displace selected edges or new result faces.
+  const edges = mesh.edges.filter((e) => !e.isTool && e.role === 'selected' && e.positions.length >= 6);
+  const role = ['newBlend', 'modified', 'selected', 'deleted'].find((r) => mesh.faces.some((f) => !f.isTool && f.role === r));
+  if (edges.length) {
+    const segments: { a: THREE.Vector3; b: THREE.Vector3; length: number }[] = [];
+    for (const edge of edges) {
+      for (let i = 0; i + 5 < edge.positions.length; i += 3) {
+        const a = point(edge.positions, i), b = point(edge.positions, i + 3), length = a.distanceTo(b);
+        if (length > 0) segments.push({ a, b, length });
+        focusBox.expandByPoint(a).expandByPoint(b);
       }
     }
-
-    // 2. Outward positioning: viewing from the exterior side of the model
-    if (outwardDir.lengthSq() > 0.1) {
-      const outwardDot = dir.dot(outwardDir);
-      score += outwardDot * 2.5;
+    const total = segments.reduce((n, s) => n + s.length, 0);
+    let offset = 0, segmentIndex = 0;
+    for (let i = 0; i < MAX_SAMPLES && segments.length; i++) {
+      const d = total * (i + 0.5) / MAX_SAMPLES;
+      while (segmentIndex < segments.length - 1 && offset + segments[segmentIndex].length < d) offset += segments[segmentIndex++].length;
+      const s = segments[segmentIndex], p = s.a.clone().lerp(s.b, (d - offset) / s.length);
+      samples.push({ point: p, tangent: s.b.clone().sub(s.a).normalize(), weight: total / MAX_SAMPLES });
     }
-
-    // 3. Overhead preference (CAD convention: looking slightly downwards onto the part)
-    if (dir.y > 0.2) {
-      score += dir.y * 1.5;
+    // Adjacency from actual geometry, without relying on exporter-specific tags.
+    const epsilon = fullBox.getSize(new THREE.Vector3()).length() * 1e-5;
+    const nearest = new THREE.Vector3();
+    for (const block of occluders) {
+      if (samples.some((s) => block.triangles.some((t) => t.closestPointToPoint(s.point, nearest).distanceTo(s.point) < epsilon))) {
+        focusNormal.add(block.triangles[0]?.getNormal(new THREE.Vector3()) ?? new THREE.Vector3());
+      }
     }
-
-    // 4. Stable tie-breaker towards primary octant (+X, +Y, +Z)
-    if (dir.x > 0 && dir.z > 0) {
-      score += 0.2;
+  } else if (role) {
+    const triangles: THREE.Triangle[] = [];
+    for (const face of mesh.faces.filter((f) => !f.isTool && f.role === role)) {
+      for (let i = 0; i + 2 < face.indices.length; i += 3) {
+        triangles.push(new THREE.Triangle(...face.indices.slice(i, i + 3).map((index) => point(face.positions, index * 3)) as [THREE.Vector3, THREE.Vector3, THREE.Vector3]));
+      }
     }
-
-    if (score > bestScore) {
-      bestScore = score;
-      bestDir = dir;
+    const total = triangles.reduce((n, t) => n + t.getArea(), 0);
+    let offset = 0, triangleIndex = 0;
+    for (const tri of triangles) focusBox.expandByPoint(tri.a).expandByPoint(tri.b).expandByPoint(tri.c);
+    for (let i = 0; i < MAX_SAMPLES && total > 0; i++) {
+      const area = total * (i + 0.5) / MAX_SAMPLES;
+      while (triangleIndex < triangles.length - 1 && offset + triangles[triangleIndex].getArea() < area) offset += triangles[triangleIndex++].getArea();
+      const tri = triangles[triangleIndex], normal = tri.getNormal(new THREE.Vector3());
+      samples.push({ point: tri.getMidpoint(new THREE.Vector3()), normal, weight: total / MAX_SAMPLES });
+      focusNormal.add(normal);
     }
   }
-
-  return bestDir.clone();
+  return finish(samples.length ? (edges.length ? '选中边 · 可见性采样' : `${role} 面 · 可见性采样`) : '全模型：未记录可靠修改标记');
 }
 
-/**
- * Returns standard CAD camera direction for predefined views.
- */
+/** Same target, direction and bounds for linked GM/PK; each retains its own occluders. */
+export function mergeOperationFocus(infos: OperationFocusInfo[]): OperationFocusInfo {
+  const fullBox = new THREE.Box3(), focusBox = new THREE.Box3(), focusNormal = new THREE.Vector3();
+  for (const info of infos) { fullBox.union(info.fullBox); focusBox.union(info.focusBox); focusNormal.add(info.focusNormal); }
+  const sets = infos.flatMap((i) => i.sets);
+  const reliable = infos.length > 0 && infos.every((i) => i.hasOperationFeatures);
+  if (!reliable) focusBox.copy(fullBox);
+  return { fullBox, focusBox, focusNormal: focusNormal.normalize(), hasOperationFeatures: reliable,
+    fullCenter: fullBox.getCenter(new THREE.Vector3()), focusCenter: focusBox.getCenter(new THREE.Vector3()),
+    sets: reliable ? sets : [], reason: reliable ? '两侧操作几何 · 共享取景' : '全模型：一侧未记录可靠修改标记' };
+}
+
+function sampleVisible(sample: FeatureSample, direction: THREE.Vector3, set: FeatureSet, epsilon: number): boolean {
+  const ray = new THREE.Ray(sample.point.clone().addScaledVector(direction, epsilon), direction);
+  const hit = new THREE.Vector3();
+  for (const block of set.occluders) {
+    if (!ray.intersectsBox(block.box)) continue;
+    for (const tri of block.triangles) {
+      if (ray.intersectTriangle(tri.a, tri.b, tri.c, false, hit) && hit.distanceTo(ray.origin) > epsilon) return false;
+    }
+  }
+  return true;
+}
+
+export function scoreViewDirection(info: OperationFocusInfo, direction: THREE.Vector3) {
+  const epsilon = Math.max(info.fullBox.getSize(new THREE.Vector3()).length() * 1e-5, 1e-8);
+  const results = info.sets.map((set) => {
+    let visible = 0, projected = 0, total = 0;
+    for (const sample of set.samples) {
+      total += sample.weight;
+      if (!sampleVisible(sample, direction, set, epsilon)) continue;
+      visible += sample.weight;
+      projected += sample.weight * (sample.tangent ? Math.sqrt(Math.max(0, 1 - sample.tangent.dot(direction) ** 2)) : Math.abs(sample.normal!.dot(direction)));
+    }
+    return { visible: total ? visible / total : 0, projected: total ? projected / total : 0 };
+  });
+  const scores = results.map((r) => r.visible * 0.75 + r.projected * 0.25);
+  // Reward the weaker pane first; a strong GM view cannot hide the PK feature.
+  return { results, score: scores.length ? Math.min(...scores) * 0.7 + scores.reduce((a, b) => a + b, 0) / scores.length * 0.3 : 0 };
+}
+
+export function determineOptimalViewDirection(info: OperationFocusInfo): THREE.Vector3 {
+  const standard = new THREE.Vector3(1, 1, 1.2).normalize();
+  if (!info.hasOperationFeatures) return standard;
+  const candidates: THREE.Vector3[] = [];
+  // Include underside and side views, with no preferred world-up hemisphere.
+  for (const x of [-1, 0, 1]) for (const y of [-1, 0, 1]) for (const z of [-1, 0, 1]) {
+    if (x || y || z) candidates.push(new THREE.Vector3(x, y, z).normalize());
+  }
+  const outward = info.focusCenter.clone().sub(info.fullCenter).normalize();
+  for (const dir of [info.focusNormal, outward, info.focusNormal.clone().add(outward)]) {
+    if (dir.lengthSq() > 0.01) candidates.push(dir.clone().normalize());
+  }
+  // Bounded normal candidates improve small sloped result faces as well.
+  for (const set of info.sets) for (let i = 0; i < set.samples.length; i += 8) {
+    const normal = set.samples[i].normal;
+    if (normal) candidates.push(normal.clone().normalize());
+  }
+  let best = standard, bestScore = -Infinity;
+  for (const dir of candidates) {
+    const score = scoreViewDirection(info, dir).score + Math.max(0, dir.dot(info.focusNormal)) * 0.005;
+    if (score > bestScore) { bestScore = score; best = dir; }
+  }
+  return best.clone();
+}
+
+/** Actual perspective projection/occlusion, also exposed for review evidence. */
+export function measureFeatureVisibility(info: OperationFocusInfo, camera: THREE.PerspectiveCamera, width: number, height: number) {
+  const epsilon = Math.max(info.fullBox.getSize(new THREE.Vector3()).length() * 1e-5, 1e-8);
+  let samples = 0, visible = 0, projectedPixels = 0;
+  const bounds = new THREE.Box2();
+  for (const set of info.sets) for (const sample of set.samples) {
+    samples++;
+    const projected = sample.point.clone().project(camera);
+    const inFrame = Math.abs(projected.x) < 0.95 && Math.abs(projected.y) < 0.95 && Math.abs(projected.z) < 1;
+    const direction = camera.position.clone().sub(sample.point).normalize();
+    if (!inFrame || !sampleVisible(sample, direction, set, epsilon)) continue;
+    visible++;
+    bounds.expandByPoint(new THREE.Vector2((projected.x + 1) * width / 2, (1 - projected.y) * height / 2));
+    const scale = height / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.position.distanceTo(sample.point));
+    projectedPixels += sample.tangent ? sample.weight * Math.sqrt(Math.max(0, 1 - sample.tangent.dot(direction) ** 2)) * scale : sample.weight * Math.abs(sample.normal!.dot(direction)) * scale ** 2;
+  }
+  return { samples, visible, visibleFraction: samples ? visible / samples : null, projectedPixels,
+    projectionUnit: info.sets[0]?.samples[0]?.tangent ? 'length-px' : 'area-px2',
+    bounds: bounds.isEmpty() ? null : { min: bounds.min.toArray(), max: bounds.max.toArray() }, reason: info.reason };
+}
+
 export function getStandardViewDirection(view: StandardView): THREE.Vector3 {
   switch (view) {
-    case 'front':
-      return new THREE.Vector3(0, 0, 1);
-    case 'top':
-      return new THREE.Vector3(0, 1, 0.0001); // slightly off-axis for OrbitControls stability
-    case 'right':
-      return new THREE.Vector3(1, 0, 0);
-    case 'iso':
-    default:
-      return new THREE.Vector3(1, 1, 1.2).normalize();
+    case 'front': return new THREE.Vector3(0, 0, 1);
+    case 'top': return new THREE.Vector3(0, 1, 0.0001).normalize();
+    case 'right': return new THREE.Vector3(1, 0, 0);
+    default: return new THREE.Vector3(1, 1, 1.2).normalize();
   }
 }
 
-/**
- * Computes camera position, target, distance and clipping planes given a bounding box and direction.
- */
-export function calculateCameraPose(
-  targetBox: THREE.Box3,
-  viewDir: THREE.Vector3,
-  fovDegrees = 45,
-  margin = 1.7
-): CameraPose {
-  if (targetBox.isEmpty()) {
-    return {
-      position: new THREE.Vector3(15, 15, 20),
-      target: new THREE.Vector3(0, 0, 0),
-      distance: 25,
-      near: 0.1,
-      far: 1000,
-    };
+export function calculateCameraPose(targetBox: THREE.Box3, viewDir: THREE.Vector3, fovDegrees = 45, margin = 1.3, aspect = 1, target?: THREE.Vector3): CameraPose {
+  if (targetBox.isEmpty()) return { position: new THREE.Vector3(15, 15, 20), target: new THREE.Vector3(), distance: 25, near: 0.1, far: 1000 };
+  const center = target?.clone() ?? targetBox.getCenter(new THREE.Vector3());
+  const dir = viewDir.clone().normalize();
+  const right = new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), dir).normalize();
+  if (right.lengthSq() < 0.01) right.set(1, 0, 0);
+  const up = new THREE.Vector3().crossVectors(dir, right).normalize();
+  const tan = Math.tan(THREE.MathUtils.degToRad(fovDegrees / 2));
+  let distance = 0;
+  for (const x of [targetBox.min.x, targetBox.max.x]) for (const y of [targetBox.min.y, targetBox.max.y]) for (const z of [targetBox.min.z, targetBox.max.z]) {
+    const delta = new THREE.Vector3(x, y, z).sub(center);
+    distance = Math.max(distance, delta.dot(dir) + margin * Math.max(Math.abs(delta.dot(right)) / (tan * Math.max(aspect, 0.1)), Math.abs(delta.dot(up)) / tan));
   }
+  const size = Math.max(targetBox.getSize(new THREE.Vector3()).length(), 1e-4);
+  distance = Math.max(distance, size * 0.1);
+  return { position: center.clone().addScaledVector(dir, distance), target: center, distance, near: size * 0.001, far: Math.max(distance + size * 10, 500) };
+}
 
-  const center = targetBox.getCenter(new THREE.Vector3());
-  const size = targetBox.getSize(new THREE.Vector3());
-  const maxDim = Math.max(size.x, size.y, size.z, 1e-4);
-
-  const fovRad = (fovDegrees * Math.PI) / 180;
-  const cameraDistance = ((maxDim / 2) / Math.tan(fovRad / 2)) * margin;
-
-  const position = new THREE.Vector3()
-    .copy(center)
-    .addScaledVector(viewDir.clone().normalize(), cameraDistance);
-
-  const near = Math.max(maxDim * 0.01, 0.01);
-  const far = Math.max(maxDim * 80, 500);
-
-  return {
-    position,
-    target: center,
-    distance: cameraDistance,
-    near,
-    far,
-  };
+export function operationCameraPose(info: OperationFocusInfo, aspect = 1): CameraPose {
+  const dir = determineOptimalViewDirection(info);
+  return calculateCameraPose(info.fullBox, dir, 45, 1.15, aspect, info.hasOperationFeatures ? info.focusCenter : info.fullCenter);
 }

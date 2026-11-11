@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback, useMemo } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { MeshData, StandardView } from '../types/contract';
@@ -9,6 +9,9 @@ import {
   getStandardViewDirection,
   calculateCameraPose,
   CameraPose,
+  OperationFocusInfo,
+  operationCameraPose,
+  measureFeatureVisibility,
 } from '../utils/cameraUtils';
 
 export interface CameraSyncState {
@@ -40,6 +43,8 @@ interface MeshViewerProps {
   displayOptions?: GeometryDisplayOptions;
   caseId?: string;
   onSelectEntity?: (entity: PickedEntity | null) => void;
+  focusInfo?: OperationFocusInfo;
+  sharedAspect?: number;
 }
 
 export const MeshViewer: React.FC<MeshViewerProps> = ({
@@ -57,6 +62,8 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
   displayOptions,
   caseId,
   onSelectEntity,
+  focusInfo,
+  sharedAspect,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
@@ -66,6 +73,10 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
   const currentMeshGroupRef = useRef<THREE.Group | null>(null);
   const isSyncingFromExternal = useRef<boolean>(false);
   const pickThresholdRef = useRef<number>(0.1);
+  const measuredFocus = useMemo(() => extractOperationFocus(meshData, toolMeshes), [meshData, toolMeshes]);
+  const measuredFocusRef = useRef(measuredFocus);
+  const visibilityDirtyRef = useRef(true);
+  useEffect(() => { measuredFocusRef.current = measuredFocus; visibilityDirtyRef.current = true; }, [measuredFocus]);
 
   // User manual interaction and case tracking refs
   const userInteractedRef = useRef<boolean>(false);
@@ -111,11 +122,15 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
       if (!camera || !controls) return;
 
       camera.position.copy(pose.position);
+      camera.zoom = 1;
       controls.target.copy(pose.target);
       camera.near = pose.near;
       camera.far = pose.far;
       camera.updateProjectionMatrix();
+      const damping = controls.enableDamping;
+      controls.enableDamping = false;
       controls.update();
+      controls.enableDamping = damping;
 
       pickThresholdRef.current = (pose.far - pose.near) * 0.0005;
 
@@ -134,19 +149,11 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
   // Computes and applies operation-aware initial view
   const fitOperationAwareView = useCallback(
     (targetMesh: MeshData | null, targetTools?: MeshData[] | null, broadcast = true) => {
-      const focusInfo = extractOperationFocus(targetMesh, targetTools);
-      const optimalDir = determineOptimalViewDirection(focusInfo);
-      const pose = calculateCameraPose(focusInfo.fullBox, optimalDir, cameraRef.current?.fov ?? 45, 1.75);
-
-      // Center view comfortably between whole model center and operation focus center
-      if (focusInfo.hasOperationFeatures) {
-        pose.target.copy(focusInfo.fullCenter).lerp(focusInfo.focusCenter, 0.6);
-        pose.position.copy(pose.target).addScaledVector(optimalDir, pose.distance);
-      }
-
+      const info = focusInfo ?? extractOperationFocus(targetMesh, targetTools);
+      const pose = operationCameraPose(info, sharedAspect ?? cameraRef.current?.aspect ?? 1);
       applyCameraPose(pose, broadcast);
     },
-    [applyCameraPose]
+    [applyCameraPose, focusInfo, sharedAspect]
   );
 
   // Initialize Three.js scene exactly once (stable scene lifecycle)
@@ -192,6 +199,14 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
       userInteractedRef.current = true;
     };
     controls.addEventListener('start', onControlsStart);
+    const onControlsEnd = () => {
+      // Settle the remaining orbit delta on release. Snapshot changes and slow
+      // rendering must not prolong an old gesture into subsequent steps.
+      controls.enableDamping = false;
+      controls.update();
+      controls.enableDamping = true;
+    };
+    controls.addEventListener('end', onControlsEnd);
 
     // Lights
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
@@ -207,26 +222,36 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
 
     // Subtle CAD Floor Grid
     const grid = new THREE.GridHelper(30, 30, 0x334155, 0x1e293b);
+    // Decorative helpers must not write depth over underside operation edges.
+    grid.material.depthWrite = false;
     grid.position.y = -0.01;
     grid.name = '__helper_grid';
     scene.add(grid);
 
     // Axes Helper
     const axes = new THREE.AxesHelper(3);
+    for (const material of Array.isArray(axes.material) ? axes.material : [axes.material]) material.depthWrite = false;
     axes.name = '__helper_axes';
     scene.add(axes);
 
     // Render loop
     let animId: number;
-    const animate = () => {
+    let lastVisibilityTime = 0;
+    const animate = (time = 0) => {
       animId = requestAnimationFrame(animate);
       controls.update();
       renderer.render(scene, camera);
+      if (visibilityDirtyRef.current && time - lastVisibilityTime > 150) {
+        lastVisibilityTime = time;
+        visibilityDirtyRef.current = false;
+        container.dataset.featureVisibility = JSON.stringify(measureFeatureVisibility(measuredFocusRef.current, camera, container.clientWidth, container.clientHeight));
+      }
     };
     animate();
 
     // Broadcast camera change
     const onControlsChange = () => {
+      visibilityDirtyRef.current = true;
       if (isSyncingFromExternal.current) return;
       if (containerRef.current && cameraRef.current && controlsRef.current) {
         const c = cameraRef.current;
@@ -240,6 +265,7 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
 
     // Resize observer
     const resizeObserver = new ResizeObserver(() => {
+      visibilityDirtyRef.current = true;
       if (!container || !rendererRef.current || !cameraRef.current) return;
       const w = container.clientWidth;
       const h = container.clientHeight;
@@ -256,6 +282,7 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
       cancelAnimationFrame(animId);
       controls.removeEventListener('change', onControlsChange);
       controls.removeEventListener('start', onControlsStart);
+      controls.removeEventListener('end', onControlsEnd);
       resizeObserver.disconnect();
       controls.dispose();
       scene.traverse((child) => {
@@ -294,7 +321,10 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
     if (externalCameraState.far > externalCameraState.near) cameraRef.current.far = externalCameraState.far;
     cameraRef.current.updateProjectionMatrix();
     controlsRef.current.target.set(tx, ty, tz);
+    const damping = controlsRef.current.enableDamping;
+    controlsRef.current.enableDamping = false;
     controlsRef.current.update();
+    controlsRef.current.enableDamping = damping;
 
     if (containerRef.current) {
       containerRef.current.dataset.cameraPos = `${px.toFixed(2)},${py.toFixed(2)},${pz.toFixed(2)}`;
@@ -324,25 +354,24 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
     }
     lastFocusTriggerIdRef.current = focusTrigger.id;
 
-    const focusInfo = extractOperationFocus(meshData, toolMeshes);
+    const info = focusInfo ?? extractOperationFocus(meshData, toolMeshes);
     const camera = cameraRef.current;
     if (!camera) return;
 
     if (focusTrigger.type === 'operation') {
-      const dir = determineOptimalViewDirection(focusInfo);
-      const pose = calculateCameraPose(focusInfo.focusBox, dir, camera.fov, 1.5);
+      const pose = operationCameraPose(info, sharedAspect ?? camera.aspect);
       applyCameraPose(pose, true);
     } else if (focusTrigger.type === 'full') {
-      const dir = determineOptimalViewDirection(focusInfo);
-      const pose = calculateCameraPose(focusInfo.fullBox, dir, camera.fov, 1.8);
+      const dir = determineOptimalViewDirection(info);
+      const pose = calculateCameraPose(info.fullBox, dir, camera.fov, 1.3, sharedAspect ?? camera.aspect);
       applyCameraPose(pose, true);
     } else {
       // Standard Views: 'iso' | 'front' | 'top' | 'right'
       const dir = getStandardViewDirection(focusTrigger.type);
-      const pose = calculateCameraPose(focusInfo.fullBox, dir, camera.fov, 1.8);
+      const pose = calculateCameraPose(info.fullBox, dir, camera.fov, 1.3, sharedAspect ?? camera.aspect);
       applyCameraPose(pose, true);
     }
-  }, [focusTrigger, meshData, toolMeshes, applyCameraPose]);
+  }, [focusTrigger, meshData, toolMeshes, applyCameraPose, focusInfo, sharedAspect]);
 
   // Update Geometry when meshData or displayOptions change
   useEffect(() => {
@@ -420,7 +449,11 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
     const roleEdges: Record<string, number> = {};
 
     newGroup.traverse((child) => {
-      if (child instanceof THREE.Mesh) {
+      if (child.userData?.type === 'edge') {
+        edges += 1;
+        const role = String(child.userData.role || 'unknown');
+        roleEdges[role] = (roleEdges[role] || 0) + 1;
+      } else if (child instanceof THREE.Mesh) {
         faces += 1;
         const role = String((child.userData && child.userData.role) || 'unknown');
         roleFaces[role] = (roleFaces[role] || 0) + 1;
@@ -453,12 +486,12 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
     // If staying in the same case (e.g. user toggles step, plays timeline, or async response arrives),
     // and user has interacted or camera already placed, DO NOT steal/reset the camera!
     const isNewCase = caseId !== lastCaseIdRef.current;
-    if (isNewCase && (faces > 0 || edges > 0)) {
+    if (isNewCase && sharedAspect !== 0 && (faces > 0 || edges > 0)) {
       lastCaseIdRef.current = caseId;
       userInteractedRef.current = false;
       fitOperationAwareView(meshData, toolMeshes, true);
     }
-  }, [meshData, toolMeshes, displayOptions, caseId, fitOperationAwareView]);
+  }, [meshData, toolMeshes, displayOptions, caseId, fitOperationAwareView, sharedAspect]);
 
   // Raycasting for entity click & hover
   const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {

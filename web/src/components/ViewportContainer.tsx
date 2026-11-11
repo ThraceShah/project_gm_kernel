@@ -3,6 +3,7 @@ import { MeshViewer, CameraSyncState, FocusTriggerState } from './MeshViewer';
 import { EntityLegend } from './EntityLegend';
 import { MeshData, StandardView } from '../types/contract';
 import { PickedEntity, ROLE_COLORS, EDGE_ROLE_COLORS, GeometryDisplayOptions } from '../utils/geometryBuilder';
+import { extractOperationFocus, mergeOperationFocus } from '../utils/cameraUtils';
 import {
   Box,
   SplitSquareVertical,
@@ -56,6 +57,22 @@ export const ViewportContainer: React.FC<ViewportContainerProps> = ({
   const [showIsoparametrics, setShowIsoparametrics] = useState<boolean>(true);
   const [isolateModified, setIsolateModified] = useState<boolean>(false);
   const [showTools, setShowTools] = useState<boolean>(true);
+  const gmFocus = React.useMemo(() => extractOperationFocus(gmMesh), [gmMesh]);
+  const pkFocus = React.useMemo(() => extractOperationFocus(pkMesh), [pkMesh]);
+  const sharedFocus = React.useMemo(() => mergeOperationFocus([gmFocus, pkFocus]), [gmFocus, pkFocus]);
+  const viewportsRef = useRef<HTMLDivElement>(null);
+  const [sharedAspect, setSharedAspect] = useState(0);
+  useEffect(() => {
+    const root = viewportsRef.current;
+    if (!root) return;
+    const observer = new ResizeObserver(() => {
+      const panes = Array.from(root.querySelectorAll<HTMLElement>('[data-testid="viewer-canvas-host"]'));
+      const aspects = panes.filter((p) => p.clientWidth && p.clientHeight).map((p) => p.clientWidth / p.clientHeight);
+      if (aspects.length) setSharedAspect(Math.min(...aspects));
+    });
+    observer.observe(root);
+    return () => observer.disconnect();
+  }, []);
 
   // Entity IDs are local to a snapshot; do not carry a pick across snapshots.
   useEffect(() => {
@@ -177,11 +194,11 @@ export const ViewportContainer: React.FC<ViewportContainerProps> = ({
           <button
             onClick={handleFocusOp}
             data-testid="btn-focus-op"
-            title="聚焦到当前操作受影响区域与最佳观察方向"
+            title={cameraSync ? sharedFocus.reason : gmFocus.reason}
             className="flex items-center gap-1 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 hover:text-sky-200 border border-slate-700 transition-colors text-[11px] font-medium"
           >
             <Focus className="w-3.5 h-3.5 text-sky-400" />
-            <span>查看修改</span>
+            <span>{(cameraSync ? sharedFocus : gmFocus).hasOperationFeatures ? '查看修改' : '全模型（无修改标记）'}</span>
           </button>
           <button
             onClick={handleFocusFull}
@@ -363,6 +380,7 @@ export const ViewportContainer: React.FC<ViewportContainerProps> = ({
 
       {/* Viewports Grid */}
       <div
+        ref={viewportsRef}
         className={`flex-1 grid grid-cols-1 md:grid-cols-2 ${
           mobileTab === 'both' ? 'grid-rows-2 md:grid-rows-1' : ''
         } divide-y md:divide-y-0 md:divide-x divide-slate-800 relative min-h-0`}
@@ -377,6 +395,8 @@ export const ViewportContainer: React.FC<ViewportContainerProps> = ({
             kernelName="GM Kernel"
             caseId={caseId}
             meshData={gmMesh}
+            focusInfo={cameraSync ? sharedFocus : gmFocus}
+            sharedAspect={cameraSync ? sharedAspect : undefined}
             isLoading={isLoading}
             emptyMessage="GM 网格未就绪或未生成"
             errorMessage={gmError}
@@ -400,6 +420,8 @@ export const ViewportContainer: React.FC<ViewportContainerProps> = ({
             kernelName="Parasolid (PK)"
             caseId={caseId}
             meshData={pkMesh}
+            focusInfo={cameraSync ? sharedFocus : pkFocus}
+            sharedAspect={cameraSync ? sharedAspect : undefined}
             isLoading={isLoading}
             emptyMessage="Parasolid 基准网格缺失"
             errorMessage={pkError}
