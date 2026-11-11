@@ -9,6 +9,10 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
+    internal delegate void CutProjectionTrace(in NestedBlendProgram program,BlendSpineIndex spine,double first,double last,
+        ReadOnlySpan<IntervalNumber> witness,CurveTag source,CurveTag target);
+    [ThreadStatic] internal static CutProjectionTrace? TraceCutProjection;
+
     private static int LocateCertifiedCut(in SheetCutCurve cut,in RegularBoundaryRoot root,out double parameter,out IntervalNumber isolation,out bool handled)
     {
         parameter=0;isolation=new(double.NaN,double.NaN);handled=false;
@@ -114,6 +118,7 @@ internal static unsafe partial class KernelRuntime
         }
         Span<IntervalNumber> witness=stackalloc IntervalNumber[7]{x,y,z,
             center.X.Value,center.Y.Value,center.Z.Value,root.BlendStation};
+        TraceCutProjection?.Invoke(program,data.ProgramSpine,cut.First,cut.Last,witness,root.Curve,cut.Curve);
         return LocateCertifiedChart(cut,program,data.ProgramSpine,witness,out parameter,out isolation,point);
     }
 
@@ -300,6 +305,7 @@ internal static unsafe partial class KernelRuntime
         Span<IntervalNumber> witness=stackalloc IntervalNumber[sourceSupport.IsBlend?7:3];
         if(JointNestedBlendEvaluation.BoundSharedSpineWitness(sourceProgram,sourceSpine,new(root.Root.Lower,root.Root.Upper,0,0),bounds,capture:witness)!=AlgorithmStatus.Success)
             return ParasolidConstants.PK_ERROR_cant_do_intersect;
+        TraceCutProjection?.Invoke(program,cutSpine,cut.First,cut.Last,witness,root.Curve,cut.Curve);
         return LocateCertifiedChart(cut,program,cutSpine,witness,out parameter,out isolation);
     }
 

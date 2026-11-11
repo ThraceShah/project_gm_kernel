@@ -6,11 +6,13 @@
 #:property UseParasolidScriptHost=true
 #:property AllowUnsafeBlocks=true
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text.Json;
 using ProjectGmKernel.Native.Runtime;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Geometry.Intersection;
+using ProjectGmKernel.Native.Computation.Numerics;
 using M=ProjectGmKernel.Native.Generated;
 using static parasolid;
 
@@ -99,6 +101,10 @@ unsafe
             }
             Console.WriteLine($"OPTIONS version={options.o_t_version} function={options.function} default_tol={options.default_tol:R}");
             var entered=false;KernelRuntime.ForbidSpatialBoundaryReuse=true;
+            var projectionIndex=0;
+            if(args.Contains("--capture-projection"))
+                KernelRuntime.TraceCutProjection=(in NestedBlendProgram program,int spine,double first,double last,ReadOnlySpan<IntervalNumber> witness,int source,int target)
+                    =>CaptureProjection(program,spine,first,last,witness,Path.Combine(output,$"projection-{target}-{source}-{projectionIndex++}.bin"));
             KernelRuntime.TraceFiniteBoundary=t=>
             {
                 if(args.Contains("--trace")&&t.Stage==KernelRuntime.BoundaryTraceStage.CellSelection)
@@ -165,6 +171,7 @@ unsafe
         finally
         {
             KernelRuntime.InjectAllocationFailure(-1);KernelRuntime.TraceFiniteBoundary=null;KernelRuntime.ForbidSpatialBoundaryReuse=false;
+            KernelRuntime.TraceCutProjection=null;
             KernelRuntime.ForbidLegacyRegularBlendAssembly=false;KernelRuntime.SessionStop();
         }
     }
@@ -178,6 +185,15 @@ static void RequireFixtureResult(int status,int count,bool hasBodies,string labe
     if(status!=PK_boolean_result_success_c||count!=1||!hasBodies)
         throw new InvalidOperationException($"{label}: expected PK_boolean_result_success_c and one nonempty result body, got status={status} count={count} has_bodies={hasBodies}");
 }
+static void CaptureProjection(in NestedBlendProgram program,int spine,double first,double last,ReadOnlySpan<IntervalNumber> witness,string path)
+{
+    using var file=File.Create(path);using var writer=new BinaryWriter(file);
+    writer.Write("GM finite projection v1");writer.Write(spine);writer.Write(first);writer.Write(last);
+    WriteValues(writer,witness);WriteValues(writer,program.Surfaces);WriteValues(writer,program.Spines);WriteValues(writer,program.Charts);WriteValues(writer,program.Scalars);
+    Console.WriteLine($"CAPTURE PROJECTION {Path.GetFileName(path)} domain=[{first:R},{last:R}] witness={witness.Length}");
+}
+static void WriteValues<T>(BinaryWriter writer,ReadOnlySpan<T> values)where T:unmanaged
+{writer.Write(Unsafe.SizeOf<T>());writer.Write(values.Length);writer.Write(MemoryMarshal.AsBytes(values));}
 
 static unsafe int ReceiveManaged(byte[] bytes)
 {
