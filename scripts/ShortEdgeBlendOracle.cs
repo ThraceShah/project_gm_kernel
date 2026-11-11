@@ -20,6 +20,9 @@ using EdgeSlot=System.Int32;
 using FaceSlot=System.Int32;
 using FinSlot=System.Int32;
 using VertexSlot=System.Int32;
+
+if(args.Contains("--measurement-identity-only",StringComparer.Ordinal)){_ = WebProgressCapture.Enabled;return;}
+
 KernelRuntime.ForbidLegacyRegularBlendAssembly=args.Contains("--event-arrangement",StringComparer.Ordinal);
 if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
     KernelRuntime.TraceRollingNetwork=trace=>
@@ -96,7 +99,6 @@ var benchRepeat=1;var benchOption=args.SingleOrDefault(x=>x.StartsWith("--bench-
 if(benchOption!=null)benchRepeat=int.Parse(benchOption["--bench-repeat=".Length..],System.Globalization.CultureInfo.InvariantCulture);
 Require(benchRepeat>=1&&benchRepeat<=64,"bench repeat must be in 1..64");
 ModelingPerformance.Enabled=args.Contains("--bench-profile",StringComparer.Ordinal);
-if(ModelingPerformance.Enabled)PrintKernelIdentity("start");
 var researchPrecision=NumberOption(args,"--research-precision=",0);
 Require(researchPrecision==0||double.IsFinite(researchPrecision)&&researchPrecision>0&&args.Contains("--native-only")&&args.Contains("--diagnostics")&&!args.Contains("--record-fixtures"),
     "research precision requires native-only diagnostics and cannot update fixtures");
@@ -318,15 +320,9 @@ using(host)unsafe
             }
         }
     }
-    finally{Check(KernelRuntime.SessionStop(),"managed stop");if(ModelingPerformance.Enabled)PrintKernelIdentity("end");}
+    finally{Check(KernelRuntime.SessionStop(),"managed stop");}
     Require(failures==0,$"{failures} short-edge acceptance checks failed");
     Console.WriteLine($"PASS cases={cases} mode={(args.Contains("--native-only")?"native-only":args.Contains("--import-only")?"import-only":"independent-construction")}");
-}
-
-static void PrintKernelIdentity(string phase)
-{
-    var assembly=typeof(KernelRuntime).Assembly;using var file=File.OpenRead(assembly.Location);
-    Console.WriteLine($"KERNEL_IDENTITY phase={phase} mvid={assembly.ManifestModule.ModuleVersionId} bytes={file.Length} sha256={Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(file))}");
 }
 
 static unsafe void ScalarBoundaryEvidence(int surface,int other)
@@ -1649,9 +1645,8 @@ static unsafe void CompareFiniteIntersections(PK_BODY_t reference,PK_BODY_t actu
 static void PrintProfile(string operation,double apiMs)
 {
     var p=ModelingPerformance.Last;var milliseconds=1000.0/Stopwatch.Frequency;
-    Console.WriteLine($"PROFILE operation={operation} api-ms={apiMs:F3} elapsed-ms={p.ElapsedTicks*milliseconds:F3} pairs={p.SurfacePairs} ssi-cells={p.SsiCells} root-cells={p.RootCells} roots={p.Roots} budget-failures={p.BudgetFailures} winding={p.WindingCalls} bound-requests={p.BoundRequests} bound-evaluations={p.BoundEvaluations} cache-hits={p.BoundCacheHits} failure-cache-hits={p.BoundFailureCacheHits} bound-ms={p.BoundTicks*milliseconds:F3}");
-    Console.WriteLine($"WORK jacobians={p.JacobianCalls} directions={p.JacobianDirections} residual-directions={p.ResidualDirections} record-builds={p.JacobianRecordBuilds} record-nodes={p.JacobianRecordNodes} record-rebinds={p.JacobianRecordRebinds} direct-spline-point-columns={p.DirectSplinePointColumns}");
-    foreach(var use in Enum.GetValues<RootIsolationUse>())if(p.RootCalls[(int)use]!=0||p.RootCellsByUse[(int)use]!=0)Console.WriteLine($"ROOT_WORK use={use} calls={p.RootCalls[(int)use]} cells={p.RootCellsByUse[(int)use]} bound-failures={p.RootBoundFailures[(int)use]} exclusions={p.RootLevelExclusions[(int)use]} nonmonotone={p.RootNonmonotone[(int)use]}");
+    Console.WriteLine($"PROFILE operation={operation} api-ms={apiMs:F3} elapsed-ms={p.ElapsedTicks*milliseconds:F3} pairs={p.SurfacePairs} ssi-cells={p.SsiCells} root-cells={p.RootCells} roots={p.Roots} budget-failures={p.BudgetFailures} winding={p.WindingCalls} bound-requests={p.BoundRequests} bound-evaluations={p.BoundEvaluations} cache-hits={p.BoundCacheHits} bound-ms={p.BoundTicks*milliseconds:F3}");
+    Console.WriteLine($"WORK jacobians={p.JacobianCalls} directions={p.JacobianDirections} residual-directions={p.ResidualDirections} record-builds={p.JacobianRecordBuilds} record-nodes={p.JacobianRecordNodes} record-rebinds={p.JacobianRecordRebinds}");
     foreach(var stage in Enum.GetValues<KernelRuntime.RegularBooleanStage>())if(p.Stages[(int)stage]!=0)Console.WriteLine($"PROFILE stage={stage} ms={p.Stages[(int)stage]*milliseconds:F3}");
 }
 static unsafe int Fillet(bool own,int body,double angle,double radius,double tolerance,bool reverse,bool procedural,M.PK_TRANSF_sf_s* input,double unitScale,bool splitSelected,bool splitEllipse,double splitFraction,int rotateMarks)

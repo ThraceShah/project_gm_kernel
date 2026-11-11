@@ -39,12 +39,14 @@ foreach(var bench in cases)foreach(var source in new[]{"baseline","candidate","c
     var info=new ProcessStartInfo("dotnet"){UseShellExecute=false,RedirectStandardOutput=true,RedirectStandardError=true,WorkingDirectory=tree};
     foreach(var arg in new[]{"run","--file",Path.Combine("scripts",bench.Script),"-c","Release","-p:UseSharedCompilation=false","-p:BuildInParallel=false","--"}.Concat(bench.Args).Concat(["--bench-repeat=3","--bench-profile"]))info.ArgumentList.Add(arg);
     info.Environment["MSBUILDDISABLENODEREUSE"]="1";info.Environment["GM_WEB_ROOT"]=tree;info.Environment["GM_WEB_CAPTURE"]=directory;info.Environment["GM_WEB_COMMIT"]=sha;
-    if(bench.Selector!=null)info.Environment["GM_WEB_SELECT"]=bench.Selector;
+    info.Environment.Remove("GM_WEB_SELECT");if(bench.Selector!=null)info.Environment["GM_WEB_SELECT"]=bench.Selector;
+    info.Environment["GM_WEB_GEOMETRY_AUTHOR"]=bench.Id=="shortedge"?"PK seed received by GM; GM performs operation":"GM and PK construct inputs from identical parameters";
     var load=Command(root,"sysctl","-n","vm.loadavg");var started=Stopwatch.GetTimestamp();var startedUtc=DateTime.UtcNow;
     using var process=Process.Start(info)!;var stdout=process.StandardOutput.ReadToEndAsync();var stderr=process.StandardError.ReadToEndAsync();
     var timeout=!process.WaitForExit(15*60*1000);if(timeout){process.Kill(entireProcessTree:true);process.WaitForExit();}
-    var log=await stdout+"\nSTDERR\n"+await stderr;File.WriteAllText(Path.Combine(directory,"oracle.log"),log);
+    var log=await stdout+"\nSTDERR\n"+await stderr;File.WriteAllText(Path.Combine(directory,"oracle.log"),log);File.WriteAllText(Path.Combine(directory,"process.exit"),process.ExitCode+"\n");
     var reasons=new List<string>();if(timeout)reasons.Add("timeout");if(process.ExitCode!=0)reasons.Add("process exit "+process.ExitCode);if(log.Contains("FAIL ",StringComparison.Ordinal)||log.Contains("The build failed.",StringComparison.Ordinal))reasons.Add("oracle/build failure");
+    foreach(var phase in new[]{"start","end"})if(!File.Exists(Path.Combine(directory,"measurement-identity-"+phase+".json")))reasons.Add("missing loaded identity "+phase);
     var pairs=new JsonArray();var capturePath=Path.Combine(directory,"capture.json");
     if(!File.Exists(capturePath))reasons.Add("missing capture");
     else

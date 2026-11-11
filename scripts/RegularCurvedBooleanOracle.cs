@@ -11,20 +11,21 @@ using ProjectGmKernel.Native.Runtime;
 using System.Runtime.CompilerServices;
 using M=ProjectGmKernel.Native.Generated;
 
+if(args.Contains("--measurement-identity-only",StringComparer.Ordinal)){_ = WebProgressCapture.Enabled;return;}
+
+
 var benchRepeat=1;var benchOption=args.SingleOrDefault(x=>x.StartsWith("--bench-repeat=",StringComparison.Ordinal));
 if(benchOption!=null)benchRepeat=int.Parse(benchOption["--bench-repeat=".Length..],System.Globalization.CultureInfo.InvariantCulture);
 Require(benchRepeat>=1&&benchRepeat<=64,"bench repeat must be in 1..64");
 ModelingPerformance.Enabled=args.Contains("--bench-profile",StringComparer.Ordinal);
-var outputName=args.SingleOrDefault(x=>x.StartsWith("--output-name=",StringComparison.Ordinal));
-var directory=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","regular-curved-boolean-oracle");
-if(outputName!=null)directory=Path.Combine(directory,outputName["--output-name=".Length..]);Directory.CreateDirectory(directory);
+var directory=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","regular-curved-boolean-oracle");Directory.CreateDirectory(directory);
 if(!ParasolidScriptHost.TryStartSession("Independent regular curved solid Booleans",out var host,out var message))throw new Exception(message);
 using(host)unsafe
 {
     var start=new M.PK_SESSION_start_o_s{o_t_version=1};Check(KernelRuntime.SessionStart(&start),"own session");
     try
     {
-        if(args.Contains("--precision-evidence",StringComparer.Ordinal)){CharacterizeImprintPrecision(directory);return;}
+        if(args.Contains("--precision-evidence",StringComparer.Ordinal)){CharacterizeImprintPrecision();return;}
         var passed=0;var failures=0;
         foreach(var kind in new[]{"block","nurbs","closed-cut","disjoint","enclosed-tool","enclosed-target","two-tools","mixed-disjoint","continuous","reloaded","reloaded-block","same-domain","same-domain-reloaded","same-domain-partial","same-domain-partial-reloaded"})
         foreach(var function in new[]{PK_boolean_unite_c,PK_boolean_intersect_c,PK_boolean_subtract_c})
@@ -36,10 +37,10 @@ using(host)unsafe
             try
             {
                 var gmProduceStart=System.Diagnostics.Stopwatch.GetTimestamp();
-                var ours=Produce(true,kind,function,directory);
+                var ours=Produce(true,kind,function);
                 var gmProduceMs=System.Diagnostics.Stopwatch.GetElapsedTime(gmProduceStart).TotalMilliseconds;
                 var pkProduceStart=System.Diagnostics.Stopwatch.GetTimestamp();
-                var reference=Produce(false,kind,function,directory);
+                var reference=Produce(false,kind,function);
                 var pkProduceMs=System.Diagnostics.Stopwatch.GetElapsedTime(pkProduceStart).TotalMilliseconds;
                 Require(ours.Length==reference.Length,name+" body count");
                 var matched=new bool[reference.Length];
@@ -61,7 +62,7 @@ using(host)unsafe
     finally{Check(KernelRuntime.SessionStop(),"own session stop");}
 }
 
-static unsafe int[] Produce(bool own,string kind,int function,string directory,double tolerance=1e-5,double scale=1)
+static unsafe int[] Produce(bool own,string kind,int function,double tolerance=1e-5,double scale=1)
 {
     var target=Roof(own,0,0,0,.8);int tool;
     if(kind.StartsWith("same-domain",StringComparison.Ordinal))
@@ -86,7 +87,7 @@ static unsafe int[] Produce(bool own,string kind,int function,string directory,d
         if(own&&kind.StartsWith("reloaded",StringComparison.Ordinal))
         {
             var bytes=Transmit(target);
-            File.WriteAllBytes(Path.Combine(directory,$"{kind}-{function}-source.x_t"),bytes);
+            File.WriteAllBytes(Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","regular-curved-boolean-oracle",$"{kind}-{function}-source.x_t"),bytes);
             var old=target;target=ReceiveOwn(bytes);Check(KernelRuntime.EntityDelete(1,&old),"delete serialized source");
             Require(KernelRuntime.TryResolveBodySlot(target,out var restored)&&!KernelRuntime.Xt.IsOpaque(restored),"editable self-received curved solid");
             var point=new M.PK_VECTOR_s();point.coord[0]=point.coord[1]=.9;point.coord[2]=.5;int enclosure,topology;
@@ -125,9 +126,8 @@ static unsafe int[] Produce(bool own,string kind,int function,string directory,d
 static void PrintProfile(string operation,double apiMs)
 {
     var p=ModelingPerformance.Last;var milliseconds=1000.0/System.Diagnostics.Stopwatch.Frequency;
-    Console.WriteLine($"PROFILE operation={operation} api-ms={apiMs:F3} elapsed-ms={p.ElapsedTicks*milliseconds:F3} pairs={p.SurfacePairs} ssi-cells={p.SsiCells} root-cells={p.RootCells} roots={p.Roots} budget-failures={p.BudgetFailures} winding={p.WindingCalls} bound-requests={p.BoundRequests} bound-evaluations={p.BoundEvaluations} cache-hits={p.BoundCacheHits} failure-cache-hits={p.BoundFailureCacheHits} bound-ms={p.BoundTicks*milliseconds:F3}");
-    Console.WriteLine($"WORK jacobians={p.JacobianCalls} directions={p.JacobianDirections} residual-directions={p.ResidualDirections} record-builds={p.JacobianRecordBuilds} record-nodes={p.JacobianRecordNodes} record-rebinds={p.JacobianRecordRebinds} direct-spline-point-columns={p.DirectSplinePointColumns}");
-    foreach(var use in Enum.GetValues<RootIsolationUse>())if(p.RootCalls[(int)use]!=0||p.RootCellsByUse[(int)use]!=0)Console.WriteLine($"ROOT_WORK use={use} calls={p.RootCalls[(int)use]} cells={p.RootCellsByUse[(int)use]} bound-failures={p.RootBoundFailures[(int)use]} exclusions={p.RootLevelExclusions[(int)use]} nonmonotone={p.RootNonmonotone[(int)use]}");
+    Console.WriteLine($"PROFILE operation={operation} api-ms={apiMs:F3} elapsed-ms={p.ElapsedTicks*milliseconds:F3} pairs={p.SurfacePairs} ssi-cells={p.SsiCells} root-cells={p.RootCells} roots={p.Roots} budget-failures={p.BudgetFailures} winding={p.WindingCalls} bound-requests={p.BoundRequests} bound-evaluations={p.BoundEvaluations} cache-hits={p.BoundCacheHits} bound-ms={p.BoundTicks*milliseconds:F3}");
+    Console.WriteLine($"WORK jacobians={p.JacobianCalls} directions={p.JacobianDirections} residual-directions={p.ResidualDirections} record-builds={p.JacobianRecordBuilds} record-nodes={p.JacobianRecordNodes} record-rebinds={p.JacobianRecordRebinds}");
     foreach(var stage in Enum.GetValues<KernelRuntime.RegularBooleanStage>())if(p.Stages[(int)stage]!=0)Console.WriteLine($"PROFILE stage={stage} ms={p.Stages[(int)stage]*milliseconds:F3}");
 }
 static unsafe int Roof(bool own,double dx,double dy,double dz,double bulge)
@@ -278,7 +278,7 @@ static unsafe void RequireAccurateSourceVertices(int body)
     try{for(var i=0;i<n;i++){double value;Check(PK_VERTEX_ask_precision(vertices[i],&value),"source vertex precision");Require(value<=sigma*.500000000001,"ordinary transversal source junction remains accurate");}}
     finally{if(vertices!=null)PK_MEMORY_free(vertices);}
 }
-static unsafe void CharacterizeImprintPrecision(string directory)
+static unsafe void CharacterizeImprintPrecision()
 {
     double original;Check(PK_SESSION_ask_precision(&original),"original native precision");var cases=0;
     try
@@ -286,7 +286,7 @@ static unsafe void CharacterizeImprintPrecision(string directory)
         foreach(var requested in new[]{1e-9,1e-8,1e-7,1e-6})foreach(var tolerance in new[]{1e-9,1e-8,1e-5,1e-3})foreach(var scale in new[]{.125,1,8})
         {
             Check(PK_SESSION_set_precision(requested),"set characterization precision");double sigma;Check(PK_SESSION_ask_precision(&sigma),"actual characterization precision");Require(sigma==requested,"session precision readback");
-            var products=Produce(false,"same-domain-partial",PK_boolean_subtract_c,directory,tolerance,scale);Require(products.Length==1,"one characterization solid");var body=products[0];CheckBody(body,"precision characterization");
+            var products=Produce(false,"same-domain-partial",PK_boolean_subtract_c,tolerance,scale);Require(products.Length==1,"one characterization solid");var body=products[0];CheckBody(body,"precision characterization");
             int n;int* vertices;Check(PK_BODY_ask_vertices(body,&n,&vertices),"event precision vertices");var welds=0;var accurate=0;
             var dx=scale==1?0:.375*scale;var dy=scale==1?0:-.25*scale;var dz=scale==1?0:.5*scale;
             try
