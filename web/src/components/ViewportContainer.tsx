@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { MeshViewer, CameraSyncState, FocusTriggerState } from './MeshViewer';
 import { EntityLegend } from './EntityLegend';
 import { MeshData, StandardView } from '../types/contract';
@@ -59,6 +59,38 @@ export const ViewportContainer: React.FC<ViewportContainerProps> = ({
   const [showIsoparametrics, setShowIsoparametrics] = useState<boolean>(true);
   const [isolateModified, setIsolateModified] = useState<boolean>(false);
   const [showTools, setShowTools] = useState<boolean>(true);
+
+  // Entity IDs are local to a snapshot; do not carry a pick across snapshots.
+  useEffect(() => {
+    setSelectedEntity(null);
+  }, [caseId, gmMesh, pkMesh]);
+
+  useEffect(() => {
+    if (!selectedEntity) return;
+
+    if (!gmMesh && !pkMesh) {
+      setSelectedEntity(null);
+      return;
+    }
+
+    if (isolateModified && selectedEntity.role === 'unchanged') {
+      setSelectedEntity(null);
+      return;
+    }
+
+    const isVisibleInMesh = (mesh: MeshData | null) => {
+      if (!mesh) return false;
+      if (selectedEntity.type === 'face') {
+        return Boolean(mesh.faces?.some((f) => f.id === selectedEntity.id && (!f.isTool || showTools) && (!isolateModified || f.role !== 'unchanged')));
+      } else {
+        return Boolean(mesh.edges?.some((e) => e.id === selectedEntity.id && (!e.isTool || showTools) && (!isolateModified || e.role !== 'unchanged')));
+      }
+    };
+
+    if (!isVisibleInMesh(gmMesh) && !isVisibleInMesh(pkMesh)) {
+      setSelectedEntity(null);
+    }
+  }, [caseId, gmMesh, pkMesh, isolateModified, showTools, selectedEntity]);
 
   // Stable callbacks: camera sync must never recreate the scene lifecycle.
   const cameraSyncRef = useRef<boolean>(cameraSync);
@@ -331,7 +363,11 @@ export const ViewportContainer: React.FC<ViewportContainerProps> = ({
       </div>
 
       {/* Viewports Grid */}
-      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-800 relative">
+      <div
+        className={`flex-1 grid grid-cols-1 md:grid-cols-2 ${
+          mobileTab === 'both' ? 'grid-rows-2 md:grid-rows-1' : ''
+        } divide-y md:divide-y-0 md:divide-x divide-slate-800 relative min-h-0`}
+      >
         {/* Left: GM Kernel Viewport */}
         <div
           className={`relative w-full h-full ${

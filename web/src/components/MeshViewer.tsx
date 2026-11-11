@@ -298,11 +298,16 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
     isSyncingFromExternal.current = false;
   }, [externalCameraState, cameraSync]);
 
-  // Reset View Trigger
+  // Reset View Trigger: only execute once when resetTrigger counter increments,
+  // never steal the camera on subsequent meshData/toolMeshes updates.
+  const lastResetTriggerRef = useRef(resetTrigger);
   useEffect(() => {
-    if (resetTrigger > 0 && meshData) {
+    if (resetTrigger > lastResetTriggerRef.current) {
+      lastResetTriggerRef.current = resetTrigger;
       userInteractedRef.current = false;
-      fitOperationAwareView(meshData, toolMeshes, true);
+      if (meshData) {
+        fitOperationAwareView(meshData, toolMeshes, true);
+      }
     }
   }, [resetTrigger, meshData, toolMeshes, fitOperationAwareView]);
 
@@ -469,9 +474,19 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
     onSelectEntity?.(null);
   };
 
+  const showIso = displayOptions?.showIsoparametrics !== false;
   const hasIso =
-    Boolean(meshData?.isoparametrics?.length) ||
-    Boolean(meshData?.faces?.some((f) => f.isoparametrics && (f.isoparametrics.uLines?.length || f.isoparametrics.vLines?.length)));
+    showIso &&
+    (Boolean(meshData?.isoparametrics?.length) ||
+      Boolean(
+        meshData?.faces?.some(
+          (f) =>
+            f.isoparametrics &&
+            (f.isoparametrics.uLines?.length ||
+              f.isoparametrics.vLines?.length ||
+              f.isoparametrics.unclassifiedLines?.length)
+        )
+      ));
 
   return (
     <div
@@ -503,7 +518,7 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
             {meshData.source.tessellator}
           </span>
         )}
-        {hasIso && (
+        {hasIso ? (
           <span
             data-testid="viewer-iso-badge"
             className="hidden sm:inline text-[10px] text-sky-300 bg-sky-950/80 border border-sky-800/80 px-1.5 py-0.2 rounded font-mono-code"
@@ -511,7 +526,15 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
           >
             U/V等参线
           </span>
-        )}
+        ) : showIso ? (
+          <span
+            data-testid="viewer-no-iso-badge"
+            className="hidden sm:inline text-[10px] text-slate-400 bg-slate-800/80 border border-slate-700/80 px-1.5 py-0.2 rounded font-mono-code"
+            title="此快照暂无等参线数据"
+          >
+            无等参线
+          </span>
+        ) : null}
       </div>
 
       {/* Loading Overlay */}

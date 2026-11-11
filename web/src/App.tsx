@@ -358,7 +358,7 @@ export const App: React.FC = () => {
           {/* Left Sidebar: Filter & Case List (drawer on narrow screens) */}
           <div
             data-testid="sidebar-shell"
-            className={`fixed md:static inset-y-0 left-0 z-40 max-w-[85vw] transform transition-transform duration-200 ${
+            className={`fixed md:static inset-y-0 left-0 z-40 w-80 max-w-[85vw] overflow-hidden transform transition-transform duration-200 ${
               sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
             }`}
           >

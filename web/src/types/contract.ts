@@ -153,7 +153,9 @@ export type EntityRole =
 export interface IsoparametricData {
   uLines?: number[][]; // Array of flat xyz polylines: [x1, y1, z1, x2, y2, z2, ...]
   vLines?: number[][];
+  unclassifiedLines?: number[][];
   source?: string;     // Provenance of isoparametric evaluation (e.g. Parasolid PK_TOPOL_render_line)
+  chordTolerance?: number;
 }
 
 export interface FaceData {
@@ -165,6 +167,7 @@ export interface FaceData {
   identifier?: number;
   entityTag?: number;
   isoparametrics?: IsoparametricData;
+  isTool?: boolean;
 }
 
 export interface EdgeData {
@@ -173,6 +176,7 @@ export interface EdgeData {
   role: EntityRole;
   identifier?: number;
   entityTag?: number;
+  isTool?: boolean;
 }
 
 export interface MeshSource {

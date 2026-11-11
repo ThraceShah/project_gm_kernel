@@ -164,6 +164,7 @@ export async function fetchMeshData(
       return { data: null, error: errMsg };
     }
     const mesh = (await res.json()) as MeshData;
+
     meshCache.set(fullKey, mesh);
     return { data: mesh, error: null };
   } catch (err) {
@@ -184,8 +185,16 @@ export function combineMeshes(primary: MeshData, additional: MeshData[]): MeshDa
   const faces = [...(primary.faces || [])];
   const edges = [...(primary.edges || [])];
   for (const m of additional) {
-    if (m?.faces) faces.push(...m.faces);
-    if (m?.edges) edges.push(...m.edges);
+    if (m?.faces) {
+      for (const f of m.faces) {
+        faces.push({ ...f, isTool: true });
+      }
+    }
+    if (m?.edges) {
+      for (const e of m.edges) {
+        edges.push({ ...e, isTool: true });
+      }
+    }
   }
   return {
     ...primary,

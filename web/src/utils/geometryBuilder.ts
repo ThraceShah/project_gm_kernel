@@ -49,11 +49,16 @@ export function buildThreeGeometry(
   const isolateModified = options?.isolateModified ?? false;
   const isDimmed = unchangedOpacity < 0.99;
   const showIsoparametrics = options?.showIsoparametrics ?? true;
+  const showTools = options?.showTools ?? true;
 
   // 1. Build Faces
   if (Array.isArray(meshData.faces)) {
     meshData.faces.forEach((face, fIndex) => {
       if (!face.positions || face.positions.length < 9 || !face.indices || face.indices.length < 3) {
+        return;
+      }
+
+      if (!showTools && face.isTool) {
         return;
       }
 
@@ -96,6 +101,7 @@ export function buildThreeGeometry(
         type: 'face',
         id: face.id || `face_${fIndex}`,
         role: face.role,
+        isTool: face.isTool ?? false,
         triangleCount: face.indices.length / 3,
         vertexCount: face.positions.length / 3,
       };
@@ -108,6 +114,10 @@ export function buildThreeGeometry(
   if (Array.isArray(meshData.edges)) {
     meshData.edges.forEach((edge, eIndex) => {
       if (!edge.positions || edge.positions.length < 6) {
+        return;
+      }
+
+      if (!showTools && edge.isTool) {
         return;
       }
 
@@ -136,6 +146,7 @@ export function buildThreeGeometry(
         type: 'edge',
         id: edge.id || `edge_${eIndex}`,
         role: edge.role,
+        isTool: edge.isTool ?? false,
         vertexCount: edge.positions.length / 3,
       };
 
@@ -166,6 +177,7 @@ export function buildThreeGeometry(
     // Collect from FaceData.isoparametrics
     if (Array.isArray(meshData.faces)) {
       meshData.faces.forEach((face) => {
+        if (!showTools && face.isTool) return;
         if (isolateModified && face.role === 'unchanged') return;
         if (face.isoparametrics) {
           if (Array.isArray(face.isoparametrics.uLines)) {
@@ -174,6 +186,9 @@ export function buildThreeGeometry(
           if (Array.isArray(face.isoparametrics.vLines)) {
             face.isoparametrics.vLines.forEach(addPolyline);
           }
+          if (Array.isArray(face.isoparametrics.unclassifiedLines)) {
+            face.isoparametrics.unclassifiedLines.forEach(addPolyline);
+          }
         }
       });
     }
@@ -181,6 +196,8 @@ export function buildThreeGeometry(
     // Also collect from MeshData.isoparametrics if present and not already loaded from faces
     if (isoLineCount === 0 && Array.isArray(meshData.isoparametrics)) {
       meshData.isoparametrics.forEach((iso) => {
+        const face = meshData.faces?.find((f) => f.id === iso.faceId);
+        if (!face || (!showTools && face.isTool) || (isolateModified && face.role === 'unchanged')) return;
         addPolyline(iso.positions);
       });
     }

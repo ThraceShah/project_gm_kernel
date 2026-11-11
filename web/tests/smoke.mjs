@@ -381,6 +381,85 @@ function keepBestShot(poses, best, destName) {
 // ============================================================
 // Main
 // ============================================================
+async function inspectionChecks(page, latest, shot) {
+  const select = async (id) => {
+    await page.click(`[data-case-id="${id}"]`);
+    await waitForMeshes(page);
+  };
+  const camera = () => page.$$eval('[data-testid="viewer-canvas-host"]', (els) => els.map((e) => e.dataset.cameraPos));
+  const blend = 'solid-blend.plane-nurbs';
+  await select(blend);
+  await page.getByText('复位视角').click();
+  await page.waitForTimeout(500);
+  await dragViewer(page, 0, 85, 45);
+  const orbit = await camera();
+  await page.getByText('后态 (After)').click();
+  await waitForMeshes(page);
+  const after = await camera();
+  for (let i = 0; i < 2; i++) {
+    const a = orbit[i].split(',').map(Number), b = after[i].split(',').map(Number);
+    check(`V3: reset then orbit then snapshot preserves camera ${i}`, Math.hypot(...a.map((x, j) => x - b[j])) < 0.05, JSON.stringify({ orbit: orbit[i], after: after[i] }));
+  }
+  await page.screenshot({ path: shot('inspection-reset-snapshot.png') });
+
+  // Find an actual unchanged entity by raycast; a missed pick must fail the check.
+  await page.getByText('复位视角').click();
+  await page.waitForTimeout(400);
+  const host = await bbox(page, '[data-testid="viewer-canvas-host"]');
+  const mesh = meshJson(latest, latest.manifest.cases.find((c) => c.id === blend).steps[0].gm.after);
+  const unchanged = new Set([...mesh.faces, ...mesh.edges].filter((e) => e.role === 'unchanged').map((e) => e.id));
+  let picked = '';
+  for (const y of [0.5, 0.6, 0.4, 0.7, 0.3]) {
+    for (const x of [0.5, 0.6, 0.4, 0.7, 0.3]) {
+      await page.mouse.click(host.x + host.width * x, host.y + host.height * y);
+      const text = await page.locator('[data-testid="entity-inspector"]').textContent().catch(() => '');
+      picked = text.match(/\[(.+?)\]/)?.[1] || '';
+      if (unchanged.has(picked)) break;
+    }
+    if (unchanged.has(picked)) break;
+  }
+  check('V8: selected a real unchanged entity before hiding', unchanged.has(picked), picked);
+  await page.locator('[data-testid="btn-toggle-isolate"]').first().click();
+  await page.waitForTimeout(250);
+  check('V8: hidden selection is cleared', await page.locator('[data-testid="entity-inspector"]').count() === 0);
+  await page.screenshot({ path: shot('inspection-isolate-selection.png') });
+  await page.locator('[data-testid="btn-toggle-isolate"]').first().click();
+  await page.mouse.click(host.x + host.width / 2, host.y + host.height / 2);
+  check('V8: picked another real entity before case switch', await page.locator('[data-testid="entity-inspector"]').count() === 1);
+  await select('planar-boolean.overlap-two-axes-subtract');
+  check('V8: case switch clears snapshot-local selection', await page.locator('[data-testid="entity-inspector"]').count() === 0);
+  await page.getByText('前态 (Before)').click();
+  await waitForMeshes(page);
+  const withTools = await viewerStats(page), withCamera = await camera();
+  const withPixels = await canvasMetrics(page, 0);
+  await page.screenshot({ path: shot('inspection-tools-on.png') });
+  await page.locator('[data-testid="btn-toggle-tools"]').first().click();
+  await page.waitForTimeout(300);
+  const without = await viewerStats(page), withoutCamera = await camera();
+  const withoutPixels = await canvasMetrics(page, 0);
+  const bool = latest.manifest.cases.find((c) => c.id === 'planar-boolean.overlap-two-axes-subtract');
+  for (let i = 0; i < 2; i++) {
+    const side = i === 0 ? 'gm' : 'pk';
+    const expected = expectedStats(meshJson(latest, bool.steps[0][side].before));
+    check(`V7: hide tools leaves exact primary geometry ${side}`, without[i].faces === expected.faces && without[i].edges === expected.edges && without[i].triangles === expected.triangles, JSON.stringify({ with: withTools[i], without: without[i], expected }));
+    check(`V7: tools geometry actually removed ${side}`, withTools[i].faces > without[i].faces && withTools[i].edges > without[i].edges);
+    check(`V7: tool toggle preserves camera ${side}`, withCamera[i] === withoutCamera[i]);
+  }
+  check('V7: tool toggle changes actual canvas pixels', withPixels.sig !== withoutPixels.sig, JSON.stringify({ before: withPixels.sig, after: withoutPixels.sig }));
+  await page.screenshot({ path: shot('inspection-tools-off.png') });
+  await page.locator('[data-testid="btn-toggle-tools"]').first().click();
+  await page.waitForTimeout(250);
+  check('V7: restoring tools restores geometry', JSON.stringify(await viewerStats(page)) === JSON.stringify(withTools));
+
+  await page.setViewportSize({ width: 320, height: 844 });
+  await page.waitForTimeout(350);
+  const panes = await page.locator('[data-testid="viewer-canvas-host"]').evaluateAll((els) => els.map((e) => ({ h: e.clientHeight, w: e.clientWidth })));
+  check('mobile: both panes retain equal usable height', panes.length === 2 && Math.abs(panes[0].h - panes[1].h) <= 2 && panes.every((p) => p.h > 90), JSON.stringify(panes));
+  const shell = await page.locator('[data-testid="sidebar-shell"]').boundingBox();
+  check('mobile: closed sidebar is fully outside viewport', shell.x + shell.width <= 1, JSON.stringify(shell));
+  await page.screenshot({ path: shot('inspection-mobile-320.png') });
+}
+
 async function run() {
   const chromePath = resolveBrowserPath();
   const port = 8089;
@@ -419,6 +498,14 @@ async function run() {
     await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
     await page.waitForTimeout(800);
     await waitForMeshes(page);
+
+    if (process.argv.includes('--inspection-only')) {
+      await inspectionChecks(page, latest, shot);
+      check('runtime: no uncaught page errors', pageErrors.length === 0, pageErrors.join(' | '));
+      fs.writeFileSync(shot('inspection-remediation.json'), JSON.stringify(results, null, 2));
+      if (results.some((r) => !r.ok)) process.exitCode = 1;
+      return;
+    }
 
     // ---- T1: real workbench + real statistics from index/manifest ----
     const bodyText = await page.textContent('body');
