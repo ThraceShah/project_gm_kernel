@@ -64,7 +64,8 @@ internal static unsafe class ParasolidBodyCompare
                     else differences++;
                 }
             Require(result.global_result == PK_DEBUG_global_res_no_diffs_c && differences == 0
-                && (result.local_result == PK_DEBUG_local_res_no_diffs_c || provedLocal && localCount > 0),
+                && (result.local_result == PK_DEBUG_local_res_no_diffs_c
+                    || provedLocal && localCount > 0 && result.n_face_pairs < options.max_diffs),
                 label + " body geometry/structure/sense/tolerance/matching differs");
         }
         finally { Check(PK_DEBUG_BODY_compare_r_f(&result), "free compare"); }

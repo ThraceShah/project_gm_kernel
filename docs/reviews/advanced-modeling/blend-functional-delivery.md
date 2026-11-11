@@ -215,6 +215,8 @@ Every other local/global difference remains a hard condition, apart from the
 existing chart-count diagnostic. Unsupported classes, tolerant fin overrides,
 ambiguous edge/face associations or unproved bounds fail; this is not a general
 curve exception or a procedural-curve equivalence claim.
+Reaching the native maximum reported differing-face-pair capacity also rejects
+conditional acceptance: a truncated difference list cannot prove the body.
 
 For a line, the proof uses an explicit affine native map `s=alpha*t+beta`.
 The complete residual `A0-B0-beta*Bd + t*(Ad-alpha*Bd)` is enclosed over the
