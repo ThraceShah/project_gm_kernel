@@ -2,6 +2,7 @@ using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Geometry.Bounds;
 using ProjectGmKernel.Native.Runtime;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace ProjectGmKernel.Native.Geometry.Evaluation;
@@ -153,10 +154,12 @@ internal static partial class JointNestedBlendEvaluation
         Span<IntervalNumber> captureWitness=default,ReadOnlySpan<IntervalNumber> requireWitness=default,BufferOffset rootChart=-1,
         Span<double> anchorContacts=default,Span<IntervalNumber> acceleration=default,KernelVector3 accelerationNormal=default)
     {
+        BoundEntered++;
         Span<TaylorJet> snapshot=stackalloc TaylorJet[MaxVariables];Span<Occurrence> occurrences=stackalloc Occurrence[MaxOccurrences];Span<BufferCount> counts=stackalloc BufferCount[2];
         Span<KernelVector3> point=stackalloc KernelVector3[2];SurfaceDerivativeLayout.TryCreate(1,0,out var layout);var chartRange=Chart(program,spine);var u=Math.Clamp(domain.U0+(domain.U1-domain.U0)*.5,chartRange[0].Parameter,chartRange[^1].Parameter);
         var status=EvaluateCore(program,spine,-1,u,0,layout,point,false,default,out _,out _,snapshot:snapshot,nodeSnapshot:occurrences,counts:counts);
         if(status!=AlgorithmStatus.Success)return status==AlgorithmStatus.Unsupported?status:AlgorithmStatus.NotConverged;
+        BoundEvaluated++;
         var n=counts[0];var nodes=occurrences[..counts[1]];var t=new IntervalNumber(domain.U0,domain.U1);
         Span<BufferOffset> fixedCharts=stackalloc BufferOffset[MaxOccurrences];
         for(var i=0;i<nodes.Length;i++)
@@ -183,6 +186,7 @@ internal static partial class JointNestedBlendEvaluation
         var certified=false;var derivativeScale=0.0;for(var i=0;i<n;i++)derivativeScale=Math.Max(derivativeScale,Math.Abs(snapshot[i][1]));
         for(var expansion=0;expansion<6&&!certified;expansion++)
         {
+            ExpansionIterations++;
             var factor=Math.ScaleB(1,expansion);
             for(var i=0;i<n;i++)
             {
@@ -210,6 +214,7 @@ internal static partial class JointNestedBlendEvaluation
         }
         for(var iteration=0;iteration<6;iteration++)
         {
+            RefinementIterations++;
             for(var i=0;i<n;i++)boxes[i]=new(Math.Max(boxes[i].Lower,image[i].Lower),Math.Min(boxes[i].Upper,image[i].Upper));
             status=IntervalJacobian(program,nodes,boxes[..n],t,intervalJacobian[..(n*n)],variables,equations,fixedCharts,splineCache);if(status!=AlgorithmStatus.Success)return status;
             Precondition(inverse[..(n*n)],intervalJacobian[..(n*n)],n,remainder);
@@ -258,13 +263,13 @@ internal static partial class JointNestedBlendEvaluation
         if(parameterIndex>=0)
         {
             supportParameter[1]=image[parameterIndex];
-            if(supportParameter.Length==2)return AlgorithmStatus.Success;
+            if(supportParameter.Length==2){BoundSucceeded++;return AlgorithmStatus.Success;}
             for(var i=0;i<n;i++)variables[i]=new(boxes[i],image[i]);
             var root=program.Spines[spine];var support=program.Surfaces[parameterSide==0?root.First:root.Second];
             status=BoundSpineSupportSection(program,nodes,variables[..n],parameterChild,support,splineCache,out var section);
             if(status!=AlgorithmStatus.Success)return status;
             supportParameter[2]=section.Value;supportParameter[3]=section.Derivative;
-            return AlgorithmStatus.Success;
+            BoundSucceeded++;return AlgorithmStatus.Success;
         }
         if(!curvature.IsEmpty||!acceleration.IsEmpty)
         {
@@ -310,7 +315,7 @@ internal static partial class JointNestedBlendEvaluation
                     if(status!=AlgorithmStatus.Success)return status;
                 }
             }
-            for(var i=0;i<3;i++){output[i]=boxes[i];output[3+i]=image[i];output[6+i]=0;}return AlgorithmStatus.Success;
+            for(var i=0;i<3;i++){output[i]=boxes[i];output[3+i]=image[i];output[6+i]=0;}BoundSucceeded++;return AlgorithmStatus.Success;
         }
         for(var i=0;i<n;i++)variables[i]=new(boxes[i],image[i]);
         var v=new IntervalNumber(domain.V0,domain.V1);
@@ -318,7 +323,7 @@ internal static partial class JointNestedBlendEvaluation
         output[0]=frame.X.Value;output[1]=frame.Y.Value;output[2]=frame.Z.Value;output[3]=frame.X.Derivative;output[4]=frame.Y.Derivative;output[5]=frame.Z.Derivative;
         for(var i=0;i<n;i++)variables[i]=new(boxes[i],0);
         status=IntervalFrame(program,surface,nodes,variables[..n],new(v,1),out frame,splineCache);if(status!=AlgorithmStatus.Success)return status;
-        output[6]=frame.X.Derivative;output[7]=frame.Y.Derivative;output[8]=frame.Z.Derivative;return AlgorithmStatus.Success;
+        output[6]=frame.X.Derivative;output[7]=frame.Y.Derivative;output[8]=frame.Z.Derivative;BoundSucceeded++;return AlgorithmStatus.Success;
     }
 
     private static AlgorithmStatus CertifyNearestBoxes(in NestedBlendProgram program,ReadOnlySpan<Occurrence> nodes,ReadOnlySpan<IntervalNumber> boxes,
@@ -365,19 +370,23 @@ internal static partial class JointNestedBlendEvaluation
         IntervalNumber parameter,Span<IntervalNumber> matrix,Span<IntervalDual> variables,Span<IntervalDual> equations,ReadOnlySpan<BufferOffset> fixedCharts,Span<IntervalSplineContact> cache)
     {
         var n=boxes.Length;for(var i=0;i<n;i++)variables[i]=new(boxes[i],0);
+        var attribution=AttributionIndex(n,HasAnyUv(nodes));State.Entered[attribution]++;JacEnteredTotal++;
+        var attributionClearStart=Stopwatch.GetTimestamp();
         cache.Clear();
+        var attributionClearTicks=Stopwatch.GetTimestamp()-attributionClearStart;
+        State.ClearReached[attribution]++;State.ClearTicks[attribution]+=attributionClearTicks;ClearReachedTotal++;ClearTicksTotal+=attributionClearTicks;
         foreach(var node in nodes)for(var side=0;side<2;side++)
         {
             var uv=side==0?node.FirstUv:node.SecondUv;if(uv<0)continue;var spine=program.Spines[node.Spine];var source=program.Surfaces[side==0?spine.First:spine.Second];
             if(SplineContactMatches(cache[uv],source,boxes[uv],boxes[uv+1]))continue;
-            var status=CacheSplineContact(program,source,boxes[uv],boxes[uv+1],ref cache[uv]);if(status!=AlgorithmStatus.Success)return status;
+            var status=CacheSplineContact(program,source,boxes[uv],boxes[uv+1],ref cache[uv]);if(status!=AlgorithmStatus.Success){State.Failed[attribution]++;JacFailedTotal++;return status;}
         }
         for(var column=0;column<n;column++)
         {
-            variables[column]=new(boxes[column],1);var status=IntervalResidual(program,nodes,variables[..n],parameter,equations[..n],fixedCharts,cache);if(status!=AlgorithmStatus.Success)return status;
+            variables[column]=new(boxes[column],1);var status=IntervalResidual(program,nodes,variables[..n],parameter,equations[..n],fixedCharts,cache);if(status!=AlgorithmStatus.Success){State.Failed[attribution]++;JacFailedTotal++;return status;}
             for(var row=0;row<n;row++)matrix[row*n+column]=equations[row].Derivative;variables[column]=new(boxes[column],0);
         }
-        return AlgorithmStatus.Success;
+        State.Succeeded[attribution]++;JacSucceededTotal++;return AlgorithmStatus.Success;
     }
     private static void Precondition(ReadOnlySpan<double> inverse,ReadOnlySpan<IntervalNumber> jacobian,BufferCount n,Span<IntervalNumber> result)
     {
