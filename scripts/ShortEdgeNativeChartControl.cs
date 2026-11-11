@@ -29,9 +29,13 @@ using(host)unsafe
         CompareFinitePair(schema,bytes,File.ReadAllBytes(Path.Combine(artifacts,args[2])),"native finite artifact pair");
         return;
     }
+    var output=Path.Combine(directory,"..","temp_docs","native-chart-control",Path.GetFileNameWithoutExtension(args[0]));
+    if(Directory.Exists(output))throw new InvalidOperationException("Use a new input filename; existing control evidence is immutable");
+    Directory.CreateDirectory(output);File.WriteAllBytes(Path.Combine(output,"input.x_t"),bytes);
     foreach(var sections in new[]{4,8})
     {
         var refined=Refine(schema,bytes,sections);
+        File.WriteAllBytes(Path.Combine(output,$"refined-{sections}.x_t"),refined);
         var reference=Read(bytes);var actual=0;
         try
         {
