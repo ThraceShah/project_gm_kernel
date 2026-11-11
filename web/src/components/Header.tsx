@@ -95,7 +95,9 @@ export const Header: React.FC<HeaderProps> = ({
               </span>
             </div>
             <div className="text-xs text-slate-500 flex items-center gap-3 min-w-0">
-              <span className="truncate">几何建模内核对比与工程指标追踪</span>
+              <a className="truncate text-sky-700 underline" href={new URLSearchParams(window.location.search).get('display') === 'real-uv' ? '?' : '?display=real-uv'}>
+                {new URLSearchParams(window.location.search).get('display') === 'real-uv' ? '独立真实 U/V 显示源 · 返回基线' : '真实 U/V 显示样例 · 独立来源 / 前后态'}
+              </a>
               {runMeta?.pkVersion && (
                 <span className="hidden sm:inline-block font-mono-code text-[11px] text-sky-700 bg-sky-50 px-1 rounded">
                   Oracle: {runMeta.pkVersion}
@@ -108,7 +110,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Run Selector */}
         {runs.length > 0 && (
           <div className="flex items-center gap-1.5 ml-2 border-l border-slate-200 pl-3 min-w-0">
-            <label className="text-xs text-slate-500 font-medium whitespace-nowrap">基线 Run:</label>
+            <label className="text-xs text-slate-500 font-medium whitespace-nowrap">{new URLSearchParams(window.location.search).get('display') === 'real-uv' ? '显示源:' : '基线 Run:'}</label>
             <select
               value={selectedRunId}
               onChange={(e) => onSelectRun(e.target.value)}

@@ -557,7 +557,7 @@ export const MeshViewer: React.FC<MeshViewerProps> = ({
         ) : null}
       </div>
 
-      {meshData?.displayProvenance && <div data-testid="uv-provenance" className="absolute bottom-2 left-2 right-2 text-[10px] text-slate-200 bg-slate-900/85 rounded border border-slate-700 px-2 py-1 pointer-events-auto">
+      {meshData?.displayProvenance && <div data-testid="uv-provenance" className="absolute bottom-2 right-2 w-72 max-w-[calc(100%-16px)] text-[10px] text-slate-200 bg-slate-900/85 rounded border border-slate-700 px-2 py-1 pointer-events-auto">
         <div><span className="text-sky-300">U = 常数 u</span> · <span className="text-purple-300">V = 常数 v</span> · {meshData.displayProvenance.snapshot} / {meshData.displayProvenance.stage}</div>
         <div>{meshData.surfaceParameters?.reason}</div>
         <a className="text-sky-300 underline" href={meshData.displayProvenance.evidencePath} target="_blank" rel="noreferrer" title={`mesh SHA ${meshData.displayProvenance.meshSha256}\nXT SHA ${meshData.displayProvenance.xtSha256}\nreceipt SHA ${meshData.displayProvenance.receiptSha256}`}>
