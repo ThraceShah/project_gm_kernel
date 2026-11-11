@@ -6,6 +6,45 @@ candidate acceptance. Boolean and Mac performance remain separate operations
 and owners. Native environment preparation actually returned ENV_READY for
 Linux x64 / PK 38.0 / PKToy `d820719` before execution. No C ABI or AOT work.
 
+## Functional scope and reused fixed evidence
+
+| Capability within the original plan | Current evidence and boundary |
+| --- | --- |
+| Convex planar single/separate/all-edge constant fillets; equal and designated unequal planar chamfers | New independent GM/PK local catalog, including an oriented block and prism, and copy/source deletion/mirror-scale/editable XT reload; finite analytic direction certificates where native raw senses differ. All geometry comparisons pass; original oblique fixture cleanup is tracked separately below. |
+| Cylinder one/both rim fillet, equal/unequal chamfer | Five catalog cases, independent construction plus the same full self lifecycle. |
+| Regular Plane/NURBS and NURBS/NURBS finite rolling bands, convex/concave classes | Computation unchanged from the fixed base; existing fixed evidence and managed regression retained. New plane/NURBS representative uses the current mass contract, with strict geometry passed and mass Unresolved. |
+| Smooth split carriers and certified equivalent, separate support records; modified support holes | Fixed support-chain and bore evidence reused; new separate-support representative additionally checks editable reload, copy/delete source and transformed product under the current comparator/mass contract. |
+| Three selected equal-radius convex bands and a trivalent corner; certified band extinction | Existing shared corner provider unchanged; fixed seven representative corner/extinction products and relevant managed positive/rollback tests retained. This is not arbitrary-valence corner repair. |
+| Finite heterogeneous cylinder-pair / plane-pair rolling network, positive short ICurves, support/contact boundaries and selected order | Fixed independently reviewed 96-case self Fix matrix retained. New single-operation lifecycle produces the same actual baseline product hash and verifies finite/UV/material ownership without a later Boolean. |
+| Nonadjacent components and finite band interactions | Fixed separated-network evidence retained; unsupported/uncertified interactions continue to fail atomically, with managed allocation and rollback coverage. |
+
+The original boundary remains constant radius and certified manifold solids.
+There is no new general variable-radius implementation, arbitrary high-valence
+corner repair, general mixed-convexity corner plan, arbitrary swept/spun or
+NURBS spine coverage, unrestricted curved termination or global self-intersection
+repair. Uncertified finite contacts, multiple branches, singular/overrun events
+and exhausted budgets remain explicit failures. General freeform chamfer APIs
+are not implied by the planar/axial chamfer rows.
+
+Fixed review `4c7646e1085e6fa786b2f335cabc7c086c008e13` was actually read from
+Git, including its operation-specific acceptance and original red gates.
+Its author evidence index in
+`../gm-pk-native-delivery/temp_docs/pk-native-delivery/evidence-final.sha256`
+has fixed digest `94752804be4ac709fbb4c1104b110b754787121c79a695b6f39723a5a12898c5`.
+This review verified all 726 entries and source identity; that verification is
+reused rather than relabeled as a new run here. The four reused source logs
+`regular-bore`, `support-chain`, `corner` and `separated-network` each still have
+original external exit 0 and were read without modification. Their actual log
+hashes are respectively `db275c4b3dccfc8d076565fcf19cdaa3c6bc8b7bdc066e504548e21e4394376b`,
+`c0c038d0cb23bdcb98fce1198f3f575d069d898f65349b705f40bd899d0dd62a`,
+`591e1695d3f7ea21707bd01ffc5ec49ad049fccb31dcb53099b569e51211902c` and
+`7ddc2b4507f7a9dc6d27f1e4fe28305ad9ae0bf37c9636ce2d4e73fb9b300a99`.
+The current source diff leaves the regular, support-chain and corner providers
+unchanged. The baseline's 0e/089 parent-line direction fixes are inherited;
+this delivery's only production change so far is planar contact/chamfer
+direction and temporary-carrier ownership. Shared Boolean development in the
+base and the separate Mac performance branch are not signed off by this table.
+
 ## Acceptance runner correction
 
 `RegularSolidBlendOracle` and `SupportBlendChainOracle` now use the existing
