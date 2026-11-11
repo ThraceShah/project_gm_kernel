@@ -16,7 +16,7 @@ const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 (async () => {
   const web = process.cwd(), dist = path.join(web, 'dist'), output = path.resolve(web, '../temp_docs/real-uv-context');
   fs.mkdirSync(output, { recursive: true });
-  const assetRoot = path.join(dist, 'data/display/real-uv');
+  const assetRoot = path.join(dist, 'display/real-uv');
   const assets = {};
   const walk = directory => { for (const name of fs.readdirSync(directory)) {
     const file = path.join(directory, name);
