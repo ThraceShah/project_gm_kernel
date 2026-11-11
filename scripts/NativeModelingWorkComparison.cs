@@ -90,6 +90,12 @@ return worst;
 
 static List<string> QualityReasons(string directory,int repeat)
 {
+    try{return ReadQualityReasons(directory,repeat);}
+    catch(Exception error) when(error is System.Text.Json.JsonException or InvalidOperationException or FormatException or IOException)
+    {return ["fail: unreadable current quality evidence: "+error.Message];}
+}
+static List<string> ReadQualityReasons(string directory,int repeat)
+{
     var reasons=new List<string>();var capturePath=Path.Combine(directory,"capture.json");
     if(!File.Exists(capturePath))return ["fail: missing capture"];
     var capture=JsonNode.Parse(File.ReadAllText(capturePath))!;
@@ -113,13 +119,188 @@ static List<string> QualityReasons(string directory,int repeat)
         var status=check?["status"]?.GetValue<string>();if(status is not ("pass" or "diagnostic"))reasons.Add((status=="fail"?"fail: ":"missing: ")+check?["id"]?.GetValue<string>());
         if(check?["evidence"] is JsonValue evidence&&!File.Exists(Path.Combine(directory,evidence.GetValue<string>())))reasons.Add("fail: referenced evidence missing");
     }
-    var mass=checks.Where(c=>c?["id"]?.GetValue<string>().StartsWith("quality-mass-",StringComparison.Ordinal)==true).ToArray();
-    if(mass.Length<15*repeat)reasons.Add("missing: bounded mass evidence");
-    foreach(var value in mass)if(value?["referenceModulus"]==null||value?["actualModulus"]==null||value?["normalizedUpper"]==null||value?["agreementStatus"]?.GetValue<string>()!="Verified")reasons.Add("missing: unverified mass modulus");
-    if(!checks.Any(c=>c?["id"]?.GetValue<string>().StartsWith("quality-compare-",StringComparison.Ordinal)==true))reasons.Add("missing: current AssertEquivalent observation");
-    if(!File.Exists(Path.Combine(directory,"identity","loaded.json")))reasons.Add("missing: actual loaded identity");
+    foreach(var group in checks.GroupBy(c=>Text(c,"id")))if(group.Key==null||group.Count()!=1)reasons.Add("fail: missing/duplicate check identity");
+    var identity=Read("identity/loaded.json");
+    foreach(var field in new[]{"calculationCommit","captureCommit"})
+        if(Text(identity,field) is not string commit||commit.Length!=40||!commit.All(char.IsAsciiHexDigit))reasons.Add("missing: loaded "+field);
+    foreach(var field in new[]{"captureSourceFileSha256","bodyCompareSourceFileSha256","massSourceFileSha256","kernelDllSha256","kernelPdbSha256","oracleDllSha256","oraclePdbSha256"})
+        if(!Digest(Text(identity,field)))reasons.Add("missing: loaded "+field);
+    var commandPath=Path.Combine(directory,"command.json");
+    if(File.Exists(commandPath))
+    {
+        var command=JsonNode.Parse(File.ReadAllText(commandPath))!;
+        Same(command["commit"],identity?["calculationCommit"],"command calculation source");
+        Same(command["captureCommit"],identity?["captureCommit"],"command capture source");
+    }
+    var exitPath=Path.Combine(directory,"process.exit");
+    if(File.Exists(exitPath))
+    {
+        if(!int.TryParse(File.ReadAllText(exitPath).Trim(),out var rawExit)||rawExit is not (0 or 2))reasons.Add("fail: original process exit");
+        else if(rawExit==2)reasons.Add("missing: original process unresolved");
+    }
+    var comparisons=new List<JsonNode>();var masses=new List<JsonNode>();
+    foreach(var kind in new[]{"compare","mass"})
+    {
+        var observations=checks.Where(c=>Text(c,"id")?.StartsWith("quality-"+kind+"-",StringComparison.Ordinal)==true).ToArray();
+        foreach(var group in observations.GroupBy(c=>Text(c,"evidence")))
+        {
+            var report=Read(group.Key);if(report==null)continue;
+            Same(report["captureIdentity"],identity,"report loaded identity");
+            var source=report["sourceBinding"];
+            if(source==null)reasons.Add("missing: report source binding "+group.Key);
+            else
+            {
+                Same(source["identity"],identity,"source loaded identity");
+                if(Text(source,"stage") is not string stage||Text(report,"label") is not string label||label!=stage&&label!=stage+" strict")
+                    reasons.Add("fail: report/source stage mismatch");
+                if(Text(source,"kind")=="GM-fresh-vs-native")
+                {
+                    Same(report["referenceBody"],source["referenceNativeBody"],"reference entity");
+                    Same(report["actualBody"],source["freshNativeBody"],"actual entity");
+                    if(Text(source,"actualOriginKernel")!="GM"||!Digest(Text(source,"gmXtSha256"))||!Digest(Text(source,"referenceXtSha256")))
+                        reasons.Add("missing: GM/native XT source identity");
+                }
+            }
+            foreach(var summary in group)
+            {
+                if(source!=null)Same(summary!["sourceBinding"],source,"summary/report source binding");
+                else if(summary!["sourceBinding"]!=null)reasons.Add("fail: summary invents source binding");
+            }
+            if(kind=="compare")
+            {
+                comparisons.Add(report);
+                if(group.Count()!=1)reasons.Add("fail: comparison report reused by multiple summaries");
+                foreach(var summary in group)
+                {
+                    if(Text(summary,"label")!=Text(report,"label")+" / current AssertEquivalent")reasons.Add("fail: compare label mismatch");
+                    if(Text(summary,"status")!=(Text(report,"status")=="Verified"?"pass":"fail"))reasons.Add("fail: comparison summary contradicts report");
+                }
+                if(Text(report,"status")=="Rejected"||report["error"]!=null)reasons.Add("fail: AssertEquivalent rejected");
+                else if(Text(report,"status")!="Verified")reasons.Add("missing: AssertEquivalent qualification");
+                Zero(report,"nativeError");Same(report["referenceType"],report["actualType"],"compared body types");
+                var mask=report["mask"];
+                if(mask==null||!Number(mask,"max_diffs",out var limit)||limit<=0||mask["all_tests"]?.GetValue<bool>()!=false
+                    ||mask["acc_dev_tests"]?.GetValue<bool>()!=false||mask["tol_dev_tests"]?.GetValue<bool>()!=true)
+                    reasons.Add("missing: strict comparison mask");
+                foreach(var field in new[]{"num_tests","class_tests","sense_tests","tol_tests","missing_tests","non_match_tests"})
+                    if(mask?[field]?.GetValue<bool>()!=true)reasons.Add("missing: compare mask "+field);
+                foreach(var field in new[]{"globalResult","localResult","facePairs"})if(!Number(report,field,out _))reasons.Add("missing: compare "+field);
+                foreach(var field in new[]{"globalDiffs","localDiffs","facePairRecords"})if(report[field] is not JsonArray)reasons.Add("missing: raw compare "+field);
+                if(report["globalDiffs"] is JsonArray global)foreach(var diff in global)
+                    Same(diff?["masters"],diff?["similars"],"global comparison counts");
+                if(report["localDiffs"] is JsonArray diffs)foreach(var diff in diffs)
+                    if(diff?["diagnostic"]?.GetValue<bool>()!=true&&diff?["conditionalFiniteProof"]?["proved"]?.GetValue<bool>()!=true)
+                        reasons.Add("fail: non-diagnostic compare difference without finite proof");
+            }
+            else
+            {
+                masses.Add(report);Zero(report,"referenceError");Zero(report,"actualError");
+                if(report["error"]!=null)reasons.Add("fail: mass observation error");
+                if(!Number(report,"accuracy",out var accuracy)||accuracy<=0||accuracy>1||!Number(report,"threshold",out var threshold)||threshold!=1e-7)
+                    reasons.Add("missing: bounded mass accuracy/threshold");
+                string[] names=["volume","mass","cog.x","cog.y","cog.z","inertia.xx","inertia.xy","inertia.xz","inertia.yx","inertia.yy","inertia.yz","inertia.zx","inertia.zy","inertia.zz","area"];
+                if(report["properties"] is not JsonArray properties){reasons.Add("missing: mass properties");continue;}
+                if(properties.Count!=names.Length||group.Count()!=names.Length)reasons.Add("missing: 15 bounded mass components and summaries");
+                var aggregate="Verified";var complete=true;
+                foreach(var name in names)
+                {
+                    var values=properties.Where(p=>Text(p,"property")==name).ToArray();
+                    var summaries=group.Where(c=>Text(c,"label")==Text(report,"label")+" / "+name).ToArray();
+                    if(values.Length!=1||summaries.Length!=1){reasons.Add("missing: unique mass component "+name);complete=false;continue;}
+                    var value=values[0]!;var summary=summaries[0]!;
+                    foreach(var field in new[]{"referenceEstimate","actualEstimate","referenceModulus","actualModulus","normalizedLower","normalizedUpper","agreementStatus"})
+                        Same(summary[field],value[field],"mass "+name+" "+field);
+                    Same(summary["stage"],report["label"],"mass stage");Same(summary["accuracy"],report["accuracy"],"mass accuracy");
+                    Same(summary["threshold"],report["threshold"],"mass threshold");
+                    if(!Number(value,"referenceEstimate",out var a)||!Number(value,"actualEstimate",out var b)
+                        ||!Number(value,"referenceModulus",out var ra)||!Number(value,"actualModulus",out var rb)
+                        ||!Number(value,"normalizedLower",out var lower)||!Number(value,"normalizedUpper",out var upper))
+                    {reasons.Add("missing: finite bounded mass fields "+name);complete=false;continue;}
+                    if(ra<0||rb<0||lower<0||upper<lower){reasons.Add("fail: invalid mass interval "+name);continue;}
+                    // Same outward interval arithmetic as the current producer; no PK integration.
+                    var a0=Math.BitDecrement(a-ra);var a1=Math.BitIncrement(a+ra);var b0=Math.BitDecrement(b-rb);var b1=Math.BitIncrement(b+rb);
+                    var minAbs=a0<=0&&a1>=0?0:Math.Min(Math.Abs(a0),Math.Abs(a1));var maxAbs=Math.Max(Math.Abs(a0),Math.Abs(a1));
+                    var gap=Math.Max(0,Math.BitDecrement(Math.Max(a0-b1,b0-a1)));var diameter=Math.BitIncrement(Math.Max(Math.Abs(a0-b1),Math.Abs(a1-b0)));
+                    var expectedLower=Math.Max(0,Math.BitDecrement(gap/Math.BitIncrement(1+maxAbs)));
+                    var expectedUpper=Math.BitIncrement(diameter/Math.BitDecrement(1+minAbs));
+                    if(!double.IsFinite(expectedUpper)||lower!=expectedLower||upper!=expectedUpper)reasons.Add("fail: mass bounds contradict estimates/moduli "+name);
+                    var state=upper<1e-7?"Verified":lower>=1e-7?"Different":"Unresolved";
+                    if(Text(value,"agreementStatus")!=state||Text(summary,"status")!=(state=="Verified"?"pass":state=="Different"?"fail":"missing"))
+                        reasons.Add("fail: mass state contradicts bounds "+name);
+                    if(state=="Different")aggregate=state;else if(state=="Unresolved"&&aggregate=="Verified")aggregate=state;
+                    if(state!="Verified")reasons.Add((state=="Different"?"fail: ":"missing: ")+"mass "+name+" "+state);
+                    if(Text(source,"actualOriginKernel")=="GM")
+                    {Same(summary["gm"],value["actualEstimate"],"GM mass estimate");Same(summary["pk"],value["referenceEstimate"],"PK mass estimate");}
+                }
+                if(complete&&Text(report,"agreementStatus")!=aggregate)reasons.Add("fail: mass aggregate contradicts components");
+            }
+        }
+    }
+    if(capture["steps"] is JsonArray actualSteps)for(var rep=0;rep<actualSteps.Count;rep++)
+    {
+        var step=actualSteps[rep]!;
+        if(Text(step,"id")!="operation-"+(rep+1))reasons.Add("fail: operation identity/order mismatch");
+        var gm=Read(Text(step["gm"],"after"));var pk=Read(Text(step["pk"],"after"));if(gm==null||pk==null)continue;
+        var gs=gm["source"];var ps=pk["source"];
+        Same(gs?["captureIdentity"],identity,"GM mesh loaded identity");
+        var snapshots=comparisons.Where(r=>Text(r["sourceBinding"],"kind")=="same-instance-snapshot-pair"
+            &&r["sourceBinding"]?["step"]?.GetValue<int>()==rep).ToArray();
+        if(snapshots.Length!=1)reasons.Add("missing: unique step snapshot comparison "+rep);
+        foreach(var snapshot in snapshots)
+        {
+            Same(snapshot["sourceBinding"]!["gmMesh"],step["gm"]!["after"],"step GM mesh");
+            Same(snapshot["sourceBinding"]!["pkMesh"],step["pk"]!["after"],"step PK mesh");
+            // Compare consumes retained PK copies, not the mesh tessellation
+            // snapshots. The producer binds those same-call entities by step
+            // and mesh links; their tags must not be equated to display tags.
+            foreach(var field in new[]{"actualBody","referenceBody"})
+                if(!Number(snapshot,field,out var tag)||tag<=0)reasons.Add("missing: retained snapshot entity "+field);
+        }
+        bool Product(JsonNode r)=>Text(r["sourceBinding"],"kind")=="GM-fresh-vs-native"
+            &&Equal(r["sourceBinding"]?["gmLiveBody"],gs?["sourceBodyTag"])
+            &&Equal(r["referenceBody"],ps?["sourceBodyTag"]);
+        var productMass=masses.Where(Product).ToArray();var productCompare=comparisons.Where(Product).ToArray();
+        if(productMass.Length!=1)reasons.Add("missing: unique step bounded mass report "+rep);
+        if(productCompare.Length!=1)reasons.Add("missing: unique step independent comparison "+rep);
+        foreach(var mass in productMass.Where(_=>productCompare.Length>0))
+            if(productCompare.Count(c=>Equal(c["referenceBody"],mass["referenceBody"])&&Equal(c["actualBody"],mass["actualBody"])
+                &&Equal(c["sourceBinding"]?["gmXtSha256"],mass["sourceBinding"]?["gmXtSha256"])
+                &&Equal(c["sourceBinding"]?["referenceXtSha256"],mass["sourceBinding"]?["referenceXtSha256"]))!=1)
+                reasons.Add("fail: step mass/compare native pair or XT source mismatch");
+        foreach(var side in new[]{"gm","pk"})
+        {
+            var api=checks.SingleOrDefault(c=>Text(c,"id")==side+"-"+rep+"-api");if(api!=null)Zero(api,side);
+        }
+        foreach(var side in new[]{(Id:"True",Value:"gm"),(Id:"False",Value:"pk")})
+        {
+            var body=checks.SingleOrDefault(c=>Text(c,"id")==rep+"-"+side.Id+"-body-check");if(body!=null)Zero(body,side.Value);
+        }
+    }
+    // A report with an explicit step must name a real current operation, even if
+    // all expected steps also happen to have another apparently valid report.
+    foreach(var report in comparisons.Where(r=>Text(r["sourceBinding"],"kind")=="same-instance-snapshot-pair"))
+        if(report["sourceBinding"]?["step"]?.GetValue<int>() is not int ordinal||ordinal<0||ordinal>=repeat)reasons.Add("fail: comparison has invalid step");
     return reasons;
+
+    JsonNode? Read(string? relative)
+    {
+        if(string.IsNullOrEmpty(relative)){reasons.Add("missing: required evidence link");return null;}
+        var path=Path.GetFullPath(Path.Combine(directory,relative));var within=Path.GetRelativePath(directory,path);
+        if(Path.IsPathRooted(relative)||within==".."||within.StartsWith(".."+Path.DirectorySeparatorChar,StringComparison.Ordinal))
+        {reasons.Add("fail: evidence outside current capture");return null;}
+        if(!File.Exists(path)){reasons.Add("missing: evidence file "+relative);return null;}
+        return JsonNode.Parse(File.ReadAllText(path));
+    }
+    void Same(JsonNode? a,JsonNode? b,string label)
+    {if(a==null||b==null)reasons.Add("missing: "+label);else if(!Equal(a,b))reasons.Add("fail: "+label+" mismatch");}
+    void Zero(JsonNode node,string field)
+    {if(!Number(node,field,out var value))reasons.Add("missing: API result "+field);else if(value!=0)reasons.Add("fail: API error "+field);}
 }
+static string? Text(JsonNode? node,string field)=>node?[field]?.GetValue<string>();
+static bool Equal(JsonNode? a,JsonNode? b)=>a!=null&&b!=null&&JsonNode.DeepEquals(a,b);
+static bool Number(JsonNode node,string field,out double value)
+{value=0;return node[field] is JsonValue scalar&&scalar.TryGetValue(out value)&&double.IsFinite(value);}
+static bool Digest(string? value)=>value?.Length==64&&value.All(c=>char.IsAsciiHexDigit(c));
 string Option(string name,string fallback){var at=Array.IndexOf(args,name);return at<0?fallback:args[at+1];}
 static string Source([CallerFilePath]string path="")=>path;
 static string Hash(string path)=>Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(path)));
