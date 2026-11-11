@@ -22,7 +22,11 @@ var timer=a.Length>1&&a[1].EndsWith(".timer",StringComparison.Ordinal);
 switch(a[0]){
 case "show":
  if(a.Contains("--property=LoadState"))Console.WriteLine("loaded");
- else if(a.Contains("--property=ExecStartPost"))Console.WriteLine("{ path=dotnet ; argv[]=dotnet run --file PublishReviewedWebProgressUi.cs ; }");
+ else if(a.Contains("--property=ExecStartPost")){
+  var hook=Path.Combine(state["units"]!.GetValue<string>(),"gm-kernel-progress-refresh.service.d","zz-reviewed-ui.conf");
+  var command=File.Exists(hook)?File.ReadAllLines(hook).Single(l=>l.StartsWith("ExecStartPost=dotnet "))["ExecStartPost=".Length..].Replace("%h/",Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)+"/"):"old-static-chain";
+  Console.WriteLine(state["postOverride"]?.GetValue<string>()??("{ path=dotnet ; argv[]="+command+" ; ignore_errors=no ; }"));
+ }
  else{Console.WriteLine("ActiveState="+state["writerActive"]);Console.WriteLine("SubState="+state["writerSub"]);Console.WriteLine("MainPID="+state["pid"]);Console.WriteLine("Job="+state["job"]);Console.WriteLine("TasksCurrent="+state["tasks"]);Console.WriteLine("ControlGroup="+state["group"]);}return 0;
 case "cat":Console.WriteLine("[Service]\nExecStart=old-producer\nExecStartPost=old-prepare\nExecStartPost=old-publish");return 0;
 case "is-enabled":Console.WriteLine(state["enabled"]!.GetValue<string>());return state["enabled"]!.GetValue<string>()=="enabled"?0:1;
@@ -59,9 +63,9 @@ JsonObject Read(string path) => JsonNode.Parse(File.ReadAllBytes(path))!.AsObjec
     var old = Path.Combine(units, "gm-kernel-progress-refresh.service.d", "10-old.conf"); Directory.CreateDirectory(Path.GetDirectoryName(old)!); File.WriteAllText(old, "[Service]\nExecStartPost=old-static-chain\n");
     Directory.CreateDirectory(Path.Combine(units, "default.target.wants"));
     File.CreateSymbolicLink(Path.Combine(units, "default.target.wants", "unrelated.service"), old);
-    Save(Path.Combine(release, "prepared.json"), new JsonObject { ["uiCommit"] = ui, ["uiHash"] = hash });
+    Save(Path.Combine(release, "prepared.json"), new JsonObject { ["uiCommit"] = ui, ["uiHash"] = hash, ["review"] = review });
     var state = Path.Combine(work, name, "stub.json");
-    Save(state, new JsonObject { ["active"] = active, ["enabled"] = enabled, ["writerActive"] = "inactive", ["writerSub"] = "dead", ["pid"] = "0", ["job"] = "", ["tasks"] = "[not set]", ["group"] = "" });
+    Save(state, new JsonObject { ["active"] = active, ["enabled"] = enabled, ["units"] = units, ["writerActive"] = "inactive", ["writerSub"] = "dead", ["pid"] = "0", ["job"] = "", ["tasks"] = "[not set]", ["group"] = "" });
     return (release, units, state, old);
 }
 Task<(int Exit, string Text)> Configure(string label, string mode, string release, string units, string state) => Run(label,

@@ -26,6 +26,7 @@
     <ProjectReference Include="$(MSBuildThisFileDirectory)../src/ProjectGmKernel.DisplayBridge/ProjectGmKernel.DisplayBridge.csproj" />
   </ItemGroup>
   <ItemGroup Condition="'$(UseWebProgressValidation)' == 'true' Or '$(UseWebProgressScheduler)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)ReviewedWebProgressRelease.cs" Link="ReviewedWebProgressRelease.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebProgressDataValidation.cs" Link="WebProgressDataValidation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebProgressPublishing.cs" Link="WebProgressPublishing.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebProgressMetadata.cs" Link="WebProgressMetadata.cs" />

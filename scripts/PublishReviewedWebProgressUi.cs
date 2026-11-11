@@ -12,7 +12,7 @@ using System.Text.Json.Nodes;
 // immutable, independently reviewed UI content hash. Default is prepare only.
 if (args.Contains("--help"))
 {
-    Console.WriteLine("PublishReviewedWebProgressUi --mode prepare|backup|publish|rollback --dist <relative immutable dist> --ui-commit <40hex> --dist-hash <64hex> --data <relative> --work <relative> [--review <40hex> --portalctl <relative> --previous-bundle <relative> --execute]");
+    Console.WriteLine("PublishReviewedWebProgressUi --mode prepare|backup|publish|rollback --dist <relative immutable dist> --ui-commit <40hex> --dist-hash <64hex> --data <relative> --work <relative> [--review <40hex> --portalctl <relative> --previous-bundle <relative> --execute; backup: --verify-served]");
     return 0;
 }
 var scripts = Path.GetDirectoryName(ScriptPath())!;
@@ -76,27 +76,46 @@ bool ValidBackup(string bundle, string metadata)
     try
     {
         var record = ReadObject(metadata);
+        ReviewedWebProgressRelease.CompleteBundle(bundle);
         return record?["schemaVersion"]?.GetValue<int>() == 1 && record["treeHash"]?.GetValue<string>() == TreeHash(Hashes(bundle))
             && File.Exists(Path.Combine(bundle, "index.html")) && File.Exists(Path.Combine(bundle, "data", "index.json"));
     }
     catch (System.Text.Json.JsonException) { return false; }
     catch (InvalidOperationException) { return false; }
+    catch (IOException) { return false; }
 }
 string? ExistingBackup()
 {
     var complete = Path.Combine(snapshot, "bundle");
+    var hookState = ReadObject(Path.Combine(work, "hook-backup", "state.json"));
+    if (hookState?["ownedUpgrade"]?.GetValue<bool>() == true)
+        return ReviewedWebProgressRelease.ValidBackup(snapshot, served: true)
+            && TreeHash(Hashes(complete)) == hookState["previousBundleHash"]?.GetValue<string>() ? complete : null;
     if (ValidBackup(complete, Path.Combine(snapshot, "metadata.json"))) return complete;
     return ValidBackup(backup, Path.Combine(work, "previous.json")) ? backup : null;
 }
-string EnsureBackup()
+async Task<string> EnsureBackup()
 {
-    var valid = ExistingBackup(); if (valid is not null) return valid;
+    var valid = ExistingBackup();
+    if (valid is not null)
+    {
+        if (args.Contains("--verify-served"))
+        {
+            await ReviewedWebProgressRelease.VerifyServed(valid);
+            var metadata = Path.Combine(snapshot, "metadata.json");
+            if (valid != Path.Combine(snapshot, "bundle")) throw new IOException("UI_LEGACY_BACKUP_REQUIRES_FRESH_WORK");
+            var record = ReadObject(metadata)!; record["servedVerified"] = true; WriteAtomic(metadata, record);
+        }
+        return valid;
+    }
     SafeTree(previous); Separate(work, previous);
     var source = Hashes(previous);
     if (!source.ContainsKey("index.html") || !source.ContainsKey("data/index.json")) throw new IOException("UI_BACKUP_SOURCE_INCOMPLETE");
     var validation = WebProgressDataValidation.Validate(Path.Combine(previous, "data"));
     if (validation["errors"]!.AsArray().Count > 0) throw new IOException("UI_BACKUP_SOURCE_INVALID " + validation.ToJsonString());
     var sourceHash = TreeHash(source);
+    ReviewedWebProgressRelease.CompleteBundle(previous);
+    if (args.Contains("--verify-served") || mode == "publish") await ReviewedWebProgressRelease.VerifyServed(previous);
     // If a prior record identifies the real old bundle, repair only from
     // that exact source. Never replace its history with today's new page.
     foreach (var metadata in new[] { Path.Combine(snapshot, "metadata.json"), Path.Combine(work, "previous.json") })
@@ -117,7 +136,7 @@ string EnsureBackup()
     Copy(previous, bundle, source);
     if (TreeHash(Hashes(previous)) != sourceHash || TreeHash(Hashes(bundle)) != sourceHash) throw new IOException("UI_BACKUP_SOURCE_CHANGED staging evidence retained");
     // Content and metadata become visible together, in one directory rename.
-    WriteAtomic(Path.Combine(staging, "metadata.json"), new JsonObject { ["schemaVersion"] = 1, ["treeHash"] = sourceHash, ["files"] = source.Count });
+    WriteAtomic(Path.Combine(staging, "metadata.json"), new JsonObject { ["schemaVersion"] = 1, ["treeHash"] = sourceHash, ["files"] = source.Count, ["servedVerified"] = args.Contains("--verify-served") || mode == "publish" });
     if (!ValidBackup(bundle, Path.Combine(staging, "metadata.json"))) throw new IOException("UI_BACKUP_INVALID staging evidence retained");
     Directory.Move(staging, snapshot);
     Console.WriteLine("UI_BACKUP_COMMITTED treeHash=" + sourceHash);
@@ -129,10 +148,7 @@ async Task Publish(string bundle)
     foreach (var arg in new[] { "static", "--slug", "gm-kernel-progress", "--name", "GM Kernel vs Parasolid 对比工作台", "--dir", bundle }) info.ArgumentList.Add(arg);
     using var process = Process.Start(info)!; await process.WaitForExitAsync();
     if (process.ExitCode != 0) throw new IOException("portalctl original exit=" + process.ExitCode);
-    using var http = new HttpClient(new HttpClientHandler { UseProxy = false }) { Timeout = TimeSpan.FromSeconds(20) };
-    const string origin = "https://qingyu1-linux.tail77e06.ts.net/apps/gm-kernel-progress/";
-    foreach (var relative in new[] { "index.html", "data/index.json" })
-        if (!Enumerable.SequenceEqual(File.ReadAllBytes(Path.Combine(bundle, relative)), await http.GetByteArrayAsync(origin + relative))) throw new IOException("served bytes differ: " + relative);
+    await ReviewedWebProgressRelease.VerifyServed(bundle);
 }
 Directory.CreateDirectory(work);
 using var lease = new FileStream(Path.Combine(work, "publish.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
@@ -144,7 +160,7 @@ if (mode == "rollback")
     File.WriteAllText(Path.Combine(work, "ROLLED_BACK"), "Stop or restore the previous static hook before resuming the timer.\n");
     return 0;
 }
-if (mode == "backup") { EnsureBackup(); return 0; }
+if (mode == "backup") { await EnsureBackup(); return 0; }
 if (File.Exists(Path.Combine(work, "ROLLED_BACK"))) throw new InvalidDataException("UI_ROLLED_BACK timer hook must be restored before a new release");
 var dist = Resolve("--dist"); var data = Resolve("--data");
 foreach (var path in new[] { dist, data }) { SafeTree(path); Separate(work, path); }
@@ -200,10 +216,7 @@ var published = ReadObject(Path.Combine(work, "published.json"));
 if (ExistingBackup() is null)
 {
     SafeTree(previous); Separate(work, previous);
-    using var http = new HttpClient(new HttpClientHandler { UseProxy = false }) { Timeout = TimeSpan.FromSeconds(20) };
-    foreach (var path in new[] { "index.html", "data/index.json" })
-        if (!Enumerable.SequenceEqual(File.ReadAllBytes(Path.Combine(previous, path)), await http.GetByteArrayAsync("https://qingyu1-linux.tail77e06.ts.net/apps/gm-kernel-progress/" + path))) throw new IOException("previous bundle does not match served slug");
-    EnsureBackup();
+    await EnsureBackup();
 }
 if (ExistingBackup() is null) throw new IOException("UI_BACKUP_INVALID cannot publish without exact rollback snapshot");
 if (published?["fingerprint"]?.GetValue<string>() == fingerprint) { Console.WriteLine("UI_SKIP_SAME includes UI identity"); return 0; }
