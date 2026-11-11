@@ -1,0 +1,169 @@
+{
+  "url": "https://qingyu1-linux.tail77e06.ts.net/apps/gm-kernel-progress/",
+  "releaseId": "ui-015-tools-1b93597",
+  "toolsCommit": "1b935972eff529e13b46cb9b08ad9550e0a6aeb5",
+  "toolsReview": "d32e862dc947702d4655912efc916d5c035df04b",
+  "uiCommit": "015cd308e147356fecac96bb7354ab1e92c36a03",
+  "uiReview": "f9ed821287c7bfb4e23963a10238c9de32a3854c",
+  "uiHash": "f0593760ed1e22dd73e94f609e9e2353366370b542019a90cb8f486f796a4dd6",
+  "releaseManifestSha256": "b86ccc134a3aa631387255743de1318d6b8e2868567cb739f36421d273524c2d",
+  "fullBundleHash": "8dca4b3500652fe0ff5161a8a5943abdcc5a69d0a40b472de17e95b1ca583069",
+  "files": 625,
+  "bytes": 28214939,
+  "historicalFilesPreserved": 607,
+  "dataIndexSha256": "117bb8e7ad20ea90aee004eb18428d2a220e5270795ab9ce81eff380843e3990",
+  "sourceIndexSha256": "bf46829ee02f2d6a48cdad042a52861fd234ddf25b1e24ea7961ad29045d80e3",
+  "baselineIndexReused": true,
+  "publishedUtc": "2026-11-11T08:25:07.8083983Z",
+  "publishedSgt": "2026-11-11T16:25:07.8083983\u002B08:00",
+  "immutableManifestFilesVerified": 635,
+  "currentHookSha256": "d2f307d442402b140e11a8bd51227be46bd9d6ddad7cda5ddca6799897452c7d",
+  "previousUI424BundleHash": "ffcf2b2269f8208622da84ded3346f72f63288d63ecfc9e91bb9b2b96676a1b7",
+  "previousDropinsHash": "0101881925a646c36429fcb891c77aa6ebf357f18379b1e6fca99d88c422f255",
+  "timerActive": true,
+  "timerEnabled": "enabled",
+  "automaticCycleObserved": true,
+  "automaticCycleExit": 0,
+  "legacyAttempted": 17,
+  "legacyPassed": 14,
+  "legacyFailed": 3,
+  "browserChecks": 15,
+  "browserAllPassed": true,
+  "keyResources": [
+    {
+      "path": "index.html",
+      "status": 200,
+      "sha256": "c5420fb0ef2970764c040624a4430ee764bce2bb2020c1c1bf4294a009a99d0c",
+      "bytes": 855
+    },
+    {
+      "path": "data/index.json",
+      "status": 200,
+      "sha256": "117bb8e7ad20ea90aee004eb18428d2a220e5270795ab9ce81eff380843e3990",
+      "bytes": 854
+    },
+    {
+      "path": "assets/index-DrvXrYSu.css",
+      "status": 200,
+      "sha256": "2ab99dacb75729be431d09937db1f14d7e727393e7006f5b56d5e6b4d5589b08",
+      "bytes": 31187
+    },
+    {
+      "path": "assets/index-Dn6S0cNr.js",
+      "status": 200,
+      "sha256": "8e5cb715d4c469db6aef267b649a2d33e9ce58865de92c06ec296c9a0daeead7",
+      "bytes": 873695
+    },
+    {
+      "path": "data/runs/20261110T195008Z-610e3ce8/manifest.json",
+      "status": 200,
+      "sha256": "03c2f12134e152e37cb5bc5f7b9fd3a7e093ad0a30453501b579af3d50f0a66d",
+      "bytes": 1474305
+    },
+    {
+      "path": "data/runs/20261110T195008Z-610e3ce8/cases/support-chain.asymmetric43-base/sample-0/meshes/gm-0-before.json",
+      "status": 200,
+      "sha256": "fb3fa07d28575cd95177ad89a11de0a8d57c7a83ee5eb32446e40fadc8eeac3c",
+      "bytes": 16160
+    },
+    {
+      "path": "data/runs/20261110T191615Z-4e60884b/cases/support-chain.asymmetric43-base/sample-0/oracle.log",
+      "status": 200,
+      "sha256": "03b86df22ca38bfd5730cfa7793b1b6a61958cf7996dfb80107b63260035eafb",
+      "bytes": 5822
+    }
+  ],
+  "displayResources": [
+    {
+      "path": "display/real-uv/gm-after.iso.json",
+      "status": 200,
+      "sha256": "d12092402e590ce680233bcddb1bb1fa528d99b44df5a3eeae59becb8b6a82a5",
+      "bytes": 19886
+    },
+    {
+      "path": "display/real-uv/manifest.json",
+      "status": 200,
+      "sha256": "4727934d55dfc32a58f78f110299c37198a98ddb441e1365a007917d8330f913",
+      "bytes": 2195
+    },
+    {
+      "path": "display/real-uv/gm-before.iso.json",
+      "status": 200,
+      "sha256": "6c36c4d940cf7d6178afe5f550a51f26561b27e4a2c6bb2ec7d537eaa685ec13",
+      "bytes": 15162
+    },
+    {
+      "path": "display/real-uv/display-manifest.json",
+      "status": 200,
+      "sha256": "0875f9b8208db2d248e3a4fc912b0f5a077d75deaba8b3d1553b840dfb732714",
+      "bytes": 3788
+    },
+    {
+      "path": "display/real-uv/pk-after.iso.json",
+      "status": 200,
+      "sha256": "9fa3bb4313eb0cf98e9c8aadf54610697197de6a0c7d3c1d4b1f3bd231dbe6a3",
+      "bytes": 20253
+    },
+    {
+      "path": "display/real-uv/pk-before.iso.json",
+      "status": 200,
+      "sha256": "94cbcddfac053c4971a4dffa77ece2daeccecf0ddc95734620d3f3c3eee5a8fb",
+      "bytes": 15103
+    },
+    {
+      "path": "display/real-uv/index.json",
+      "status": 200,
+      "sha256": "97ba0cf53cf118b60bbdb75a0b1e93253538c20844310fa2f9561d48064810e8",
+      "bytes": 361
+    },
+    {
+      "path": "display/real-uv/display/snapshot-0.receipt.json",
+      "status": 200,
+      "sha256": "d6e82fe0e9a08037ab8a733f41eb1a1f183b4a6236c92066dc6774c3dbfc223f",
+      "bytes": 1100
+    },
+    {
+      "path": "display/real-uv/display/snapshot-2.receipt.json",
+      "status": 200,
+      "sha256": "9038b391a4f133a70b17bafde43fd01bb37026a8b26ecff1de3ed12cb00df962",
+      "bytes": 1100
+    },
+    {
+      "path": "display/real-uv/display/snapshot-1.receipt.json",
+      "status": 200,
+      "sha256": "8a810b64401cf7a93a354f3d077be9058dfa80284d9b3cd39acd27b77d17ecf5",
+      "bytes": 1097
+    },
+    {
+      "path": "display/real-uv/display/snapshot-3.receipt.json",
+      "status": 200,
+      "sha256": "e2dba548ee557cc39725b2908d6b1833e8f834a0906912f936af13c711f5697c",
+      "bytes": 1097
+    },
+    {
+      "path": "display/real-uv/meshes/pk-after.mesh.json",
+      "status": 200,
+      "sha256": "1024e741e3f4c4daadbef671e43c3aa78a05966861e80a5d9cea41716f36baed",
+      "bytes": 22151
+    },
+    {
+      "path": "display/real-uv/meshes/gm-after.mesh.json",
+      "status": 200,
+      "sha256": "ee8ef5dbb75f97a7942c5647e315b942743550c71994ec62f0992fbcc3f495f1",
+      "bytes": 37668
+    },
+    {
+      "path": "display/real-uv/meshes/gm-before.mesh.json",
+      "status": 200,
+      "sha256": "f19b18867e17ae47fac8b2b2a0489b27f3049da6c3f03d9e87fcd5bbd0d06b22",
+      "bytes": 13081
+    },
+    {
+      "path": "display/real-uv/meshes/pk-before.mesh.json",
+      "status": 200,
+      "sha256": "555d53765eb2ef485d38c3e8da70b08f66b6e808da1ece1fc9a11b9b21d7b3b3",
+      "bytes": 13126
+    }
+  ],
+  "checkedUtc": "2026-11-11T08:32:19.9139539\u002B00:00"
+}
