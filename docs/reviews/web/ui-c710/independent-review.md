@@ -17,10 +17,14 @@
 | `MSBUILDDISABLENODEREUSE=1 dotnet run docs/reviews/web/ui-c710/Review.cs` | **1**；28项，25pass/3fail，0 pageerror |
 | 同命令加 `-- --picking-only`，首次setup | **9**；Node把mode解释成option，未启动浏览器，属于自有工具参数错误 |
 | 修正Node参数分隔符后，同picking-only命令 | **1**；8项，6pass/2fail，0 pageerror |
+| 同入口 `-- --occlusion-only`，首次视角前提检查 | **1**；仅翻转Z仍位于Y负侧，feature实际48/48可见，未形成遮挡负控，是自有视角假设错误 |
+| 增加一次垂直orbit到实际后侧后的occlusion-only | **0**；6项全pass：feature遮挡、linked orbit、snapshot/playback保姿及无pageerror |
 
 第一次完整探针的两次点击取黄色像素的左上角，且点靠近右端，存在端点/像素边界歧义，因此不能单独据此断言普遍拾取错误。后续唯一一轮专门使用黄色线横向25%、50%、75%的**像素中心**，两侧共6次真实浏览器点击；中段仍有失败，确认下列阻断。原exit、原结果和首次setup错误均保留，未将探针错误称实现失败。
 
 原始日志与JSON在 `temp_docs/ui-c710-review/review.log`、`picking-setup.log`、`picking.log`、`independent/report.json`、`independent/picking-report.json`；可复现C#入口是本目录 `Review.cs`，所有路径相对脚本自身解析。它只构建临时浏览器/HTTP进程，不调用PK，也不写源data。
+
+遮挡探针原错误前提分别保存在 `occlusion-frontside.log`、`independent/occlusion-frontside-report.json`；修正后原记录为 `occlusion.log`、`independent/occlusion-report.json`。未将前一视角仍可见的正确渲染当作实现失败；最终代码的遮挡模式包含水平和垂直两个手动orbit。实际执行环境：.NET SDK10.0.302、Node22.22.1、pnpm9.15.9、Chromium1248目录内Chrome156.0.8078.4，软件WebGL、DPR1。没有安装新依赖或修改全局配置。
 
 ## 阻断B1：可见黄色描线部分区段选成未修改边
 
@@ -35,6 +39,8 @@
 
 LineSegments2继承Mesh的统计风险已独立实际核验：Before两侧均 **10faces / 20edges / 102triangles**，与原mesh faces/edges/indices逐项一致。源码先判断 `userData.type==='edge'` 再判断Mesh，故本case没有把黄色线网格误算成面/三角形；清理路径也覆盖Mesh。错误属于交互拾取，不是这里的计数污染。
 
+深度遮挡另有真实浏览器负控：关闭半透明后手动绕至pose `(0.50,1.17,-0.25)`、target `(0.50,0,1)`，两侧选中边48个采样均被遮挡，canvas黄色像素均为0；实际截图也没有穿过不透明实体的黄色线。随后snapshot切换及真实播放均保持该手动pose，两侧一致，6项退出0。此通过项不抵消B1的可见线拾取错误；它也不证明所有透明排序/视角组合。
+
 ## 阻断B2：原29条全部保留，但只有五组
 
 实际UI组依次为API return2、辅助/拓扑/故障/exit9、BODY_check2、主比较1、物性15；总29未丢行。用户本轮要求六组，原审计映射应为主比较1、重叠拓扑计数5、操作返回/fault/body-set5、双BODY_check2、物性15、原场景出口1。当前把exit及多种义务揉在9条辅助组，又把API return2单列，未落实六组映射；报告不把5组说成6组。
@@ -48,7 +54,7 @@ LineSegments2继承Mesh的统计风险已独立实际核验：Before两侧均 **
 | 共享小字单行图例在3D外 | desktop只有一份，位于canvas上方；320/390保持自身单行横向滚动且文档无横向溢出；通过 |
 | 验收默认收起、展开遮盖3D | default无dialog；打开后canvas仍823×984级大小，overlay从main顶部覆盖canvas，宽1645、高1171；展开29行后内部scrollTop确实可变化；Tab留在dialog，Escape关闭并返回原调用summary；通过 |
 | 查看修改可看到真实feature | Before两侧48/48采样无遮挡，投影长度均约675.37px，实际黄色线清晰；After点击查看修改后两侧48/48、投影面积约57172.9/57273.1px²，实际宽绿面约59411/59397像素可见；视觉通过，拾取另由B1阻断 |
-| 双侧公平相机 | Before与After实际pose/target两侧相同；本轮点击交互后切换snapshot不抢镜；作者固定610输入报告另有linked orbit、manual orbit跨step/playback、unlink/relink、424 delayed/aborted/recovery及run切换通过，明确作为复用作者证据；不冒称本轮独立重跑57项 |
+| 双侧公平相机 | Before与After实际pose/target两侧相同；本轮真实手动orbit后，snapshot切换及播放均不抢镜；作者固定610输入报告另有unlink/relink、424 delayed/aborted/recovery及run切换通过，明确作为复用作者证据；不冒称本轮独立重跑57项 |
 | 主PK摘要与原flags | 实际读取manifest的compare路径；截图global21921/local21930/facePairs7及12条n_cht_pts诊断，max1024/allfalse/accfalse/toldevtrue及其余true完整可展开；原local未说零差异；不同case的实际raw结果也核对，缺失证据显示不可用而不借前case通过；通过 |
 | 原数据时间/代码/样本 | 数据面板取manifest run.generatedAt、commit、scope和configuration；包含17executed/463registered/samplesRequested1，未混入index.generatedAt；644.54x只在历史性能detail并标非本轮优化结论；通过 |
 
@@ -62,8 +68,12 @@ LineSegments2继承Mesh的统计风险已独立实际核验：Before两侧均 **
 
 作者额外38项ownership/tool suite使用较旧跟踪run `20261110T180347Z-90acd4a9`，只作历史辅助证据，**不替代本轮指定610截图数据**。本报告未重跑该全套，也未从其绿色结果推断B1拾取必正确。
 
+原用户截图入口 `../../../../code/orca-worker/workspace/ui-feedback/workbench-20261111.png`，SHA256 `42b53fbaa8d1055ce3df490e5fd4cf38dfca41a7c3ebf262521d84c5027a2991`。作者candidate-report SHA256 `f6c4ad0ef5cb89ace7389bdda0866d10633098c44a000c5f8cebe5c5057e132b`，baseline-report为 `30270e508d070053229da02c755a5a3253b5bc61ae46c533255663a227d68a85`；其中时间/结果只作为既有证据引用，不改写为本轮新运行。
+
 ## 后续最小动作与未验证项
 
 修复B1的可见线命中竞争，先仅复验上述两处失败像素中心及四处正确控制，确保仍depth-test、未改相机公平性或mask；修复B2后只核六组映射及29原行。没有证据要求重新采集PK数据、跑全部case、重算bench或更新历史时间。固定c710仍blocked，以上通过项保持有限接受；报告不自发布，也不批准新的未审SHA。
 
 未证明所有模型/相机/设备像素比下的遮挡与拾取完整性，未做完整历史suite、实时线上部署核验、内核/UV/PK新运行或稳定性能测量。相机数据的数值一致检查使用组件舍入后的telemetry并结合共享pose源码，不能冒称独立测得所有浮点camera matrix逐位相同。
+
+提交内保留 `browser-report.json`（SHA256 `421c57bf91c37ce7cab6e785a5001865f0693efa29fdf4c4b5f2471666a911f2`）、`picking-report.json`（`98b55b44a86bdc9e2409bcad0219f61940ecc3deb6b9627a53642810be4a3a79`）、`occlusion-report.json`（`53ca68167e5ee432a0f421d323e3e24f9aee8db162748147b253f319e59ffec1`）和最终C#复现入口（`8f05cb5fbdbb06d10e5894c52527be8c384eac2495305535eda6cb42cc63dace`）。报告原结果未被后续模式覆盖；source仅增加有限mode和正确参数分隔，未为求绿调整拾取断言或改候选。最终 `git diff --check` 通过，publisher源index指纹仍与输入相同；原c9b88审计保持不动。

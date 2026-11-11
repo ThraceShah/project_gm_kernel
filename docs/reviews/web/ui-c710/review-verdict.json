@@ -1,0 +1,54 @@
+{
+  "candidate": "c710171bfea776a77217a3c417bc73f7906ac4fd",
+  "base": "424e85d6aac32c2afe7cad12cfd04bea4f0037ab",
+  "verdict": "blocked",
+  "deployAuthorized": false,
+  "dataRun": "20261110T195008Z-610e3ce8",
+  "dataIndexSha256": "117bb8e7ad20ea90aee004eb18428d2a220e5270795ab9ce81eff380843e3990",
+  "case": "support-chain.asymmetric43-base",
+  "browserBatches": [
+    { "mode": "full focused review", "exit": 1, "pass": 25, "fail": 3, "pageErrors": 0, "note": "Initial two pixel-corner picks had endpoint ambiguity; dedicated interior test below confirms partial mismatch." },
+    { "mode": "picking-only", "exit": 1, "pass": 6, "fail": 2, "pageErrors": 0 },
+    { "mode": "occlusion-only final", "exit": 0, "pass": 6, "fail": 0, "pageErrors": 0 }
+  ],
+  "blockers": [
+    {
+      "id": "B1",
+      "description": "Visible yellow selected-edge interior points resolve to unchanged edges",
+      "input": { "stage": "Before", "viewport": [1965, 1228], "opacity": 0.25, "linked": true },
+      "failures": [
+        { "pane": "GM", "point": [545.5, 649.5], "actual": "gm:edge:104", "actualRole": "unchanged", "expectedSelected": ["gm:edge:106", "gm:edge:107"] },
+        { "pane": "PK", "point": [1369, 648.5], "actual": "pk:edge:166", "actualRole": "unchanged", "expectedSelected": ["pk:edge:107", "pk:edge:148"] }
+      ],
+      "positiveControls": "50% and 75% rendered yellow pixel centers select the intended selected-edge set in both panes",
+      "rootCauseProven": false
+    },
+    {
+      "id": "B2",
+      "description": "29 original rows are preserved in five groups rather than the requested six",
+      "actualGroupSizes": [2, 9, 2, 1, 15],
+      "requestedGroupSizes": [1, 5, 5, 2, 15, 1],
+      "rowsLost": 0
+    }
+  ],
+  "acceptedFiniteScope": [
+    "One external compact legend; desktop and 320/390 internal scrolling",
+    "Evidence initially closed, overlays 3D, internal scrolling, Tab trap and Escape/focus restoration",
+    "Visible selected edges and filled new blend faces under shared operation framing",
+    "10 faces / 20 edges / 102 triangles per Before pane match real mesh; LineSegments2 excluded from face statistics",
+    "Depth-tested selected edges remain hidden behind opaque geometry in one genuine backside control",
+    "Linked pose and manual orbit survive snapshot/playback",
+    "Actual manifest/raw comparison fields, flags, 12 chart diagnostics and unavailable state",
+    "Manifest collection timestamp, source commit and historical single-sample performance scope"
+  ],
+  "reusedAuthorEvidence": {
+    "candidateReportRows": 57,
+    "candidateReportFailures": 0,
+    "usesDispatched610Data": true,
+    "ownershipToolSuiteUsesOlderTrackedRun": true,
+    "independentlyReranFullSuites": false
+  },
+  "unchanged": ["kernel", "Capture", "acceptance", "mask", "UV source", "historical data", "live", "unit", "portal", "main"],
+  "newPKCalls": 0,
+  "newDataCollections": 0
+}

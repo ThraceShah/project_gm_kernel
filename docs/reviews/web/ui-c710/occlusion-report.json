@@ -1,0 +1,89 @@
+{
+  "candidate": "c710171bfea776a77217a3c417bc73f7906ac4fd",
+  "base": "424e85d6aac32c2afe7cad12cfd04bea4f0037ab",
+  "indexHash": "117bb8e7ad20ea90aee004eb18428d2a220e5270795ab9ce81eff380843e3990",
+  "run": "20261110T195008Z-610e3ce8",
+  "rows": [
+    {
+      "name": "published input index matches dispatched hash",
+      "ok": true,
+      "detail": "117bb8e7ad20ea90aee004eb18428d2a220e5270795ab9ce81eff380843e3990"
+    },
+    {
+      "name": "opaque opposite-side selected edge stays occluded",
+      "ok": true,
+      "detail": {
+        "view": [
+          {
+            "body": "gm:37",
+            "faces": 10,
+            "edges": 20,
+            "triangles": 102,
+            "pose": "0.50,1.17,-0.25",
+            "target": "0.50,0.00,1.00",
+            "feature": {
+              "samples": 48,
+              "visible": 0,
+              "visibleFraction": 0,
+              "projectedPixels": 0,
+              "projectionUnit": "length-px",
+              "bounds": null,
+              "reason": "选中边 · 可见性采样"
+            }
+          },
+          {
+            "body": "pk:51",
+            "faces": 10,
+            "edges": 20,
+            "triangles": 102,
+            "pose": "0.50,1.17,-0.25",
+            "target": "0.50,0.00,1.00",
+            "feature": {
+              "samples": 48,
+              "visible": 0,
+              "visibleFraction": 0,
+              "projectedPixels": 0,
+              "projectionUnit": "length-px",
+              "bounds": null,
+              "reason": "选中边 · 可见性采样"
+            }
+          }
+        ],
+        "raster": [
+          {
+            "yellow": 0,
+            "green": 0,
+            "point": null,
+            "width": 823,
+            "height": 984
+          },
+          {
+            "yellow": 0,
+            "green": 0,
+            "point": null,
+            "width": 822,
+            "height": 984
+          }
+        ]
+      }
+    },
+    {
+      "name": "manual opposite-side orbit stays linked",
+      "ok": true
+    },
+    {
+      "name": "manual orbit survives snapshot change",
+      "ok": true
+    },
+    {
+      "name": "manual orbit survives actual playback",
+      "ok": true
+    },
+    {
+      "name": "no occlusion page errors",
+      "ok": true,
+      "detail": []
+    }
+  ],
+  "errors": []
+}
