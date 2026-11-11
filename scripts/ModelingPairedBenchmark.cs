@@ -32,6 +32,19 @@ if(args.Contains("--validate-fixtures",StringComparer.Ordinal))
     Console.WriteLine(failures==0?"PASS modeling-paired-benchmark qualification self-test":$"FAIL {failures} fixture verdicts wrong");
     return failures==0?0:3;
 }
+if(args.Contains("--revalidate",StringComparer.Ordinal))
+{
+    var at=Array.IndexOf(args,"--revalidate");
+    var captureDirectory=args[at+1];var caseToken=args[at+2];var expectedReps=int.Parse(args[at+3],CultureInfo.InvariantCulture);
+    var bench=ResolveCases(caseToken).Single();
+    var capturePath=Path.Combine(captureDirectory,"capture.json");
+    var capture=File.Exists(capturePath)?JsonNode.Parse(File.ReadAllText(capturePath))!.AsObject():null;
+    var text=File.Exists(Path.Combine(captureDirectory,"oracle.log"))?File.ReadAllText(Path.Combine(captureDirectory,"oracle.log")):"";
+    var verdict=Qualify(bench,capture,text,0,false,expectedReps,captureDirectory);
+    Console.WriteLine($"revalidate {caseToken} {captureDirectory}: qualified={verdict.Qualified}");
+    foreach(var reason in verdict.Reasons)Console.WriteLine("  reason: "+reason);
+    return verdict.Qualified?0:5;
+}
 var mode=Option("--mode","measure");
 if(mode is not ("measure" or "profile"))throw new ArgumentException("--mode must be measure or profile");
 var coldCount=Number("--cold",3);
@@ -226,46 +239,77 @@ static Verdict Qualify(BenchCase bench,JsonObject? capture,string text,int exitC
     if(captureErrors!=null&&captureErrors.Count>0)reasons.Add("captureErrors non-empty");
     if(File.Exists(Path.Combine(caseDirectory,"export-errors.json"))||File.Exists(Path.Combine(caseDirectory,"capture-errors.json")))reasons.Add("observer export errors");
     if(text.Contains(": error CS",StringComparison.Ordinal)||text.Contains("The build failed.",StringComparison.Ordinal))reasons.Add("build failure");
-    var timings=capture["timings"]?.AsArray();
-    if(timings==null||timings.Count==0){reasons.Add("no captured timings");return new(false,reasons);}
-    var gm=timings.Where(t=>t!["kernel"]!.GetValue<string>()=="gm").Select(t=>t.AsObject()).ToArray();
-    var pk=timings.Where(t=>t!["kernel"]!.GetValue<string>()=="pk").Select(t=>t.AsObject()).ToArray();
-    if(gm.Length!=pk.Length)reasons.Add($"gm/pk timing count mismatch {gm.Length}/{pk.Length}");
-    if(gm.Length!=expectedReps)reasons.Add($"repetition count {gm.Length} != expected {expectedReps}");
-    foreach(var (side,rows) in new[]{("gm",gm),("pk",pk)})
-        foreach(var row in rows)
-        {
-            double ms;
-            try{ms=row["ms"]?.GetValue<double>()??double.NaN;}catch(Exception){ms=double.NaN;}
-            if(!double.IsFinite(ms)||ms<=0)reasons.Add($"{side} timing not finite positive: {ms}");
-            if(row["error"]?.GetValue<int>()!=0)reasons.Add($"{side} api error {row["error"]}");
-        }
-    // Per-rep unique paired owner: every captured step carries exactly one gm
-    // and one pk timing, and the step's title is the expected API.
+    // Steps closure: the step table is the single owner registry. It must be
+    // present, non-empty, uniquely and legally parseable ("operation-N", N>=1),
+    // and every step title must be exactly the declared API of this case.
+    // Broken steps never fall back to owner 0 or array-length guesses.
+    var stepOwners=new Dictionary<int,string>();
     var steps=capture["steps"]?.AsArray();
-    var stepTitles=new Dictionary<int,string>();
-    if(steps!=null)foreach(var step in steps)
-        if(int.TryParse(step!["id"]?.GetValue<string>()?.Replace("operation-","",StringComparison.Ordinal),out var ordinal))
-            stepTitles[ordinal-1]=step["title"]?.GetValue<string>()??"";
-    var gmSteps=gm.Select(t=>t["step"]!.GetValue<int>()).ToArray();
-    var pkSteps=pk.Select(t=>t["step"]!.GetValue<int>()).ToArray();
-    if(gmSteps.Distinct().Count()!=gmSteps.Length||pkSteps.Distinct().Count()!=pkSteps.Length)reasons.Add("duplicated step owner");
-    foreach(var step in gmSteps.Intersect(pkSteps))
+    if(steps==null||steps.Count==0)reasons.Add("steps missing or empty");
+    else foreach(var step in steps.OfType<JsonObject>())
     {
-        if(stepTitles.TryGetValue(step,out var title)&&title!=bench.OperationApi)reasons.Add($"step {step} title '{title}' != expected API '{bench.OperationApi}'");
-        var required=RequiredCheckIds(step,bench.ApiKind);
-        var present=capture["checks"]?.AsArray()?.Select(c=>c!["id"]!.GetValue<string>()).ToHashSet()??[];
-        foreach(var id in required)if(!present.Contains(id))reasons.Add("missing check "+id);
+        var id=step["id"]?.GetValue<string>();
+        if(id==null||!id.StartsWith("operation-",StringComparison.Ordinal)||!int.TryParse(id["operation-".Length..],NumberStyles.None,CultureInfo.InvariantCulture,out var number)||number<1)
+        {reasons.Add("unparseable step id '"+(id??"<null>")+"'");continue;}
+        if(!stepOwners.TryAdd(number-1,id))reasons.Add("duplicate step id "+id);
+        var title=step["title"]?.GetValue<string>();
+        if(title!=bench.OperationApi)reasons.Add($"step {id} title '{title}' != expected API '{bench.OperationApi}'");
     }
-    foreach(var step in gmSteps.Except(pkSteps))reasons.Add($"gm step {step} has no pk owner");
-    foreach(var step in pkSteps.Except(gmSteps))reasons.Add($"pk step {step} has no gm owner");
+    // Timings closure: every row is validated; unknown kernels, orphan or
+    // unparseable owners, api errors and non-finite/non-positive times are
+    // never filtered out before validation.
+    var timings=capture["timings"]?.AsArray();
+    if(timings==null||timings.Count==0)reasons.Add("no captured timings");
+    var gm=new List<int>();var pk=new List<int>();
+    if(timings!=null)for(var row=0;row<timings.Count;row++)
+    {
+        var entry=timings[row] as JsonObject;
+        if(entry==null){reasons.Add($"timing row {row} is not an object");continue;}
+        var kernel=entry["kernel"]?.GetValue<string>();
+        if(kernel is not ("gm" or "pk")){reasons.Add($"timing row {row} unknown kernel '{kernel}'");continue;}
+        if(entry["step"] is not JsonValue valueNode||!valueNode.TryGetValue<int>(out var owner))
+        {reasons.Add($"timing row {row} unparseable step owner");continue;}
+        if(!stepOwners.ContainsKey(owner))reasons.Add($"timing row {row} owner step {owner} has no parseable step entry");
+        var ms=SafeMs(entry);
+        if(!double.IsFinite(ms)||ms<=0)reasons.Add($"{kernel} timing row {row} not finite positive: {ms}");
+        if(entry["error"] is not JsonValue errorNode||!errorNode.TryGetValue<int>(out var error)||error!=0)reasons.Add($"{kernel} timing row {row} api error");
+        if(entry["resultStatus"] is not JsonValue statusNode||!statusNode.TryGetValue<int>(out _))reasons.Add($"{kernel} timing row {row} missing resultStatus");
+        (kernel=="gm"?gm:pk).Add(owner);
+    }
+    // Per-rep unique paired owner: repetitions 0..expectedReps-1 each own one
+    // gm and one pk row and nothing else may exist.
+    for(var rep=0;rep<expectedReps;rep++)
+    {
+        if(gm.Count(o=>o==rep)!=1)reasons.Add($"rep {rep} has {gm.Count(o=>o==rep)} gm owners, expected exactly 1");
+        if(pk.Count(o=>o==rep)!=1)reasons.Add($"rep {rep} has {pk.Count(o=>o==rep)} pk owners, expected exactly 1");
+    }
+    foreach(var owner in gm.Concat(pk).Distinct())if(owner<0||owner>=expectedReps)reasons.Add($"timing owner step {owner} outside 0..{expectedReps-1}");
+    if(timings!=null&&timings.Count!=2*expectedReps)reasons.Add($"timing row count {timings.Count} != 2*{expectedReps}");
+    // Checks closure: every required primary must be present with status
+    // exactly "pass"; diagnostic never satisfies a required primary. Every
+    // remaining check row must pass or be an explicitly whitelisted
+    // diagnostic; unknown statuses are rejected.
+    var seenChecks=new HashSet<string>();
     var checks=capture["checks"]?.AsArray();
+    var required=new HashSet<string>();
+    for(var rep=0;rep<expectedReps;rep++)foreach(var id in RequiredCheckIds(rep,bench.ApiKind))required.Add(id);
     if(checks==null||checks.Count==0)reasons.Add("no checks recorded");
-    else foreach(var check in checks)
+    else foreach(var check in checks.OfType<JsonObject>())
     {
-        var status=check!["status"]!.GetValue<string>();
-        if(status is not ("pass" or "diagnostic"))reasons.Add($"check {check["id"]} status {status}");
+        var id=check["id"]?.GetValue<string>();
+        if(id==null){reasons.Add("check row without id");continue;}
+        if(!seenChecks.Add(id))reasons.Add("duplicate check id "+id);
+        var status=check["status"]?.GetValue<string>();
+        if(required.Contains(id))
+        {
+            if(status!="pass")reasons.Add($"required primary {id} status {status} (diagnostic cannot satisfy a required primary)");
+            continue;
+        }
+        if(status=="pass")continue;
+        if(status=="diagnostic"&&bench.DiagnosticCheckIds.Contains(id,StringComparer.Ordinal))continue;
+        reasons.Add($"check {id} status {status} is neither pass nor an allowed diagnostic");
     }
+    foreach(var id in required)if(!seenChecks.Contains(id))reasons.Add("missing required check "+id);
     return new(reasons.Count==0,reasons);
 }
 
@@ -380,6 +424,12 @@ static int ValidateFixtures(string directory,TextWriter log)
     Check("missing-mass-check",false,c=>c["checks"]!.AsArray().RemoveAt(c["checks"]!.AsArray().Count-1));
     Check("failing-check",false,c=>c["checks"]![3]!["status"]=JsonValue.Create("fail"));
     Check("missing-body-check",false,c=>{var checks=c["checks"]!.AsArray();for(var i=checks.Count-1;i>=0;i--)if(checks[i]!["id"]!.GetValue<string>()=="0-False-body-check")checks.RemoveAt(i);});
+    // GPT-proven v2 misjudgments (must reproduce as wrongly-qualified before
+    // the v3 closure fix; expectations are FALSE and must not be softened).
+    Check("gpt-deleted-steps",false,c=>c.Remove("steps"));
+    Check("gpt-unparseable-step-id",false,c=>c["steps"]![0]!["id"]=JsonValue.Create("operation-abc"));
+    Check("gpt-required-diagnostic",false,c=>{foreach(var check in c["checks"]!.AsArray())check!["status"]=JsonValue.Create("diagnostic");});
+    Check("gpt-extra-bad-row",false,c=>c["timings"]!.AsArray().Add(new JsonObject{["step"]=99,["kernel"]="bogus",["ms"]=-5.0,["error"]=901,["resultStatus"]=901}));
     var blend=BenchCases().First(b=>b.ApiKind=="blend");
     void BlendCheck(string name,bool expectedQualified,Action<JsonObject> mutate)
     {
@@ -460,16 +510,16 @@ static string Command(string command,string[] arguments)
 
 static BenchCase[] BenchCases()=>[
     new("sphereBoolean.equal-overlap-subtract",["sphereBoolean"],"AnalyticBooleanOracle.cs",[],"equal-overlap-15902","gm-first-then-pk",
-        "PK_BODY_boolean_2","boolean","independent construction, identical numeric parameters",1200),
+        "PK_BODY_boolean_2","boolean","independent construction, identical numeric parameters",1200,[]),
     new("planarBoolean.overlap-two-axes-subtract",["planarBoolean"],"BooleanOperationOracle.cs",[],"overlap-two-axes-15902","gm-first-then-pk",
-        "PK_BODY_boolean_2","boolean","independent construction, identical numeric parameters",1200),
+        "PK_BODY_boolean_2","boolean","independent construction, identical numeric parameters",1200,[]),
     new("regularcurved.block-subtract",["regularcurved"],"RegularCurvedBooleanOracle.cs",["block-15902"],"block-15902","gm-first-then-pk",
-        "PK_BODY_boolean_2","boolean","independent construction, identical numeric parameters",1800),
+        "PK_BODY_boolean_2","boolean","independent construction, identical numeric parameters",1800,[]),
     new("solidblend.plane-nurbs",["solidblend"],"RegularSolidBlendOracle.cs",["plane-nurbs","rounding-only"],null,"pk-first-then-gm",
-        "PK_BODY_fix_blends","blend","independent construction, identical numeric parameters",1800),
+        "PK_BODY_fix_blends","blend","independent construction, identical numeric parameters",1800,[]),
     new("shortedge.a1-r0.5-t1e-07",["shortedge"],"ShortEdgeBlendOracle.cs",["--angle=1","--radius=0.5","--tolerance=1e-07"],null,"pk-first-then-gm",
-        "PK_BODY_fix_blends","blend","PK fresh seed construction + transmit; GM receives that XT (PK keeps its in-memory original, no receive)",5400),
+        "PK_BODY_fix_blends","blend","PK fresh seed construction + transmit; GM receives that XT (PK keeps its in-memory original, no receive)",5400,[]),
 ];
 
-internal sealed record BenchCase(string Id,string[] Aliases,string Script,string[] Args,string? Selector,string CallOrder,string OperationApi,string ApiKind,string InputProvenance,int TimeoutSeconds);
+internal sealed record BenchCase(string Id,string[] Aliases,string Script,string[] Args,string? Selector,string CallOrder,string OperationApi,string ApiKind,string InputProvenance,int TimeoutSeconds,string[] DiagnosticCheckIds);
 internal readonly record struct Verdict(bool Qualified,List<string> Reasons);
