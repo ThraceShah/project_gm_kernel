@@ -241,7 +241,15 @@ internal static unsafe partial class KernelRuntime
                 if (AddProfileFin(slot, ordered[i], directions[i] > 0) < 0) return ParasolidConstants.PK_ERROR_memory_full;
         }
         body.BodyType = ParasolidConstants.PK_BODY_type_sheet_c;
-        RebuildBoundaryGeometryLinks(bodySlot);
+        // The published wire already owns its curves and vertex points.
+        // Converting its fins into face loops adds only this surface owner.
+        RebuildFaceSurfaceChains(bodySlot);
+        if(plane>0)
+        {
+            ref var geometry=ref Surfaces[GetSurfaceSlotByTag(plane)];
+            geometry.OwnerCount++;geometry.OwnerFace=face;
+            geometry.PrevInBody=geometry.NextInBody=plane;
+        }
         if (!PublishBodyTopologyTags(bodySlot)) return ParasolidConstants.PK_ERROR_memory_full;
         for (var i = 0; i < loopCount; i++) newFaces[i] = Faces[face].Header.Tag;
         SessionMemoryOwner.DropBodyXt(bodySlot);
