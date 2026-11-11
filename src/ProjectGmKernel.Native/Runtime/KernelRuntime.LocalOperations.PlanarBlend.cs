@@ -72,8 +72,19 @@ internal static unsafe partial class KernelRuntime
             var outward=Add(na,nb);OrientLocalPolygon(brep.Points,quad,outward);
             SurfTag surface;
             if(kind==1)surface=CreateCylinderSurfaceTag(ca.X,ca.Y,ca.Z,axis.X,axis.Y,axis.Z,na.X,na.Y,na.Z,radius);
-            else{var error=LocalPlaneTag(Unit(outward),brep.Points[quad[0]],out surface);if(error!=0)return error;}
+            else
+            {
+                var error=LocalPlaneTag(Scale(Unit(outward),-1),brep.Points[quad[0]],out surface);if(error!=0)return error;
+                Surfaces[GetSurfaceSlotByTag(surface)].Sense=ParasolidConstants.PK_TOPOL_sense_negative_c;
+            }
             if(!brep.AddFace(surface,ParasolidConstants.PK_TOPOL_sense_positive_c,quad))return ParasolidConstants.PK_ERROR_memory_full;
+            for(var j=0;j<4;j++)
+            {
+                var p=quad[j];var q=quad[(j+1)%4];
+                if(Math.Abs(Dot(Unit(Sub(brep.Points[q],brep.Points[p])),axis))<.5)continue;
+                var support=Dot(Sub(brep.Points[p],ca),na)>Dot(Sub(brep.Points[p],ca),nb)?fa:fb;
+                var bind=BindPlanarBlendContactLine(ref brep,brep.FindEdge(p,q),slot,support);if(bind!=0)return bind;
+            }
             if(kind==1)
                 for(var j=0;j<4;j++)
                 {
@@ -190,7 +201,11 @@ internal static unsafe partial class KernelRuntime
                     surface=CreateCylinderSurfaceTag(center.X,center.Y,center.Z,axis.X,axis.Y,axis.Z,normal.X,normal.Y,normal.Z,edge.PendingBlendFirst);
                     error=surface<=0?ParasolidConstants.PK_ERROR_memory_full:0;
                 }
-                else error=LocalPlaneTag(planes[i].Normal,vertices[indices[polygons[i].First]],out surface);
+                else
+                {
+                    error=LocalPlaneTag(Scale(planes[i].Normal,-1),vertices[indices[polygons[i].First]],out surface);
+                    if(error==0)Surfaces[GetSurfaceSlotByTag(surface)].Sense=ParasolidConstants.PK_TOPOL_sense_negative_c;
+                }
             }
             if(error!=0)return error;
             var polygon=polygons[i];
@@ -203,7 +218,7 @@ internal static unsafe partial class KernelRuntime
             if(!brep.AddFace(surface,sense,boundary[..polygon.Count]))return ParasolidConstants.PK_ERROR_memory_full;
             if(i>=input.Length)productCells[i-input.Length]=brep.FaceCount-1;
         }
-        for(var i=0;i<selected.Length;i++)if(Edges[selected[i]].PendingBlendKind==1)
+        for(var i=0;i<selected.Length;i++)
         {
             var polygon=polygons[input.Length+i];var axis=axes[i];var center=centers[i];var radius=Edges[selected[i]].PendingBlendFirst;
             if(!LocalEdgeFaces(selected[i],out var firstSupport,out var secondSupport))return ParasolidConstants.PK_ERROR_bad_parameter;
@@ -216,6 +231,16 @@ internal static unsafe partial class KernelRuntime
                     var support=(mask[a]&mask[b]&(1UL<<faces.IndexOf(firstSupport)))!=0?firstSupport:secondSupport;
                     var bind=BindPlanarBlendContactLine(ref brep,brep.FindEdge(vertexMap[a],vertexMap[b]),selected[i],support);if(bind!=0)return bind;
                     continue;
+                }
+                if(Edges[selected[i]].PendingBlendKind!=1)
+                {
+                    var section=brep.FindEdge(vertexMap[a],vertexMap[b]);
+                    ref var use=ref brep.Edges[section];
+                    var origin=brep.Points[use.StartVertex];var tangent=Sub(brep.Points[use.EndVertex],origin);
+                    var curve=CreateLineCurveTag(origin.X,origin.Y,origin.Z,tangent.X,tangent.Y,tangent.Z);
+                    if(curve<=0)return ParasolidConstants.PK_ERROR_memory_full;
+                    use.Curve=curve;
+                    brep.NegativeCurveUse(section);continue;
                 }
                 if(Math.Abs(Dot(direction,axis))>1-1e-8)continue;
                 var capMask=mask[a]&mask[b]&((1UL<<input.Length)-1);var cap=-1;
@@ -247,6 +272,12 @@ internal static unsafe partial class KernelRuntime
         if(Loops[Fins[fin].Loop].Face!=support)fin=Fins[fin].Other;
         if(fin<0||Fins[fin].Edge!=source||Loops[Fins[fin].Loop].Face!=support)return ParasolidConstants.PK_ERROR_bad_loop;
         var positive=(Fins[fin].Sense=='+'?1:-1)*LocalSenseSign(carrier.Sense)>0;
+        if(Edges[source].PendingBlendKind!=1&&!positive)
+        {
+            ref var line=ref LineDataPool[Curves[GetCurveSlotByTag(curve)].DataIndex];
+            line.AxisX=-line.AxisX;line.AxisY=-line.AxisY;line.AxisZ=-line.AxisZ;
+            first=-first;last=-last;positive=true;
+        }
         Curves[GetCurveSlotByTag(curve)].Sense=positive?ParasolidConstants.PK_TOPOL_sense_positive_c:ParasolidConstants.PK_TOPOL_sense_negative_c;
         if(positive!=(first<last))
         {

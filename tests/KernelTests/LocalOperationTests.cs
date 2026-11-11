@@ -81,6 +81,7 @@ public unsafe class LocalOperationTests:IDisposable
     [InlineData(false,false)] [InlineData(true,false)] [InlineData(false,true)] [InlineData(true,true)]
     public void BlendsConstructEdgeAndCornerPatches(bool chamfer,bool all)
     {
+        var before=Counts();
         var body=Block();var originalFaces=Tags(body,0);var edges=Tags(body,1);var selection=all?edges:new[]{edges[0]};
         SetBlend(selection,chamfer,.4);Assert.Equal(6,Record(body).FaceCountBody);
         var count=Fix(body);Assert.Equal(all?20:1,count);var record=Record(body);
@@ -91,6 +92,7 @@ public unsafe class LocalOperationTests:IDisposable
         else{Assert.Equal(all?12:1,classes.Count(x=>x==SurfaceClass.Cylinder));Assert.Equal(all?8:0,classes.Count(x=>x==SurfaceClass.Sphere));}
         if(!all)foreach(var unselected in edges.Skip(1))Assert.Contains(unselected,Tags(body,1));
         Check(body);
+        Assert.Equal(0,KernelRuntime.EntityDelete(1,&body));Assert.Equal(before,Counts());
     }
 
     [Theory]

@@ -67,7 +67,28 @@ try
                 executed++;
                 try
                 {
+                    if(args.Contains("--native-gauge-control",StringComparer.Ordinal))
+                    {
+                        NativeGaugeControl(c.Name,c.Shape,c.Operation,c.Amount,c.Selection,c.Oriented,directory,Log);continue;
+                    }
+                    var ownedBefore=(KernelRuntime.Bodies.AliveCount,KernelRuntime.Curves.AliveCount,KernelRuntime.Surfaces.AliveCount,KernelRuntime.Points.AliveCount,KernelRuntime.ReturnOutstandingBlocks);
                     var managed=Create(true,c.Shape,c.Oriented);var reference=Create(false,c.Shape,c.Oriented);
+                    if(args.Contains("--seed-ownership-control",StringComparer.Ordinal))
+                    {
+                        Check(KernelRuntime.EntityDelete(1,&managed),"delete diagnostic seed");Check(PK_ENTITY_delete(1,&reference),"delete diagnostic native seed");
+                        var seedAfter=(KernelRuntime.Bodies.AliveCount,KernelRuntime.Curves.AliveCount,KernelRuntime.Surfaces.AliveCount,KernelRuntime.Points.AliveCount,KernelRuntime.ReturnOutstandingBlocks);
+                        Require(ownedBefore==seedAfter,$"original seed cleanup before={ownedBefore} after={seedAfter}");Log("SEED_OWNERSHIP_PASS "+c.Name);continue;
+                    }
+                    var seedAuthor=args.SingleOrDefault(x=>x.StartsWith("--seed-author=",StringComparison.Ordinal))?["--seed-author=".Length..];
+                    if(seedAuthor!=null)
+                    {
+                        Require(seedAuthor is "gm" or "pk","seed author must be gm or pk");
+                        var input=seedAuthor=="gm"?TransmitManaged(managed):TransmitReference(reference);
+                        File.WriteAllBytes(Path.Combine(directory,c.Name+"-input.x_t"),input);
+                        Log($"INPUT {c.Name} author={seedAuthor} sha256={Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(input))} both operations receive identical unmodified seed bytes");
+                        Check(KernelRuntime.EntityDelete(1,&managed),"delete independent managed seed");Check(PK_ENTITY_delete(1,&reference),"delete independent native seed");
+                        managed=ReceiveManaged(input);reference=Receive(input);
+                    }
                     trace?.Clear();
                     var a=Apply(true,managed,c.Shape,c.Operation,c.Amount,c.Selection,c.Oriented);
                     if(trace!=null)
@@ -88,8 +109,12 @@ try
                     CheckBody(reference,c.Name+" independent",Log);CheckBody(received,c.Name+" received",Log);CompareMass(reference,received,c.Name,Log);
                     CompareMaterialSense(reference,received,c.Name);
                     try{ParasolidBodyCompare.AssertEquivalent(reference,received,c.Name+" strict");}
-                    catch{RecordFiniteCurves(reference,c.Name+" native",Log);RecordFiniteCurves(received,c.Name+" GM fresh",Log);throw;}
+                    catch{RecordFiniteSurfaces(reference,c.Name+" native",Log);RecordFiniteSurfaces(received,c.Name+" GM fresh",Log);RecordFiniteCurves(reference,c.Name+" native",Log);RecordFiniteCurves(received,c.Name+" GM fresh",Log);throw;}
+                    if(args.Contains("--lifecycle",StringComparer.Ordinal))
+                        (managed,reference)=VerifyLifecycle(managed,reference,c.Name,directory,Log);
                     Check(KernelRuntime.EntityDelete(1,&managed),"delete managed result");Check(PK_ENTITY_delete(1,&reference),"delete reference");Check(PK_ENTITY_delete(1,&received),"delete received");
+                    var ownedAfter=(KernelRuntime.Bodies.AliveCount,KernelRuntime.Curves.AliveCount,KernelRuntime.Surfaces.AliveCount,KernelRuntime.Points.AliveCount,KernelRuntime.ReturnOutstandingBlocks);
+                    Require(ownedBefore==ownedAfter,$"Blend product geometry/return memory ownership cleanup before={ownedBefore} after={ownedAfter}");
                     Log("GEOMETRY_TOPOLOGY_PASS "+c.Name);
                 }
                 catch(Exception ex)
@@ -142,13 +167,46 @@ static unsafe int Create(bool managed,string shape,bool oriented)
         };
     Check(error,(managed?"managed":"independent PK")+" create "+shape);return body;
 }
+static unsafe void NativeGaugeControl(string label,string shape,string operation,double amount,string selection,bool oriented,string directory,Action<string> log)
+{
+    var seed=Create(true,shape,oriented);var gmInput=TransmitManaged(seed);Check(KernelRuntime.EntityDelete(1,&seed),"delete diagnostic GM input");
+    var fromGm=Receive(gmInput);var fromPk=Create(false,shape,oriented);var pkInput=TransmitReference(fromPk);
+    File.WriteAllBytes(Path.Combine(directory,label+"-gm-seed.x_t"),gmInput);File.WriteAllBytes(Path.Combine(directory,label+"-pk-seed.x_t"),pkInput);
+    log("NATIVE_GAUGE_CONTROL: both modifications below are real PK; no GM Blend result is qualified");
+    try
+    {
+        CheckBody(fromPk,label+" native seed",log);CheckBody(fromGm,label+" GM seed received by PK",log);
+        ParasolidBodyCompare.AssertEquivalent(fromPk,fromGm,label+" seeds strict");
+        var a=Apply(false,fromGm,shape,operation,amount,selection,oriented);var b=Apply(false,fromPk,shape,operation,amount,selection,oriented);Require(a==b,"native control product return contract");
+        var aBytes=TransmitReference(fromGm);var bBytes=TransmitReference(fromPk);
+        File.WriteAllBytes(Path.Combine(directory,label+"-native-from-gm-seed.x_t"),aBytes);File.WriteAllBytes(Path.Combine(directory,label+"-native-from-pk-seed.x_t"),bBytes);
+        var first=Receive(aBytes);var second=Receive(bBytes);
+        try
+        {
+            CheckBody(first,label+" native result from GM seed",log);CheckBody(second,label+" native result from PK seed",log);
+            CompareMaterialSense(second,first,label+" native gauge control");CompareMass(second,first,label+" native gauge control",log);
+            ParasolidBodyCompare.AssertEquivalent(second,first,label+" native results strict");
+        }
+        finally{Check(PK_ENTITY_delete(1,&first),"delete native control fresh GM-seed result");Check(PK_ENTITY_delete(1,&second),"delete native control fresh PK-seed result");}
+    }
+    finally{Check(PK_ENTITY_delete(1,&fromGm),"delete native control GM-seed result");Check(PK_ENTITY_delete(1,&fromPk),"delete native control PK-seed result");}
+}
 
 static unsafe string Apply(bool managed,int body,string shape,string operation,double amount,string selection,bool oriented)
 {
     var originalFaces=Tags(managed,body,false);var signature="";
     if(operation is "fillet" or "chamfer" or "unequal-chamfer")
     {
-        var edges=SelectEdges(managed,body,shape,selection,oriented);var round=new PK_EDGE_set_blend_constant_o_t();var flat=new PK_EDGE_set_blend_chamfer_o_t();
+        var edges=SelectEdges(managed,body,shape,selection,oriented);
+        if(Environment.GetEnvironmentVariable("GM_BLEND_REVERSE_MARKS")=="1")Array.Reverse(edges);
+        var round=new PK_EDGE_set_blend_constant_o_t();var flat=new PK_EDGE_set_blend_chamfer_o_t();
+        if(Environment.GetEnvironmentVariable("GM_BLEND_DIRECTIONS")=="1")
+        {
+            var view=managed?Receive(TransmitManaged(body)):body;
+            RecordFiniteCurves(view,managed?"GM source":"PK source",Console.WriteLine);
+            if(managed)Check(PK_ENTITY_delete(1,&view),"delete source diagnostic receive");
+            Console.WriteLine("MARK_ORDER "+string.Join(",",edges));
+        }
         var firstFace=operation=="unequal-chamfer"?ChamferFirstFace(managed,body,shape,oriented):0;
         var secondRange=operation=="unequal-chamfer"?amount*2:amount;
         fixed(int* input=edges)
@@ -158,6 +216,21 @@ static unsafe string Apply(bool managed,int body,string shape,string operation,d
             var error=managed?(operation=="fillet"?KernelRuntime.EdgeSetBlendConstant(edges.Length,input,amount,(M.PK_EDGE_set_blend_constant_o_s*)&round,&count,&output):KernelRuntime.EdgeSetBlendChamfer(edges.Length,input,secondRange,amount,designated,(M.PK_EDGE_set_blend_chamfer_o_s*)&flat,&count,&output)):
                 operation=="fillet"?PK_EDGE_set_blend_constant(edges.Length,input,amount,&round,&count,&output):PK_EDGE_set_blend_chamfer(edges.Length,input,secondRange,amount,designated,&flat,&count,&output);
             Check(error,"set "+operation);Require(count==edges.Length,"set blend edge count");Free(managed,output);
+            if(Environment.GetEnvironmentVariable("GM_BLEND_DIRECTIONS")=="1")foreach(var selected in edges)
+            {
+                if(managed)
+                {
+                    var slot=KernelRuntime.ResolveTagRecord(selected).Slot;var fin=KernelRuntime.Edges[slot].FirstFinEdge;
+                    var left=KernelRuntime.Faces[KernelRuntime.Loops[KernelRuntime.Fins[fin].Loop].Face].Header.Tag;
+                    var right=KernelRuntime.Faces[KernelRuntime.Loops[KernelRuntime.Fins[KernelRuntime.Fins[fin].Other].Loop].Face].Header.Tag;
+                    Console.WriteLine($"BLEND_SIDES GM edge={selected} left={left} right={right} first_fin={KernelRuntime.Fins[fin].Sense}");
+                }
+                else
+                {
+                    int left=0,right=0,cliff=0;PK_blend_type_t type=default;var shapeInfo=new PK_blend_edge_shape_t();var properties=new PK_blend_properties_t();
+                    Check(PK_EDGE_ask_blend(selected,&type,&left,&right,&shapeInfo,&properties,&cliff),"native marked sides");Console.WriteLine($"BLEND_SIDES PK edge={selected} left={left} right={right}");
+                }
+            }
         }
         var fix=new PK_BODY_fix_blends_o_t();fix.local_check=PK_LOGICAL_true;int made=0;int* blends=null;int* replaced=null;int fault=0,faultEdge=0,faultTopol=0;
         WebProgressCapture.Before(managed,body,edges);
@@ -248,7 +321,32 @@ static unsafe int[] SelectFaces(bool managed,int body,string selection,bool orie
 }
 static unsafe int[] SelectEdges(bool managed,int body,string shape,string selection,bool oriented)
 {
-    var edges=Tags(managed,body,true);if(selection=="all")return edges;
+    var edges=Tags(managed,body,true);
+    if(selection=="all")
+    {
+        // Both independent constructors must receive the same physical mark
+        // order. Body storage order is not part of the blending request.
+        var ordered=new List<(PK_EDGE_t Edge,double X,double Y,double Z)>();
+        int* endpoints=stackalloc int[2];
+        foreach(var edge in edges)
+        {
+            Check(managed?KernelRuntime.EdgeAskVertices(edge,endpoints):PK_EDGE_ask_vertices(edge,endpoints),"ordered selection vertices");
+            (double X,double Y,double Z) midpoint;
+            if(endpoints[0]==0&&endpoints[1]==0)
+            {
+                int curve=0;Check(managed?KernelRuntime.EdgeAskCurve(edge,&curve):PK_EDGE_ask_curve(edge,&curve),"ordered rim curve");var sf=new PK_CIRCLE_sf_t();
+                Check(managed?KernelRuntime.CircleAsk(curve,(M.PK_CIRCLE_sf_s*)&sf):PK_CIRCLE_ask(curve,&sf),"ordered rim circle");
+                midpoint=(sf.basis_set.location.coord[0],sf.basis_set.location.coord[1],sf.basis_set.location.coord[2]);
+            }
+            else
+            {
+                var a=VertexPosition(managed,endpoints[0]);var b=VertexPosition(managed,endpoints[1]);midpoint=((a.X+b.X)*.5,(a.Y+b.Y)*.5,(a.Z+b.Z)*.5);
+            }
+            ordered.Add((edge,Math.Round(midpoint.X,8),Math.Round(midpoint.Y,8),Math.Round(midpoint.Z,8)));
+        }
+        Require(ordered.Select(x=>(x.X,x.Y,x.Z)).Distinct().Count()==edges.Length,"selection midpoints must be distinct");
+        return ordered.OrderBy(x=>x.X).ThenBy(x=>x.Y).ThenBy(x=>x.Z).Select(x=>x.Edge).ToArray();
+    }
     var axis=shape=="oblique"?(.35,0.0,Math.Sqrt(1-.35*.35)):Axis(oriented);var candidates=new List<(int Edge,double Score)>();
     int* vertices=stackalloc int[2];
     foreach(var edge in edges)
@@ -289,6 +387,39 @@ static unsafe byte[] TransmitReference(int body)
 static unsafe int Receive(byte[] bytes)
 {
     fixed(byte* p=bytes){var block=new PK_MEMORY_block_t(null,(ulong)bytes.Length,p);var options=new PK_PART_receive_o_t{transmit_format=PK_transmit_format_text_c};int count=0;int* parts=null;Check(PK_PART_receive_b(block,&options,&count,&parts),"PK receive managed XT");try{Require(count==1,"receive part count");return parts[0];}finally{Free(false,parts);}}
+}
+static unsafe int ReceiveManaged(byte[] bytes)
+{
+    fixed(byte* p=bytes)
+    {
+        var block=new M.PK_MEMORY_block_s{bytes=p,n_bytes=(nuint)bytes.Length};var options=new PK_PART_receive_o_t{transmit_format=PK_transmit_format_text_c};int count=0;int* parts=null;
+        Check(KernelRuntime.PartReceiveB(block,(M.PK_PART_receive_o_s*)&options,&count,&parts),"GM receive original seed XT");
+        try{Require(count==1,"GM seed receive part count");return parts[0];}finally{Free(true,parts);}
+    }
+}
+static unsafe (PK_BODY_t Managed,PK_BODY_t Reference) VerifyLifecycle(PK_BODY_t managed,PK_BODY_t reference,string label,string directory,Action<string> log)
+{
+    int copy=0,nativeCopy=0;
+    Check(KernelRuntime.EntityCopy(managed,&copy),"copy GM Blend product");Check(PK_ENTITY_copy(reference,&nativeCopy),"copy independent PK product");
+    Check(KernelRuntime.EntityDelete(1,&managed),"delete GM Blend source");Check(PK_ENTITY_delete(1,&reference),"delete PK source");
+    var form=new M.PK_TRANSF_sf_s();form.matrix[0]=-1.7;form.matrix[5]=form.matrix[10]=1.7;form.matrix[15]=1;form.matrix[3]=3;form.matrix[7]=5;form.matrix[11]=7;
+    int transform=0,nativeTransform=0;Check(KernelRuntime.TransfCreate(&form,&transform),"GM lifecycle transform");Check(PK_TRANSF_create((PK_TRANSF_sf_t*)&form,&nativeTransform),"PK lifecycle transform");
+    int count=0;int* replaced=null;byte* exact=null;PK_LOGICAL_t* nativeExact=null;
+    Check(KernelRuntime.BodyTransform(copy,transform,0,&count,&replaced,&exact),"transform GM Blend copy");Free(true,replaced);Free(true,exact);
+    Check(PK_BODY_transform(nativeCopy,nativeTransform,0,&count,&replaced,&nativeExact),"transform PK Blend copy");Free(false,replaced);Free(false,nativeExact);
+    Check(KernelRuntime.EntityDelete(1,&transform),"delete GM transform");Check(PK_ENTITY_delete(1,&nativeTransform),"delete PK transform");
+    var bytes=TransmitManaged(copy);File.WriteAllBytes(Path.Combine(directory,label+"-lifecycle-managed.x_t"),bytes);
+    File.WriteAllBytes(Path.Combine(directory,label+"-lifecycle-reference.x_t"),TransmitReference(nativeCopy));
+    var reloaded=ReceiveManaged(bytes);Check(KernelRuntime.EntityDelete(1,&copy),"delete pre-reload GM product");
+    var received=Receive(TransmitManaged(reloaded));
+    try
+    {
+        CheckBody(nativeCopy,label+" lifecycle reference",log);CheckBody(received,label+" lifecycle received",log);
+        CompareMaterialSense(nativeCopy,received,label+" lifecycle");ParasolidBodyCompare.AssertEquivalent(nativeCopy,received,label+" lifecycle strict");
+        CompareMass(nativeCopy,received,label+" lifecycle",log);log("GEOMETRY_TOPOLOGY_PASS "+label+" lifecycle copy/delete source/mirror-scale/GM reload");
+    }
+    finally{Check(PK_ENTITY_delete(1,&received),"delete lifecycle receive");}
+    return(reloaded,nativeCopy);
 }
 static unsafe int Count(int body,int kind)
 {
@@ -395,6 +526,30 @@ static unsafe void RecordFiniteCurves(PK_BODY_t body,string label,Action<string>
         PK_CURVE_t curve;PK_CLASS_t kind;PK_INTERVAL_t range;PK_LOGICAL_t sense;
         Check(PK_EDGE_ask_geometry(edge,PK_LOGICAL_true,&curve,&kind,ends,&range,&sense),"finite curve sense evidence");
         Check(PK_CURVE_eval(curve,range.value[0]*.5+range.value[1]*.5,1,jet),"finite curve tangent evidence");
+        if(kind==PK_CLASS_circle)
+        {
+            var sf=new PK_CIRCLE_sf_t();Check(PK_CIRCLE_ask(curve,&sf),"circle frame evidence");
+            log($"CIRCLE_FRAME curve={curve} origin=({sf.basis_set.location.coord[0]:R},{sf.basis_set.location.coord[1]:R},{sf.basis_set.location.coord[2]:R}) axis=({sf.basis_set.axis.coord[0]:R},{sf.basis_set.axis.coord[1]:R},{sf.basis_set.axis.coord[2]:R})");
+        }
         log($"FINITE_CURVE {label} edge={edge} curve={curve} class={kind} positive={sense==PK_LOGICAL_true} range={range.value[0]:R}/{range.value[1]:R} ends=({ends[0].coord[0]:R},{ends[0].coord[1]:R},{ends[0].coord[2]:R})/({ends[1].coord[0]:R},{ends[1].coord[1]:R},{ends[1].coord[2]:R}) tangent=({jet[1].coord[0]:R},{jet[1].coord[1]:R},{jet[1].coord[2]:R})");
+    }
+}
+static unsafe void RecordFiniteSurfaces(PK_BODY_t body,string label,Action<string> log)
+{
+    var parsed=ReceiveManaged(TransmitReference(body));
+    foreach(var face in Tags(true,parsed,false))
+    {
+        var record=KernelRuntime.Faces[KernelRuntime.ResolveTagRecord(face).Slot];var surface=KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(record.SurfTag)];
+        log($"XT_SENSE {label} face={face} class={surface.Class} face_sense={record.Orientation} surface_sense={surface.Sense}");
+    }
+    Check(KernelRuntime.EntityDelete(1,&parsed),"delete native sense inspection");
+    foreach(var face in Tags(false,body,false))
+    {
+        int surface=0,kind=0;PK_LOGICAL_t orientation=default;Check(PK_FACE_ask_oriented_surf(face,&surface,&orientation),"surface gauge");Check(PK_ENTITY_ask_class(surface,&kind),"surface gauge class");
+        if(kind==PK_CLASS_plane)
+        {
+            var sf=new PK_PLANE_sf_t();Check(PK_PLANE_ask(surface,&sf),"plane frame");
+            log($"SURFACE_FRAME {label} face={face} surface={surface} class={kind} orientation={orientation==PK_LOGICAL_true} origin=({sf.basis_set.location.coord[0]:R},{sf.basis_set.location.coord[1]:R},{sf.basis_set.location.coord[2]:R}) axis=({sf.basis_set.axis.coord[0]:R},{sf.basis_set.axis.coord[1]:R},{sf.basis_set.axis.coord[2]:R})");
+        }
     }
 }

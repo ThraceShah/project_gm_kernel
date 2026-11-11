@@ -137,6 +137,7 @@ var requireNativeFaceDomains=args.Contains("--require-native-face-domains");
 var requireNativeCutWitness=args.Contains("--require-native-cut-witness");
 var requireCutterChartWitness=args.Contains("--require-cutter-chart-witness");
 var proofOnlyLifecycle=args.Contains("--proof-only-lifecycle");
+var blendOnlyLifecycle=args.Contains("--blend-only-lifecycle");
 var reloadBeforeLocalCut=args.Contains("--reload-before-local-cut");
 var savedProbes=args.Contains("--saved-probes");
 var selfSavedProbes=args.Contains("--self-saved-probes");
@@ -167,6 +168,8 @@ Require(!requireCutterChartWitness||requireNativeCutWitness,"cutter chart witnes
 Require(!proofOnlyLifecycle||args.Contains("--lifecycle")&&KernelRuntime.ForbidLegacyRegularBlendAssembly&&!args.Contains("--import-only")
     &&!replayProbes&&!args.Contains("--record-fixtures"),"proof-only cuts require a guarded self lifecycle");
 Require(!reloadBeforeLocalCut||requireNativeCutWitness,"early XT reload requires a guarded transverse cut with native witnesses");
+Require(!blendOnlyLifecycle||args.Contains("--lifecycle")&&!localCut&&!requireNativeCutWitness&&!requireCutterChartWitness&&!proofOnlyLifecycle&&!reloadBeforeLocalCut,
+    "Blend-only lifecycle requires lifecycle mode and no Boolean cut options");
 Require(!mappedInput||!args.Contains("--record-fixtures")&&!replayProbes,"transformed inputs cannot replace fixed fixtures or historical probe inputs");
 Require(!args.Any(x=>x.StartsWith("--angle=",StringComparison.Ordinal)||x.StartsWith("--radius=",StringComparison.Ordinal)||x.StartsWith("--tolerance=",StringComparison.Ordinal))
     ||!replayProbes&&!args.Contains("--record-fixtures"),"parameter overrides cannot replace fixed fixtures or historical probe inputs");
@@ -270,7 +273,7 @@ using(host)unsafe
                     if(args.Contains("--geometry"))Geometry(imported,reference);
                     if(args.Contains("--probes"))Probes(reference,imported,reloaded,result,output,name);
                     if(savedProbes)SavedProbes(reference,imported,reloaded,result,output,name+"-imported");
-                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref imported,reference,output,name+"-imported-product",mappedInput?&inputTransform:null,inputScale,localCut,transverseCut,transversePlaneDifference,requireNativeFaceDomains:requireNativeFaceDomains);
+                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref imported,reference,output,name+"-imported-product",mappedInput?&inputTransform:null,inputScale,localCut,transverseCut,transversePlaneDifference,requireNativeFaceDomains:requireNativeFaceDomains,blendOnly:blendOnlyLifecycle);
                     Check(PK_ENTITY_delete(1,&reloaded),"delete native roundtrip");if(imported!=0)Check(KernelRuntime.EntityDelete(1,&imported),"delete managed import");
                 }
                 catch(Exception ex){failures++;Console.WriteLine("FAIL native editable roundtrip: "+ex.Message);}
@@ -296,7 +299,7 @@ using(host)unsafe
                     catch(Exception ex){failures++;Console.WriteLine("FAIL self-constructed-product mass: "+ex.Message);}
                     if(overlappingTools)failures+=OverlappingToolJunctions(own,reference,output,name+"-overlapping-tools",false);
                     if(singleToolJunction)failures+=OverlappingToolJunctions(own,reference,output,name+"-overlapping-tools-single",true);
-                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref own,reference,output,name+"-self-constructed-product",mappedInput?&inputTransform:null,inputScale,localCut,transverseCut,transversePlaneDifference,materialOwnership,requireNativeCutWitness,reloadBeforeLocalCut,args.Contains("--geometry"),proofOnlyLifecycle,requireCutterChartWitness,requireNativeFinBoxes,requireNativeFaceDomains);
+                    if(args.Contains("--lifecycle"))failures+=Lifecycle(ref own,reference,output,name+"-self-constructed-product",mappedInput?&inputTransform:null,inputScale,localCut,transverseCut,transversePlaneDifference,materialOwnership,requireNativeCutWitness,reloadBeforeLocalCut,args.Contains("--geometry"),proofOnlyLifecycle,requireCutterChartWitness,requireNativeFinBoxes,requireNativeFaceDomains,blendOnlyLifecycle);
                     Check(PK_ENTITY_delete(1,&received),"delete managed roundtrip");
                 }
                 if(own!=0)Check(KernelRuntime.EntityDelete(1,&own),"delete managed seed");Check(PK_ENTITY_delete(1,&reference),"delete reference");
@@ -360,7 +363,7 @@ static unsafe PK_VECTOR_t MapPoint(M.PK_TRANSF_sf_s* matrix,PK_VECTOR_t point,bo
     return result;
 }
 
-static unsafe int Lifecycle(ref int source,int reference,string output,string name,M.PK_TRANSF_sf_s* input,double inputScale,bool localCut,bool transverseCut,double transversePlaneDifference,bool materialOwnership=false,bool requireNativeCutWitness=false,bool reloadBeforeLocalCut=false,bool checkNativeTrims=false,bool proofOnly=false,bool requireCutterChartWitness=false,bool requireNativeFinBoxes=false,bool requireNativeFaceDomains=false)
+static unsafe int Lifecycle(ref int source,int reference,string output,string name,M.PK_TRANSF_sf_s* input,double inputScale,bool localCut,bool transverseCut,double transversePlaneDifference,bool materialOwnership=false,bool requireNativeCutWitness=false,bool reloadBeforeLocalCut=false,bool checkNativeTrims=false,bool proofOnly=false,bool requireCutterChartWitness=false,bool requireNativeFinBoxes=false,bool requireNativeFaceDomains=false,bool blendOnly=false)
 {
     WebProgressCapture.Context=name;
     int own,native;Check(KernelRuntime.EntityCopy(source,&own),"copy fillet product");Check(PK_ENTITY_copy(reference,&native),"copy PK fillet");
@@ -375,6 +378,13 @@ static unsafe int Lifecycle(ref int source,int reference,string output,string na
         Console.WriteLine($"LIFECYCLE {name} source_deleted=True copy={own}");
         Move(true,own,selfTransform);Move(false,native,pkTransform);
         failures+=CompareFresh(own,native,output,name+"-copy-reflected",s*inputScale,materialOwnership,checkNativeTrims,requireNativeFinBoxes,requireNativeFaceDomains);
+        if(blendOnly)
+        {
+            ReloadEditable(ref own,name+" independent Blend reload");
+            failures+=CompareFresh(own,native,output,name+"-blend-reloaded",s*inputScale,materialOwnership,checkNativeTrims,requireNativeFinBoxes,requireNativeFaceDomains);
+            Console.WriteLine($"BLEND_LIFECYCLE {name} copy/source deletion/mirror-scale/editable reload complete; Boolean not selected");
+            return failures;
+        }
         if(reloadBeforeLocalCut)ReloadEditable(ref own,name+" before local cut");
         // The local variant crosses the native short ICurve interiors. Its
         // lower cap leaves the bottom connected; it is a notch, not a slab

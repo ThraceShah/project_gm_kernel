@@ -50,5 +50,120 @@ labeled GM/PK-authored identical-seed diagnostics, preserving both real products
 and original input bytes. Those diagnostics do not replace independent creator
 qualification or canonicalize either output. Native sense work remains active.
 
+## Planar chamfer direction increment
+
+Real PK's generated planar chamfer uses an inward natural plane normal,
+negative surface sense and positive face sense. Negating only the normal and
+face sense has the correct material normal but fails both separate native
+sense checks; the XT fields were inspected through actual native transmit and
+GM receive. Construction now preserves the native combination directly.
+Chamfer contacts inherit the source face's oriented native line gauge: a
+negative contact reverses both its direction coefficients and station signs,
+with positive edge/curve sense. Finite cap sections use negative curve sense
+with both coedges and endpoint association changed together. Fillet contact
+line behavior remains the accepted parent-gauge rule. All-edge contact lines
+also use this source occurrence, rather than generated polygon direction.
+
+`local-chamfer-contract-v2.{log,exit}` records 11/17 geometry passes, six hard
+failures and original exit 1. All four separate planar chamfer cases now pass
+the unchanged comparator: single, parallel, unequal and oblique unequal.
+`chamfer-lifecycle-v2.{log,exit}` additionally has actual exit 0 for the single
+chamfer's copy, deletion of the original body, reflection/scale and editable GM
+XT reload, with full native checks, strict comparison, material boundary
+direction and mass Verified. Both remain private under
+`temp_docs/blend-functional/`; corresponding XT is in the named local-operation
+output directory. `directions-lifecycle-v1.{log,exit}` subsequently executes the
+complete 17-case Blend catalog and the independent lifecycle of every one of
+the 11 passing constructions; six construction comparisons still fail, external
+exit 1, one mass comparison Unresolved. This is not overall acceptance.
+
+An exploratory all-edge circular-normal change did not establish native
+direction equivalence and was removed. Its original failing logs remain; it is
+not part of the committed kernel increment. The 140/140 focused development
+run (`focused-v1.{log,exit}`, actual exit 0) covered LocalOperation,
+TrivalentSolidBlend, BlendMarkOrder, RollingNetwork, RegularSolidBlend,
+BlendSupportChain and BlendChain. This run precedes the final raw planar sense
+assignment and removal of the exploratory circular-normal code; it is recorded
+as development regression, not final-source qualification.
+
+## Native gauge control and unresolved acceptance
+
+`LocalOperationOracle --native-gauge-control`, filtered to block-all-fillet,
+creates the two original blocks independently with the same parameters, saves
+both inputs, then performs **both** blends in real PK. The two input bodies
+pass full checks and strict comparison before modification. Each native
+operation receives the same physical all-edge mark order and radius `.4`.
+Both real native results pass fresh receive/full checks, oriented material and
+mass Verified, but strict BODY_compare reports curve-sense differences. The
+actual process returns 1; no GM Blend product is qualified by this control.
+
+Evidence: `temp_docs/blend-functional/native-gauge-control.{log,exit}`;
+log SHA256 `01eee3eb28ced76561e3b4f57be7fa33e6b85813a0a13f91f3f60263aa2000d3`.
+The two untouched seeds and two actual native results are in
+`temp_docs/local-operation-oracle/blend-native-gauge-control/`. This establishes
+a limitation of applying raw sense equality across different native input
+gauges, not a primitive defect or a geometric acceptance waiver. The conflict
+between that gate and preserving each input's native gauge was escalated to
+the coordinator. The comparator, primitive constructors and sense whitelist
+remain unchanged. All-edge fillet/chamfer and oblique single fillet remain
+unaccepted while their direct strict differences are unresolved.
+
+The coordinator subsequently authorized a narrow, evidence-based adjudication
+of each analytic finite curve-sense difference, without changing the native
+mask, canonicalizing outputs or permitting an unconditional sense exception.
+That work remains ongoing. The installed official `PK_DEBUG_diff_t` reference
+defines 21959 as matching curves with different senses; XT 5.2.9 separately
+defines the curve sense as the edge/curve orientation. Neither definition by
+itself certifies finite trim or incident directed uses.
+
+## Ownership and operation-specific handoff
+
+The final native ownership check found an introduced temporary-carrier leak in
+parallel chamfer construction. Binding all linear draft carriers while creating
+one cap section made later contact replacements orphan those temporary curves.
+The cap now allocates only its own carrier. The retained failed run is
+`parallel-chamfer-ownership.{log,exit}`; the corrected
+`parallel-chamfer-ownership-v2.{log,exit}` passes construction and the complete
+self lifecycle with original exit 0 and complete geometry/return-memory cleanup.
+The managed positive edge/corner test now also deletes the result and requires
+all topology/geometry pools restored; `local-tests-ownership-v2.{log,exit}` is
+46/46, actual exit 0, on the corrected computation source.
+
+The complete ownership-enabled local catalog
+`directions-lifecycle-ownership-v2.{log,exit}` reports 10 fully passing cases,
+six strict direction failures and one seed-ownership failure (external exit 1).
+Oblique unequal chamfer still passes its geometry and lifecycle comparisons,
+but its original extrusion fixture itself leaks four curves and four points:
+`--seed-ownership-control`, without any Blend operation, reproduces
+`before=(0,0,0,0,0), after=(0,4,0,4,0)` in
+`oblique-seed-ownership.{log,exit}`, external exit 1. This is kept separate from
+Blend construction acceptance and will be handed to the shared owner.
+
+`ShortEdgeBlendOracle --blend-only-lifecycle` now explicitly selects copy,
+source deletion, reflection/scale and editable XT reload without either later
+Boolean. The default combined lifecycle remains available as its own operation
+selection. Actual execution `shortedge-single-v1.{log,exit}` used
+`--output-name=blend-single-operation-v1 --event-arrangement --geometry
+--lifecycle --blend-only-lifecycle --material-ownership --require-native-fin-uvbox
+--require-native-face-domains`. Construction, finite ICurves, paired UV,
+bidirectional finite face domains, native fin boxes, material and both self
+lifecycle comparisons pass; six mass comparisons are Unresolved, external exit
+2. Loaded assembly hash is
+`814ec86f42fc2604ac3a7faaa5ddb7b37487609300a49aba1719cb8cf0ebb1ce`;
+the later change only removes temporary planar-chamfer carriers, a path not
+entered by this heterogeneous rolling network.
+
+Actual private product directory:
+`temp_docs/short-edge-blend-oracle/blend-single-operation-v1/`.
+The self-constructed `a1-r0.5-t1E-07-reverseFalse-default-self.x_t` SHA256 is
+`37ac232e62340c29f4f6ba94807775b7d39ba3a64d445c75791499c1a811b0ba`.
+The transformed self copy and its editable reload both hash to
+`57eecc0294734c805d3ded1ab034fc4c78dec6da6d2300a6ce85a0e553981ad2`.
+All input/product/mass hashes are in
+`temp_docs/blend-functional/shortedge-products.sha256`, manifest hash
+`b055abaea9c88446d0983d911de087dbd406bcf25d647a9bf85bcc813919e56d`.
+This is a fixed Blend-to-Boolean input handoff with layered status, not a
+qualification of any later Boolean or overall Blend completion.
+
 Previously accepted f9 short-edge matrix/lifecycle evidence is reused read-only
 as scoped by the dispatch; no full 96/1885/347 rerun has been performed here.
