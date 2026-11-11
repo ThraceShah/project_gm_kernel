@@ -1,3 +1,5 @@
+using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
 using System.Diagnostics;
 using System.Numerics;
 using System.Text.Json.Nodes;
@@ -14,6 +16,34 @@ internal static unsafe class WebProgressCapture
     internal static readonly string? Output=Environment.GetEnvironmentVariable("GM_WEB_CAPTURE");
     internal static bool Select(string label)=>Environment.GetEnvironmentVariable("GM_WEB_SELECT") is not string filter||label==filter;
     internal static bool Enabled=>!string.IsNullOrWhiteSpace(Output);
+    static WebProgressCapture()
+    {
+        if(!Enabled)return;
+        MeasurementIdentity("start");
+        AppDomain.CurrentDomain.ProcessExit+=(_,_)=>MeasurementIdentity("end");
+    }
+    private static void MeasurementIdentity(string phase)
+    {
+        try
+        {
+            var assembly=typeof(KernelRuntime).Assembly;var dll=assembly.Location;var pdb=Path.ChangeExtension(dll,".pdb");
+            Directory.CreateDirectory(Output!);var archive=Path.Combine(Output!,"binary");Directory.CreateDirectory(archive);
+            if(phase=="start"){File.Copy(dll,Path.Combine(archive,"ProjectGmKernel.Native.dll"));File.Copy(pdb,Path.Combine(archive,"ProjectGmKernel.Native.pdb"));}
+            using var file=File.OpenRead(dll);using var pe=new PEReader(file);var debug=pe.ReadDebugDirectory().Single(x=>x.Type==DebugDirectoryEntryType.CodeView);
+            var codeView=pe.ReadCodeViewDebugDirectoryData(debug);
+            using var pdbFile=File.OpenRead(pdb);using var provider=MetadataReaderProvider.FromPortablePdbStream(pdbFile);
+            var metadata=provider.GetMetadataReader();var documents=new JsonArray();
+            foreach(var handle in metadata.Documents)
+            {
+                var document=metadata.GetDocument(handle);documents.Add((JsonNode)new JsonObject{["name"]=metadata.GetString(document.Name),["algorithm"]=metadata.GetGuid(document.HashAlgorithm).ToString(),["hash"]=Convert.ToHexStringLower(metadata.GetBlobBytes(document.Hash))});
+            }
+            static string Digest(string path){using var input=File.OpenRead(path);return Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(input));}
+            var record=new JsonObject{["phase"]=phase,["mvid"]=assembly.ManifestModule.ModuleVersionId.ToString(),["dllSha256"]=Digest(dll),["dllBytes"]=new FileInfo(dll).Length,["pdbSha256"]=Digest(pdb),["pdbBytes"]=new FileInfo(pdb).Length,["codeViewGuid"]=codeView.Guid.ToString(),["codeViewAge"]=codeView.Age,["pdbId"]=Convert.ToHexStringLower(metadata.DebugMetadataHeader!.Id.AsSpan()),["sourceCommit"]=Environment.GetEnvironmentVariable("GM_WEB_COMMIT"),["documents"]=documents};
+            File.WriteAllText(Path.Combine(Output!,"measurement-identity-"+phase+".json"),record.ToJsonString());
+            Console.WriteLine($"KERNEL_IDENTITY phase={phase} mvid={record["mvid"]} dll={record["dllSha256"]} pdb={record["pdbSha256"]}");
+        }
+        catch(Exception ex){Console.Error.WriteLine("KERNEL_IDENTITY_ERROR "+phase+" "+ex);}
+    }
     private static readonly JsonArray Steps=[];
     private static readonly JsonArray Checks=[];
     private static readonly JsonArray Errors=[];

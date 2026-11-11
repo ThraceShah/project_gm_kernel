@@ -11,13 +11,14 @@ using ProjectGmKernel.Native.Runtime;
 using System.Runtime.CompilerServices;
 using M=ProjectGmKernel.Native.Generated;
 
+if(args.Contains("--measurement-identity-only",StringComparer.Ordinal)){_ = WebProgressCapture.Enabled;return;}
+
+
 var benchRepeat=1;var benchOption=args.SingleOrDefault(x=>x.StartsWith("--bench-repeat=",StringComparison.Ordinal));
 if(benchOption!=null)benchRepeat=int.Parse(benchOption["--bench-repeat=".Length..],System.Globalization.CultureInfo.InvariantCulture);
 Require(benchRepeat>=1&&benchRepeat<=64,"bench repeat must be in 1..64");
 ModelingPerformance.Enabled=args.Contains("--bench-profile",StringComparer.Ordinal);
-var outputName=args.SingleOrDefault(x=>x.StartsWith("--output-name=",StringComparison.Ordinal));
-var directory=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","regular-curved-boolean-oracle");
-if(outputName!=null)directory=Path.Combine(directory,outputName["--output-name=".Length..]);Directory.CreateDirectory(directory);
+var directory=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","regular-curved-boolean-oracle");Directory.CreateDirectory(directory);
 if(!ParasolidScriptHost.TryStartSession("Independent regular curved solid Booleans",out var host,out var message))throw new Exception(message);
 using(host)unsafe
 {
@@ -125,9 +126,8 @@ static unsafe int[] Produce(bool own,string kind,int function,double tolerance=1
 static void PrintProfile(string operation,double apiMs)
 {
     var p=ModelingPerformance.Last;var milliseconds=1000.0/System.Diagnostics.Stopwatch.Frequency;
-    Console.WriteLine($"PROFILE operation={operation} api-ms={apiMs:F3} elapsed-ms={p.ElapsedTicks*milliseconds:F3} pairs={p.SurfacePairs} ssi-cells={p.SsiCells} root-cells={p.RootCells} roots={p.Roots} budget-failures={p.BudgetFailures} winding={p.WindingCalls} bound-requests={p.BoundRequests} bound-evaluations={p.BoundEvaluations} cache-hits={p.BoundCacheHits} failure-cache-hits={p.BoundFailureCacheHits} bound-ms={p.BoundTicks*milliseconds:F3}");
-    Console.WriteLine($"WORK jacobians={p.JacobianCalls} directions={p.JacobianDirections} residual-directions={p.ResidualDirections} record-builds={p.JacobianRecordBuilds} record-nodes={p.JacobianRecordNodes} record-rebinds={p.JacobianRecordRebinds} direct-spline-point-columns={p.DirectSplinePointColumns}");
-    foreach(var use in Enum.GetValues<RootIsolationUse>())if(p.RootCalls[(int)use]!=0||p.RootCellsByUse[(int)use]!=0)Console.WriteLine($"ROOT_WORK use={use} calls={p.RootCalls[(int)use]} cells={p.RootCellsByUse[(int)use]} bound-failures={p.RootBoundFailures[(int)use]} exclusions={p.RootLevelExclusions[(int)use]} nonmonotone={p.RootNonmonotone[(int)use]}");
+    Console.WriteLine($"PROFILE operation={operation} api-ms={apiMs:F3} elapsed-ms={p.ElapsedTicks*milliseconds:F3} pairs={p.SurfacePairs} ssi-cells={p.SsiCells} root-cells={p.RootCells} roots={p.Roots} budget-failures={p.BudgetFailures} winding={p.WindingCalls} bound-requests={p.BoundRequests} bound-evaluations={p.BoundEvaluations} cache-hits={p.BoundCacheHits} bound-ms={p.BoundTicks*milliseconds:F3}");
+    Console.WriteLine($"WORK jacobians={p.JacobianCalls} directions={p.JacobianDirections} residual-directions={p.ResidualDirections} record-builds={p.JacobianRecordBuilds} record-nodes={p.JacobianRecordNodes} record-rebinds={p.JacobianRecordRebinds}");
     foreach(var stage in Enum.GetValues<KernelRuntime.RegularBooleanStage>())if(p.Stages[(int)stage]!=0)Console.WriteLine($"PROFILE stage={stage} ms={p.Stages[(int)stage]*milliseconds:F3}");
 }
 static unsafe int Roof(bool own,double dx,double dy,double dz,double bulge)
