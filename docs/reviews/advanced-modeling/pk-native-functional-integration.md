@@ -1,6 +1,19 @@
 # PK 原生功能集成与当前 Capture 交付候选
 
-固定计算和 Capture 代码为 **`1887e30d9050480daf38546f8cdd2df6592bd094`**，已推送至 `feat/pk-native-functional-integration`。这是集中核收候选；尚未宣布 main 集成、整体 M0–M5 全通过或新看板上线。性能 owner 的 Mac 方案未混入本分支。
+固定计算和 Capture 代码为 **`1887e30d9050480daf38546f8cdd2df6592bd094`**，已推送至 `feat/pk-native-functional-integration`。协调者已集中核收两份独审功能的有限真实交界及当前 Capture；新功能 run 已上线并由计算 owner 读回核对。没有 main 合并或整体 M0–M5 全通过声明，性能 owner 的 Mac 方案未混入本分支。
+
+## 最终上线核对
+
+线上工作台为 [GM Kernel 对比工作台](https://qingyu1-linux.tail77e06.ts.net/apps/gm-kernel-progress/)，latest run 为 **`20261111T190547Z-integrated1887`**。计算 owner 于 2026-11-12 从实际 HTTPS 读回以下文件，没有新增建模执行或重跑测试：
+
+- `data/index.json` SHA256 `40665af864d8aa3ad671099d1a568932dcd4b36d5f76128c85df825fc728e8cb`；新 run manifest SHA256 `3b46a94f4d6ca577f3437e8fb7cf6352b729edae543add98420679d8ee3211bb`，完整计算 SHA、两个 parent、source/artifact 清单及四个输入/产品 hashes 均与本报告匹配。
+- 两个主 case 各显示一个真实操作，来源分别 independent-construction 与 same-byte-fork；10 个实际 mesh JSON、9 份当前 quality JSON 以及 capture.json 均取回成功，与本地原件逐字节相同。Capture 的 123 检查为 pass、captureErrors 为空；三份物性各含 15 分量，8 条实际条件有限证明按原字节保留。
+- 回滚、控制、边界测试及收据检查的公开日志仅将本机用户目录替换为 `~`；按此明确脱敏规则比较后各为同内容，原件未改写。两份 source/artifact 清单与线上逐字节相同。
+- 线上控制及父范围 case 保留 Unresolved、510、五项 BodyContains5000、1907/2，整体 case 仍明确不签全绿；Boolean 未启用 generic tracking 的 semanticCoverage 仍为 missing，没有伪造跟踪资格。性能未混入 Mac 倍率。
+
+读回原件保存在 `temp_docs/pk-native-functional-integration/online-*`。这是线上数据与实际产物的核对，不声称重新执行建模或验证全部浏览器交互。发布 owner 的 collector 为 `dd985a6d61d29a6af7b7689443b5cc3aab57328b`，发布收据头为 `fdff026a1053614532f7c2d4c7c4081e8c8c916a`；公共资源仅 JSON/mesh 与 XT hash，XT 正文保持私有。
+
+本次有限功能集成及上线交接已经闭环。仍未解决或未取得资格的范围是：相关物性界未决、历史/当前 510 分类差异与未决、Blend 五产品直接 BodyContains5000、任意未证明 Boolean/接触事件、generic tracking 语义覆盖、整体 M0–M5 的全覆盖及性能目标。原完整单测 1907/2 保持历史原结果，后续修复的局部复验不重签该原执行；FaceAttach 负 surface 重附着只属未实测静态疑点。上述范围不被本次上线消除，也不反向撤销已独立通过的 Blend 或 Boolean 操作。
 
 ## 固定来源与实际 diff
 
@@ -83,4 +96,4 @@ MSBUILDDISABLENODEREUSE=1 dotnet run --no-cache scripts/CaptureQualityContractCh
 4. 几何、拓扑、BODY_check、有限方向证明、物性、材料、回滚和性能各自保留结论；证明报告保留 mask、原始 diff 和有限映射/范围/容差/两个 directed fin/full bound。不可只截一个表面绿灯。
 5. 新 run 的实际模型/参数、step 0 自构造来源、step 1 同字节来源与 DisplayBody 实例逐项核对；不得用 PK 重建显示物替代 GM 产品。新采集 command/source/artifact/原 exit 一起存档。
 6. 保留旧 510 self/import 的 15/16 差异、当前 imported 未决 16、native 自差 7 的独立事实；保留 Blend 5 个直接 BodyContains5000、不确定物性及原完整单测 1907/2。不得发布“全部 M0–M5/1909 全绿”或未执行的性能资格。
-7. 协调者核收当前集成候选后，由看板 owner Capture/Refresh/发布，再将新线上 run URL、发布 SHA、source identity 与检查结果交回共同核对；这些完成后才结算本任务。当前报告不构成上线证明。
+7. 协调者核收后，由看板 owner 装配现有原始 Capture/Refresh/发布，计算 owner 核对新线上 run、固定 source identity、实际产品及质量分层后结算；本次实际完成情况见本文开头的最终上线核对，不把装配快照称为新建模执行。
