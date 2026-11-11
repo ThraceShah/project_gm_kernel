@@ -200,6 +200,9 @@ internal static unsafe partial class KernelRuntime
                 }
                 var inside=BooleanMaterial(minus,options->function);var outside=BooleanMaterial(plus,options->function);
                 if(inside!=outside&&canonicalOwner==owner){selected[f]=1;reversed[f]=inside?(byte)0:(byte)1;}
+                TraceFiniteBoundary?.Invoke(new(){Stage=BoundaryTraceStage.CellSelection,Face=f,Source=model.Sources[f],Surface=model.Faces[f].Surface,
+                    Selected=selected[f],Reversed=reversed[f],MaterialInside=inside?(byte)1:(byte)0,MaterialOutside=outside?(byte)1:(byte)0,
+                    UvStart=uv,StartPoint=point[0]});
             }
             // An isolated exterior touch has no material volume to remove
             // or intersect. Tangent cavity/union topology is not represented
@@ -228,6 +231,16 @@ internal static unsafe partial class KernelRuntime
                 LastRegularBooleanStage=RegularBooleanStage.Components;ModelingPerformance.Stage(RegularBooleanStage.Components);
                 LastBooleanComponentPhase=BooleanComponentPhase.MergeCells;LastBooleanComponentFace=-1;
                 error=MergeRegularBooleanCells(ref model,selected,reversed,coincident);if(error!=0)return error;
+                if(TraceFiniteBoundary!=null)for(var f=0;f<model.NF;f++)
+                {
+                    var face=model.Faces[f];
+                    for(var l=0;l<face.LoopCount;l++)
+                    {
+                        var loop=model.Loops[face.FirstLoop+l];
+                        foreach(var use in model.Coedges.Slice(loop.FirstCoedge,loop.CoedgeCount))
+                            TraceBoundary(BoundaryTraceStage.ComponentBoundary,FiniteBoundaryUse.Create(face.Surface,model.Edges[use.Edge],use.Edge,use.Forward,model.Sources[f],faceSense:face.Sense),f);
+                    }
+                }
                 if(options->function==ParasolidConstants.PK_boolean_subtract_c)
                 {
                     LastBooleanComponentPhase=BooleanComponentPhase.ProjectedCells;LastBooleanComponentFace=-1;

@@ -88,6 +88,8 @@ internal static unsafe partial class KernelRuntime
                 if(outer<0)return ParasolidConstants.PK_ERROR_bad_loop;
                 (loops[firstLoop],loops[outer])=(loops[outer],loops[firstLoop]);
                 face.FirstLoop=firstLoop;face.LoopCount=nl-firstLoop;model.Faces[nf]=face;model.Sources[nf]=model.Sources[seed];
+                if(TraceFiniteBoundary!=null)for(var f=seed;f<model.NF;f++)if(labels[f]==seed)
+                    TraceFiniteBoundary(new(){Stage=BoundaryTraceStage.ComponentCellMap,PreviousFace=f,Face=nf,Source=model.Sources[seed],Surface=face.Surface});
                 model.Witnesses[nf]=model.Witnesses[seed];reversed[nf]=reversed[seed];selected[nf++]=1;
             }
             coedges[..nc].CopyTo(model.Coedges);loops[..nl].CopyTo(model.Loops);model.NF=nf;model.NC=nc;model.NL=nl;

@@ -199,3 +199,42 @@ same-input Boolean returns 0 / one body / zero output faults. GM returns 157 and
 restores all three inputs byte-identically. The projected replacement callback
 and its injected 901 are still unreached. The old `RayIntersections` fields are
 stale at this incidence failure and must not be interpreted as its cause.
+
+## Increment 3: the opposite use is discarded before merging
+
+`component-selection` and `component-provenance` both complete the diagnostic
+with process exit 134 and the same `ProductOpenEdge` failure. Neither changes
+the three input hashes or the same-input native success/GM rollback result.
+The latter trace records carrier/surface/source generations, directed events,
+native trims, positions and explicit old-cell → merged-cell maps.
+
+- Arrangement cell 4, source face 3 generation 1 / plane 171 generation 1,
+  retains edge 13 / curve 208 generation 1. Selection is `keep=1, reverse=0`,
+  material inside/outside `1/0`; the explicit map is **old 4 → merged 3**.
+- Arrangement cell 12, source face 16 generation 1 / rolling 176 generation 1,
+  has the opposite edge-13 use, events 44 → 5. It is discarded with `keep=0`,
+  material `0/0`, before merge runs. Its witness is
+  `uv=(3.112228856492321,.99999)`,
+  `xyz=(-1.5293598078049662,-1.9997923036337433,4.99956890786102)`.
+  It has no merged-cell map or retained boundary.
+- The other rolling cell 11 is kept and maps **old 11 → merged 8**. Its full
+  recorded boundary has no edge 13. This is a stable source-and-boundary
+  comparison, not an assertion that pre/post cell IDs denote the same cell.
+
+The arrangement of discarded cell 12 contains both directions of edge 80 /
+curve 831 in the same loop. On rolling 176, curve 831 runs from event 50
+`P=(-1.5,-2.0000380014441093,4.99999999855589)` to original event 5
+`J=(-1.5,-2,5)`. The stationary source curve 208 is split at event 44
+`S=(-1.4999999172668093,-2.0000380014441124,4.999999998555887)`.
+Event 50 is also a finite root on the tool's line 517 (generation 2), native
+station `.15550974970339074`. Thus it is not an arbitrary proximity candidate.
+The loop trace on rolling 176 has no interval connecting events 50 and 44.
+The tool's plane 515 does have the same event 50 on its original boundary;
+its retained large rolling cuts are separately visible as curves 801 and 807.
+
+The `0/0` material result at the chosen witness is an observation, not proof
+that the classifier is wrong. The next bounded question is why clipping of the
+rolling/plane pair does not supply a finite boundary between the two near-J
+roots before cell selection. A missing split could make one loop contain
+multiple material regions; this remains a hypothesis until its actual finite
+root and clipping decision are observed. Closure remains a hard failure gate.

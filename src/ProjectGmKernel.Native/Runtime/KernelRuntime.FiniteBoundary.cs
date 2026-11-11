@@ -84,7 +84,7 @@ internal static unsafe partial class KernelRuntime
 
     [ThreadStatic] internal static bool ForbidLegacyRegularBlendAssembly;
     [ThreadStatic] internal static bool ForbidSpatialBoundaryReuse;
-    internal enum BoundaryTraceStage:byte{Input,Successor,Arrangement,Product,CarrierReuse,CertifiedRoot,UnresolvedOrder,NativeCutLocator,NativeCutEndpoints,AnalyticSectionEnds,SpatialEndpointReuse,NativeSectionChart,NativeSectionWinding,ThirdFaceStation,ThirdFaceOutsideTrim,CoincidentLineStation,AxialContactImprint,ProjectedCellReplacement}
+    internal enum BoundaryTraceStage:byte{Input,Successor,Arrangement,Product,CarrierReuse,CertifiedRoot,UnresolvedOrder,NativeCutLocator,NativeCutEndpoints,AnalyticSectionEnds,SpatialEndpointReuse,NativeSectionChart,NativeSectionWinding,ThirdFaceStation,ThirdFaceOutsideTrim,CoincidentLineStation,AxialContactImprint,ProjectedCellReplacement,CellSelection,ComponentBoundary,ComponentCellMap}
     internal struct BoundaryTrace
     {
         internal PK_UV_s UvStart,UvEnd;
@@ -95,13 +95,14 @@ internal static unsafe partial class KernelRuntime
         internal SurfTag Surface,OtherSurface;
         internal CurveTag Curve,ProductCurve;
         internal EntityGeneration Generation,SurfaceGeneration;
-        internal BufferOffset Edge,Face,NextEdge,InputCoedge;
+        internal BufferOffset Edge,Face,NextEdge,InputCoedge,PreviousFace;
         internal BoundaryEventId StartEvent,EndEvent;
         internal BoundaryRootWitnessId Witness;
         internal double First,Last,StartAngle,EndAngle,SpatialError;
         internal KernelVector3 StartPoint,EndPoint;
         internal KernelSense CurveSense,SurfaceSense,FaceSense;
         internal byte Forward;
+        internal byte Selected,Reversed,MaterialInside,MaterialOutside;
     }
     [ThreadStatic] internal static Action<BoundaryTrace>? TraceFiniteBoundary;
 

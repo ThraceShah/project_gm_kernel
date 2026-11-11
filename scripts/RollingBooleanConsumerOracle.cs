@@ -87,7 +87,19 @@ unsafe
             var entered=false;KernelRuntime.ForbidSpatialBoundaryReuse=true;
             KernelRuntime.TraceFiniteBoundary=t=>
             {
-                if(args.Contains("--trace")&&t.Stage is KernelRuntime.BoundaryTraceStage.Input or KernelRuntime.BoundaryTraceStage.Arrangement or KernelRuntime.BoundaryTraceStage.Successor)
+                if(args.Contains("--trace")&&t.Stage==KernelRuntime.BoundaryTraceStage.CellSelection)
+                    Console.WriteLine($"BOOLEAN SELECT face={t.Face} source={t.Source} surface={t.Surface} keep={t.Selected} reverse={t.Reversed} material={t.MaterialInside}/{t.MaterialOutside} uv=({t.UvStart.param[0]:R},{t.UvStart.param[1]:R}) xyz=({t.StartPoint.X:R},{t.StartPoint.Y:R},{t.StartPoint.Z:R})");
+                if(args.Contains("--trace")&&t.Stage==KernelRuntime.BoundaryTraceStage.ComponentCellMap)
+                    Console.WriteLine($"BOOLEAN MAP old={t.PreviousFace} merged={t.Face} source={t.Source} source_generation={KernelRuntime.Faces[t.Source].Header.Generation} surface={t.Surface}");
+                if(args.Contains("--trace")&&t.Stage==KernelRuntime.BoundaryTraceStage.Input)
+                {
+                    var sourceGeneration=t.Source>=0&&KernelRuntime.Faces.IsAlive(t.Source)?KernelRuntime.Faces[t.Source].Header.Generation:0;
+                    Console.WriteLine($"BOOLEAN INPUT POINT curve={t.Curve}/{t.Generation} surface={t.Surface}/{t.SurfaceGeneration} source={t.Source}/{sourceGeneration} events={t.StartEvent}/{t.EndEvent} native=[{t.First:R},{t.Last:R}] xyz=({t.StartPoint.X:R},{t.StartPoint.Y:R},{t.StartPoint.Z:R})->({t.EndPoint.X:R},{t.EndPoint.Y:R},{t.EndPoint.Z:R})");
+                    var carrier=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(t.Curve)];
+                    if(carrier.Class==CurveClass.ICurve)
+                    {var data=KernelRuntime.ICurveDataPool[carrier.DataIndex];Console.WriteLine($"BOOLEAN INPUT SUPPORTS curve={t.Curve} supports={data.Surface0Tag}/{data.Surface1Tag} sense={carrier.Sense}");}
+                }
+                if(args.Contains("--trace")&&t.Stage is KernelRuntime.BoundaryTraceStage.Input or KernelRuntime.BoundaryTraceStage.Arrangement or KernelRuntime.BoundaryTraceStage.Successor or KernelRuntime.BoundaryTraceStage.ComponentBoundary)
                     Console.WriteLine($"BOOLEAN {t.Stage} surface={t.Surface} source={t.Source} face={t.Face} edge={t.Edge} curve={t.Curve} events={t.StartEvent}/{t.EndEvent} forward={t.Forward} next={t.NextEdge} angles={t.StartAngle:R}/{t.EndAngle:R}");
                 if(t.Stage!=KernelRuntime.BoundaryTraceStage.ProjectedCellReplacement)return;
                 entered=true;Console.WriteLine("PROJECTED replacement entered");
