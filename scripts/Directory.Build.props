@@ -23,6 +23,7 @@
   </ItemGroup>
   <ItemGroup Condition="'$(UseWebProgressCapture)' == 'true'">
     <Compile Include="$(MSBuildThisFileDirectory)WebProgressCapture.cs" Link="WebProgressCapture.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebProgressDisplayReceipts.cs" Link="WebProgressDisplayReceipts.cs" />
     <ProjectReference Include="$(MSBuildThisFileDirectory)../src/ProjectGmKernel.DisplayBridge/ProjectGmKernel.DisplayBridge.csproj" />
   </ItemGroup>
   <ItemGroup Condition="'$(UseWebProgressValidation)' == 'true'">

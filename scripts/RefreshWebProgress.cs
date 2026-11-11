@@ -61,6 +61,7 @@ foreach(var entry in registry["cases"]!.AsArray().OfType<JsonObject>())
         foreach(var arg in entry["arguments"]!.AsArray())info.ArgumentList.Add(arg!.GetValue<string>());
         info.Environment["MSBUILDDISABLENODEREUSE"]="1";
         info.Environment["GM_WEB_CASE_ID"]=caseId;info.Environment["GM_WEB_SAMPLE_ID"]="sample-"+sample;
+        info.Environment["GM_WEB_RUN_ID"]=id;
         if(args.Contains("--display-receipts"))info.Environment["GM_WEB_DISPLAY_RECEIPTS"]="1";
         info.Environment["GM_WEB_ROOT"]=root;info.Environment["GM_WEB_CAPTURE"]=caseDir;info.Environment["GM_WEB_COMMIT"]=commit;info.Environment["GM_WEB_SELECT"]=entry["selector"]?.GetValue<string>();info.Environment["GM_WEB_GEOMETRY_AUTHOR"]=entry["geometryAuthor"]?.GetValue<string>()??"independent GM and PK construction, identical numeric parameters";
         using var process=new Process{StartInfo=info};var processStarted=Stopwatch.GetTimestamp();process.Start();
@@ -239,7 +240,7 @@ void Save()
 }
 string Option(string name,string fallback){var at=Array.IndexOf(args,name);return at<0?fallback:at+1<args.Length?args[at+1]:throw new ArgumentException(name+" requires a value");}
 int Number(string name,int fallback)=>int.Parse(Option(name,fallback.ToString()),System.Globalization.CultureInfo.InvariantCulture);
-JsonObject SourceHashes(){var hashes=new JsonObject();foreach(var path in registry["cases"]!.AsArray().Select(c=>c!["source"]!.GetValue<string>()).Concat(new[]{"scripts/RefreshWebProgress.cs","scripts/WebProgressCapture.cs","scripts/OperationAcceptanceLedger.cs","scripts/OperationAcceptanceRules.cs","scripts/WebProgressDataValidation.cs","scripts/WebProgressPublishing.cs","scripts/WebProgressMetadata.cs","scripts/Directory.Build.props","scripts/ParasolidScriptHost.cs","scripts/ParasolidBodyCompare.cs","src/ProjectGmKernel.DisplayBridge/ParasolidDisplayBridge.cs"}).Distinct())if(File.Exists(path))hashes[path]=Hash(File.ReadAllBytes(path));return hashes;}
+JsonObject SourceHashes(){var hashes=new JsonObject();foreach(var path in registry["cases"]!.AsArray().Select(c=>c!["source"]!.GetValue<string>()).Concat(new[]{"scripts/RefreshWebProgress.cs","scripts/WebProgressCapture.cs","scripts/WebProgressDisplayReceipts.cs","scripts/OperationAcceptanceLedger.cs","scripts/OperationAcceptanceRules.cs","scripts/WebProgressDataValidation.cs","scripts/WebProgressPublishing.cs","scripts/WebProgressMetadata.cs","scripts/Directory.Build.props","scripts/ParasolidScriptHost.cs","scripts/ParasolidBodyCompare.cs","src/ProjectGmKernel.DisplayBridge/ParasolidDisplayBridge.cs"}).Distinct())if(File.Exists(path))hashes[path]=Hash(File.ReadAllBytes(path));return hashes;}
 static string ScriptPath([CallerFilePath]string path="")=>path;
 static string Hash(byte[] bytes)=>Convert.ToHexStringLower(SHA256.HashData(bytes));
 static double Median(List<double> values){var array=values.Order().ToArray();return array.Length%2==1?array[array.Length/2]:(array[array.Length/2-1]+array[array.Length/2])/2;}

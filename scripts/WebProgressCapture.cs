@@ -9,7 +9,7 @@ using BodyTag=System.Int32;
 
 // Opt-in observer only. No modeling results flow from PK back into GM.
 // Called outside the measured API interval; writes checkpoints before every API.
-internal static unsafe class WebProgressCapture
+internal static unsafe partial class WebProgressCapture
 {
     internal static readonly string? Output=Environment.GetEnvironmentVariable("GM_WEB_CAPTURE");
     internal static bool Select(string label)=>Environment.GetEnvironmentVariable("GM_WEB_SELECT") is not string filter||label==filter;
@@ -210,7 +210,9 @@ internal static unsafe class WebProgressCapture
             foreach(var segment in group){if(first||segment.A!=previous)Vector(positions,segment.A);Vector(positions,segment.B);previous=segment.B;first=false;}
             var entity=group.First().Edge;edges.Add((JsonNode)new JsonObject{["id"]=Id(own,entity),["entityTag"]=entity.EntityTag,["identifier"]=entity.Identifier,["positions"]=positions,["role"]=Role(entity),["roleKnown"]=isBefore||tool||Role(entity)!="unchanged"&&roleKnown});
         }
-        return new JsonObject{["schemaVersion"]=1,["bodyId"]=(own?"gm:":"pk:")+body,["source"]=new JsonObject{["kernel"]=own?"GM":"PK",["geometryAuthor"]=Environment.GetEnvironmentVariable("GM_WEB_GEOMETRY_AUTHOR")??"independent-construction",["tessellator"]="Parasolid PK_TOPOL_facet / PK_GEOM_render_line",["commit"]=Environment.GetEnvironmentVariable("GM_WEB_COMMIT"),["chordTolerance"]=ChordTolerance,["freshXtReceive"]=own},["faces"]=faces,["edges"]=edges};
+        var mesh=new JsonObject{["schemaVersion"]=1,["bodyId"]=(own?"gm:":"pk:")+body,["source"]=new JsonObject{["kernel"]=own?"GM":"PK",["geometryAuthor"]=Environment.GetEnvironmentVariable("GM_WEB_GEOMETRY_AUTHOR")??"independent-construction",["tessellator"]="Parasolid PK_TOPOL_facet / PK_GEOM_render_line",["commit"]=Environment.GetEnvironmentVariable("GM_WEB_COMMIT"),["chordTolerance"]=ChordTolerance,["freshXtReceive"]=own},["faces"]=faces,["edges"]=edges};
+        PrepareDisplayReceipt(own,display,mesh,tool?"tool":isBefore?"before":"after");
+        return mesh;
     }
     private static void Compare(int ordinal)
     {
@@ -280,7 +282,7 @@ internal static unsafe class WebProgressCapture
         AddCheck("capture-error-"+Errors.Count,"Snapshot or comparison could not complete","fail",null,null,null,"",e.GetType().Name+": "+e.Message,category:"auxiliary");
         try{Flush();}catch(Exception io){File.WriteAllText(Path.Combine(Output!,"export-errors.json"),io.ToString());}}}
     private static void Write(string path,JsonNode node)
-    {var file=Path.Combine(Output!,path);Directory.CreateDirectory(Path.GetDirectoryName(file)!);File.WriteAllText(file+".tmp",Sanitize(node.ToJsonString()));File.Move(file+".tmp",file,true);}
+    {var file=Path.Combine(Output!,path);Directory.CreateDirectory(Path.GetDirectoryName(file)!);var content=Sanitize(node.ToJsonString());File.WriteAllText(file+".tmp",content);File.Move(file+".tmp",file,true);UpdateDisplayReceipt(path,node,content);}
     private static string Sanitize(string value)
     {
         var root=Environment.GetEnvironmentVariable("GM_WEB_ROOT");if(!string.IsNullOrEmpty(root))value=value.Replace(root,".");
