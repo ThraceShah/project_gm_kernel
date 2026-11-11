@@ -1,3 +1,5 @@
+global using OperationReturnCode = System.Int32;
+global using OperationProcessExitCode = System.Int32;
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
@@ -13,7 +15,9 @@ internal sealed class OperationAcceptanceLedger
     public string? OutputDirectory { get; set; }
     public string? CheckVersion { get; set; }
     public string OperationSchemaVersion { get; set; } = "operation-layered-v2";
-    public int LegacyExitCode { get; set; }
+    public OperationProcessExitCode? LegacyExitCode { get; set; }
+    public OperationProcessExitCode? InProcessExitCode { get; set; }
+    public string? ScenarioFailure { get; set; }
     public double? ScenarioWallElapsedMs { get; set; }
     public double? ScenarioElapsedMs => ScenarioWallElapsedMs;
     public JsonObject? ScenarioCapturedApiMs { get; set; }
@@ -44,13 +48,14 @@ internal sealed class OperationAcceptanceLedger
         string api = "unknown",
         JsonObject? options = null,
         JsonNode? inputProvenance = null,
-        bool sameInput = false)
+        bool sameInput = false,
+        string interpretationVersion = "operation-rules-v2")
     {
         if (_byId.ContainsKey(id))
             throw new InvalidOperationException($"Duplicate operation ID: {id}");
 
         var ordinal = Operations.Count;
-        var op = new OperationRecord(id, ordinal, name, role, api, options, inputProvenance, sameInput);
+        var op = new OperationRecord(id, ordinal, name, role, api, options, inputProvenance, sameInput,interpretationVersion);
         Operations.Add(op);
         _byId[id] = op;
         return op;
@@ -58,11 +63,13 @@ internal sealed class OperationAcceptanceLedger
 
     public OperationRecord? GetOperation(string id) => _byId.GetValueOrDefault(id);
 
-    public void RecordReturn(string opId, string kernel, int errorCode)
+    public void RecordReturn(string opId, string kernel, OperationReturnCode errorCode)
     {
         var op = GetOperation(opId);
         if (op == null) return;
         op.Returns[kernel.ToLowerInvariant()] = errorCode;
+        var side=kernel.ToLowerInvariant();
+        if(!OperationAcceptanceRules.IsAcceptedReturn(op.InterpretationVersion,op.AcceptanceKind,op.Api,op.PrimaryContract,op.ExpectedReturns[side],errorCode))RecordCheck(opId,"primary",opId+"-api-return-"+side,"Recorded API return","fail",gm:side=="gm"?errorCode:null,pk:side=="pk"?errorCode:null,note:"Unexpected API return from "+side);
     }
 
     public void RecordTiming(string opId, string kernel, double ms)
@@ -168,7 +175,7 @@ internal sealed class OperationAcceptanceLedger
         op.EvaluateStatus();
     }
 
-    public void EndScenario(int legacyExitCode, double? elapsedMs = null)
+    public void EndScenario(OperationProcessExitCode? legacyExitCode, double? elapsedMs = null)
     {
         LegacyExitCode = legacyExitCode;
         ScenarioWallElapsedMs = elapsedMs;
@@ -188,10 +195,11 @@ internal sealed class OperationAcceptanceLedger
             ["pk"] = hasPk ? Finite(sumPk) : null
         };
 
-        var anyFail = Operations.Any(o => o.Status == "fail") || legacyExitCode != 0;
+        var anyFail = Operations.Any(o => o.Status == "fail") || legacyExitCode.HasValue && legacyExitCode != 0 || ScenarioFailure != null;
         var anyTimeout = Operations.Any(o => o.Status == "timeout");
 
-        FirstFailedOperationId = Operations.FirstOrDefault(o => o.Status is "fail" or "timeout")?.Id;
+        var failedParents=Operations.Where(o=>o.Status is "fail" or "timeout").Select(o=>o.ParentOperationId).Where(id=>id!=null).ToHashSet();
+        FirstFailedOperationId = Operations.FirstOrDefault(o => (o.Status is "fail" or "timeout") && !failedParents.Contains(o.Id))?.Id;
 
         if (anyTimeout)
             ScenarioStatus = "timeout";
@@ -200,7 +208,7 @@ internal sealed class OperationAcceptanceLedger
         else if (Operations.Count == 0)
             ScenarioStatus = "missing";
         else
-            ScenarioStatus = Operations.All(o => o.Status == "pass") ? "pass" : "unverified";
+            ScenarioStatus = legacyExitCode == 0 && Operations.All(o => o.Status == "pass") ? "pass" : "unverified";
     }
 
     public JsonObject ToJsonObject()
@@ -220,6 +228,9 @@ internal sealed class OperationAcceptanceLedger
             ["scenarioStatus"] = ScenarioStatus,
             ["firstFailedOperationId"] = FirstFailedOperationId,
             ["legacyExitCode"] = LegacyExitCode,
+            ["legacyExitCodeSource"] = LegacyExitCode.HasValue ? "caller-reported" : "not-observed-in-process",
+            ["inProcessExitCode"] = InProcessExitCode,
+            ["scenarioFailure"] = ScenarioFailure,
             ["checkVersion"] = CheckVersion,
             ["scenarioWallElapsedMs"] = Finite(ScenarioWallElapsedMs),
             ["scenarioElapsedMs"] = Finite(ScenarioElapsedMs),
@@ -264,6 +275,38 @@ internal sealed class OperationAcceptanceLedger
         value.HasValue && double.IsFinite(value.Value) ? JsonValue.Create(value.Value) : null;
 }
 
+// API scopes start before the call. Dispose records an owned failure if a raw
+// call, verification or cleanup throws before Complete, without catching it.
+internal sealed class OperationStepScope : IDisposable
+{
+    private readonly OperationAcceptanceLedger? _ledger;
+    private readonly OperationRecord? _operation;
+    private bool _completed;
+    internal string? Id => _operation?.Id;
+    internal OperationRecord? Record => _operation;
+    internal OperationStepScope(OperationAcceptanceLedger? ledger,string? parent,string suffix,string api,JsonObject? options=null,string interpretationVersion="operation-rules-v2")
+    {
+        _ledger=ledger;
+        if(ledger==null||parent==null)return;
+        _operation=ledger.BeginOperation(parent+"/"+suffix,suffix,"lifecycle",api,options,new JsonObject{["scope"]="integration-step",["parentOperationId"]=parent},interpretationVersion:interpretationVersion);
+        _operation.ParentOperationId=parent;
+    }
+    internal OperationReturnCode Return(string side,OperationReturnCode error)
+    {
+        if(_operation!=null)_ledger!.RecordReturn(_operation.Id,side,error);
+        return error;
+    }
+    internal void Complete()
+    {
+        if(_operation!=null)_ledger!.EndOperation(_operation.Id);
+        _completed=true;
+    }
+    public void Dispose()
+    {
+        if(!_completed&&_operation!=null)_ledger!.EndOperation(_operation.Id,"fail");
+    }
+}
+
 internal sealed class OperationRecord
 {
     private JsonObject? _options;
@@ -272,7 +315,10 @@ internal sealed class OperationRecord
     public string Name { get; }
     public string Role { get; }
     public string Api { get; }
-    public string InterpretationVersion { get; } = "operation-rules-v2";
+    public string InterpretationVersion { get; }
+    public string? ParentOperationId { get; set; }
+    public string AcceptanceKind { get; set; } = "normal";
+    public JsonObject ExpectedReturns { get; } = new();
     public JsonObject? Options
     {
         get => (JsonObject?)_options?.DeepClone();
@@ -326,13 +372,15 @@ internal sealed class OperationRecord
         string api,
         JsonObject? options,
         JsonNode? inputProvenance,
-        bool sameInput)
+        bool sameInput,
+        string interpretationVersion="operation-rules-v2")
     {
         Id = id;
         Ordinal = ordinal;
         Name = name;
         Role = role;
         Api = api;
+        InterpretationVersion=interpretationVersion;
         Options = options;
         InputProvenance = inputProvenance;
         SameInput = sameInput;
@@ -416,6 +464,9 @@ internal sealed class OperationRecord
             ["role"] = Role,
             ["api"] = Api,
             ["interpretationVersion"] = InterpretationVersion,
+            ["parentOperationId"] = ParentOperationId,
+            ["acceptanceKind"] = AcceptanceKind,
+            ["expectedReturns"] = ExpectedReturns.DeepClone(),
             ["primaryContract"] = PrimaryContract,
             ["terminalStatus"] = TerminalStatus ?? (Status == "not-run" ? "not-run" : null),
             ["sameInput"] = SameInput,

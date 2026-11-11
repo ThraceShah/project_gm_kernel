@@ -16,7 +16,9 @@ using ProjectGmKernel.Native.Runtime;
 using M = ProjectGmKernel.Native.Generated;
 using static parasolid;
 
-var directory = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ScriptPath())!, "..", "temp_docs", "freeform-modeling-oracle"));
+var selectedCase=args.FirstOrDefault(a=>a.StartsWith("--case="))?[7..];
+var output=args.FirstOrDefault(a=>a.StartsWith("--output="))?[9..];
+var directory = Path.GetFullPath(output??"../temp_docs/freeform-modeling-oracle",Path.GetDirectoryName(ScriptPath())!);
 Directory.CreateDirectory(directory);
 var report = new StringBuilder();
 var ledger = new OperationAcceptanceLedger("freeform-modeling-oracle", "Freeform Modeling Oracle", directory);
@@ -35,10 +37,13 @@ try
                 "two-profile-loft", "three-profile-natural-loft", "nurbs-sheet-sewing", "closed-nurbs-cube-sewing", "least-squares-point-fit",
                 "automatic-grid-surface", "explicit-grid-surface", "convex-changing-sections-loft", "clamped-bicubic-twists", "clamped-multispan-twists",
                 "edited-polynomial-surface", "edited-rational-surface", "reparameterised-polynomial-surface", "reparameterised-rational-surface" };
-            var failures = 0;
+            if(selectedCase!=null&&!names.Contains(selectedCase))throw new ArgumentException("Unknown selected case: "+selectedCase);
+            var failures = 0;var executed=0;
             for (var scenario = 0; scenario < names.Length; scenario++)
             {
                 var name = names[scenario];
+                if(selectedCase!=null&&name!=selectedCase)continue;
+                executed++;
                 var constructOpId = $"op-{scenario}-construct";
                 var constructOp = ledger.BeginOperation(
                     constructOpId,
@@ -46,27 +51,32 @@ try
                     "primary",
                     scenario switch
                     {
-                        6 or 7 => "PK_BODY_sweep",
+                        6 or 7 => "PK_BODY_make_swept_body",
                         8 or 9 or 15 => "PK_BODY_make_lofted_body",
                         10 or 11 => "PK_BODY_sew_bodies",
                         12 or 13 or 14 => "PK_SURF_make_sheet_body",
-                        >= 18 => "PK_SURF_reparameterise",
+                        >= 20 => "PK_BSURF_reparameterise",
+                        >= 18 => "PK_BSURF_insert_knots+PK_BSURF_raise_degree",
                         >= 16 => "PK_SURF_make_sheet_body",
                         _ => "PK_SURF_make_sheet_body"
                     },
                     null,
                     "independent geometric definition parameters; GM text XT vs PK"
                 );
+                var activeOpId=constructOpId;
+                var selfLifecycleId=$"op-{scenario}-self-lifecycle";
+                var pkLifecycleId=$"op-{scenario}-pk-lifecycle";
                 try
                 {
                     var ours = Produce(true, scenario); var reference = Produce(false, scenario);
-                    constructOp.InputHashes["gm"] = new System.Text.Json.Nodes.JsonObject { ["bodyTag"] = ours };
-                    constructOp.InputHashes["pk"] = new System.Text.Json.Nodes.JsonObject { ["bodyTag"] = reference };
+                    constructOp.EntityReferences["gm"] = new System.Text.Json.Nodes.JsonObject { ["outputEntityTag"] = ours };
+                    constructOp.EntityReferences["pk"] = new System.Text.Json.Nodes.JsonObject { ["outputEntityTag"] = reference };
                     var bytes = TransmitManaged(ours); File.WriteAllBytes(Path.Combine(directory, name + "-self.x_t"), bytes);
                     var referenceBytes = TransmitReference(reference);
                     File.WriteAllBytes(Path.Combine(directory, name + "-reference.x_t"), referenceBytes);
                     var received = ReceiveOracle(bytes);
-                    constructOp.OutputHashes["gmReceived"] = new System.Text.Json.Nodes.JsonObject { ["bodyTag"] = received };
+                    ledger.RecordOutputHashes(constructOpId,"gm",[OperationAcceptanceLedger.HashBytes(bytes)]);
+                    ledger.RecordOutputHashes(constructOpId,"pk",[OperationAcceptanceLedger.HashBytes(referenceBytes)]);
                     CheckReferenceBody(reference, name + " independent reference", Log, ledger, constructOpId, "auxiliary");
                     CheckReferenceBody(received, name + " self receive", Log, ledger, constructOpId, "primary");
                     for (var kind = 0; kind < 5; kind++)
@@ -82,13 +92,13 @@ try
                     Log("PASS " + name);
                     if (scenario is 6 or 9)
                     {
-                        var selfLifecycleId = $"op-{scenario}-self-lifecycle";
-                        ledger.BeginOperation(selfLifecycleId, name + " self XT lifecycle", "lifecycle", "PK_PART_receive_b+PK_BODY_transform", null, "GM produced XT received into fresh body and transformed");
+                        activeOpId=selfLifecycleId;
+                        ledger.BeginOperation(selfLifecycleId, name + " self XT lifecycle", "lifecycle", "integration-lifecycle", null, "GM produced XT received into fresh body and transformed; actual child APIs recorded separately");
                         RoundTripTolerant(bytes, reference, name + " self XT lifecycle", Log, ledger, selfLifecycleId);
                         ledger.EndOperation(selfLifecycleId);
 
-                        var pkLifecycleId = $"op-{scenario}-pk-lifecycle";
-                        ledger.BeginOperation(pkLifecycleId, name + " PK XT lifecycle", "lifecycle", "PK_PART_receive_b+PK_BODY_transform", null, "PK reference XT received into fresh body and transformed");
+                        activeOpId=pkLifecycleId;
+                        ledger.BeginOperation(pkLifecycleId, name + " PK XT lifecycle", "lifecycle", "integration-lifecycle", null, "PK reference XT received into fresh body and transformed; actual child APIs recorded separately");
                         RoundTripTolerant(referenceBytes, reference, name + " PK XT lifecycle", Log, ledger, pkLifecycleId);
                         ledger.EndOperation(pkLifecycleId);
                     }
@@ -96,13 +106,18 @@ try
                 catch (Exception ex)
                 {
                     failures++;
-                    ledger.EndOperation(constructOpId, "fail");
+                    ledger.EndOperation(activeOpId, "fail");
+                    if(scenario is 6 or 9)
+                    {
+                        if(ledger.GetOperation(selfLifecycleId)==null)ledger.AddUnreachedOperation(selfLifecycleId,ledger.Operations.Count,name+" self lifecycle not reached","lifecycle");
+                        if(ledger.GetOperation(pkLifecycleId)==null)ledger.AddUnreachedOperation(pkLifecycleId,ledger.Operations.Count,name+" PK lifecycle not reached","lifecycle");
+                    }
                     Log("FAIL " + name + ": " + ex.Message);
                 }
             }
-            CheckLoftHoleRejection(2, Log); CheckLoftHoleRejection(3, Log);
-            Require(failures == 0, $"{failures}/{names.Length} independent freeform operations failed.");
-            Log($"PASS all {names.Length} freeform modeling cases; default PK_BODY_check and structural comparison passed.");
+            if(selectedCase==null){CheckLoftHoleRejection(2, Log);CheckLoftHoleRejection(3, Log);}
+            Require(failures == 0, $"{failures}/{executed} independent freeform operations failed.");
+            Log($"PASS all {executed} selected freeform modeling cases; default PK_BODY_check and structural comparison passed.");
         }
         finally { Check(KernelRuntime.SessionStop(), "self session stop"); }
     }
@@ -505,13 +520,15 @@ static unsafe int ReceiveOracle(byte[] bytes)
         finally { if (parts != null) PK_MEMORY_free(parts); }
     }
 }
-static unsafe int ReceiveManaged(byte[] bytes)
+static unsafe int ReceiveManaged(byte[] bytes,OperationAcceptanceLedger? ledger=null,string? opId=null)
 {
     fixed (byte* pointer = bytes)
     {
         var block = new M.PK_MEMORY_block_s { bytes = pointer, n_bytes = (nuint)bytes.Length };
         var options = new PK_PART_receive_o_t { transmit_format = PK_transmit_format_text_c }; int count = 0; int* parts = null;
-        Check(KernelRuntime.PartReceiveB(block, (M.PK_PART_receive_o_s*)&options, &count, &parts), "self receive tolerant XT");
+        var error=KernelRuntime.PartReceiveB(block,(M.PK_PART_receive_o_s*)&options,&count,&parts);
+        if(ledger!=null&&opId!=null)ledger.RecordReturn(opId,"gm",error);
+        Check(error,"self receive tolerant XT");
         try { Require(count == 1 && parts != null, "self receive body count"); return parts[0]; }
         finally { if (parts != null) Check(KernelRuntime.MemoryFree(parts), "free self receive list"); }
     }
@@ -519,33 +536,51 @@ static unsafe int ReceiveManaged(byte[] bytes)
 static unsafe void RoundTripTolerant(byte[] bytes, int reference, string label, Action<string> log, OperationAcceptanceLedger? ledger = null, string? opId = null)
 {
     var before = (KernelRuntime.Bodies.AliveCount, KernelRuntime.Curves.AliveCount, KernelRuntime.Surfaces.AliveCount, KernelRuntime.Points.AliveCount);
-    var imported = ReceiveManaged(bytes); int copy = 0, referenceCopy = 0;
-    Check(KernelRuntime.EntityCopy(imported, &copy), label + " copy");
-    Check(KernelRuntime.EntityDelete(1, &imported), label + " delete source");
-    Check(PK_ENTITY_copy(reference, &referenceCopy), label + " reference copy");
+    int imported,copy=0,referenceCopy=0;
+    using(var step=new OperationStepScope(ledger,opId,"receive","PK_PART_receive_b"))
+    {imported=ReceiveManaged(bytes,ledger,step.Id);step.Complete();}
+    using(var step=new OperationStepScope(ledger,opId,"copy-self","PK_ENTITY_copy"))
+    {Check(step.Return("gm",KernelRuntime.EntityCopy(imported,&copy)),label+" copy");step.Complete();}
+    using(var step=new OperationStepScope(ledger,opId,"delete-source","PK_ENTITY_delete"))
+    {Check(step.Return("gm",KernelRuntime.EntityDelete(1,&imported)),label+" delete source");step.Complete();}
+    using(var step=new OperationStepScope(ledger,opId,"copy-reference","PK_ENTITY_copy"))
+    {Check(step.Return("pk",PK_ENTITY_copy(reference,&referenceCopy)),label+" reference copy");step.Complete();}
     var form = new M.PK_TRANSF_sf_s(); form.matrix[0] = form.matrix[5] = form.matrix[10] = form.matrix[15] = 1;
     form.matrix[3] = 2; form.matrix[7] = -1; form.matrix[11] = .5;
     int transform = 0, referenceTransform = 0;
-    Check(KernelRuntime.TransfCreate(&form, &transform), label + " transform create");
-    Check(PK_TRANSF_create((PK_TRANSF_sf_t*)&form, &referenceTransform), label + " reference transform create");
+    using(var step=new OperationStepScope(ledger,opId,"create-transform","PK_TRANSF_create"))
+    {
+        Check(step.Return("gm",KernelRuntime.TransfCreate(&form,&transform)),label+" transform create");
+        Check(step.Return("pk",PK_TRANSF_create((PK_TRANSF_sf_t*)&form,&referenceTransform)),label+" reference transform create");step.Complete();
+    }
     int count = 0; int* replaced = null; byte* exact = null;
-    Check(KernelRuntime.BodyTransform(copy, transform, 0, &count, &replaced, &exact), label + " transform copy");
-    if (replaced != null) KernelRuntime.MemoryFree(replaced); if (exact != null) KernelRuntime.MemoryFree(exact);
     PK_LOGICAL_t* referenceExact = null;
-    Check(PK_BODY_transform(referenceCopy, referenceTransform, 0, &count, &replaced, &referenceExact), label + " reference transform");
-    if (replaced != null) PK_MEMORY_free(replaced); if (referenceExact != null) PK_MEMORY_free(referenceExact);
-    var received = ReceiveOracle(TransmitManaged(copy));
-    CheckReferenceBody(received, label, log, ledger, opId, "primary");
-    CompareBodies(referenceCopy, received, label, log, ledger, opId);
-    Check(KernelRuntime.EntityDelete(1, &copy), label + " delete copied body"); Check(KernelRuntime.EntityDelete(1, &transform), label + " delete transform");
+    int received;
+    using(var step=new OperationStepScope(ledger,opId,"transform","PK_BODY_transform"))
+    {
+        Check(step.Return("gm",KernelRuntime.BodyTransform(copy,transform,0,&count,&replaced,&exact)),label+" transform copy");
+        if(replaced!=null)KernelRuntime.MemoryFree(replaced);if(exact!=null)KernelRuntime.MemoryFree(exact);
+        Check(step.Return("pk",PK_BODY_transform(referenceCopy,referenceTransform,0,&count,&replaced,&referenceExact)),label+" reference transform");
+        if(replaced!=null)PK_MEMORY_free(replaced);if(referenceExact!=null)PK_MEMORY_free(referenceExact);
+        received=ReceiveOracle(TransmitManaged(copy));
+        CheckReferenceBody(received,label,log,ledger,step.Id,"primary");CompareBodies(referenceCopy,received,label,log,ledger,step.Id);step.Complete();
+    }
+    using(var step=new OperationStepScope(ledger,opId,"delete-self-copy","PK_ENTITY_delete"))
+    {Check(step.Return("gm",KernelRuntime.EntityDelete(1,&copy)),label+" delete copied body");step.Complete();}
+    using(var step=new OperationStepScope(ledger,opId,"delete-self-transform","PK_ENTITY_delete"))
+    {Check(step.Return("gm",KernelRuntime.EntityDelete(1,&transform)),label+" delete transform");step.Complete();}
     var leakPass = before == (KernelRuntime.Bodies.AliveCount, KernelRuntime.Curves.AliveCount, KernelRuntime.Surfaces.AliveCount, KernelRuntime.Points.AliveCount);
     if (ledger != null && opId != null)
     {
         ledger.RecordCheck(opId, "representation", label + "-ownership-leak", label + " geometry ownership leak", leakPass ? "pass" : "fail");
     }
     Require(leakPass, label + " geometry ownership leak");
-    Check(PK_ENTITY_delete(1, &referenceCopy), label + " delete reference copy"); Check(PK_ENTITY_delete(1, &referenceTransform), label + " delete reference transform");
-    Check(PK_ENTITY_delete(1, &received), label + " delete received body"); log("PASS " + label);
+    using(var step=new OperationStepScope(ledger,opId,"delete-reference-copy","PK_ENTITY_delete"))
+    {Check(step.Return("pk",PK_ENTITY_delete(1,&referenceCopy)),label+" delete reference copy");step.Complete();}
+    using(var step=new OperationStepScope(ledger,opId,"delete-reference-transform","PK_ENTITY_delete"))
+    {Check(step.Return("pk",PK_ENTITY_delete(1,&referenceTransform)),label+" delete reference transform");step.Complete();}
+    using(var step=new OperationStepScope(ledger,opId,"delete-received","PK_ENTITY_delete"))
+    {Check(step.Return("pk",PK_ENTITY_delete(1,&received)),label+" delete received body");step.Complete();}log("PASS "+label);
 }
 static unsafe void ValidateFaceTracking(bool self, PK_TOPOL_track_r_t* tracking, int sideCount, int sections, string label)
 {

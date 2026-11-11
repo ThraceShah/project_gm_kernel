@@ -13,7 +13,9 @@ using ProjectGmKernel.Native.Runtime;
 using M=ProjectGmKernel.Native.Generated;
 using static parasolid;
 
-var directory=Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","local-topology-change-oracle"));
+var selectedCase=args.FirstOrDefault(a=>a.StartsWith("--case="))?[7..];
+var output=args.FirstOrDefault(a=>a.StartsWith("--output="))?[9..];
+var directory=Path.GetFullPath(output??"../temp_docs/local-topology-change-oracle",Path.GetDirectoryName(ScriptPath())!);
 Directory.CreateDirectory(directory);var report=new StringBuilder();
 var ledger = new OperationAcceptanceLedger("local-topology-change-oracle", "Local Topology Change Oracle", directory);
 void Log(string text){Console.WriteLine(text);report.AppendLine(text);}
@@ -39,44 +41,55 @@ try
             cases.Add(("native-import-face-elimination",0,-1,"body-offset",false,false,true));
             cases.Add(("separated-walls-in",15,-.3,"hollow",false,false,false));
             cases.Add(("separated-walls-out",15,.3,"hollow",false,false,false));
+            if(selectedCase!=null&&!cases.Any(c=>c.Name==selectedCase)&&!new[]{"sphere","torus","cylinder","cone"}.Any(s=>s+"-outward-hollow-identities"==selectedCase))throw new ArgumentException("Unknown selected case: "+selectedCase);
+            if(selectedCase!=null)cases=cases.Where(c=>c.Name==selectedCase).ToList();
             var failed=0;
             foreach(var c in cases)
             {
                 var opId = $"op-{c.Name}-edit";
                 var editOp = ledger.BeginOperation(opId, c.Name, "primary", c.Kind switch
                 {
-                    "hollow" => "PK_BODY_hollow",
-                    "face-offset" => "PK_FACE_offset",
-                    "body-offset" => "PK_BODY_offset",
+                    "hollow" => "PK_BODY_hollow_2",
+                    "face-offset" => "PK_FACE_offset_2",
+                    "body-offset" => "PK_BODY_offset_2",
                     _ => "PK_BODY_local"
-                }, null, c.Imported ? "imported seed XT from native PK" : "locally constructed test body");
+                },null,c.Imported?"imported seed XT from native PK":"locally constructed test body",interpretationVersion:c.Mask==15?"operation-rules-v3":"operation-rules-v2");
+                var activeOpId=opId;
+                if(c.Mask==15)
+                {
+                    editOp.AcceptanceKind="expected-rejection";editOp.PrimaryContract="expected-rejection-rollback-v1";
+                    editOp.ExpectedReturns["gm"]=PK_ERROR_not_unique;editOp.ExpectedReturns["pk"]=PK_ERROR_not_unique;
+                    editOp.Preconditions.Add((System.Text.Json.Nodes.JsonNode)new System.Text.Json.Nodes.JsonObject{["kind"]="expected-rejection-declaration",["scenario"]=c.Name,["api"]=editOp.Api,["expectedErrorName"]="PK_ERROR_not_unique",["expectedErrorCode"]=PK_ERROR_not_unique,["source"]="scripts/LocalTopologyChangeOracle.cs",["sourceSha256"]=OperationAcceptanceLedger.HashBytes(File.ReadAllBytes(ScriptPath())),["contract"]="empty tracking and unchanged GM XT; structural compare against independent pre-call PK baseline, not a PK rollback claim"});
+                }
                 try
                 {
                     var reference=Create(false,c.Oriented,c.Kind!="hollow");
                     var own=c.Imported?ReceiveOwn(Transmit(false,reference)):Create(true,c.Oriented,c.Kind!="hollow");
-                    editOp.InputHashes["gm"] = new System.Text.Json.Nodes.JsonObject { ["bodyTag"] = own };
-                    editOp.InputHashes["pk"] = new System.Text.Json.Nodes.JsonObject { ["bodyTag"] = reference };
+                    editOp.EntityReferences["gm"] = new System.Text.Json.Nodes.JsonObject { ["inputEntityTag"] = own };
+                    editOp.EntityReferences["pk"] = new System.Text.Json.Nodes.JsonObject { ["inputEntityTag"] = reference };
                     var baseline=0;if(c.Mask==15)Check(PK_ENTITY_copy(reference,&baseline),"independent pre-failure baseline");
-                    var a=Apply(true,own,c.Mask,c.Amount,c.Kind,c.Oriented,c.Varied);
-                    var b=Apply(false,reference,c.Mask,c.Amount,c.Kind,c.Oriented,c.Varied);
+                    var a=Apply(true,own,c.Mask,c.Amount,c.Kind,c.Oriented,c.Varied,ledger,opId);
+                    var b=Apply(false,reference,c.Mask,c.Amount,c.Kind,c.Oriented,c.Varied,ledger,opId);
                     var contractPass = a == b;
                     ledger.RecordCheck(opId, "auxiliary", c.Name + "-contract", c.Name + " contract parity", contractPass ? "pass" : "fail");
                     Require(contractPass,$"{c.Name}: status/tracking/identity differs {a} / {b}");
                     Log(c.Name+" contract="+a);
                     var bytes=Transmit(true,own);File.WriteAllBytes(Path.Combine(directory,c.Name+"-own.x_t"),bytes);
-                    File.WriteAllBytes(Path.Combine(directory,c.Name+"-native.x_t"),Transmit(false,reference));
+                    var referenceBytes=Transmit(false,reference);File.WriteAllBytes(Path.Combine(directory,c.Name+"-native.x_t"),referenceBytes);
                     // The native session can leave intermediate geometry after
                     // an error. Our command transaction deliberately rolls back;
                     // verify that result against the independent pre-call copy.
                     var received=ReceivePk(bytes);
-                    editOp.OutputHashes["gmReceived"] = new System.Text.Json.Nodes.JsonObject { ["bodyTag"] = received };
+                    ledger.RecordOutputHashes(opId,"gm",[OperationAcceptanceLedger.HashBytes(bytes)]);
+                    ledger.RecordOutputHashes(opId,"pk",[OperationAcceptanceLedger.HashBytes(referenceBytes)]);
                     Compare(baseline!=0?baseline:reference,received,c.Name,Log,ledger,opId);
                     if(baseline!=0)Check(PK_ENTITY_delete(1,&baseline),"delete pre-failure baseline");
                     ledger.EndOperation(opId);
                     if(c.Imported)
                     {
                         var lifecycleId = $"op-{c.Name}-lifecycle";
-                        ledger.BeginOperation(lifecycleId, c.Name + "-lifecycle", "lifecycle", "PK_PART_receive_b+PK_BODY_transform", null, "product XT imported, copied, transformed, compared, deleted");
+                        activeOpId=lifecycleId;
+                        ledger.BeginOperation(lifecycleId, c.Name + "-lifecycle", "lifecycle", "integration-lifecycle", null, "product XT imported, copied, transformed, compared, deleted; actual APIs recorded as children");
                         RoundTrip(bytes,reference,c.Name+"-lifecycle",directory,Log,ledger,lifecycleId);
                         ledger.EndOperation(lifecycleId);
                     }
@@ -86,27 +99,30 @@ try
                 catch(Exception ex)
                 {
                     failed++;
-                    ledger.EndOperation(opId, "fail");
+                    ledger.EndOperation(activeOpId, "fail");
+                    var unreachedLifecycleId=$"op-{c.Name}-lifecycle";
+                    if(c.Imported&&ledger.GetOperation(unreachedLifecycleId)==null)ledger.AddUnreachedOperation(unreachedLifecycleId,ledger.Operations.Count,c.Name+" lifecycle not reached","lifecycle");
                     Log("FAIL "+c.Name+": "+ex.Message);
                 }
             }
             foreach(var shape in new[]{"sphere","torus","cylinder","cone"})
             {
                 var label=shape+"-outward-hollow-identities";
+                if(selectedCase!=null&&label!=selectedCase)continue;
                 var shapeOpId = $"op-{label}";
-                var shapeOp = ledger.BeginOperation(shapeOpId, label, "primary", "PK_BODY_hollow", null, "analytic primitive outward hollow identities");
+                var shapeOp = ledger.BeginOperation(shapeOpId, label, "primary", "PK_BODY_hollow_2", null, "analytic primitive outward hollow identities");
                 try
                 {
-                    var own=AnalyticHollow(true,shape,out var a);var reference=AnalyticHollow(false,shape,out var b);
-                    shapeOp.InputHashes["gm"] = new System.Text.Json.Nodes.JsonObject { ["bodyTag"] = own };
-                    shapeOp.InputHashes["pk"] = new System.Text.Json.Nodes.JsonObject { ["bodyTag"] = reference };
+                    var own=AnalyticHollow(true,shape,out var a,ledger,shapeOpId);var reference=AnalyticHollow(false,shape,out var b,ledger,shapeOpId);
+                    shapeOp.EntityReferences["gm"] = new System.Text.Json.Nodes.JsonObject { ["outputEntityTag"] = own };
+                    shapeOp.EntityReferences["pk"] = new System.Text.Json.Nodes.JsonObject { ["outputEntityTag"] = reference };
                     var contractPass = a == b;
                     ledger.RecordCheck(shapeOpId, "auxiliary", label + "-tracking", label + " tracking parity", contractPass ? "pass" : "fail");
                     Require(contractPass,label+" tracking differs");Log(label+" contract="+a);
                     var bytes=Transmit(true,own);File.WriteAllBytes(Path.Combine(directory,label+"-own.x_t"),bytes);
                     File.WriteAllBytes(Path.Combine(directory,label+"-native.x_t"),Transmit(false,reference));
                     var received=ReceivePk(bytes);
-                    shapeOp.OutputHashes["gmReceived"] = new System.Text.Json.Nodes.JsonObject { ["bodyTag"] = received };
+                    ledger.RecordOutputHashes(shapeOpId,"gm",[OperationAcceptanceLedger.HashBytes(bytes)]);
                     Compare(reference,received,label,Log,ledger,shapeOpId);
                     ledger.EndOperation(shapeOpId);
                     Check(KernelRuntime.EntityDelete(1,&own),"delete analytic self");Check(PK_ENTITY_delete(1,&reference),"delete analytic native");Check(PK_ENTITY_delete(1,&received),"delete analytic received");
@@ -119,7 +135,8 @@ try
                     Log("FAIL "+label+": "+ex.Message);
                 }
             }
-            Log($"Local topology change oracle: {cases.Count+4-failed}/{cases.Count+4} passed, {failed} failed; 2 import-copy-delete-transform lifecycles are required by their parent cases.");
+            var executed=cases.Count+(selectedCase==null?4:cases.Count==0?1:0);
+            Log($"Local topology change oracle: {executed-failed}/{executed} passed, {failed} failed; import-copy-delete-transform lifecycles are required by their selected parent cases.");
             Require(failed==0,"Local topology change oracle failed");
         }
         finally{Check(KernelRuntime.SessionStop(),"self stop");}
@@ -160,7 +177,7 @@ static unsafe int Create(bool own,bool oriented,bool bevel)
     Require(n==1&&fault==PK_blend_fault_no_fault_c,"bevel result");Free(own,blends);return body;
 }
 
-static unsafe int AnalyticHollow(bool own,string shape,out string signature)
+static unsafe int AnalyticHollow(bool own,string shape,out string signature,OperationAcceptanceLedger? ledger=null,string? opId=null)
 {
     int body=0;
     Check(own?shape switch
@@ -174,8 +191,9 @@ static unsafe int AnalyticHollow(bool own,string shape,out string signature)
     },"create analytic independent model");
     var originals=Tags(own,body,2);var senses=originals.ToDictionary(x=>x,x=>SurfaceOrientation(own,x));
     var options=new PK_BODY_hollow_o_t();var track=new PK_TOPOL_track_r_t();var local=new PK_TOPOL_local_r_t();
-    Check(own?KernelRuntime.BodyHollow2(body,.3,1e-6,(M.PK_BODY_hollow_o_s*)&options,(M.PK_TOPOL_track_r_s*)&track,(M.PK_TOPOL_local_r_s*)&local):
-        PK_BODY_hollow_2(body,.3,1e-6,&options,&track,&local),"positive analytic hollow");
+    var error=own?KernelRuntime.BodyHollow2(body,.3,1e-6,(M.PK_BODY_hollow_o_s*)&options,(M.PK_TOPOL_track_r_s*)&track,(M.PK_TOPOL_local_r_s*)&local):PK_BODY_hollow_2(body,.3,1e-6,&options,&track,&local);
+    if(ledger!=null&&opId!=null)ledger.RecordReturn(opId,own?"gm":"pk",error);
+    Check(error,"positive analytic hollow");
     Require(local.status==PK_local_status_ok_c,"analytic local status");Require(track.n_track_records==originals.Length,"analytic hollow tracking count");
     foreach(var original in originals)Require(SurfaceOrientation(own,original)==senses[original],"original analytic face must remain outward");
     var records=new List<string>();
@@ -197,12 +215,14 @@ static unsafe (int Class,byte Sense) SurfaceOrientation(bool own,int face)
     Check(own?KernelRuntime.EntityAskClass(surface,&cls):PK_ENTITY_ask_class(surface,&cls),"tracked surface class");return(cls,sense);
 }
 
-static unsafe string Apply(bool own,int body,int mask,double amount,string kind,bool oriented,bool varied)
+static unsafe string Apply(bool own,int body,int mask,double amount,string kind,bool oriented,bool varied,OperationAcceptanceLedger? ledger=null,string? opId=null)
 {
+    var side=own?"gm":"pk";
     var initial=Tags(own,body,2);var keys=initial.ToDictionary(x=>x,x=>FaceKey(own,x,oriented));
     var boundary=BoundaryKeys(own,body,keys);
     var selected=initial.Where(x=>keys[x]<6&&(mask&(1<<keys[x]))!=0).ToArray();
     var old=Transmit(own,body);var track=new PK_TOPOL_track_r_t();var local=new PK_TOPOL_local_r_t();
+    if(ledger!=null&&opId!=null)ledger.RecordInputHash(opId,side,OperationAcceptanceLedger.HashBytes(old),[]);
     var ho=new PK_BODY_hollow_o_t();var bo=new PK_BODY_offset_o_t();var fo=new PK_FACE_offset_o_t();
     var variedFace=initial.First(x=>keys[x]==5);var changed=amount*1.7;int error;
     fixed(int* p=selected)
@@ -210,6 +230,12 @@ static unsafe string Apply(bool own,int body,int mask,double amount,string kind,
         ho.n_pierce_faces=selected.Length;ho.pierce_faces=p;
         if(varied){ho.n_offset_faces=1;ho.offset_faces=&variedFace;ho.offset_values=&changed;}
         var face=kind=="hollow"?0:initial.Single(x=>keys[x]==6);
+        if(ledger!=null&&opId!=null)
+        {
+            var operation=ledger.GetOperation(opId)!;var pair=operation.Options??new System.Text.Json.Nodes.JsonObject{["gm"]=null,["pk"]=null};
+            pair[side]=new System.Text.Json.Nodes.JsonObject{["api"]=operation.Api,["amount"]=amount,["tolerance"]=1e-6,["o_t_version"]=kind=="hollow"?ho.o_t_version:kind=="face-offset"?fo.o_t_version:bo.o_t_version,["pierceFaceKeys"]=new System.Text.Json.Nodes.JsonArray(selected.Select(f=>(System.Text.Json.Nodes.JsonNode?)System.Text.Json.Nodes.JsonValue.Create(keys[f])).ToArray()),["variedWall"]=varied,["variedWallAmount"]=varied?changed:null,["offsetFaceKey"]=kind=="hollow"?null:System.Text.Json.Nodes.JsonValue.Create(keys[face]),["otherOptions"]="Pinned PskernelSharp constructor defaults; see source provenance"};operation.Options=pair;
+            operation.EntityReferences[side]!["selectedFaceEntityTags"]=new System.Text.Json.Nodes.JsonArray(selected.Select(f=>(System.Text.Json.Nodes.JsonNode?)System.Text.Json.Nodes.JsonValue.Create(f)).ToArray());
+        }
         if(own)
             error=kind=="hollow"?KernelRuntime.BodyHollow2(body,amount,1e-6,(M.PK_BODY_hollow_o_s*)&ho,(M.PK_TOPOL_track_r_s*)&track,(M.PK_TOPOL_local_r_s*)&local):
                 kind=="face-offset"?KernelRuntime.FaceOffset2(1,&face,&amount,1e-6,(M.PK_FACE_offset_o_s*)&fo,(M.PK_TOPOL_track_r_s*)&track,(M.PK_TOPOL_local_r_s*)&local):
@@ -217,11 +243,26 @@ static unsafe string Apply(bool own,int body,int mask,double amount,string kind,
         else error=kind=="hollow"?PK_BODY_hollow_2(body,amount,1e-6,&ho,&track,&local):
             kind=="face-offset"?PK_FACE_offset_2(1,&face,&amount,1e-6,&fo,&track,&local):PK_BODY_offset_2(body,amount,1e-6,&bo,&track,&local);
     }
+    if(ledger!=null&&opId!=null)ledger.RecordReturn(opId,own?"gm":"pk",error);
     if(mask==15)
     {
+        if(ledger!=null&&opId!=null)
+        {
+            ledger.RecordCheck(opId,"primary",opId+"-"+side+"-expected-return","Expected PK_ERROR_not_unique "+side,error==PK_ERROR_not_unique?"pass":"fail",gm:own?error:null,pk:own?null:error,threshold:PK_ERROR_not_unique,unit:"code");
+            ledger.RecordCheck(opId,"primary",opId+"-"+side+"-empty-tracking","No tracking output on rejection "+side,track.n_track_records==0?"pass":"fail",gm:own?track.n_track_records:null,pk:own?null:track.n_track_records,threshold:0,unit:"records");
+        }
         Require(error==PK_ERROR_not_unique,"expected PK_ERROR_not_unique, actual "+error);
         Require(track.n_track_records==0,"failure tracking must be empty");
-        if(own)Require(old.SequenceEqual(Transmit(true,body)),"self failure mutated input");
+        if(own)
+        {
+            var afterFailure=Transmit(true,body);var unchanged=old.SequenceEqual(afterFailure);
+            if(ledger!=null&&opId!=null)
+            {
+                ledger.RecordCheck(opId,"primary",opId+"-gm-rollback","GM input XT unchanged after rejection",unchanged?"pass":"fail");
+                ledger.GetOperation(opId)!.Preconditions.Add((System.Text.Json.Nodes.JsonNode)new System.Text.Json.Nodes.JsonObject{["kind"]="gm-rollback-xt",["beforeSha256"]=OperationAcceptanceLedger.HashBytes(old),["afterSha256"]=OperationAcceptanceLedger.HashBytes(afterFailure),["equalBytes"]=unchanged});
+            }
+            Require(unchanged,"self failure mutated input");
+        }
         return "error:"+error;
     }
     Check(error,(own?"self":"native")+" "+kind);Require(local.status==PK_local_status_ok_c,"local status");
@@ -306,38 +347,59 @@ static unsafe byte[] Transmit(bool own,int body)
 }
 static unsafe int ReceiveOwn(byte[] bytes)=>Receive(true,bytes);
 static unsafe int ReceivePk(byte[] bytes)=>Receive(false,bytes);
-static unsafe int Receive(bool own,byte[] bytes)
+static unsafe int Receive(bool own,byte[] bytes,OperationAcceptanceLedger? ledger=null,string? opId=null)
 {
     fixed(byte* data=bytes)
     {
         var block=new PK_MEMORY_block_t(null,(ulong)bytes.Length,data);var options=new PK_PART_receive_o_t{transmit_format=PK_transmit_format_text_c};int n=0;int* parts=null;
-        Check(own?KernelRuntime.PartReceiveB(*(M.PK_MEMORY_block_s*)&block,(M.PK_PART_receive_o_s*)&options,&n,&parts):PK_PART_receive_b(block,&options,&n,&parts),"XT receive");
+        var error=own?KernelRuntime.PartReceiveB(*(M.PK_MEMORY_block_s*)&block,(M.PK_PART_receive_o_s*)&options,&n,&parts):PK_PART_receive_b(block,&options,&n,&parts);
+        if(ledger!=null&&opId!=null)ledger.RecordReturn(opId,own?"gm":"pk",error);
+        Check(error,"XT receive");
         try{Require(n==1,"one received part");return parts[0];}finally{Free(own,parts);}
     }
 }
 static unsafe void RoundTrip(byte[] bytes,int reference,string label,string directory,Action<string> log,OperationAcceptanceLedger? ledger=null,string? opId=null)
 {
     var before=(KernelRuntime.Bodies.AliveCount,KernelRuntime.Curves.AliveCount,KernelRuntime.Surfaces.AliveCount,KernelRuntime.Points.AliveCount);
-    var imported=ReceiveOwn(bytes);int copy=0,referenceCopy=0;
-    Check(KernelRuntime.EntityCopy(imported,&copy),"lifecycle self copy");Check(KernelRuntime.EntityDelete(1,&imported),"lifecycle delete source");
-    Check(PK_ENTITY_copy(reference,&referenceCopy),"lifecycle independent copy");
+    int imported,copy=0,referenceCopy=0;
+    using(var step=new OperationStepScope(ledger,opId,"receive","PK_PART_receive_b"))
+    {imported=Receive(true,bytes,ledger,step.Id);step.Complete();}
+    using(var step=new OperationStepScope(ledger,opId,"copy-self","PK_ENTITY_copy"))
+    {Check(step.Return("gm",KernelRuntime.EntityCopy(imported,&copy)),"lifecycle self copy");step.Complete();}
+    using(var step=new OperationStepScope(ledger,opId,"delete-source","PK_ENTITY_delete"))
+    {Check(step.Return("gm",KernelRuntime.EntityDelete(1,&imported)),"lifecycle delete source");step.Complete();}
+    using(var step=new OperationStepScope(ledger,opId,"copy-reference","PK_ENTITY_copy"))
+    {Check(step.Return("pk",PK_ENTITY_copy(reference,&referenceCopy)),"lifecycle independent copy");step.Complete();}
     var form=new M.PK_TRANSF_sf_s();form.matrix[0]=form.matrix[5]=form.matrix[10]=form.matrix[15]=1;
     form.matrix[3]=2;form.matrix[7]=-1;form.matrix[11]=.5;int transform=0,nativeTransform=0;
-    Check(KernelRuntime.TransfCreate(&form,&transform),"lifecycle self transform create");Check(PK_TRANSF_create((PK_TRANSF_sf_t*)&form,&nativeTransform),"lifecycle native transform create");
+    using(var step=new OperationStepScope(ledger,opId,"create-transform","PK_TRANSF_create"))
+    {Check(step.Return("gm",KernelRuntime.TransfCreate(&form,&transform)),"lifecycle self transform create");Check(step.Return("pk",PK_TRANSF_create((PK_TRANSF_sf_t*)&form,&nativeTransform)),"lifecycle native transform create");step.Complete();}
     int count=0;int* replaced=null;byte* exact=null;
-    Check(KernelRuntime.BodyTransform(copy,transform,0,&count,&replaced,&exact),"lifecycle self transform");Free(true,replaced);Free(true,exact);
     PK_LOGICAL_t* nativeExact=null;
-    Check(PK_BODY_transform(referenceCopy,nativeTransform,0,&count,&replaced,&nativeExact),"lifecycle native transform");Free(false,replaced);Free(false,nativeExact);
-    var output=Transmit(true,copy);File.WriteAllBytes(Path.Combine(directory,label+"-own.x_t"),output);
-    var received=ReceivePk(output);Compare(referenceCopy,received,label,log,ledger,opId);
-    Check(KernelRuntime.EntityDelete(1,&copy),"lifecycle delete self copy");Check(KernelRuntime.EntityDelete(1,&transform),"lifecycle delete self transform");
+    int received;
+    using(var step=new OperationStepScope(ledger,opId,"transform","PK_BODY_transform"))
+    {
+        Check(step.Return("gm",KernelRuntime.BodyTransform(copy,transform,0,&count,&replaced,&exact)),"lifecycle self transform");Free(true,replaced);Free(true,exact);
+        Check(step.Return("pk",PK_BODY_transform(referenceCopy,nativeTransform,0,&count,&replaced,&nativeExact)),"lifecycle native transform");Free(false,replaced);Free(false,nativeExact);
+        var output=Transmit(true,copy);File.WriteAllBytes(Path.Combine(directory,label+"-own.x_t"),output);
+        received=ReceivePk(output);Compare(referenceCopy,received,label,log,ledger,step.Id);step.Complete();
+    }
+    using(var step=new OperationStepScope(ledger,opId,"delete-self-copy","PK_ENTITY_delete"))
+    {Check(step.Return("gm",KernelRuntime.EntityDelete(1,&copy)),"lifecycle delete self copy");step.Complete();}
+    using(var step=new OperationStepScope(ledger,opId,"delete-self-transform","PK_ENTITY_delete"))
+    {Check(step.Return("gm",KernelRuntime.EntityDelete(1,&transform)),"lifecycle delete self transform");step.Complete();}
     var leakPass=before==(KernelRuntime.Bodies.AliveCount,KernelRuntime.Curves.AliveCount,KernelRuntime.Surfaces.AliveCount,KernelRuntime.Points.AliveCount);
     if(ledger!=null&&opId!=null)
     {
         ledger.RecordCheck(opId,"representation",label+"-ownership-leak",label+" geometry ownership leak",leakPass?"pass":"fail");
     }
     Require(leakPass,label+" geometry ownership leak");
-    Check(PK_ENTITY_delete(1,&referenceCopy),"lifecycle delete native copy");Check(PK_ENTITY_delete(1,&nativeTransform),"lifecycle delete native transform");Check(PK_ENTITY_delete(1,&received),"lifecycle delete received");
+    using(var step=new OperationStepScope(ledger,opId,"delete-reference-copy","PK_ENTITY_delete"))
+    {Check(step.Return("pk",PK_ENTITY_delete(1,&referenceCopy)),"lifecycle delete native copy");step.Complete();}
+    using(var step=new OperationStepScope(ledger,opId,"delete-reference-transform","PK_ENTITY_delete"))
+    {Check(step.Return("pk",PK_ENTITY_delete(1,&nativeTransform)),"lifecycle delete native transform");step.Complete();}
+    using(var step=new OperationStepScope(ledger,opId,"delete-received","PK_ENTITY_delete"))
+    {Check(step.Return("pk",PK_ENTITY_delete(1,&received)),"lifecycle delete received");step.Complete();}
     log("PASS "+label);
 }
 static unsafe void Compare(int reference,int received,string label,Action<string> log,OperationAcceptanceLedger? ledger=null,string? opId=null)

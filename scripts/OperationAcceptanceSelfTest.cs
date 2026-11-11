@@ -56,6 +56,24 @@ var rejectedNotRun=Complete(ledger,"executed-not-run");ledger.RecordReturn(rejec
 Assert(rejectedNotRun.Status=="fail"&&ledger.ScenarioStatus=="fail"&&ledger.FirstFailedOperationId!=null,"not-run cannot hide a known API failure");
 var failedNotRun=Complete(ledger,"primary-not-run");ledger.RecordCheck(failedNotRun.Id,"primary","failure","failure","fail");ledger.EndOperation(failedNotRun.Id,"not-run");
 Assert(failedNotRun.ToJsonObject()["status"]!.GetValue<string>()=="fail","not-run cannot hide an explicit primary failure");
+var stickyApi=Complete(ledger,"sticky-api");ledger.RecordReturn(stickyApi.Id,"gm",901);ledger.RecordReturn(stickyApi.Id,"gm",0);
+Assert(stickyApi.ToJsonObject()["status"]!.GetValue<string>()=="fail"&&stickyApi.PrimaryChecks.Any(c=>c?["gm"]?.GetValue<double>()==901),"later return recording cannot erase an unexpected API failure");
+var scoped=new OperationAcceptanceLedger("scoped","scoped");var previous=Complete(scoped,"previous");
+scoped.BeginOperation("lifecycle","lifecycle",api:"integration-lifecycle");
+try
+{
+    using var step=new OperationStepScope(scoped,"lifecycle","delete","PK_ENTITY_delete");
+    step.Return("gm",0);throw new InvalidOperationException("injected child failure");
+}
+catch(InvalidOperationException e) when(e.Message=="injected child failure"){scoped.EndOperation("lifecycle","fail");}
+scoped.InProcessExitCode=0;scoped.EndScenario(null);
+var failedChild=scoped.GetOperation("lifecycle/delete")!;
+Assert(previous.PrimaryStatus=="pass"&&failedChild.Status=="fail"&&failedChild.Returns["pk"]==null&&scoped.FirstFailedOperationId==failedChild.Id,"scope failure keeps prior primary and exact child owner without fabricating missing side");
+Assert(scoped.LegacyExitCode==null&&scoped.InProcessExitCode==0&&scoped.ScenarioStatus=="fail","in-process zero is not an observed process exit");
+var expected=scoped.BeginOperation("expected","expected",api:"PK_BODY_hollow_2",interpretationVersion:"operation-rules-v3");
+expected.AcceptanceKind="expected-rejection";expected.PrimaryContract="expected-rejection-rollback-v1";expected.ExpectedReturns["gm"]=901;expected.ExpectedReturns["pk"]=901;
+scoped.RecordReturn(expected.Id,"gm",901);scoped.RecordReturn(expected.Id,"pk",901);
+Assert(expected.ToJsonObject()["status"]!.GetValue<string>()=="unverified"&&expected.Returns["gm"]!.GetValue<int>()==901&&!expected.Timing["correctnessQualified"]!.GetValue<bool>(),"expected nonzero returns remain raw and cannot qualify an undeclared primary contract");
 foreach (var value in new[] { 0d, -1d, double.NaN, double.PositiveInfinity, double.NegativeInfinity })
 {
     var timingLedger = new OperationAcceptanceLedger("timing", "timing");
@@ -105,6 +123,9 @@ Validate(false,"rejects unknown interpretation version",o=>o["interpretationVers
 Validate(false,"rejects numeric interpretation version",o=>o["interpretationVersion"]=99);
 Validate(false,"rejects explicit null interpretation version",o=>o["interpretationVersion"]=null);
 Validate(false,"rejects object interpretation version",o=>o["interpretationVersion"]=new JsonObject());
+Validate(false,"expected return declaration cannot qualify geometry",o=>{o["interpretationVersion"]="operation-rules-v3";o["api"]="PK_BODY_hollow_2";o["primaryContract"]="expected-rejection-rollback-v1";o["acceptanceKind"]="expected-rejection";o["expectedReturns"]=new JsonObject{["gm"]=901,["pk"]=901};o["returns"]=new JsonObject{["gm"]=901,["pk"]=901};});
+Validate(false,"expected-return version cannot qualify a body-result contract",o=>o["interpretationVersion"]="operation-rules-v3");
+Validate(false,"old interpretation cannot enable expected-return policy",o=>{o["api"]="PK_BODY_hollow_2";o["primaryContract"]="expected-rejection-rollback-v1";o["acceptanceKind"]="expected-rejection";o["expectedReturns"]=new JsonObject{["gm"]=901,["pk"]=901};o["returns"]=new JsonObject{["gm"]=901,["pk"]=901};});
 Validate(false,"rejects Boolean v2 upgrade under legacy interpretation",o=>{o["api"]="PK_BODY_boolean_2";o.Remove("interpretationVersion");});
 Validate(false, "rejects unproven same input", o => o["inputProvenance"] = null);
 Validate(false, "rejects zero GM", o => { o["timing"]!["gmMs"] = 0; o["timing"]!["ratio"] = 0; });

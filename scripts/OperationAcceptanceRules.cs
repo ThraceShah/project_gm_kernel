@@ -9,12 +9,19 @@ internal static class OperationAcceptanceRules
     internal static double? Number(JsonNode? n) => n is not JsonValue v ? null : v.TryGetValue<double>(out var d) ? d : v.TryGetValue<int>(out var i) ? i : v.TryGetValue<long>(out var l) ? l : null;
     internal static bool IsTrue(JsonNode? n) => n is JsonValue v && v.TryGetValue<bool>(out var b) && b;
     internal static bool IsHash(JsonNode? n) => Text(n) is { Length: 64 } s && s.All(Uri.IsHexDigit);
+    internal static bool IsAcceptedReturn(string? interpretation,string? kind,string? api,string? contract,JsonNode? expected,OperationReturnCode actual)
+    {
+        var rejection=interpretation=="operation-rules-v3"&&kind=="expected-rejection"&&(api=="PK_BODY_hollow_2"&&contract=="expected-rejection-rollback-v1"||api=="PK_ENTITY_delete"&&contract=="expected-delete-missing-v1");
+        if(!rejection)return actual==0;
+        return expected is JsonValue value&&value.TryGetValue<int>(out var code)?actual==code:expected is JsonArray allowed&&allowed.Any(n=>n is JsonValue v&&v.TryGetValue<int>(out var c)&&c==actual);
+    }
 
     internal static Result Evaluate(JsonObject op)
     {
         var reasons = new JsonArray();
         void Reason(string s) => reasons.Add((JsonNode?)JsonValue.Create(s));
         var id = Text(op["operationId"]);
+        var interpretation = op.ContainsKey("interpretationVersion") ? Text(op["interpretationVersion"]) : "operation-rules-v1";
         var terminal = Text(op["terminalStatus"]);
         var primary = op["primaryChecks"] as JsonArray ?? [];
         var ownerValid = true;
@@ -30,7 +37,7 @@ internal static class OperationAcceptanceRules
         {
             var node = op["returns"]?[side];
             var known = node is JsonValue v && v.TryGetValue<int>(out _);
-            failed = known && node!.GetValue<int>() != 0;
+            failed = known && !IsAcceptedReturn(interpretation,Text(op["acceptanceKind"]),Text(op["api"]),Text(op["primaryContract"]),op["expectedReturns"]?[side],node!.GetValue<int>());
             return known;
         }
         var gmReturn = HasReturn("gm", out var gmFailed);
@@ -42,8 +49,9 @@ internal static class OperationAcceptanceRules
         var api = Text(op["api"]);
         // These requirements are the existing Compare capture checks: body count,
         // both BODY_check calls, five topology counts, strict compare and 15 mass values.
-        var interpretation = op.ContainsKey("interpretationVersion") ? Text(op["interpretationVersion"]) : "operation-rules-v1";
-        if(interpretation is not ("operation-rules-v1" or "operation-rules-v2"))Reason("unknown-or-invalid-interpretation-version");
+        if(interpretation is not ("operation-rules-v1" or "operation-rules-v2" or "operation-rules-v3"))Reason("unknown-or-invalid-interpretation-version");
+        // v3 describes expected-return scopes only; it adds no modeling pass
+        // contract or performance qualification to v1/v2 body verification.
         var supportedApi = api is "PK_BODY_boolean" or "PK_BODY_fix_blends" or "PK_SURF_create_blend" || interpretation == "operation-rules-v2" && api == "PK_BODY_boolean_2";
         var supported = (interpretation is "operation-rules-v1" or "operation-rules-v2") && contract == "capture-body-result-v1" && supportedApi;
         var complete = supported;
