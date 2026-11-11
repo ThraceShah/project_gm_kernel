@@ -106,6 +106,12 @@ File.Delete(Path.Combine(published, "index.json.tmp"));
 var retry = await Tick("watch-publish-retry");
 Check(retry.Exit == 0 && retry.Text.Contains("PUBLISHED_DATA") && !retry.Text.Contains("BATCH "), "Watch retry publishes without collector rerun");
 Check(!Read(state)["publish"]!["pending"]!.GetValue<bool>() && Same(originalHashes, Hashes(runRoot)), "success clears pending and preserves immutable run");
+var outsideRuns = Path.Combine(work, "outside-runs"); Directory.CreateDirectory(outsideRuns);
+File.WriteAllText(Path.Combine(outsideRuns, "sentinel.log"), "OUTSIDE_RUNS");
+var badOutput = Path.Combine(fixture, "bad-output"); Directory.CreateDirectory(badOutput);
+Directory.CreateSymbolicLink(Path.Combine(badOutput, "runs"), outsideRuns);
+var unsafeRefresh = await Command("refresh-unsafe-runs", fixture, "dotnet", "run", "--file", "scripts/RefreshWebProgress.cs", "--", "--registry", "registry.json", "--case", "fixture.alpha", "--output", "../bad-output", "--run-id", "unsafe");
+Check(unsafeRefresh.Exit != 0 && unsafeRefresh.Text.Contains("REFRESH_PATH_UNSAFE") && Directory.GetFileSystemEntries(outsideRuns).Length == 1, "direct producer refuses a linked runs ancestor before writing");
 var manifest = Read(Path.Combine(runRoot, "manifest.json"));
 Check(manifest["cases"]![0]!["execution"]!["exitCode"]!.GetValue<int>() == 7 && manifest["cases"]![0]!["checks"]![0]!["gm"]!.GetValue<double>() == 2.01065554e-7, "original collector exit7 and microvalue preserved");
 var joined = manifest.DeepClone().AsObject();
@@ -143,6 +149,11 @@ Check(activated.Exit == 0, "real Activate CLI imports scheduler closure into CAS
 var oldPointer = Read(Path.Combine(site, "site.json"));
 var oldGeneration = oldPointer["generation"]!.GetValue<string>();
 Check(HostedWebProgressSite.VerifyGenerationClosure(site, oldGeneration, out var error), "activated CAS closure independently valid: " + error);
+var linkedWeb = Path.Combine(work, "linked-web"); Directory.CreateSymbolicLink(linkedWeb, Path.GetDirectoryName(dist)!);
+var unsafePrepare = await Command("prepare-unsafe-ancestor", root, "dotnet", "run", "--file", "scripts/PrepareHostedWebProgressSite.cs", "--", "--no-build", "--dist", Path.GetRelativePath(scripts, Path.Combine(linkedWeb, "dist")), "--site", Path.GetRelativePath(scripts, Path.Combine(work, "unsafe-site")));
+Check(unsafePrepare.Exit != 0 && unsafePrepare.Text.Contains("HOST_PATH_UNSAFE") && !Directory.Exists(Path.Combine(work, "unsafe-site")), "Prepare refuses a linked dist ancestor before destination creation");
+var dangling = Path.Combine(work, "dangling"); File.CreateSymbolicLink(dangling, Path.Combine(work, "does-not-exist"));
+Check(!WebProgressSafePath.IsSafeChain(dangling, out _) && !HostedWebProgressSite.IsChainSafe(dangling), "both producer and host reject dangling write-target symlinks");
 Check(Same(publishedBefore, Hashes(published)) && watchBefore.SequenceEqual(File.ReadAllBytes(state)), "activation never mutates publish source or scheduler state");
 var build = await Command("host-build", root, "dotnet", "build", "web/host/GmProgressHost.csproj", "--configuration", "Release", "--nologo");
 Check(build.Exit == 0, "independent managed host compile");
@@ -219,6 +230,18 @@ try
     Check(rollback.Exit == 0 && (await Get("/data/index.json")).SequenceEqual(oldIndex) && (await Get("/")).SequenceEqual(oldHtml), "normal rollback restores exact old index and UI");
     Check(System.Text.Encoding.UTF8.GetString(await Get("/assets/new-456def.js")) == "console.log('NEW');", "successor hashed asset survives rollback");
     Check((await Get("/data/runs/quarantined/raw.log")).SequenceEqual(File.ReadAllBytes(Path.Combine(data, "runs", "quarantined", "raw.log"))), "rollback restores exact raw evidence reference");
+    var hookSite = Path.Combine(work, "hook-site"); var hookState = Path.Combine(work, "hook-state.json");
+    string[] HookArgs() => ["run", "--file", "scripts/PublishHostedWebProgressSite.cs", "--", "--no-build", "--site", Path.GetRelativePath(scripts, hookSite), "--state", Path.GetRelativePath(scripts, hookState), "--data", Path.GetRelativePath(scripts, published), "--web", Path.GetRelativePath(scripts, Path.GetDirectoryName(dist)!)];
+    var hookSuccess = await Command("host-hook-success", root, "dotnet", HookArgs());
+    Check(hookSuccess.Exit == 0 && hookSuccess.Text.Contains("HOST_PUBLISH"), "new serialized local hook validates/prepares/activates without portal or geometry");
+    var hookPointer = File.ReadAllBytes(Path.Combine(hookSite, "site.json"));
+    var savedIndex = File.ReadAllBytes(Path.Combine(published, "index.json"));
+    File.WriteAllText(Path.Combine(published, "index.json"), "{broken snapshot");
+    var hookFailure = await Command("host-hook-failure", root, "dotnet", HookArgs());
+    Check(hookFailure.Exit != 0 && hookPointer.SequenceEqual(File.ReadAllBytes(Path.Combine(hookSite, "site.json"))), "hook failure preserves previous authority");
+    File.WriteAllBytes(Path.Combine(published, "index.json"), savedIndex);
+    var hookRecovery = await Command("host-hook-recovery", root, "dotnet", HookArgs());
+    Check(hookRecovery.Exit == 0 && hookRecovery.Text.Contains("skip-same") && hookPointer.SequenceEqual(File.ReadAllBytes(Path.Combine(hookSite, "site.json"))), "hook recovery reuses exact pair without recommit or collector");
 }
 finally { if (!host.HasExited) host.Kill(true); await host.WaitForExitAsync(); Console.WriteLine("OWNED_HOST_STOPPED pid=" + host.Id + " exit=" + host.ExitCode); }
 Check(Same(sourceHashes, Hashes(Path.Combine(fixture, "scripts"))) && Same(originalHashes, Hashes(runRoot)), "fixed producer sources and original per-run evidence unchanged");
