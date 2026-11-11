@@ -553,6 +553,119 @@ async function run() {
     check('reset: geometry still present after reset', r0.bright > 3000 && r1.bright > 3000, `gm=${r0.bright} pk=${r1.bright}`);
     check('reset: view actually reset (pixels changed)', r0.sig !== u0b.sig);
 
+    // ==========================================================
+    // Operation-Aware Initial View, Inspection Modes & True U/V Isoparametrics
+    // ==========================================================
+    // 1. Operation-Aware View & Camera Persistence
+    const blendCamPos = await page.$eval('[data-testid="viewer-canvas-host"]', (el) => el.dataset.cameraPos);
+    check('op-view: initial camera is operation-aware, not fixed at (5,5,5)',
+      blendCamPos && blendCamPos !== '5.00,5.00,5.00' && blendCamPos !== '15.00,15.00,20.00',
+      `blendCamPos=${blendCamPos}`
+    );
+
+    // Camera Persistence: user rotates camera, then toggles step -> camera does NOT reset
+    await dragViewer(page, 0, 70, 40);
+    await page.waitForTimeout(200);
+    const userRotatedCamPos = await page.$eval('[data-testid="viewer-canvas-host"]', (el) => el.dataset.cameraPos);
+    check('camera: user rotation registered', userRotatedCamPos && userRotatedCamPos !== blendCamPos, `rotated=${userRotatedCamPos}`);
+
+    // Switch step (After)
+    await page.getByText('后态 (After)').click();
+    await waitForMeshes(page);
+    await page.waitForTimeout(400);
+    const afterSwitchCamPos = await page.$eval('[data-testid="viewer-canvas-host"]', (el) => el.dataset.cameraPos);
+    const uCoords = userRotatedCamPos.split(',').map(Number);
+    const aCoords = afterSwitchCamPos.split(',').map(Number);
+    const camDist = Math.hypot(uCoords[0] - aCoords[0], uCoords[1] - aCoords[1], uCoords[2] - aCoords[2]);
+    check('camera: step switch does NOT steal camera from user rotation',
+      camDist < 0.05,
+      `expected=${userRotatedCamPos} got=${afterSwitchCamPos} dist=${camDist.toFixed(3)}`
+    );
+
+    // 2. Viewport Toolbar & Focus Actions
+    // "查看修改"
+    await page.locator('[data-testid="btn-focus-op"]').first().click();
+    await page.waitForTimeout(400);
+    const opFocusedPos = await page.$eval('[data-testid="viewer-canvas-host"]', (el) => el.dataset.cameraPos);
+    check('toolbar: "查看修改" adjusts camera to operation focus', opFocusedPos && opFocusedPos !== afterSwitchCamPos, `opFocused=${opFocusedPos}`);
+
+    // "全模型"
+    await page.locator('[data-testid="btn-focus-full"]').first().click();
+    await page.waitForTimeout(400);
+    const fullFocusedPos = await page.$eval('[data-testid="viewer-canvas-host"]', (el) => el.dataset.cameraPos);
+    check('toolbar: "全模型" adjusts camera to full model bounding box', fullFocusedPos && fullFocusedPos !== opFocusedPos, `fullFocused=${fullFocusedPos}`);
+
+    // "标准视图" (Top view)
+    await page.locator('[data-testid="select-standard-view"]').first().selectOption('top');
+    await page.waitForTimeout(400);
+    const topViewPos = await page.$eval('[data-testid="viewer-canvas-host"]', (el) => el.dataset.cameraPos);
+    check('toolbar: standard top view adjusts camera along Y normal', topViewPos && topViewPos !== fullFocusedPos, `topView=${topViewPos}`);
+    await page.screenshot({ path: shot('webui_v2_standard_top.png') });
+
+    // "复位"
+    await page.locator('[data-testid="btn-reset-view"]').first().click();
+    await page.waitForTimeout(400);
+    const resetCamPos = await page.$eval('[data-testid="viewer-canvas-host"]', (el) => el.dataset.cameraPos);
+    check('toolbar: "复位" restores initial operation-aware view',
+      resetCamPos && (resetCamPos === opFocusedPos || resetCamPos === blendCamPos),
+      `reset=${resetCamPos} opFocused=${opFocusedPos} blendCamPos=${blendCamPos}`
+    );
+
+    // 3. Shading Modes & Transparency
+    const initOpacity = await page.$eval('[data-testid="viewer-canvas-host"]', (el) => el.dataset.dimmedOpacity);
+    check('shading: unchanged context is semi-transparent by default (0.25)', initOpacity === '0.25', `opacity=${initOpacity}`);
+    await page.screenshot({ path: shot('webui_v2_dimmed_context_after.png') });
+
+    // Toggle dimming off -> opaque
+    await page.locator('[data-testid="btn-toggle-dim"]').first().click();
+    await page.waitForTimeout(200);
+    const opaqueVal = await page.$eval('[data-testid="viewer-canvas-host"]', (el) => el.dataset.dimmedOpacity);
+    check('shading: toggling dim button switches context to 1.0 opaque', opaqueVal === '1', `opaqueVal=${opaqueVal}`);
+
+    // Toggle dimming back on
+    await page.locator('[data-testid="btn-toggle-dim"]').first().click();
+    await page.waitForTimeout(200);
+
+    // Toggle "仅看修改"
+    await page.locator('[data-testid="btn-toggle-isolate"]').first().click();
+    await page.waitForTimeout(300);
+    const isolatedStats = (await viewerStats(page))[0];
+    check('shading: "仅看修改" isolates modified & blend faces without unchanged context',
+      isolatedStats.roleFaces.unchanged === undefined || isolatedStats.roleFaces.unchanged === 0,
+      JSON.stringify(isolatedStats.roleFaces)
+    );
+    await page.screenshot({ path: shot('webui_v2_isolated_modified.png') });
+
+    // Restore full model context
+    await page.locator('[data-testid="btn-toggle-isolate"]').first().click();
+    await page.waitForTimeout(300);
+
+    // 4. True Surface U/V Isoparametric Lines
+    const hasIso = await page.$eval('[data-testid="viewer-canvas-host"]', (el) => el.dataset.hasIsoparametrics);
+    const isoCount = await page.$eval('[data-testid="viewer-canvas-host"]', (el) => Number(el.dataset.isoparametricsCount || 0));
+    check('isoparametrics: solid-blend.plane-nurbs has true U/V parameter curves', hasIso === 'true', `hasIso=${hasIso}`);
+    check('isoparametrics: curve segment count > 0 from Parasolid B-rep evaluation', isoCount > 0, `isoCount=${isoCount}`);
+
+    const badgeText = await page.textContent('[data-testid="viewer-iso-badge"]');
+    check('isoparametrics: U/V indicator badge shown on viewport banner', badgeText && badgeText.includes('等参线'), `badgeText=${badgeText}`);
+    await page.screenshot({ path: shot('webui_v2_op_aware_blend_after.png') });
+
+    // Toggle isoparametrics off
+    await page.locator('[data-testid="btn-toggle-iso"]').first().click();
+    await page.waitForTimeout(200);
+    const isoCountOff = await page.$eval('[data-testid="viewer-canvas-host"]', (el) => Number(el.dataset.isoparametricsCount || 0));
+    check('isoparametrics: toggle button hides isoparametric curves cleanly', isoCountOff === 0, `isoCountOff=${isoCountOff}`);
+
+    // Toggle isoparametrics back on
+    await page.locator('[data-testid="btn-toggle-iso"]').first().click();
+    await page.waitForTimeout(200);
+
+    // Switch back to Before to test and capture Before state
+    await page.getByText('前态 (Before)').click();
+    await waitForMeshes(page);
+    await page.waitForTimeout(400);
+    await page.screenshot({ path: shot('webui_v2_op_aware_blend_before.png') });
+
     // ---- T6: playback switches real snapshots ----
     await page.locator('button[title="自动按快照播放"]').click();
     const seenRoles = new Set();

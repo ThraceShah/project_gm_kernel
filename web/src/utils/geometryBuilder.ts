@@ -27,17 +27,38 @@ export interface PickedEntity {
   vertexCount?: number;
 }
 
+export interface GeometryDisplayOptions {
+  unchangedOpacity?: number; // 0.0 to 1.0 (default 1.0; 0.25 when dimmed)
+  isolateModified?: boolean;  // When true, hide unchanged faces & edges
+  showTools?: boolean;        // When false, hide tool bodies
+  showIsoparametrics?: boolean; // When true, render true surface isoparametrics
+}
+
 /**
- * Builds a Three.js Group representing a body from MeshData
+ * Builds a Three.js Group representing a body from MeshData, supporting
+ * layered shading, transparency ordering, depthWrite control, and true B-rep isoparametric curves.
  */
-export function buildThreeGeometry(meshData: MeshData): THREE.Group {
+export function buildThreeGeometry(
+  meshData: MeshData,
+  options?: GeometryDisplayOptions
+): THREE.Group {
   const root = new THREE.Group();
   root.name = `body_${meshData.bodyId}`;
+
+  const unchangedOpacity = options?.unchangedOpacity ?? 1.0;
+  const isolateModified = options?.isolateModified ?? false;
+  const isDimmed = unchangedOpacity < 0.99;
+  const showIsoparametrics = options?.showIsoparametrics ?? true;
 
   // 1. Build Faces
   if (Array.isArray(meshData.faces)) {
     meshData.faces.forEach((face, fIndex) => {
       if (!face.positions || face.positions.length < 9 || !face.indices || face.indices.length < 3) {
+        return;
+      }
+
+      const isUnchanged = face.role === 'unchanged';
+      if (isolateModified && isUnchanged) {
         return;
       }
 
@@ -53,18 +74,24 @@ export function buildThreeGeometry(meshData: MeshData): THREE.Group {
 
       const roleColor = ROLE_COLORS[face.role] ?? ROLE_COLORS.unchanged;
 
+      // Handle transparent ordering: transparent unchanged surfaces do not write depth,
+      // allowing opaque modified/selected features and edges inside/behind to show through clearly.
       const mat = new THREE.MeshStandardMaterial({
         color: roleColor.hex,
-        roughness: 0.35,
-        metalness: 0.1,
+        roughness: isUnchanged && isDimmed ? 0.6 : 0.35,
+        metalness: isUnchanged && isDimmed ? 0.0 : 0.1,
         side: THREE.DoubleSide,
         polygonOffset: true,
         polygonOffsetFactor: 1,
         polygonOffsetUnits: 1,
+        transparent: isUnchanged && isDimmed,
+        opacity: isUnchanged ? unchangedOpacity : 1.0,
+        depthWrite: !(isUnchanged && isDimmed),
       });
 
       const mesh = new THREE.Mesh(geom, mat);
       mesh.name = `face_${face.id || fIndex}`;
+      mesh.renderOrder = isUnchanged && isDimmed ? 0 : 1;
       mesh.userData = {
         type: 'face',
         id: face.id || `face_${fIndex}`,
@@ -77,10 +104,15 @@ export function buildThreeGeometry(meshData: MeshData): THREE.Group {
     });
   }
 
-  // 2. Build Edges
+  // 2. Build Topological Boundary Edges
   if (Array.isArray(meshData.edges)) {
     meshData.edges.forEach((edge, eIndex) => {
       if (!edge.positions || edge.positions.length < 6) {
+        return;
+      }
+
+      const isUnchanged = edge.role === 'unchanged';
+      if (isolateModified && isUnchanged) {
         return;
       }
 
@@ -93,10 +125,13 @@ export function buildThreeGeometry(meshData: MeshData): THREE.Group {
         color: edgeColor.hex,
         linewidth: edge.role === 'selected' ? 2 : 1,
         depthTest: true,
+        transparent: isUnchanged && isDimmed,
+        opacity: isUnchanged ? Math.max(unchangedOpacity, 0.4) : 1.0,
       });
 
       const lines = new THREE.LineSegments(geom, mat);
       lines.name = `edge_${edge.id || eIndex}`;
+      lines.renderOrder = edge.role === 'selected' ? 4 : 2;
       lines.userData = {
         type: 'edge',
         id: edge.id || `edge_${eIndex}`,
@@ -106,6 +141,73 @@ export function buildThreeGeometry(meshData: MeshData): THREE.Group {
 
       root.add(lines);
     });
+  }
+
+  // 3. Build True Isoparametric Lines (if available and enabled)
+  if (showIsoparametrics) {
+    const isoSegments: number[] = [];
+    let isoLineCount = 0;
+
+    const addPolyline = (polyline: number[]) => {
+      if (!polyline || polyline.length < 6) return;
+      isoLineCount++;
+      for (let i = 0; i < polyline.length - 3; i += 3) {
+        isoSegments.push(
+          polyline[i],
+          polyline[i + 1],
+          polyline[i + 2],
+          polyline[i + 3],
+          polyline[i + 4],
+          polyline[i + 5]
+        );
+      }
+    };
+
+    // Collect from FaceData.isoparametrics
+    if (Array.isArray(meshData.faces)) {
+      meshData.faces.forEach((face) => {
+        if (isolateModified && face.role === 'unchanged') return;
+        if (face.isoparametrics) {
+          if (Array.isArray(face.isoparametrics.uLines)) {
+            face.isoparametrics.uLines.forEach(addPolyline);
+          }
+          if (Array.isArray(face.isoparametrics.vLines)) {
+            face.isoparametrics.vLines.forEach(addPolyline);
+          }
+        }
+      });
+    }
+
+    // Also collect from MeshData.isoparametrics if present and not already loaded from faces
+    if (isoLineCount === 0 && Array.isArray(meshData.isoparametrics)) {
+      meshData.isoparametrics.forEach((iso) => {
+        addPolyline(iso.positions);
+      });
+    }
+
+    if (isoSegments.length > 0) {
+      const isoGeom = new THREE.BufferGeometry();
+      isoGeom.setAttribute('position', new THREE.Float32BufferAttribute(isoSegments, 3));
+
+      // Distinct, elegant CAD cyan-teal line for U/V surface parameters
+      const isoMat = new THREE.LineBasicMaterial({
+        color: 0x38bdf8, // Sky-400 CAD parameter color
+        depthTest: true,
+        transparent: true,
+        opacity: 0.85,
+      });
+
+      const isoLines = new THREE.LineSegments(isoGeom, isoMat);
+      isoLines.name = '__helper_isoparametrics';
+      isoLines.renderOrder = 3;
+      isoLines.userData = {
+        type: 'isoparametric',
+        lineCount: isoLineCount,
+        segmentCount: isoSegments.length / 6,
+      };
+
+      root.add(isoLines);
+    }
   }
 
   return root;

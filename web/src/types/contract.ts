@@ -150,18 +150,29 @@ export type EntityRole =
   | 'modified'
   | 'deleted';
 
+export interface IsoparametricData {
+  uLines?: number[][]; // Array of flat xyz polylines: [x1, y1, z1, x2, y2, z2, ...]
+  vLines?: number[][];
+  source?: string;     // Provenance of isoparametric evaluation (e.g. Parasolid PK_TOPOL_render_line)
+}
+
 export interface FaceData {
   id: string;
   positions: number[]; // Flat xyz: [x1, y1, z1, x2, y2, z2, ...]
   normals?: number[];  // Optional flat xyz normals
   indices: number[];    // Face-local 0-based triangle vertex indices
   role: EntityRole;
+  identifier?: number;
+  entityTag?: number;
+  isoparametrics?: IsoparametricData;
 }
 
 export interface EdgeData {
   id: string;
   positions: number[]; // Sequential line segments: [x1, y1, z1, x2, y2, z2, ...]
   role: EntityRole;
+  identifier?: number;
+  entityTag?: number;
 }
 
 export interface MeshSource {
@@ -173,10 +184,20 @@ export interface MeshSource {
   [key: string]: unknown;
 }
 
+export interface MeshIsoparametricLine {
+  faceId: string;
+  direction?: 'u' | 'v';
+  positions: number[]; // Flat xyz polyline
+}
+
 export interface MeshData {
   schemaVersion: number;
   bodyId: string;
   source: MeshSource;
   faces: FaceData[];
   edges: EdgeData[];
+  isoparametrics?: MeshIsoparametricLine[];
 }
+
+export type StandardView = 'iso' | 'front' | 'top' | 'right';
+

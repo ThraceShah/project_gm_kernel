@@ -446,13 +446,17 @@ export const App: React.FC = () => {
                 {/* 3D Dual Viewports */}
                 <div className="flex-1 relative overflow-hidden min-h-[220px]" data-testid="viewport-region">
                   <ViewportContainer
+                    caseId={currentCase.id}
+                    operation={currentCase.operation}
                     gmMesh={gmMeshes}
                     pkMesh={pkMeshes}
                     gmError={gmError}
                     pkError={pkError}
                     isLoading={isLoadingMeshes}
                     cameraSync={cameraSync}
+                    onCameraSyncChange={setCameraSync}
                     resetTrigger={resetTrigger}
+                    onResetTrigger={() => setResetTrigger((prev) => prev + 1)}
                   />
                 </div>
 
