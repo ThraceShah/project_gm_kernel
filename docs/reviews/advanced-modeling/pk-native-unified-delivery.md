@@ -105,3 +105,33 @@ Mac owner 可在自己的后续同机窗口使用这个入口，不需要本任�
 看板最小交接包只含当前真实 Capture、mesh JSON、quality JSON、hash/command/source/原 exit 收据；XT、DLL/PDB 正文私存。mesh 的 sourceBodyTag、DisplayBody snapshot、XT hash 与真实产品绑定，未用 PK 重建物替换 GM 产品。发布 owner 应保留已有 run，新候选集中独审后再装配；Unresolved、原 API 错误、observer 错误和缺失资格独立展示，不把检查器0改写为建模成功。
 
 本轮不签任意 Boolean/局部建模、全部 M0–M5、所有查询或 PK 性能目标完成；没有 main、门户、Windows 或 Mac 构建/测量。只清理自己确证的 PID/PGID，不使用全局 pkill。
+
+## B1 runner 质量门修复候选（2026-11-12 追加）
+
+集中独审现已完成并推送 `583d917890a9f654dbd4a1f4e96e5e5f261f68eb`，其 `docs/reviews/advanced-modeling/pk-native-unified-4b2405e-independent-review.md` 接受原固定计算集成、mirror8 修复、所列几何/拓扑和当前真实交接包，仅阻断 runner 自动质量门 B1。以上原执行记录和身份保持原义；本追加修复尚待同一独审针对 B1 窄复核，未合 main、未发布，也未取得新的 Mac 性能资格。
+
+修复源码固定为 **`84c558c10135c117bf8be6629a157e6d230f1b2d`**，已推送 `origin/feat/pk-native-unified-delivery`。相对原文档头 `410748d3b615296d1aa1c0e77df194eb7833b74d` 的实际代码差异只有 `scripts/NativeModelingWorkComparison.cs` 和新增的窄验证入口 `scripts/NativeModelingQualityGateChecks.cs`（269 additions、5 deletions）。Native 树仍为 **`133f56acb0cf485366cd4f13f457dc3b161655eb`**；Capture producer、Compare/Mass 数学、测试和已接受原件未改。
+
+主 runner 和 `--audit` 继续共用同一个当前格式验收函数。每组比较/物性摘要必须链接实际同次 JSON，匹配报告/summary/sourceBinding/loaded identity 和已有命令来源；每步必须有对应 mesh 链接的 snapshot 比较，以及按实际 GM live/reference 实体识别的独立比较和物性报告。比较实际 Rejected、原 API 错误和来源/摘要矛盾返回1；缺必要证据/分量/资格和真实 Unresolved 返回2。存在的原 `process.exit` 同样保留分层，不让审计0遮蔽原2或硬失败。
+
+物性按15个具名分量一一匹配，不能用任意15行凑数；核验两 estimate、两非负 modulus、有限且有序的 normalized 下/上界、精度/阈值、分量和总体状态。只用既有 estimate/modulus 重算 producer 的向外区间公式校验内部一致性，不调用 PK 或再积分。比较仍消费已接受 helper 的最终裁决及实际严格 mask/raw differences/有限证明，不新增几何裁决或证书框架。缺失不归为已证明的几何错误，Different/Rejected 不改成 Unresolved。当前 producer 的比较实体是保留的 PK 副本，显示 mesh 的 snapshot tag 是另一实体；按其真实 step/mesh 链接校验，没有强造二者 tag 相等。
+
+实际只用标准 .NET10 在 qingyu2 执行以下窄验证，复用独审 `negative` 模式已经生成的7份派生副本以及本树原 `current-runner-v2`；另外7份 mutation 全部隔离另存。原始日志、每条 argv/输入 hash/runner hash 和同期原 exit 存于 `temp_docs/unified-delivery/b1-gate-v3/`，外层日志/exit 为 `temp_docs/unified-delivery/b1-gate-driver-v3.*`。没有重跑1974/63/17、生命周期、PK Compare/积分、ABBA或AOT。
+
+```sh
+MSBUILDDISABLENODEREUSE=1 dotnet run scripts/NativeModelingQualityGateChecks.cs -c Release -p:UseSharedCompilation=false -- ../temp_docs/unified-delivery/b1-gate-v3
+```
+
+| 实际输入/隔离负控 | 数量 | 本次 audit 原 exit |
+| --- | ---: | ---: |
+| 独审原样 intact、本树原样 planar | 2 | 各0 |
+| no-modulus、no-body-check、no-compare | 3 | 各2 |
+| 原假阳性 no-estimates-lower、no-evidence-links | 2 | 各2 |
+| 原假阳性 rejected-compare-evidence | 1 | 1 |
+| wrong-step、source-contradiction、false-verified-bounds、native-api-error、command-source-contradiction | 5 | 各1 |
+| duplicate-component、report-no-estimate | 2 | 各2 |
+| 真实 sphere、curved、NURBS fillet、shortedge 原 Capture | 4 | 各2，保持未决 |
+
+19条原 exit 均与预期相符；外层 checker 原0只表示上述控制符合预期，不能替负控或未决记录签成功。`b1-gate-v1` 外层原1是缺 compare 时误归为 pair 矛盾（子原1、预期2），随后改为缺失返回2；`b1-gate-v2` 外层原0是中间版本，最终只引用 v3 固定源码结果，所有早先日志保留不覆盖。
+
+结构收据另存 `docs/reviews/advanced-modeling/pk-native-unified-delivery-b1.receipt.json`；runner SHA256 为 `78c98d884640d185c07337d4d34ec02bdb14f9d5fa3876cfef6c19831b75f6a5`，窄验证脚本 SHA256 为 `acffc46e37dc5f9e4de72b4b237429530c0bcd37f53b8864d3c80b4dce9c3533`。原156文件/56mesh ZIP 仍为 `5197d647fbc47a15f3338e83f1c4063227fddcd4dfff92186c0274aa510495bf`，没有复制或替换整套产品。交接只追加该修复源和收据；原4b运行仍是原4b，不称为本修复重跑或同一新二进制。
