@@ -49,7 +49,7 @@ if(args.Contains("--revalidate",StringComparer.Ordinal)||args.Contains("--revali
         var text=File.Exists(Path.Combine(output,sample["oracleLog"]!.GetValue<string>()))?File.ReadAllText(Path.Combine(output,sample["oracleLog"]!.GetValue<string>())):"";
         var bench=ResolveCases(caseId).Single();
         verdict=Qualify(bench,File.Exists(Path.Combine(captureDirectory,"capture.json"))?JsonNode.Parse(File.ReadAllText(Path.Combine(captureDirectory,"capture.json")))!.AsObject():null,
-            text,sample["processExit"]!.GetValue<int>(),sample["timedOut"]!.GetValue<bool>(),sample["expectedRepetitions"]!.GetValue<int>(),captureDirectory);
+            text,sample["processExit"]!.GetValue<int>(),sample["timedOut"]!.GetValue<bool>(),sample["expectedRepetitions"]?.GetValue<int>()??sample["repetitions"]!.GetValue<int>(),captureDirectory);
         scope="full-run (process exit/timeout verified from the immutable report)";
         subject=caseId+" "+label;
     }
