@@ -3,6 +3,8 @@
 #:property UsePskernelSharpUsings=true
 #:property UseParasolidScriptHost=true
 #:property UseParasolidMarkOracle=true
+#:property UseOperationAcceptanceLedger=true
+#:property AssemblyName=ParasolidEvaluationOracle
 #:project ../third_party/PKToy/PskernelSharp/PskernelSharp.csproj
 #:project ../src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj
 
@@ -20,106 +22,136 @@ var numericalOnly = args.Contains("--numerical-only");
 var memoryReview = args.Contains("--memory-review");
 if (numericalOnly) Console.WriteLine("Numerical-only run: XT receive/compare is not checked.");
 
-unsafe
+var ledger = new OperationAcceptanceLedger("evaluation-oracle", "Parasolid Evaluation Oracle", directory);
+try
 {
-    if (!ParasolidScriptHost.TryStartSession("evaluation oracle", out var session, out var message,
-        configureRollback: memoryReview ? MarkOracleStorage.Register : null))
-        throw new InvalidOperationException(message);
-    using (session)
+    unsafe
     {
-        var start = new M.PK_SESSION_start_o_s { o_t_version = 1 };
-        Check(KernelRuntime.SessionStart(&start), "our session");
-        try
+        if (!ParasolidScriptHost.TryStartSession("evaluation oracle", out var session, out var message,
+            configureRollback: memoryReview ? MarkOracleStorage.Register : null))
+            throw new InvalidOperationException(message);
+        using (session)
         {
-            if (memoryReview)
+            var start = new M.PK_SESSION_start_o_s { o_t_version = 1 };
+            Check(KernelRuntime.SessionStart(&start), "our session");
+            try
             {
-                CheckPartitionLockProtocol();
-                CheckPartitionLifecycle(directory);
-                CheckSharedCurve(directory);
-                CheckSharedSurface(directory);
-            }
-            foreach (var kind in new[] { "block", "cylinder", "cone", "sphere", "torus" })
-            foreach (var rotated in new[] { false, true })
-            {
-                var basis = Frame(2, -3, 7, 1.0 / 3, 2.0 / 3, 2.0 / 3, 0, 1 / Math.Sqrt(2), -1 / Math.Sqrt(2));
-                var managedBasis = new M.PK_AXIS2_sf_s();
-                for (var i = 0; i < 3; i++)
-                {
-                    managedBasis.location.coord[i] = basis.location.coord[i];
-                    managedBasis.axis.coord[i] = basis.axis.coord[i];
-                    managedBasis.ref_direction.coord[i] = basis.ref_direction.coord[i];
-                }
-                var bp = rotated ? &basis : null;
-                var mp = rotated ? &managedBasis : null;
-                var label = rotated ? kind + "-rotated" : kind;
-                int ours, reference;
-                switch (kind)
-                {
-                    case "block":
-                        Check(KernelRuntime.BodyCreateSolidBlock(2, 3, 4, mp, &ours), kind);
-                        Check(PK_BODY_create_solid_block(2, 3, 4, bp, &reference), kind);
-                        break;
-                    case "cylinder":
-                        Check(KernelRuntime.BodyCreateSolidCyl(3, 5, mp, &ours), kind);
-                        Check(PK_BODY_create_solid_cyl(3, 5, bp, &reference), kind);
-                        break;
-                    case "cone":
-                        Check(KernelRuntime.BodyCreateSolidCone(2, 5, 0.25, mp, &ours), kind);
-                        Check(PK_BODY_create_solid_cone(2, 5, 0.25, bp, &reference), kind);
-                        break;
-                    case "sphere":
-                        Check(KernelRuntime.BodyCreateSolidSphere(3, mp, &ours), kind);
-                        Check(PK_BODY_create_solid_sphere(3, bp, &reference), kind);
-                        break;
-                    default:
-                        Check(KernelRuntime.BodyCreateSolidTorus(5, 2, mp, &ours), kind);
-                        Check(PK_BODY_create_solid_torus(5, 2, bp, &reference), kind);
-                        break;
-                }
                 if (memoryReview)
                 {
-                    // Delete/restore a live body, then reuse slots from another
-                    // body. Both kernels perform the same lifecycle operations.
-                    int ourMark, referenceMark;
-                    Check(KernelRuntime.MarkCreate(&ourMark), "our mark");
-                    Check(PK_MARK_create(&referenceMark), "reference mark");
-                    Check(KernelRuntime.EntityDelete(1, &ours), "our delete under mark");
-                    Check(PK_ENTITY_delete(1, &reference), "reference delete under mark");
-                    Check(KernelRuntime.MarkGoto(ourMark), "our restore");
-                    Check(PK_MARK_goto(referenceMark), "reference restore");
-                    int ourTemporary, referenceTemporary;
-                    Check(KernelRuntime.BodyCreateSolidSphere(1, null, &ourTemporary), "our temporary body");
-                    Check(PK_BODY_create_solid_sphere(1, null, &referenceTemporary), "reference temporary body");
-                    Check(KernelRuntime.EntityDelete(1, &ourTemporary), "our temporary delete");
-                    Check(PK_ENTITY_delete(1, &referenceTemporary), "reference temporary delete");
-                    CheckGeometryAttachments(ours, reference);
+                    CheckPartitionLockProtocol();
+                    CheckPartitionLifecycle(directory);
+                    CheckSharedCurve(directory);
+                    CheckSharedSurface(directory);
                 }
-                else
+                foreach (var kind in new[] { "block", "cylinder", "cone", "sphere", "torus" })
+                foreach (var rotated in new[] { false, true })
                 {
-                    CheckBodyEvaluations(ours, label);
-                    Console.WriteLine(label + ": numerical evaluation passed");
-                }
-                if (numericalOnly) continue;
-                try
-                {
-                    CheckRoundtrip(ours, reference, Path.Combine(directory, label + ".x_t"));
-                    Console.WriteLine(label + ": XT body comparison passed");
+                    var basis = Frame(2, -3, 7, 1.0 / 3, 2.0 / 3, 2.0 / 3, 0, 1 / Math.Sqrt(2), -1 / Math.Sqrt(2));
+                    var managedBasis = new M.PK_AXIS2_sf_s();
+                    for (var i = 0; i < 3; i++)
+                    {
+                        managedBasis.location.coord[i] = basis.location.coord[i];
+                        managedBasis.axis.coord[i] = basis.axis.coord[i];
+                        managedBasis.ref_direction.coord[i] = basis.ref_direction.coord[i];
+                    }
+                    var bp = rotated ? &basis : null;
+                    var mp = rotated ? &managedBasis : null;
+                    var label = rotated ? kind + "-rotated" : kind;
+                    var opId = $"op-{label}";
+                    var op = ledger.BeginOperation(opId, label, "primary", kind switch
+                    {
+                        "block" => "PK_BODY_create_solid_block",
+                        "cylinder" => "PK_BODY_create_solid_cyl",
+                        "cone" => "PK_BODY_create_solid_cone",
+                        "sphere" => "PK_BODY_create_solid_sphere",
+                        _ => "PK_BODY_create_solid_torus"
+                    }, null, "primitive analytical body creation and evaluation");
+                    int ours, reference;
+                    switch (kind)
+                    {
+                        case "block":
+                            Check(KernelRuntime.BodyCreateSolidBlock(2, 3, 4, mp, &ours), kind);
+                            Check(PK_BODY_create_solid_block(2, 3, 4, bp, &reference), kind);
+                            break;
+                        case "cylinder":
+                            Check(KernelRuntime.BodyCreateSolidCyl(3, 5, mp, &ours), kind);
+                            Check(PK_BODY_create_solid_cyl(3, 5, bp, &reference), kind);
+                            break;
+                        case "cone":
+                            Check(KernelRuntime.BodyCreateSolidCone(2, 5, 0.25, mp, &ours), kind);
+                            Check(PK_BODY_create_solid_cone(2, 5, 0.25, bp, &reference), kind);
+                            break;
+                        case "sphere":
+                            Check(KernelRuntime.BodyCreateSolidSphere(3, mp, &ours), kind);
+                            Check(PK_BODY_create_solid_sphere(3, bp, &reference), kind);
+                            break;
+                        default:
+                            Check(KernelRuntime.BodyCreateSolidTorus(5, 2, mp, &ours), kind);
+                            Check(PK_BODY_create_solid_torus(5, 2, bp, &reference), kind);
+                            break;
+                    }
+                    op.InputHashes["gm"] = new System.Text.Json.Nodes.JsonObject { ["bodyTag"] = ours };
+                    op.InputHashes["pk"] = new System.Text.Json.Nodes.JsonObject { ["bodyTag"] = reference };
                     if (memoryReview)
                     {
-                        Check(KernelRuntime.EntityDelete(1, &ours), "our final delete");
-                        Check(PK_ENTITY_delete(1, &reference), "reference final delete");
+                        // Delete/restore a live body, then reuse slots from another
+                        // body. Both kernels perform the same lifecycle operations.
+                        int ourMark, referenceMark;
+                        Check(KernelRuntime.MarkCreate(&ourMark), "our mark");
+                        Check(PK_MARK_create(&referenceMark), "reference mark");
+                        Check(KernelRuntime.EntityDelete(1, &ours), "our delete under mark");
+                        Check(PK_ENTITY_delete(1, &reference), "reference delete under mark");
+                        Check(KernelRuntime.MarkGoto(ourMark), "our restore");
+                        Check(PK_MARK_goto(referenceMark), "reference restore");
+                        int ourTemporary, referenceTemporary;
+                        Check(KernelRuntime.BodyCreateSolidSphere(1, null, &ourTemporary), "our temporary body");
+                        Check(PK_BODY_create_solid_sphere(1, null, &referenceTemporary), "reference temporary body");
+                        Check(KernelRuntime.EntityDelete(1, &ourTemporary), "our temporary delete");
+                        Check(PK_ENTITY_delete(1, &referenceTemporary), "reference temporary delete");
+                        CheckGeometryAttachments(ours, reference);
+                    }
+                    else
+                    {
+                        CheckBodyEvaluations(ours, label);
+                        ledger.RecordCheck(opId, "primary", label + "-numerical-eval", label + " numerical evaluation", "pass");
+                        Console.WriteLine(label + ": numerical evaluation passed");
+                    }
+                    if (numericalOnly)
+                    {
+                        ledger.EndOperation(opId);
+                        continue;
+                    }
+                    try
+                    {
+                        CheckRoundtrip(ours, reference, Path.Combine(directory, label + ".x_t"));
+                        ledger.RecordCheck(opId, "primary", label + "-xt-compare", label + " XT body comparison", "pass");
+                        ledger.EndOperation(opId);
+                        Console.WriteLine(label + ": XT body comparison passed");
+                        if (memoryReview)
+                        {
+                            Check(KernelRuntime.EntityDelete(1, &ours), "our final delete");
+                            Check(PK_ENTITY_delete(1, &reference), "reference final delete");
+                        }
+                    }
+                    catch (InvalidOperationException failure)
+                    {
+                        ledger.RecordCheck(opId, "primary", label + "-xt-compare", label + " XT body comparison", "fail", note: failure.Message);
+                        ledger.EndOperation(opId, "fail");
+                        roundtripFailures.Add(label + ": " + failure.Message);
+                        Console.WriteLine(roundtripFailures[^1]);
                     }
                 }
-                catch (InvalidOperationException failure)
-                {
-                    roundtripFailures.Add(label + ": " + failure.Message);
-                    Console.WriteLine(roundtripFailures[^1]);
-                }
+                CheckDependentGeometryEvaluations(ledger);
             }
-            CheckDependentGeometryEvaluations();
+            finally { Check(KernelRuntime.SessionStop(), "our stop"); }
         }
-        finally { Check(KernelRuntime.SessionStop(), "our stop"); }
     }
+}
+finally
+{
+    ledger.EndScenario(Environment.ExitCode != 0 ? Environment.ExitCode : (roundtripFailures.Count > 0 ? 1 : 0));
+    ledger.SaveSidecar(Path.Combine(directory, "ledger.json"));
+    ledger.PrintConsoleSummary(Console.WriteLine);
 }
 
 if (roundtripFailures.Count != 0)
@@ -673,16 +705,48 @@ static unsafe void CheckRoundtrip(int body, int reference, string path)
 // Trimmed curves have no PK creation interface, so the trimmed-curve check
 // compares our evaluation against PK_CURVE_eval of the basis curve instead.
 
-static unsafe void CheckDependentGeometryEvaluations()
+static unsafe void CheckDependentGeometryEvaluations(OperationAcceptanceLedger? ledger = null)
 {
     Console.WriteLine("Dependent geometry evaluations (numerical only):");
-    CheckEllipseEvaluation();
-    CheckBSurfaceEvaluation();
-    CheckOffsetEvaluation();
-    CheckSweptEvaluation();
-    CheckSpunEvaluation();
-    CheckSpCurveEvaluation();
-    CheckTrCurveEvaluation();
+    var deps = new[] { "ellipse", "bsurf", "offset", "swept", "spun", "spcurve", "trcurve" };
+    foreach (var dep in deps)
+    {
+        ledger?.BeginOperation($"op-dep-{dep}", dep + " evaluation", "primary", dep switch
+        {
+            "ellipse" => "PK_ELLIPSE_create",
+            "bsurf" => "PK_BSURF_create",
+            "offset" => "PK_OFFSET_create",
+            "swept" => "PK_SWEPT_create",
+            "spun" => "PK_SPUN_create",
+            "spcurve" => "PK_SPCURVE_create",
+            _ => "PK_CURVE_eval"
+        }, null, "dependent geometry numerical evaluation");
+    }
+
+    void RunDep(string name, Action action)
+    {
+        var opId = $"op-dep-{name}";
+        try
+        {
+            action();
+            ledger?.RecordCheck(opId, "primary", name + "-numerical-eval", name + " numerical evaluation", "pass");
+            ledger?.EndOperation(opId);
+        }
+        catch (Exception ex)
+        {
+            ledger?.RecordCheck(opId, "primary", name + "-numerical-eval", name + " numerical evaluation", "fail", note: ex.Message);
+            ledger?.EndOperation(opId, "fail");
+            throw;
+        }
+    }
+
+    RunDep("ellipse", CheckEllipseEvaluation);
+    RunDep("bsurf", CheckBSurfaceEvaluation);
+    RunDep("offset", CheckOffsetEvaluation);
+    RunDep("swept", CheckSweptEvaluation);
+    RunDep("spun", CheckSpunEvaluation);
+    RunDep("spcurve", CheckSpCurveEvaluation);
+    RunDep("trcurve", CheckTrCurveEvaluation);
 }
 
 static unsafe M.PK_AXIS2_sf_s ManagedFrame(PK_AXIS2_sf_t frame)

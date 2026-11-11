@@ -2,6 +2,7 @@
 #:property AllowUnsafeBlocks=true
 #:property UsePskernelSharpUsings=true
 #:property UseParasolidScriptHost=true
+#:property UseOperationAcceptanceLedger=true
 #:property AssemblyName=LocalTopologyChangeOracle
 #:project ../third_party/PKToy/PskernelSharp/PskernelSharp.csproj
 #:project ../src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj
@@ -14,6 +15,7 @@ using static parasolid;
 
 var directory=Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","local-topology-change-oracle"));
 Directory.CreateDirectory(directory);var report=new StringBuilder();
+var ledger = new OperationAcceptanceLedger("local-topology-change-oracle", "Local Topology Change Oracle", directory);
 void Log(string text){Console.WriteLine(text);report.AppendLine(text);}
 try
 {
@@ -40,42 +42,82 @@ try
             var failed=0;
             foreach(var c in cases)
             {
+                var opId = $"op-{c.Name}-edit";
+                var editOp = ledger.BeginOperation(opId, c.Name, "primary", c.Kind switch
+                {
+                    "hollow" => "PK_BODY_hollow",
+                    "face-offset" => "PK_FACE_offset",
+                    "body-offset" => "PK_BODY_offset",
+                    _ => "PK_BODY_local"
+                }, null, c.Imported ? "imported seed XT from native PK" : "locally constructed test body");
                 try
                 {
                     var reference=Create(false,c.Oriented,c.Kind!="hollow");
                     var own=c.Imported?ReceiveOwn(Transmit(false,reference)):Create(true,c.Oriented,c.Kind!="hollow");
+                    editOp.InputHashes["gm"] = new System.Text.Json.Nodes.JsonObject { ["bodyTag"] = own };
+                    editOp.InputHashes["pk"] = new System.Text.Json.Nodes.JsonObject { ["bodyTag"] = reference };
                     var baseline=0;if(c.Mask==15)Check(PK_ENTITY_copy(reference,&baseline),"independent pre-failure baseline");
                     var a=Apply(true,own,c.Mask,c.Amount,c.Kind,c.Oriented,c.Varied);
                     var b=Apply(false,reference,c.Mask,c.Amount,c.Kind,c.Oriented,c.Varied);
-                    Require(a==b,$"{c.Name}: status/tracking/identity differs {a} / {b}");
+                    var contractPass = a == b;
+                    ledger.RecordCheck(opId, "auxiliary", c.Name + "-contract", c.Name + " contract parity", contractPass ? "pass" : "fail");
+                    Require(contractPass,$"{c.Name}: status/tracking/identity differs {a} / {b}");
                     Log(c.Name+" contract="+a);
                     var bytes=Transmit(true,own);File.WriteAllBytes(Path.Combine(directory,c.Name+"-own.x_t"),bytes);
                     File.WriteAllBytes(Path.Combine(directory,c.Name+"-native.x_t"),Transmit(false,reference));
                     // The native session can leave intermediate geometry after
                     // an error. Our command transaction deliberately rolls back;
                     // verify that result against the independent pre-call copy.
-                    var received=ReceivePk(bytes);Compare(baseline!=0?baseline:reference,received,c.Name,Log);
+                    var received=ReceivePk(bytes);
+                    editOp.OutputHashes["gmReceived"] = new System.Text.Json.Nodes.JsonObject { ["bodyTag"] = received };
+                    Compare(baseline!=0?baseline:reference,received,c.Name,Log,ledger,opId);
                     if(baseline!=0)Check(PK_ENTITY_delete(1,&baseline),"delete pre-failure baseline");
-                    if(c.Imported)RoundTrip(bytes,reference,c.Name+"-lifecycle",directory,Log);
+                    ledger.EndOperation(opId);
+                    if(c.Imported)
+                    {
+                        var lifecycleId = $"op-{c.Name}-lifecycle";
+                        ledger.BeginOperation(lifecycleId, c.Name + "-lifecycle", "lifecycle", "PK_PART_receive_b+PK_BODY_transform", null, "product XT imported, copied, transformed, compared, deleted");
+                        RoundTrip(bytes,reference,c.Name+"-lifecycle",directory,Log,ledger,lifecycleId);
+                        ledger.EndOperation(lifecycleId);
+                    }
                     Check(KernelRuntime.EntityDelete(1,&own),"delete self");Check(PK_ENTITY_delete(1,&reference),"delete native");Check(PK_ENTITY_delete(1,&received),"delete received");
                     Log("PASS "+c.Name);
                 }
-                catch(Exception ex){failed++;Log("FAIL "+c.Name+": "+ex.Message);}
+                catch(Exception ex)
+                {
+                    failed++;
+                    ledger.EndOperation(opId, "fail");
+                    Log("FAIL "+c.Name+": "+ex.Message);
+                }
             }
             foreach(var shape in new[]{"sphere","torus","cylinder","cone"})
             {
                 var label=shape+"-outward-hollow-identities";
+                var shapeOpId = $"op-{label}";
+                var shapeOp = ledger.BeginOperation(shapeOpId, label, "primary", "PK_BODY_hollow", null, "analytic primitive outward hollow identities");
                 try
                 {
                     var own=AnalyticHollow(true,shape,out var a);var reference=AnalyticHollow(false,shape,out var b);
-                    Require(a==b,label+" tracking differs");Log(label+" contract="+a);
+                    shapeOp.InputHashes["gm"] = new System.Text.Json.Nodes.JsonObject { ["bodyTag"] = own };
+                    shapeOp.InputHashes["pk"] = new System.Text.Json.Nodes.JsonObject { ["bodyTag"] = reference };
+                    var contractPass = a == b;
+                    ledger.RecordCheck(shapeOpId, "auxiliary", label + "-tracking", label + " tracking parity", contractPass ? "pass" : "fail");
+                    Require(contractPass,label+" tracking differs");Log(label+" contract="+a);
                     var bytes=Transmit(true,own);File.WriteAllBytes(Path.Combine(directory,label+"-own.x_t"),bytes);
                     File.WriteAllBytes(Path.Combine(directory,label+"-native.x_t"),Transmit(false,reference));
-                    var received=ReceivePk(bytes);Compare(reference,received,label,Log);
+                    var received=ReceivePk(bytes);
+                    shapeOp.OutputHashes["gmReceived"] = new System.Text.Json.Nodes.JsonObject { ["bodyTag"] = received };
+                    Compare(reference,received,label,Log,ledger,shapeOpId);
+                    ledger.EndOperation(shapeOpId);
                     Check(KernelRuntime.EntityDelete(1,&own),"delete analytic self");Check(PK_ENTITY_delete(1,&reference),"delete analytic native");Check(PK_ENTITY_delete(1,&received),"delete analytic received");
                     Log("PASS "+label);
                 }
-                catch(Exception ex){failed++;Log("FAIL "+label+": "+ex.Message);}
+                catch(Exception ex)
+                {
+                    failed++;
+                    ledger.EndOperation(shapeOpId, "fail");
+                    Log("FAIL "+label+": "+ex.Message);
+                }
             }
             Log($"Local topology change oracle: {cases.Count+4-failed}/{cases.Count+4} passed, {failed} failed; 2 import-copy-delete-transform lifecycles are required by their parent cases.");
             Require(failed==0,"Local topology change oracle failed");
@@ -84,7 +126,13 @@ try
     }
 }
 catch(Exception ex){Log("FAIL: "+ex.Message);Environment.ExitCode=1;}
-finally{File.WriteAllText(Path.Combine(directory,"report.txt"),report.ToString());}
+finally
+{
+    ledger.EndScenario(Environment.ExitCode);
+    ledger.SaveSidecar(Path.Combine(directory, "ledger.json"));
+    ledger.PrintConsoleSummary(Log);
+    File.WriteAllText(Path.Combine(directory,"report.txt"),report.ToString());
+}
 
 static unsafe int Create(bool own,bool oriented,bool bevel)
 {
@@ -267,7 +315,7 @@ static unsafe int Receive(bool own,byte[] bytes)
         try{Require(n==1,"one received part");return parts[0];}finally{Free(own,parts);}
     }
 }
-static unsafe void RoundTrip(byte[] bytes,int reference,string label,string directory,Action<string> log)
+static unsafe void RoundTrip(byte[] bytes,int reference,string label,string directory,Action<string> log,OperationAcceptanceLedger? ledger=null,string? opId=null)
 {
     var before=(KernelRuntime.Bodies.AliveCount,KernelRuntime.Curves.AliveCount,KernelRuntime.Surfaces.AliveCount,KernelRuntime.Points.AliveCount);
     var imported=ReceiveOwn(bytes);int copy=0,referenceCopy=0;
@@ -281,16 +329,29 @@ static unsafe void RoundTrip(byte[] bytes,int reference,string label,string dire
     PK_LOGICAL_t* nativeExact=null;
     Check(PK_BODY_transform(referenceCopy,nativeTransform,0,&count,&replaced,&nativeExact),"lifecycle native transform");Free(false,replaced);Free(false,nativeExact);
     var output=Transmit(true,copy);File.WriteAllBytes(Path.Combine(directory,label+"-own.x_t"),output);
-    var received=ReceivePk(output);Compare(referenceCopy,received,label,log);
+    var received=ReceivePk(output);Compare(referenceCopy,received,label,log,ledger,opId);
     Check(KernelRuntime.EntityDelete(1,&copy),"lifecycle delete self copy");Check(KernelRuntime.EntityDelete(1,&transform),"lifecycle delete self transform");
-    Require(before==(KernelRuntime.Bodies.AliveCount,KernelRuntime.Curves.AliveCount,KernelRuntime.Surfaces.AliveCount,KernelRuntime.Points.AliveCount),label+" geometry ownership leak");
+    var leakPass=before==(KernelRuntime.Bodies.AliveCount,KernelRuntime.Curves.AliveCount,KernelRuntime.Surfaces.AliveCount,KernelRuntime.Points.AliveCount);
+    if(ledger!=null&&opId!=null)
+    {
+        ledger.RecordCheck(opId,"representation",label+"-ownership-leak",label+" geometry ownership leak",leakPass?"pass":"fail");
+    }
+    Require(leakPass,label+" geometry ownership leak");
     Check(PK_ENTITY_delete(1,&referenceCopy),"lifecycle delete native copy");Check(PK_ENTITY_delete(1,&nativeTransform),"lifecycle delete native transform");Check(PK_ENTITY_delete(1,&received),"lifecycle delete received");
     log("PASS "+label);
 }
-static unsafe void Compare(int reference,int received,string label,Action<string> log)
+static unsafe void Compare(int reference,int received,string label,Action<string> log,OperationAcceptanceLedger? ledger=null,string? opId=null)
 {
-    for(var kind=0;kind<5;kind++)Require(Tags(false,reference,kind).Length==Tags(false,received,kind).Length,label+" topology kind "+kind);
-    CheckBody(reference,label+" independent",log);CheckBody(received,label+" received",log);
+    for(var kind=0;kind<5;kind++)
+    {
+        var match=Tags(false,reference,kind).Length==Tags(false,received,kind).Length;
+        if(ledger!=null&&opId!=null)
+        {
+            ledger.RecordCheck(opId,"primary",label+"-topology-"+kind,label+" topology kind "+kind,match?"pass":"fail",gm:Tags(false,received,kind).Length,pk:Tags(false,reference,kind).Length,threshold:0);
+        }
+        Require(match,label+" topology kind "+kind);
+    }
+    CheckBody(reference,label+" independent",log,ledger,opId,"auxiliary");CheckBody(received,label+" received",log,ledger,opId,"primary");
     var options=new PK_DEBUG_BODY_compare_o_t{max_diffs=128,all_tests=PK_LOGICAL_false,num_tests=PK_LOGICAL_true,tol_dev_tests=PK_LOGICAL_true,
         tol_tests=PK_LOGICAL_true,class_tests=PK_LOGICAL_true,sense_tests=PK_LOGICAL_true,missing_tests=PK_LOGICAL_true,acc_dev_tests=PK_LOGICAL_false,non_match_tests=PK_LOGICAL_false};
     var result=new PK_DEBUG_BODY_compare_r_t();Check(PK_DEBUG_BODY_compare(reference,received,&options,&result),"strict comparison");
@@ -300,19 +361,44 @@ static unsafe void Compare(int reference,int received,string label,Action<string
         for(var i=0;i<result.n_global_diffs;i++)log($"  global diff={result.global_diffs[i].diff} count={result.global_diffs[i].n_masters}/{result.global_diffs[i].n_similars}");
         for(var i=0;i<result.n_face_pairs;i++)for(var j=0;j<result.face_pairs[i].n_local_diffs;j++)
         {var d=result.face_pairs[i].local_diffs[j];log($"  face={result.face_pairs[i].master_face}/{result.face_pairs[i].similar_face} diff={d.diff} entity={d.master_entity}/{d.similar_entity} value={d.master_double:R}/{d.similar_double:R}");}
-        Require(result.global_result==PK_DEBUG_global_res_no_diffs_c&&result.local_result==PK_DEBUG_local_res_no_diffs_c,label+" strict structure/sense/tolerance/missing differs");
+        var comparePass=result.global_result==PK_DEBUG_global_res_no_diffs_c&&result.local_result==PK_DEBUG_local_res_no_diffs_c;
+        if(ledger!=null&&opId!=null)
+        {
+            ledger.RecordCheck(opId,"primary",label+"-strict-compare",label+" PK_DEBUG_BODY_compare",comparePass?"pass":"fail");
+        }
+        Require(comparePass,label+" strict structure/sense/tolerance/missing differs");
     }
     finally{Check(PK_DEBUG_BODY_compare_r_f(&result),"free comparison");}
     var mass=new PK_TOPOL_eval_mass_props_o_t();double* a=stackalloc double[15];double* b=stackalloc double[15];
     Check(PK_TOPOL_eval_mass_props(1,&reference,.999999999,&mass,a,a+1,a+2,a+5,a+14),"independent mass");
     Check(PK_TOPOL_eval_mass_props(1,&received,.999999999,&mass,b,b+1,b+2,b+5,b+14),"received mass");
-    for(var i=0;i<15;i++)Require(double.IsFinite(a[i])&&double.IsFinite(b[i])&&Math.Abs(a[i]-b[i])<=2e-7*Math.Max(1,Math.Abs(a[i])),label+$" mass {i}: {a[i]:R}/{b[i]:R}");
+    var massPass=true;
+    for(var i=0;i<15;i++)
+    {
+        var ok=double.IsFinite(a[i])&&double.IsFinite(b[i])&&Math.Abs(a[i]-b[i])<=2e-7*Math.Max(1,Math.Abs(a[i]));
+        if(!ok)massPass=false;
+        Require(ok,label+$" mass {i}: {a[i]:R}/{b[i]:R}");
+    }
+    if(ledger!=null&&opId!=null)
+    {
+        ledger.RecordCheck(opId,"primary",label+"-mass-props",label+" mass properties",massPass?"pass":"fail",gm:b[0],pk:a[0],threshold:2e-7);
+    }
     log($"{label}: volume={a[0]:R}/{b[0]:R}, area={a[14]:R}/{b[14]:R}");
 }
-static unsafe void CheckBody(int body,string label,Action<string> log)
+static unsafe void CheckBody(int body,string label,Action<string> log,OperationAcceptanceLedger? ledger=null,string? opId=null,string category="primary")
 {
     var options=new PK_BODY_check_o_t{max_faults=100};int n=0;PK_check_fault_t* faults=null;Check(PK_BODY_check(body,&options,&n,&faults),"full PK body check");
-    try{for(var i=0;i<n;i++)log($"{label}: fault={faults[i].state} entity={faults[i].entity_1}/{faults[i].entity_2}");Require(n==0,label+" body check faults");}finally{Free(false,faults);}
+    try
+    {
+        for(var i=0;i<n;i++)log($"{label}: fault={faults[i].state} entity={faults[i].entity_1}/{faults[i].entity_2}");
+        var pass=n==0;
+        if(ledger!=null&&opId!=null)
+        {
+            ledger.RecordCheck(opId,category,label+"-body-check",label+" PK_BODY_check",pass?"pass":"fail",gm:n,pk:0,threshold:0);
+        }
+        Require(pass,label+" body check faults");
+    }
+    finally{Free(false,faults);}
 }
 static unsafe void Free(bool own,void* memory){if(memory!=null)Check(own?KernelRuntime.MemoryFree(memory):PK_MEMORY_free(memory),"free return memory");}
 static string ScriptPath([CallerFilePath]string path="")=>path;

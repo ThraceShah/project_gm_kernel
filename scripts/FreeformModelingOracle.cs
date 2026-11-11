@@ -2,6 +2,7 @@
 #:property AllowUnsafeBlocks=true
 #:property UsePskernelSharpUsings=true
 #:property UseParasolidScriptHost=true
+#:property UseOperationAcceptanceLedger=true
 #:property AssemblyName=FreeformModelingOracle
 #:project ../third_party/PKToy/PskernelSharp/PskernelSharp.csproj
 #:project ../src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj
@@ -18,6 +19,7 @@ using static parasolid;
 var directory = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ScriptPath())!, "..", "temp_docs", "freeform-modeling-oracle"));
 Directory.CreateDirectory(directory);
 var report = new StringBuilder();
+var ledger = new OperationAcceptanceLedger("freeform-modeling-oracle", "Freeform Modeling Oracle", directory);
 void Log(string line) { Console.WriteLine(line); report.AppendLine(line); }
 try
 {
@@ -37,28 +39,66 @@ try
             for (var scenario = 0; scenario < names.Length; scenario++)
             {
                 var name = names[scenario];
+                var constructOpId = $"op-{scenario}-construct";
+                var constructOp = ledger.BeginOperation(
+                    constructOpId,
+                    name,
+                    "primary",
+                    scenario switch
+                    {
+                        6 or 7 => "PK_BODY_sweep",
+                        8 or 9 or 15 => "PK_BODY_make_lofted_body",
+                        10 or 11 => "PK_BODY_sew_bodies",
+                        12 or 13 or 14 => "PK_SURF_make_sheet_body",
+                        >= 18 => "PK_SURF_reparameterise",
+                        >= 16 => "PK_SURF_make_sheet_body",
+                        _ => "PK_SURF_make_sheet_body"
+                    },
+                    null,
+                    "independent geometric definition parameters; GM text XT vs PK"
+                );
                 try
                 {
                     var ours = Produce(true, scenario); var reference = Produce(false, scenario);
+                    constructOp.InputHashes["gm"] = new System.Text.Json.Nodes.JsonObject { ["bodyTag"] = ours };
+                    constructOp.InputHashes["pk"] = new System.Text.Json.Nodes.JsonObject { ["bodyTag"] = reference };
                     var bytes = TransmitManaged(ours); File.WriteAllBytes(Path.Combine(directory, name + "-self.x_t"), bytes);
                     var referenceBytes = TransmitReference(reference);
                     File.WriteAllBytes(Path.Combine(directory, name + "-reference.x_t"), referenceBytes);
                     var received = ReceiveOracle(bytes);
-                    CheckReferenceBody(reference, name + " independent reference", Log); CheckReferenceBody(received, name + " self receive", Log);
+                    constructOp.OutputHashes["gmReceived"] = new System.Text.Json.Nodes.JsonObject { ["bodyTag"] = received };
+                    CheckReferenceBody(reference, name + " independent reference", Log, ledger, constructOpId, "auxiliary");
+                    CheckReferenceBody(received, name + " self receive", Log, ledger, constructOpId, "primary");
                     for (var kind = 0; kind < 5; kind++)
                     {
                         var actual = OracleCount(received, kind); var expected = OracleCount(reference, kind);
-                        Log($"{name} topology {kind}: reference={expected}, self={actual}"); Require(actual == expected, name + " topology mismatch " + kind);
+                        Log($"{name} topology {kind}: reference={expected}, self={actual}");
+                        var pass = actual == expected;
+                        ledger.RecordCheck(constructOpId, "primary", $"{name}-topology-{kind}", $"{name} topology kind {kind}", pass ? "pass" : "fail", gm: actual, pk: expected, threshold: 0);
+                        Require(pass, name + " topology mismatch " + kind);
                     }
-                    CompareBodies(reference, received, name, Log);
+                    CompareBodies(reference, received, name, Log, ledger, constructOpId);
+                    ledger.EndOperation(constructOpId);
+                    Log("PASS " + name);
                     if (scenario is 6 or 9)
                     {
-                        RoundTripTolerant(bytes, reference, name + " self XT lifecycle", Log);
-                        RoundTripTolerant(referenceBytes, reference, name + " PK XT lifecycle", Log);
+                        var selfLifecycleId = $"op-{scenario}-self-lifecycle";
+                        ledger.BeginOperation(selfLifecycleId, name + " self XT lifecycle", "lifecycle", "PK_PART_receive_b+PK_BODY_transform", null, "GM produced XT received into fresh body and transformed");
+                        RoundTripTolerant(bytes, reference, name + " self XT lifecycle", Log, ledger, selfLifecycleId);
+                        ledger.EndOperation(selfLifecycleId);
+
+                        var pkLifecycleId = $"op-{scenario}-pk-lifecycle";
+                        ledger.BeginOperation(pkLifecycleId, name + " PK XT lifecycle", "lifecycle", "PK_PART_receive_b+PK_BODY_transform", null, "PK reference XT received into fresh body and transformed");
+                        RoundTripTolerant(referenceBytes, reference, name + " PK XT lifecycle", Log, ledger, pkLifecycleId);
+                        ledger.EndOperation(pkLifecycleId);
                     }
-                    Log("PASS " + name);
                 }
-                catch (Exception ex) { failures++; Log("FAIL " + name + ": " + ex.Message); }
+                catch (Exception ex)
+                {
+                    failures++;
+                    ledger.EndOperation(constructOpId, "fail");
+                    Log("FAIL " + name + ": " + ex.Message);
+                }
             }
             CheckLoftHoleRejection(2, Log); CheckLoftHoleRejection(3, Log);
             Require(failures == 0, $"{failures}/{names.Length} independent freeform operations failed.");
@@ -68,7 +108,13 @@ try
     }
 }
 catch (Exception ex) { Log("FAIL: " + ex.Message); Environment.ExitCode = 1; }
-finally { File.WriteAllText(Path.Combine(directory, "report.txt"), report.ToString()); }
+finally
+{
+    ledger.EndScenario(Environment.ExitCode);
+    ledger.SaveSidecar(Path.Combine(directory, "ledger.json"));
+    ledger.PrintConsoleSummary(Log);
+    File.WriteAllText(Path.Combine(directory, "report.txt"), report.ToString());
+}
 
 static unsafe int Produce(bool self, int scenario)
 {
@@ -470,7 +516,7 @@ static unsafe int ReceiveManaged(byte[] bytes)
         finally { if (parts != null) Check(KernelRuntime.MemoryFree(parts), "free self receive list"); }
     }
 }
-static unsafe void RoundTripTolerant(byte[] bytes, int reference, string label, Action<string> log)
+static unsafe void RoundTripTolerant(byte[] bytes, int reference, string label, Action<string> log, OperationAcceptanceLedger? ledger = null, string? opId = null)
 {
     var before = (KernelRuntime.Bodies.AliveCount, KernelRuntime.Curves.AliveCount, KernelRuntime.Surfaces.AliveCount, KernelRuntime.Points.AliveCount);
     var imported = ReceiveManaged(bytes); int copy = 0, referenceCopy = 0;
@@ -488,10 +534,16 @@ static unsafe void RoundTripTolerant(byte[] bytes, int reference, string label, 
     PK_LOGICAL_t* referenceExact = null;
     Check(PK_BODY_transform(referenceCopy, referenceTransform, 0, &count, &replaced, &referenceExact), label + " reference transform");
     if (replaced != null) PK_MEMORY_free(replaced); if (referenceExact != null) PK_MEMORY_free(referenceExact);
-    var received = ReceiveOracle(TransmitManaged(copy)); CheckReferenceBody(received, label, log);
-    CompareBodies(referenceCopy, received, label, log);
+    var received = ReceiveOracle(TransmitManaged(copy));
+    CheckReferenceBody(received, label, log, ledger, opId, "primary");
+    CompareBodies(referenceCopy, received, label, log, ledger, opId);
     Check(KernelRuntime.EntityDelete(1, &copy), label + " delete copied body"); Check(KernelRuntime.EntityDelete(1, &transform), label + " delete transform");
-    Require(before == (KernelRuntime.Bodies.AliveCount, KernelRuntime.Curves.AliveCount, KernelRuntime.Surfaces.AliveCount, KernelRuntime.Points.AliveCount), label + " geometry ownership leak");
+    var leakPass = before == (KernelRuntime.Bodies.AliveCount, KernelRuntime.Curves.AliveCount, KernelRuntime.Surfaces.AliveCount, KernelRuntime.Points.AliveCount);
+    if (ledger != null && opId != null)
+    {
+        ledger.RecordCheck(opId, "representation", label + "-ownership-leak", label + " geometry ownership leak", leakPass ? "pass" : "fail");
+    }
+    Require(leakPass, label + " geometry ownership leak");
     Check(PK_ENTITY_delete(1, &referenceCopy), label + " delete reference copy"); Check(PK_ENTITY_delete(1, &referenceTransform), label + " delete reference transform");
     Check(PK_ENTITY_delete(1, &received), label + " delete received body"); log("PASS " + label);
 }
@@ -562,11 +614,20 @@ static unsafe void CheckLoftHoleRejection(int count, Action<string> log)
     }
     log($"PASS native/self {count}-section multi-loop loft rejection parity");
 }
-static unsafe void CheckReferenceBody(int body, string name, Action<string> log)
+static unsafe void CheckReferenceBody(int body, string name, Action<string> log, OperationAcceptanceLedger? ledger = null, string? opId = null, string category = "primary")
 {
     var options = new PK_BODY_check_o_t { max_faults = 100 }; int count = 0; PK_check_fault_t* faults = null;
     Check(PK_BODY_check(body, &options, &count, &faults), name + " default BODY_check");
-    try { for (var i = 0; i < count; i++) log($"{name} fault={faults[i].state}, entity={faults[i].entity_1}, other={faults[i].entity_2}"); Require(count == 0, name + " faults=" + count); }
+    try
+    {
+        for (var i = 0; i < count; i++) log($"{name} fault={faults[i].state}, entity={faults[i].entity_1}, other={faults[i].entity_2}");
+        var pass = count == 0;
+        if (ledger != null && opId != null)
+        {
+            ledger.RecordCheck(opId, category, name + "-body-check", name + " PK_BODY_check", pass ? "pass" : "fail", gm: count, pk: 0, threshold: 0);
+        }
+        Require(pass, name + " faults=" + count);
+    }
     finally { if (faults != null) PK_MEMORY_free(faults); }
 }
 static unsafe int OracleCount(int body, int kind)
@@ -576,7 +637,7 @@ static unsafe int OracleCount(int body, int kind)
         2 => PK_BODY_ask_faces(body, &count, &entities), 3 => PK_BODY_ask_edges(body, &count, &entities), _ => PK_BODY_ask_vertices(body, &count, &entities) }, "topology count");
     try { return count; } finally { if (entities != null) PK_MEMORY_free(entities); }
 }
-static unsafe void CompareBodies(int reference, int actual, string label, Action<string> log)
+static unsafe void CompareBodies(int reference, int actual, string label, Action<string> log, OperationAcceptanceLedger? ledger = null, string? opId = null)
 {
     var options = new PK_DEBUG_BODY_compare_o_t { max_diffs = 64, all_tests = PK_LOGICAL_false, num_tests = PK_LOGICAL_true,
         tol_dev_tests = PK_LOGICAL_true, tol_tests = PK_LOGICAL_true, class_tests = PK_LOGICAL_true, sense_tests = PK_LOGICAL_true,
@@ -593,8 +654,12 @@ static unsafe void CompareBodies(int reference, int actual, string label, Action
                 var diff = result.face_pairs[f].local_diffs[i]; differences++;
                 log($"  face {f} diff={diff.diff} entities={diff.master_entity}/{diff.similar_entity} values={diff.master_double:R}/{diff.similar_double:R}");
             }
-        Require(result.global_result == PK_DEBUG_global_res_no_diffs_c && result.local_result == PK_DEBUG_local_res_no_diffs_c && differences == 0,
-            label + " topology/class/sense/tolerance/missing gate");
+        var pass = result.global_result == PK_DEBUG_global_res_no_diffs_c && result.local_result == PK_DEBUG_local_res_no_diffs_c && differences == 0;
+        if (ledger != null && opId != null)
+        {
+            ledger.RecordCheck(opId, "primary", label + "-compare", label + " PK_DEBUG_BODY_compare", pass ? "pass" : "fail");
+        }
+        Require(pass, label + " topology/class/sense/tolerance/missing gate");
     }
     finally { PK_DEBUG_BODY_compare_r_f(&result); }
 }

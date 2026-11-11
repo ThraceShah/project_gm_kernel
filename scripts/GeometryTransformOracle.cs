@@ -2,6 +2,7 @@
 #:property AllowUnsafeBlocks=true
 #:property UsePskernelSharpUsings=true
 #:property UseParasolidScriptHost=true
+#:property UseOperationAcceptanceLedger=true
 #:property AssemblyName=GeometryTransformOracle
 #:project ../third_party/PKToy/PskernelSharp/PskernelSharp.csproj
 #:project ../src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj
@@ -17,6 +18,7 @@ using static parasolid;
 var directory=Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","geometry-transform-oracle"));
 Directory.CreateDirectory(directory);
 var log=new StringBuilder();
+var ledger = new OperationAcceptanceLedger("geometry-transform-oracle", "Geometry Transform Oracle", directory);
 void Log(string message) {Console.WriteLine(message);log.AppendLine(message);}
 try
 {
@@ -25,12 +27,18 @@ try
     unsafe
     {
         var options=new M.PK_SESSION_start_o_s {o_t_version=1};Check(KernelRuntime.SessionStart(&options),"managed session start");
-        try {Run(directory,Log);}
+        try {Run(directory,Log,ledger);}
         finally {Check(KernelRuntime.SessionStop(),"managed session stop");}
     }
 }
 catch(Exception ex) {Log("FAIL: "+ex);Environment.ExitCode=1;}
-finally {File.WriteAllText(Path.Combine(directory,"report.txt"),log.ToString());}
+finally
+{
+    ledger.EndScenario(Environment.ExitCode);
+    ledger.SaveSidecar(Path.Combine(directory, "ledger.json"));
+    ledger.PrintConsoleSummary(Log);
+    File.WriteAllText(Path.Combine(directory,"report.txt"),log.ToString());
+}
 
 static string ScriptPath([CallerFilePath] string path="")=>path;
 static void Check(int error,string label) {if(error!=0)throw new Exception($"{label}: {error}");}
@@ -38,7 +46,7 @@ static void Require(bool condition,string label) {if(!condition)throw new Except
 static void Equal(double actual,double expected,string label)
     =>Require(double.IsFinite(actual)&&double.IsFinite(expected)&&Math.Abs(actual-expected)<=2e-8*Math.Max(1,Math.Abs(expected)),$"{label}: actual={actual:R}, expected={expected:R}");
 
-static unsafe void Run(string directory,Action<string> log)
+static unsafe void Run(string directory,Action<string> log, OperationAcceptanceLedger? ledger = null)
 {
     var failures=0;var passes=0;
     foreach(var operation in new[]{"translation","rotation","scale","reflection"})
@@ -46,26 +54,74 @@ static unsafe void Run(string directory,Action<string> log)
         var (managedTransform,nativeTransform)=CreateTransform(operation,log);
         if(operation=="translation")
         {
-            try {CompareModifyClosure(managedTransform,nativeTransform,log);passes++;log("PASS explicit modify dependency closure");}
-            catch(Exception ex) {failures++;log("FAIL explicit modify dependency closure: "+ex.Message);}
+            var opId = "op-explicit-modify-dependency-closure";
+            ledger?.BeginOperation(opId, "explicit modify dependency closure", "primary", "PK_GEOM_transform", null, "explicit shared closure");
+            try
+            {
+                CompareModifyClosure(managedTransform,nativeTransform,log);
+                ledger?.EndOperation(opId);
+                passes++;
+                log("PASS explicit modify dependency closure");
+            }
+            catch(Exception ex)
+            {
+                failures++;
+                ledger?.EndOperation(opId, "fail");
+                log("FAIL explicit modify dependency closure: "+ex.Message);
+            }
             foreach(var includeBasis in new[]{false,true})
             {
                 var label=includeBasis?"new shared surfaces with explicit basis":"new shared surfaces";
-                try {CompareNewSharing(managedTransform,nativeTransform,includeBasis,log);passes++;log("PASS "+label);}
-                catch(Exception ex) {failures++;log("FAIL "+label+": "+ex.Message);}
+                var shareOpId = $"op-new-sharing-{(includeBasis ? "basis" : "default")}";
+                ledger?.BeginOperation(shareOpId, label, "primary", "PK_GEOM_transform", null, "shared curve with explicit inputs");
+                try
+                {
+                    CompareNewSharing(managedTransform,nativeTransform,includeBasis,log);
+                    ledger?.EndOperation(shareOpId);
+                    passes++;
+                    log("PASS "+label);
+                }
+                catch(Exception ex)
+                {
+                    failures++;
+                    ledger?.EndOperation(shareOpId, "fail");
+                    log("FAIL "+label+": "+ex.Message);
+                }
             }
         }
         foreach(var kind in new[]{"line","circle","ellipse","trim","rational-curve","plane","cylinder","cone","sphere","torus","bsurface","offset","swept","spun"})
         {
             var label=operation+"-"+kind;
-            try {CompareGeometry(kind,managedTransform,nativeTransform,label,log);passes++;log("PASS "+label);}
-            catch(Exception ex) {failures++;log("FAIL "+label+": "+ex.Message);}
+            var geomOpId = $"op-geom-{label}";
+            ledger?.BeginOperation(geomOpId, label, "primary", "PK_GEOM_transform", null, $"geometry transform {kind}");
+            try
+            {
+                CompareGeometry(kind,managedTransform,nativeTransform,label,log);
+                ledger?.EndOperation(geomOpId);
+                passes++;
+                log("PASS "+label);
+            }
+            catch(Exception ex)
+            {
+                failures++;
+                ledger?.EndOperation(geomOpId, "fail");
+                log("FAIL "+label+": "+ex.Message);
+            }
         }
         foreach(var shape in new[]{"block","cylinder","sphere","rational-wire","construction-swept-wire","construction-offset-trim-wire"})
         {
             var label=operation+"-body-"+shape;
-            try {CompareBody(shape,managedTransform,nativeTransform,label,directory,log);passes++;log("PASS "+label);}
-            catch(Exception ex) {failures++;log("FAIL "+label+": "+ex.Message);}
+            try
+            {
+                CompareBody(shape,managedTransform,nativeTransform,label,directory,log,ledger);
+                passes++;
+                log("PASS "+label);
+            }
+            catch(Exception ex)
+            {
+                failures++;
+                log("FAIL "+label+": "+ex.Message);
+            }
         }
     }
     log($"Transform Oracle: {passes} passed, {failures} failed.");
@@ -251,7 +307,7 @@ static unsafe (int Managed,int Native) CreateGeometry(string kind)
     return(managed,native);
 }
 
-static unsafe void CompareBody(string shape,int transform,int pkTransform,string label,string directory,Action<string> log)
+static unsafe void CompareBody(string shape,int transform,int pkTransform,string label,string directory,Action<string> log,OperationAcceptanceLedger? ledger=null)
 {
     int source=0,reference=0;
     var construction=shape.StartsWith("construction-",StringComparison.Ordinal);
@@ -271,6 +327,15 @@ static unsafe void CompareBody(string shape,int transform,int pkTransform,string
     var originalSamples=construction?PartGeometrySamples(reference,managed:false):null;
     if(construction)ComparePartSamples(originalSamples!,PartGeometrySamples(source,managed:true),label+" original construction");
     int copy,nativeCopy;Check(KernelRuntime.EntityCopy(source,&copy),label+" managed body copy");Check(PK_ENTITY_copy(reference,&nativeCopy),label+" PK body copy");
+
+    // --- STEP 1: Body transform primary operation ---
+    var transformOpId = $"op-body-{label}-transform";
+    var transformOp = ledger?.BeginOperation(transformOpId, label + " transform", "primary", "PK_BODY_transform", null, "body transform of copied source body");
+    if (transformOp != null)
+    {
+        transformOp.InputHashes["gm"] = new System.Text.Json.Nodes.JsonObject { ["bodyTag"] = copy };
+        transformOp.InputHashes["pk"] = new System.Text.Json.Nodes.JsonObject { ["bodyTag"] = nativeCopy };
+    }
     int n;int* replaced;byte* exact;Check(KernelRuntime.BodyTransform(copy,transform,0,&n,&replaced,&exact),label+" managed body transform");
     if(replaced!=null)Check(KernelRuntime.MemoryFree(replaced),"free managed replace list");if(exact!=null)Check(KernelRuntime.MemoryFree(exact),"free managed exact list");
     PK_GEOM_t* pkReplaced;PK_LOGICAL_t* pkExact;Check(PK_BODY_transform(nativeCopy,pkTransform,0,&n,&pkReplaced,&pkExact),label+" PK body transform");
@@ -278,29 +343,55 @@ static unsafe void CompareBody(string shape,int transform,int pkTransform,string
     var bytes=Transmit(copy);File.WriteAllBytes(Path.Combine(directory,label+".x_t"),bytes);
     File.WriteAllBytes(Path.Combine(directory,label+"-reference.x_t"),TransmitReference(nativeCopy));
     var received=Receive(bytes);
-    for(var kind=0;kind<5;kind++)Require(Count(nativeCopy,kind)==Count(received,kind),label+$" topology count {kind}");
-    CheckBody(nativeCopy,label+" reference",log);CheckBody(received,label+" received",log);
-    CompareBodies(nativeCopy,received,label,log);CompareVertices(nativeCopy,received,label);
+    if (transformOp != null)
+    {
+        transformOp.OutputHashes["gmReceived"] = new System.Text.Json.Nodes.JsonObject { ["bodyTag"] = received };
+    }
+    for(var kind=0;kind<5;kind++)
+    {
+        var countMatch = Count(nativeCopy,kind)==Count(received,kind);
+        ledger?.RecordCheck(transformOpId, "primary", label+$"-topology-{kind}", label+$" topology count {kind}", countMatch ? "pass" : "fail", gm: Count(received,kind), pk: Count(nativeCopy,kind), threshold: 0);
+        Require(countMatch,label+$" topology count {kind}");
+    }
+    CheckBody(nativeCopy,label+" reference",log);
+    CheckBody(received,label+" received",log);
+    ledger?.RecordCheck(transformOpId, "auxiliary", label+"-ref-body-check", label+" reference PK_BODY_check", "pass");
+    ledger?.RecordCheck(transformOpId, "primary", label+"-received-body-check", label+" received PK_BODY_check", "pass");
+    CompareBodies(nativeCopy,received,label,log);
+    ledger?.RecordCheck(transformOpId, "primary", label+"-compare-bodies", label+" PK_DEBUG_BODY_compare", "pass");
+    CompareVertices(nativeCopy,received,label);
+    ledger?.RecordCheck(transformOpId, "primary", label+"-compare-vertices", label+" vertex coordinate comparison", "pass");
     if(construction)
     {
         var expected=PartGeometrySamples(nativeCopy,managed:false);
         ComparePartSamples(expected,PartGeometrySamples(copy,managed:true),label+" transformed construction");
         ComparePartSamples(expected,PartGeometrySamples(received,managed:false),label+" fresh XT construction");
+        ledger?.RecordCheck(transformOpId, "primary", label+"-construction-samples", label+" transformed construction samples", "pass");
         ComparePartSamples(originalSamples!,PartGeometrySamples(source,managed:true),label+" unchanged managed construction");
         ComparePartSamples(originalSamples!,PartGeometrySamples(reference,managed:false),label+" unchanged PK construction");
     }
-    // The source body must remain independently usable after changing the copy.
+    ledger?.EndOperation(transformOpId);
+
+    // --- STEP 2: Source independence and deletion lifecycle ---
+    var lifecycleOpId = $"op-body-{label}-source-lifecycle";
+    ledger?.BeginOperation(lifecycleOpId, label + " source lifecycle", "lifecycle", "PK_ENTITY_delete+PK_PART_receive_b", null, "source unchanged verification and independent lifetime after source deletion");
     var sourceReceived=Receive(Transmit(source));CompareBodies(reference,sourceReceived,label+" unchanged source",log);
+    ledger?.RecordCheck(lifecycleOpId, "primary", label+"-unchanged-source", label+" unchanged source comparison", "pass");
     if(construction)ComparePartSamples(originalSamples!,PartGeometrySamples(sourceReceived,managed:false),label+" source fresh XT construction");
-    Check(KernelRuntime.EntityDelete(1,&source),label+" delete managed source body");Require(KernelRuntime.IsValidTag(copy),label+" copy lifetime");
+    Check(KernelRuntime.EntityDelete(1,&source),label+" delete managed source body");
+    var validTag = KernelRuntime.IsValidTag(copy);
+    ledger?.RecordCheck(lifecycleOpId, "representation", label+"-copy-lifetime", label+" copy lifetime after source deletion", validTag ? "pass" : "fail");
+    Require(validTag,label+" copy lifetime");
     if(construction)
     {
         var expected=PartGeometrySamples(nativeCopy,managed:false);
         ComparePartSamples(expected,PartGeometrySamples(copy,managed:true),label+" construction after source deletion");
         var afterDeletion=Receive(Transmit(copy));
         ComparePartSamples(expected,PartGeometrySamples(afterDeletion,managed:false),label+" independent construction fresh XT");
+        ledger?.RecordCheck(lifecycleOpId, "primary", label+"-post-deletion-samples", label+" construction after source deletion", "pass");
         log($"  {expected.Count} construction members/definitions preserve membership, sharing, native D0-D2 jets and source independence.");
     }
+    ledger?.EndOperation(lifecycleOpId);
 }
 
 static unsafe (int Managed,int Native) CreateConstructionWire(bool nested)
