@@ -122,3 +122,44 @@ git diff --check
 execute驱动退出0只表示已执行并记录子命令，不覆盖mirror8原2。evidence和results最终checker各0；results初次134是独审脚本错误要求mirror全部历史input比较都有GM绑定，已按其23missing实际合同分层，修正为只对正例完整oblique要求非空后checker0；原失败日志保留。首次外层日志重定向因temp_docs尚未建立退出1、未启动检查器，非模型失败。没有以最后成功覆盖任何原操作退出。
 
 没有重跑45/18/full1974/全家族／正式ABBA，没有AOT或CABI修改，没有Mac／Windows／main／门户操作，没有全局pkill；本次进程树结束后未见所属testhost残留，无须终止其他进程。旧217fc受控窗口只保留其既有接受，不签本统一源倍率。第一笔审计脚本提交 `e8162fcfc993ba71c54f95fb5608f1be34ac94ae` 已推送；完整最终提交和远端SHA由交付消息给出，本文不预写尚不存在的自身SHA。
+
+## B1 窄复核续审：84c558c（2026-11-12）
+
+**本节是当前结论：B1 已在固定修复源 `84c558c10135c117bf8be6629a157e6d230f1b2d` 的当前单操作 runner 合同内解除，接受其自动质量门；上述原4b缺陷、原退出和接受边界作为历史证据保留。** 原完整独审提交为 `583d917890a9f654dbd4a1f4e96e5e5f261f68eb`。本轮只审 B1，没有重启计算集成独审或建模阶段。
+
+实际重读用户级 AGENTS（whole SHA256 仍为 `2b86152fc017cb1cac46838e479cfe314e7bc46254a7b1fdd08bb7207fb82280`）、本树约束、原 B1、固定 diff 和当前实际 producer。相对 `410748d3b615296d1aa1c0e77df194eb7833b74d`，`84c558c` 只有 runner 修改及新增 `scripts/NativeModelingQualityGateChecks.cs`；交付文档追加及 B1 receipt 位于文档头 `8c2d6da82f4c83c4803fab408e424f4b6ca5f295`。Native 树仍是 `133f56acb0cf485366cd4f13f457dc3b161655eb`，整个 src 树仍是 `0c5d23f6f4e3e7aabe5034888f92812c3ecb07ad`。没有改作者树或把修复 runner 合入本独审树的生产入口；独立脚本从精确 Git 对象抽取 runner 到隔离临时目录执行。
+
+源码核查结论：主运行和 `--audit` 共用修复后的 `QualityReasons`；compare/mass 摘要必须有实际报告，摘要、报告、sourceBinding、loaded identity 和已有命令来源互相一致。每步要求其 snapshot 比较与 GM/PK mesh 链接对应，再按 GM live／PK reference 实体匹配独立比较和物性，二者 native pair 和 XT hashes 相同。已按实际 `WebProgressCapture.Compare` 核实保留 PK copy 与显示 snapshot 是不同实体，没有要求其 tag 相等。当前单操作来源合同未被扩张为任意 lifecycle 审计器。
+
+物性15个具名分量与各自摘要一一匹配，estimate、modulus、上下界、阈值和三态均核验；修复中的 outward 公式逐项同现有 `ParasolidMassProperties.Classify`，仅复算已记录数值的内部一致性，没有再积分。比较继续消费原已接受 helper 的最终裁决，核对严格 mask、raw differences 及其诊断／有限证明记录，没有另造几何判断。缺失返回2；Rejected、API 错误及来源／摘要矛盾返回1；真实 Unresolved 保持2。没有改 producer、数学、容差、预算或历史格式。
+
+独立验证入口是 `scripts/PkNativeUnifiedB1Review.cs`，没有直接运行作者的验证 driver。复用旧独审7组隔离副本、作者 v3 的7组新增派生副本及5组真实 Capture，独立规定预期值，对固定 runner 逐组运行；每组非 DLL/PDB 输入文件的字节与文件数在执行前后核验未变。19次结果如下；`rawAuditExit` 是本次审计子进程的原退出，**不是建模原退出**。
+
+| 复用输入／隔离控制 | 数量 | 本次 rawAuditExit | 本次控制 checker |
+| --- | ---: | ---: | ---: |
+| intact、original-planar 正控 | 2 | 各0 | 0 |
+| no-modulus、no-body-check、no-compare | 3 | 各2 | 0 |
+| 原假阳性 no-estimates-lower、no-evidence-links | 2 | 各2 | 0 |
+| 原假阳性 rejected-compare-evidence | 1 | 1 | 0 |
+| wrong-step、source-contradiction、false-verified-bounds、native-api-error、command-source-contradiction | 5 | 各1 | 0 |
+| duplicate-component、report-no-estimate | 2 | 各2 | 0 |
+| 原真实 sphere、curved、NURBS fillet、shortedge | 4 | 各2 | 0 |
+
+19/19符合预期，独立外层 checker 原0；未发现本次 B1 合同内尚存阻断。本轮动态审计均为repeat=1，更多重复的逐步匹配只作源码核查，不冒称实测。最后四项的原建模退出仍各2，planar仍原0；没有用审计0补签建模，也没有把缺失或未决签成几何错误。原 v1 错分缺compare、v2中间版本及原4b三假阳性记录均未覆盖。本次 runner SHA256 是 `78c98d884640d185c07337d4d34ec02bdb14f9d5fa3876cfef6c19831b75f6a5`，与固定 Git 字节相同；逐次 argv、Capture hash、log/exit SHA、输入未变文件数见 `docs/reviews/advanced-modeling/pk-native-unified-84c558c-b1-independent-review.receipt.json`。完整日志私存于 `temp_docs/unified-review-b1-84c558c/`。
+
+| 当前交付对象 | 续审结论 | 实际可交付范围 |
+| --- | --- | --- |
+| 原计算集成及几何／拓扑接受 | **accepted，原范围不变** | 继续引用原4b完整独审；本次没有重新运行或冒签新二进制。 |
+| 当前单操作 runner 自动质量门 | **accepted，B1解除** | 固定84c；Verified／Failed／Unresolved按当前报告合同验收，缺失不绿，支持现有单操作 runner 的每步匹配。 |
+| 当前看板 handoff | **accepted，可交装配** | 原156文件／56mesh ZIP 仍为 `5197d647fbc47a15f3338e83f1c4063227fddcd4dfff92186c0274aa510495bf`，本次核前后同hash；追加84c修复来源与本续审即可，保留原missing／负控／exit显示。 |
+| Mac 统一基线领取 | **accepted，可取84c全SHA** | 私有环境先ENV_READY；原Capture身份仍属4b，禁止改称84c的新运行。 |
+| 新Mac倍率／正式性能窗口及全部模型能力 | **unproven，原边界不变** | 未运行Mac或ABBA，`performanceQualified=false`继续有效；真实mass未决、curved缺失及原查询边界仍保留。 |
+
+可复核命令（新输出目录；仅需要普通.NET10，不加载私有PK库）：
+
+```sh
+MSBUILDDISABLENODEREUSE=1 dotnet run scripts/PkNativeUnifiedB1Review.cs -c Release -p:UseSharedCompilation=false -- ../temp_docs/unified-review-b1-84c558c
+git diff --check
+```
+
+仅在 qingyu2 执行。没有运行旧 evidence／execute、mirror8／oblique／14项控制、817／2415整包复验、1974单测、PK调用、Compare、积分、ABBA或AOT；没有触Mac／Windows／main／门户，也未终止其他进程。续审完成和推送不等于装配、上线或main集成，最终完整提交及远端SHA在交付消息中给出。
