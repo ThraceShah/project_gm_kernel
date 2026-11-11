@@ -35,3 +35,13 @@ MSBUILDDISABLENODEREUSE=1 dotnet run --file ../../../../.local/share/gm-kernel-p
 ```
 
 rollback 全包 HTTPS 校验并写 ROLLED_BACK 后，restore 核实际旧包、完整 drop-ins及effective旧argv，恢复 exact UI424 hook 和原 active bit；不 enable/disable timer。任何 publish/served/关键browser失败均按此回退并重核旧资源及偏好；本任务没有授权循环修工具或网络重试。
+
+## 首次发布与实际浏览器
+
+首次实际 publish 开始 **2026-11-11 08:24:53.017Z / 16:24:53.017 SGT**，固定 Publish 原 exit0，成功记录提交于 **08:25:07.808Z / 16:25:07.808 SGT**。工具自身全包核验后，又独立逐文件核625个HTTPS资源，全部exact200/full hash一致，完成于08:25:14.793Z。不是只有首次HTML或index通过；15个UI-owned display资源全部包含在逐字节核验内。
+
+实际HTTPS自有Chromium有限检查 **15/15**，无uncaught error或失败JS/CSS：用户截图case双侧102 triangles、25% opacity、查看修改共享相机；canvas外单行legend；证据默认收起，PK摘要global21921/local21930/facePairs7，drawer覆盖且canvas尺寸不变；黄像素25%位置真实点击，选中原mesh selected-edge集合；数据版本明确保留main610原来源与采集时间。真实UV四snapshot为Before96/96、After220/130、每pane U5/V5且provenance stage正确；冷/热错stage各实际route拦截并拒绝受影响GM，PK保持正确；390×844双pane与UV正常、无page横向溢出。
+
+浏览器仅访问真实目标HTTPS，负例仅在私有browser context改响应，不修改服务器。已关闭全部自有browser/context，未复跑PK/export/Native/AOT/采集/benchmark或作者大全套。实际截图已目视检查：`temp_docs/ui-015-deployment/live-015-desktop.png`、`temp_docs/ui-015-deployment/live-015-evidence.png`、`temp_docs/ui-015-deployment/live-015-data-version.png`、`temp_docs/ui-015-deployment/live-015-uv-after.png`、`temp_docs/ui-015-deployment/live-015-mobile.png`、`temp_docs/ui-015-deployment/live-015-mobile-uv.png`。结构化结果为 `temp_docs/ui-015-deployment/browser-receipt.json`。
+
+通过后固定 Configure resume 原 exit0，于 **08:27:37.153Z / 16:27:37.153 SGT** 恢复原active/waiting+enabled，未enable/disable。下一实际原timer周期为08:30:25Z；本阶段等待该轮实证，不仅凭首次上传宣布完成。
