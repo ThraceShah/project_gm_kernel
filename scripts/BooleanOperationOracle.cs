@@ -28,7 +28,11 @@ if(benchOption!=null)benchRepeat=int.Parse(benchOption["--bench-repeat=".Length.
 Require(benchRepeat>=1&&benchRepeat<=64,"bench repeat must be in 1..64");
 ModelingPerformance.Enabled=args.Contains("--bench-profile",StringComparer.Ordinal);
 var output=Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","boolean-operation-oracle"));
-Directory.CreateDirectory(output);var log=new StringBuilder();
+var outputName=args.Single(x=>x.StartsWith("--output-name=",StringComparison.Ordinal))["--output-name=".Length..];
+Require(outputName.Length>0&&outputName.All(c=>char.IsAsciiLetterOrDigit(c)||c is '-' or '_'),"one new output directory name");
+output=Path.Combine(output,outputName);Require(!Directory.Exists(output),"Existing execution evidence is immutable");Directory.CreateDirectory(output);
+ParasolidMassProperties.BeginEvidence(output);
+var log=new StringBuilder();
 void Log(string s){Console.WriteLine(s);log.AppendLine(s);}
 try
 {
@@ -58,16 +62,20 @@ try
                     Require(ownStatus==pkStatus,$"status own={ownStatus} PK={pkStatus}");
                     Require(own.Length==reference.Length,$"body count own={own.Length} PK={reference.Length}");
                     var received=new List<int>();
+                    var receivedSources=new Dictionary<ManagedBodyTag,(ManagedBodyTag Body,byte[] Bytes)>();
                     foreach(var body in own)
                     {
                         var bytes=TransmitManaged(body);File.WriteAllBytes(Path.Combine(output,$"{label}-{received.Count}-managed.x_t"),bytes);
-                        var result=ReceiveOracle(bytes);CheckReferenceBody(result,label+" received",Log);received.Add(result);
+                        var result=ReceiveOracle(bytes);CheckReferenceBody(result,label+" received",Log);received.Add(result);receivedSources.Add(result,(body,bytes));
                     }
                     received.Sort((a,b)=>Center(a).CompareTo(Center(b)));Array.Sort(reference,(a,b)=>Center(a).CompareTo(Center(b)));
                     for(var b=0;b<reference.Length;b++)
                     {
                         CheckReferenceBody(reference[b],label+" baseline",Log);
-                        File.WriteAllBytes(Path.Combine(output,$"{label}-{b}-reference.x_t"),TransmitReference(reference[b]));
+                        var referenceBytes=TransmitReference(reference[b]);File.WriteAllBytes(Path.Combine(output,$"{label}-{b}-reference.x_t"),referenceBytes);
+                        var actualSource=receivedSources[received[b]];
+                        WebProgressCapture.BindQuality(label,actualSource.Body,reference[b],received[b],actualSource.Bytes,referenceBytes);
+                        Require(ParasolidMassProperties.Compare(reference[b],received[b],label)!=MassAgreement.Different,label+" mass bounds prove a difference");
                         for(var k=0;k<5;k++)Require(OracleCount(reference[b],k)==OracleCount(received[b],k),$"kind{k}: expected{OracleCount(reference[b],k)} received{OracleCount(received[b],k)}");
                         if(specialized)ParasolidBodyCompare.AssertEquivalent(reference[b],received[b],label);
                         if(axialImprintOnly)CompareAxialContact(reference[b],received[b]);
@@ -118,6 +126,7 @@ try
 }
 catch(Exception ex){Log("FAIL: "+ex.Message);Environment.ExitCode=1;}
 finally{File.WriteAllText(Path.Combine(output,"report.txt"),log.ToString());}
+if(Environment.ExitCode==0&&ParasolidMassProperties.UnresolvedCount!=0)Environment.ExitCode=2;
 
 static void PrintProfile(string operation,double apiMs)
 {
@@ -567,48 +576,9 @@ static unsafe PK_BODY_t ReceiveOracle(byte[] bytes)
     }
 }
 
-static unsafe void CompareBodies(PK_BODY_t reference, PK_BODY_t actual, string label, Action<string> log)
+static unsafe void CompareBodies(PK_BODY_t reference,PK_BODY_t actual,string label,Action<string> log)
 {
-    var options = new PK_DEBUG_BODY_compare_o_t
-    {
-        max_diffs = 64,
-        all_tests = PK_LOGICAL_false,
-        num_tests = PK_LOGICAL_true,
-        tol_dev_tests = PK_LOGICAL_true,
-        tol_tests = PK_LOGICAL_true,
-        class_tests = PK_LOGICAL_true,
-        sense_tests = PK_LOGICAL_true,
-        missing_tests = PK_LOGICAL_true,
-        // Exact parameter matching depends on the producer's parameterization.
-        // Geometric tolerance/deviation and topology remain strict gates.
-        acc_dev_tests = PK_LOGICAL_false,
-        non_match_tests = PK_LOGICAL_false,
-    };
-    var result = new PK_DEBUG_BODY_compare_r_t();
-    Check(PK_DEBUG_BODY_compare(reference, actual, &options, &result), label + " body compare");
-    try
-    {
-        log($"{label} body compare: global={result.global_result}, local={result.local_result}, global entries={result.n_global_diffs}, face pairs={result.n_face_pairs}.");
-        for (var i = 0; i < result.n_global_diffs; i++)
-        {
-            var diff = result.global_diffs[i];
-            log($"  global entry={diff.diff}, master count={diff.n_masters}, received count={diff.n_similars}");
-        }
-        var localDifferences = 0;
-        for (var i = 0; i < result.n_face_pairs; i++)
-        for (var j = 0; j < result.face_pairs[i].n_local_diffs; j++)
-        {
-            var diff = result.face_pairs[i].local_diffs[j];
-            localDifferences++;
-            log($"  face pair={i}, diff={diff.diff}, master entity={diff.master_entity}, received entity={diff.similar_entity}, master value={diff.master_double:R}, received value={diff.similar_double:R}");
-        }
-        // PK includes equal-count records in global_diffs even when its
-        // global and local result flags both report no differences.
-        Require(result.global_result == PK_DEBUG_global_res_no_diffs_c
-            && result.local_result == PK_DEBUG_local_res_no_diffs_c
-            && localDifferences == 0, label + " body structure/sense/tolerance comparison failed");
-    }
-    finally { Check(PK_DEBUG_BODY_compare_r_f(&result), label + " free body compare"); }
+    ParasolidBodyCompare.AssertEquivalent(reference,actual,label);
 }
 
 static unsafe int OracleCount(PK_BODY_t body, int kind)

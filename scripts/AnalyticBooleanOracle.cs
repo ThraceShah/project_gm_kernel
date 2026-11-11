@@ -18,6 +18,10 @@ if(benchOption!=null)benchRepeat=int.Parse(benchOption["--bench-repeat=".Length.
 Require(benchRepeat>=1&&benchRepeat<=64,"bench repeat must be in 1..64");
 ModelingPerformance.Enabled=args.Contains("--bench-profile",StringComparer.Ordinal);
 var output=Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","analytic-boolean-oracle"));Directory.CreateDirectory(output);
+var outputName=args.Single(x=>x.StartsWith("--output-name=",StringComparison.Ordinal))["--output-name=".Length..];
+Require(outputName.Length>0&&outputName.All(c=>char.IsAsciiLetterOrDigit(c)||c is '-' or '_'),"one new output directory name");
+output=Path.Combine(output,outputName);Require(!Directory.Exists(output),"Existing execution evidence is immutable");Directory.CreateDirectory(output);
+ParasolidMassProperties.BeginEvidence(output);
 var report=new StringBuilder();void Log(string line){Console.WriteLine(line);report.AppendLine(line);}
 try
 {
@@ -55,6 +59,7 @@ try
                         var imported=ReceiveManaged(referenceBytes);CheckPointClassification(imported,expected[i],fixture);
                         CheckReferenceBody(expected[i],label+" independent baseline",Log);CheckReferenceBody(received,label+" managed receive",Log);
                         for(var kind=0;kind<5;kind++)Require(OracleCount(expected[i],kind)==OracleCount(received,kind),$"{label} topology kind {kind}: {OracleCount(received,kind)}/{OracleCount(expected[i],kind)}");
+                        WebProgressCapture.BindQuality(label,own[i],expected[i],received,bytes,referenceBytes);
                         CompareBodies(expected[i],received,label,Log);CompareMass(expected[i],received,label,Log);
                     }
                     Log("PASS "+label);
@@ -70,6 +75,7 @@ try
 }
 catch(Exception ex){Log("FAIL: "+ex.Message);Environment.ExitCode=1;}
 finally{File.WriteAllText(Path.Combine(output,"report.txt"),report.ToString());}
+if(Environment.ExitCode==0&&ParasolidMassProperties.UnresolvedCount!=0)Environment.ExitCode=2;
 
 static void PrintProfile(string operation,double apiMs)
 {
@@ -231,59 +237,14 @@ static unsafe PK_BODY_t ReceiveOracle(byte[] bytes)
     }
 }
 
-static unsafe void CompareBodies(PK_BODY_t reference, PK_BODY_t actual, string label, Action<string> log)
+static unsafe void CompareBodies(PK_BODY_t reference,PK_BODY_t actual,string label,Action<string> log)
 {
-    var options = new PK_DEBUG_BODY_compare_o_t
-    {
-        max_diffs = 64,
-        all_tests = PK_LOGICAL_false,
-        num_tests = PK_LOGICAL_true,
-        tol_dev_tests = PK_LOGICAL_true,
-        tol_tests = PK_LOGICAL_true,
-        class_tests = PK_LOGICAL_true,
-        sense_tests = PK_LOGICAL_true,
-        missing_tests = PK_LOGICAL_true,
-        // Exact parameter matching depends on the producer's parameterization.
-        // Geometric tolerance/deviation and topology remain strict gates.
-        acc_dev_tests = PK_LOGICAL_false,
-        non_match_tests = PK_LOGICAL_false,
-    };
-    var result = new PK_DEBUG_BODY_compare_r_t();
-    Check(PK_DEBUG_BODY_compare(reference, actual, &options, &result), label + " body compare");
-    try
-    {
-        log($"{label} body compare: global={result.global_result}, local={result.local_result}, global entries={result.n_global_diffs}, face pairs={result.n_face_pairs}.");
-        for (var i = 0; i < result.n_global_diffs; i++)
-        {
-            var diff = result.global_diffs[i];
-            log($"  global entry={diff.diff}, master count={diff.n_masters}, received count={diff.n_similars}");
-        }
-        var localDifferences = 0;
-        for (var i = 0; i < result.n_face_pairs; i++)
-        for (var j = 0; j < result.face_pairs[i].n_local_diffs; j++)
-        {
-            var diff = result.face_pairs[i].local_diffs[j];
-            localDifferences++;
-            log($"  face pair={i}, diff={diff.diff}, master entity={diff.master_entity}, received entity={diff.similar_entity}, master value={diff.master_double:R}, received value={diff.similar_double:R}");
-        }
-        // PK includes equal-count records in global_diffs even when its
-        // global and local result flags both report no differences.
-        Require(result.global_result == PK_DEBUG_global_res_no_diffs_c
-            && result.local_result == PK_DEBUG_local_res_no_diffs_c
-            && localDifferences == 0, label + " body structure/sense/tolerance comparison failed");
-    }
-    finally { Check(PK_DEBUG_BODY_compare_r_f(&result), label + " free body compare"); }
+    ParasolidBodyCompare.AssertEquivalent(reference,actual,label);
 }
 
 static unsafe void CompareMass(int reference,int actual,string label,Action<string> log)
 {
-    var options=new PK_TOPOL_eval_mass_props_o_t();double* expected=stackalloc double[15];double* received=stackalloc double[15];
-    // FD §31.1.1: accuracy approaches ONE for more integration work; it is not
-    // a requested error tolerance. Low values are unsuitable for validation.
-    Check(PK_TOPOL_eval_mass_props(1,&reference,.999999999,&options,expected,expected+1,expected+2,expected+5,expected+14),label+" reference mass");
-    Check(PK_TOPOL_eval_mass_props(1,&actual,.999999999,&options,received,received+1,received+2,received+5,received+14),label+" received mass");
-    for(var i=0;i<15;i++)Require(double.IsFinite(expected[i])&&double.IsFinite(received[i])&&Math.Abs(expected[i]-received[i])<=2e-7*Math.Max(1,Math.Abs(expected[i])),label+$" mass property {i}: {expected[i]:R}/{received[i]:R}");
-    log(label+$" volume={expected[0]:R}/{received[0]:R}, area={expected[14]:R}/{received[14]:R}");
+    Require(ParasolidMassProperties.Compare(reference,actual,label)!=MassAgreement.Different,label+" mass bounds prove a difference");
 }
 
 static unsafe int OracleCount(PK_BODY_t body, int kind)

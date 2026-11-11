@@ -48,6 +48,20 @@ internal static unsafe class WebProgressCapture
             ["captureSourceFileSha256"]=Hash(File.ReadAllBytes(CapturePath())),["bodyCompareSourceFileSha256"]=Hash(File.ReadAllBytes(Path.Combine(path,"ParasolidBodyCompare.cs"))),
             ["massSourceFileSha256"]=Hash(File.ReadAllBytes(Path.Combine(path,"ParasolidMassProperties.cs"))),
             ["loadedFileAppAssemblySha256"]=Hash(File.ReadAllBytes(typeof(WebProgressCapture).Assembly.Location)),["loadedKernelAssemblySha256"]=Hash(File.ReadAllBytes(typeof(KernelRuntime).Assembly.Location))};
+        if(first)
+        {
+            var directory=Path.Combine(Output!,"identity");Directory.CreateDirectory(directory);
+            foreach(var (role,assembly) in new[]{("kernel",typeof(KernelRuntime).Assembly),("oracle",typeof(WebProgressCapture).Assembly)})
+            {
+                var dll=File.ReadAllBytes(assembly.Location);File.WriteAllBytes(Path.Combine(directory,role+".dll"),dll);
+                var pdb=Path.ChangeExtension(assembly.Location,".pdb");
+                identity[role+"Mvid"]=assembly.ManifestModule.ModuleVersionId.ToString();
+                identity[role+"DllSha256"]=Hash(dll);
+                identity[role+"PdbSha256"]=File.Exists(pdb)?Hash(File.ReadAllBytes(pdb)):null;
+                if(File.Exists(pdb))File.Copy(pdb,Path.Combine(directory,role+".pdb"));
+            }
+            File.WriteAllText(Path.Combine(directory,"loaded.json"),identity.ToJsonString());
+        }
         if(first&&(string.IsNullOrWhiteSpace(identity["calculationCommit"]?.GetValue<string>())||string.IsNullOrWhiteSpace(identity["captureCommit"]?.GetValue<string>())))
             AddCheck("capture-source-identity","Pinned calculation/capture source identity","missing",null,null,null,"","Both source commits must be supplied; actual loaded assembly and source-file hashes are still retained.");
         return (JsonObject)identity.DeepClone();
