@@ -37,3 +37,13 @@
 ## 回退
 
 回退基线=本次前 served 整包（alg6616 release `work/previous-snapshot`，servedVerified）：先 `--mode rollback --execute` 再 `ConfigureReviewedWebProgressUiHook --mode restore --execute`；producer/base unit 从 `temp_docs/cutover-backup-3/` 与 e80ae2b 原状恢复。
+
+## 元数据纠错修正版（2026-11-12）
+
+协调独立 HTTPS 核出实际错误：五操作 performance 字段为候选 4 暖中位数，但 measurementKind 误标 `fresh-process-cold-median` 且 samples=6。修正为 `controlled-abba-warm-median`、headline samples=4（warmup 保持 0；scope 明写每源总 6=2 冷+4 暖全保留、冷 rep0 未丢弃）；全部 60 pairs/120 时间/冷暖 min-max/双 ratio/原件不变。
+
+- 修正 run：`20261111T184658Z-alg6616`（latest，label 标注元数据修正版；collector `982ba595f838a5c004e7d81ae794fe358ea0f22b`）；**非新测量**，provenance.metadataCorrection 绑定原 run `20261111T183127Z-alg6616`。
+- 纠错前派生 manifest（SHA `41c7aecb93a27a9286255cbbfdbebb6a40475aa79fbaf450134a166a89a98193`）/validation/receipt 以原字节随修正 run 保全（evidence/pre-correction-*.json）；纠错前 run 原样保留在历史。
+- 发布：owned release `ui-015-tools-1b93597-alg6616f`（release.json `791af8d7…`；rollback 基线=纠错前 served 整包 `eea84599…`，HTTPS 逐文件核验）；容量 501 files/27,379,659B ≤30MiB；producer 钉 982ba59。
+- 定点核验 9/9（controlled-abba-warm-median、samples=4、n=4/n=2 冷暖明细、3423.4971307 原值、关键 mesh 200、pre-correction 证据在档、无 JS 错误；isoparametrics 派生索引 404 为历来可选缺省，非回归）。
+- 自动轮（2026-11-12 02:51:08 CST）UI_PREPARED（dataIndex 7d7ab71a…）→UI_SKIP_SAME 无回退。
