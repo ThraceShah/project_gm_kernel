@@ -55,7 +55,7 @@ internal static unsafe partial class KernelRuntime
                 ||IntervalVector.Dot(start,b).Value.Magnitude!=0||IntervalVector.Dot(end,b).Value.Magnitude!=0)continue;
             var c=Vector(center.X.Value.Lower,center.Y.Value.Lower,center.Z.Value.Lower);
             var sphere=new AnalyticSurface(SurfaceClass.Sphere,c,default,default,radius);
-            status=SurfaceIsoPlaneRoots.Find(path,sphere,first,last,roots,ref count,strictSeparation:true,isolation:stations);
+            status=SurfaceIsoPlaneRoots.Find(path,sphere,first,last,roots,ref count,strictSeparation:true,isolation:stations,use:RootIsolationUse.Meridian);
             if(status!=AlgorithmStatus.Success)return status;
             if(count>errors.Length||!rollingStations.IsEmpty&&count>rollingStations.Length)return AlgorithmStatus.OutputTooSmall;
             var retained=0;

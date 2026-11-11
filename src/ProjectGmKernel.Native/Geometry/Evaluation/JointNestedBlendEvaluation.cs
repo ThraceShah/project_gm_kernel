@@ -372,7 +372,12 @@ internal static partial class JointNestedBlendEvaluation
     private static double Maximum(ReadOnlySpan<double> residual){var result=0.0;foreach(var value in residual)result=Math.Max(result,Math.Abs(value));return result;}
     internal static double ResidualAccuracy(in NestedBlendProgram program,BlendSpineIndex spine,in KernelVector3 point)
     {
-        var scale=MaximumCoordinate(point);var charts=Chart(program,spine);scale=Math.Max(scale,Math.Max(MaximumCoordinate(charts[0].Position),MaximumCoordinate(charts[^1].Position)));
+        var scale=Math.Max(MaximumCoordinate(point),ResidualAccuracyScale(program,spine));
+        return 64*SmallLinearSolve.MachineEpsilon*(scale>0?scale:1);
+    }
+    internal static double ResidualAccuracyScale(in NestedBlendProgram program,BlendSpineIndex spine)
+    {
+        var charts=Chart(program,spine);var scale=Math.Max(MaximumCoordinate(charts[0].Position),MaximumCoordinate(charts[^1].Position));
         foreach(var node in program.Surfaces)
         {
             if(node.IsBlend)scale=Math.Max(scale,Math.Max(Math.Abs(node.Range0),Math.Abs(node.Range1)));
@@ -383,7 +388,7 @@ internal static partial class JointNestedBlendEvaluation
             }
             else scale=Math.Max(scale,Math.Max(MaximumCoordinate(node.Analytic.Origin),Math.Max(Math.Abs(node.Analytic.Radius),node.Analytic.Kind==SurfaceClass.Cone?0:Math.Abs(node.Analytic.Secondary))));
         }
-        return 64*SmallLinearSolve.MachineEpsilon*(scale>0?scale:1);
+        return scale;
     }
     private static double MaximumCoordinate(in KernelVector3 point)=>Math.Max(Math.Abs(point.X),Math.Max(Math.Abs(point.Y),Math.Abs(point.Z)));
 

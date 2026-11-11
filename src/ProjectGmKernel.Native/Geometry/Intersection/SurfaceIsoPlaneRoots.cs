@@ -25,8 +25,9 @@ internal static class SurfaceIsoPlaneRoots
     [ThreadStatic] internal static IntervalNumber LastUnresolvedInterval,LastRequestedInterval,LastLeft,LastRight,LastDerivative;
     internal static AlgorithmStatus Find(in SurfaceIntersectionPatch curve,in AnalyticSurface plane,double first,double last,
         Span<OperationIntersectionPoint> output,ref BufferCount count,double tolerance=1e-10,bool strictSeparation=false,
-        Span<ScalarRootIsolation> isolation=default)
+        Span<ScalarRootIsolation> isolation=default,RootIsolationUse use=RootIsolationUse.SurfaceBoundary)
     {
+        using var profile=new ModelingPerformance.RootIsolationScope(use);
         if(!AnalyticLevelSet.Supported(plane))return AlgorithmStatus.Unsupported;
         LastFailure=IsolationFailure.None;LastRequestedInterval=new(first,last);
         Span<double> lower=stackalloc double[128],upper=stackalloc double[128];Span<BufferCount> depths=stackalloc BufferCount[128];
@@ -60,7 +61,8 @@ internal static class SurfaceIsoPlaneRoots
                     if(!distance.Finite){LastFailure=IsolationFailure.MeanValue;return AlgorithmStatus.NotConverged;}
                 }
                 var exclusion=strictSeparation?0:tolerance;
-                if(distance.Lower>exclusion||distance.Upper< -exclusion)continue;
+                if(distance.Lower>exclusion||distance.Upper< -exclusion){ModelingPerformance.RootExcluded();continue;}
+                if(derivative.ContainsZero)ModelingPerformance.RootNonmonotone();
                 if(!derivative.ContainsZero)
                 {
                     status=curve.Bound(new(lo,lo,0,0),at);if(status!=AlgorithmStatus.Success)return status;
@@ -124,7 +126,11 @@ internal static class SurfaceIsoPlaneRoots
                     }
                 }
             }
-            else if(status!=AlgorithmStatus.NotConverged)return status;
+            else
+            {
+                ModelingPerformance.RootBoundFailed();
+                if(status!=AlgorithmStatus.NotConverged)return status;
+            }
             if(depth>=48||pending+2>lower.Length)
             {
                 LastUnresolvedInterval=new(lo,hi);LastRequestedInterval=new(first,last);

@@ -17,6 +17,19 @@ internal static unsafe partial class KernelRuntime
             var compiler=new NestedProgramCompiler();if(!compiler.Ready)return AlgorithmStatus.WorkspaceTooSmall;
             var status=compiler.Spine(curve,out var spine);if(status!=AlgorithmStatus.Success)return status;
             var program=compiler.View;var definition=program.Spines[spine];
+            var rootUse=RootIsolationUse.SpatialCurve;
+            var a=program.Surfaces[definition.First];var b=program.Surfaces[definition.Second];
+            if(a.IsBlend!=b.IsBlend)
+            {
+                var child=program.Spines[(a.IsBlend?a:b).Spine];var kind=child.Curve.Kind;
+                if(kind==CurveClass.Line)rootUse=RootIsolationUse.SpatialLineBlend;
+                else if(kind is CurveClass.Circle or CurveClass.Ellipse)rootUse=RootIsolationUse.SpatialConicBlend;
+                else if(!SpineParameterMap.Explicit(child)&&!program.Surfaces[child.First].IsBlend&&!program.Surfaces[child.First].IsBSpline
+                    &&!program.Surfaces[child.Second].IsBlend&&!program.Surfaces[child.Second].IsBSpline
+                    &&program.Surfaces[child.First].Analytic.Kind==SurfaceClass.Plane&&program.Surfaces[child.Second].Analytic.Kind==SurfaceClass.Plane)
+                    rootUse=RootIsolationUse.SpatialLineBlend;
+                else rootUse=RootIsolationUse.SpatialImplicitBlend;
+            }
             var tolerance=8*JointNestedBlendEvaluation.ResidualAccuracy(program,spine,program.Charts[definition.ChartOffset].Position);
             var charts=program.Charts.Slice(definition.ChartOffset,definition.ChartCount);var covered=first;
             var record=Curves[GetCurveSlotByTag(curve)];
@@ -28,7 +41,7 @@ internal static unsafe partial class KernelRuntime
                 // that interval instead of repeatedly bounding a union of
                 // different parameter maps as one scalar branch.
                 var patch=new SurfaceIntersectionPatch(program,spine,lo,hi);patch=new(patch,curve,record.Header.Generation,record.Sense);
-                status=SurfaceIsoPlaneRoots.Find(patch,plane,lo,hi,output,ref count,tolerance,strictSeparation:true,isolation:isolation);if(status!=AlgorithmStatus.Success)return status;
+                status=SurfaceIsoPlaneRoots.Find(patch,plane,lo,hi,output,ref count,tolerance,strictSeparation:true,isolation:isolation,use:rootUse);if(status!=AlgorithmStatus.Success)return status;
             }
             if(covered!=last){SurfaceIsoPlaneRoots.LastFailure=SurfaceIsoPlaneRoots.IsolationFailure.DomainCoverage;SurfaceIsoPlaneRoots.LastUnresolvedInterval=new(covered,last);return AlgorithmStatus.NotConverged;}
             if(isolation.IsEmpty){OperationIntersection.Sort(output[..count]);return AlgorithmStatus.Success;}
