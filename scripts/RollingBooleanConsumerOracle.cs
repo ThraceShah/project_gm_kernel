@@ -16,6 +16,20 @@ using static parasolid;
 
 unsafe
 {
+    if(args.Contains("--check-result-gate"))
+    {
+        RequireFixtureResult(PK_boolean_result_success_c,1,true,"positive");
+        foreach(var sample in new[]{(PK_boolean_result_failed_c,1,true),(PK_boolean_result_success_c,0,false),
+            (PK_boolean_result_success_c,0,true),(PK_boolean_result_success_c,1,false),(PK_boolean_result_success_c,2,true)})
+        {
+            var rejected=false;
+            try{RequireFixtureResult(sample.Item1,sample.Item2,sample.Item3,"negative");}
+            catch(InvalidOperationException){rejected=true;}
+            Require(rejected,"result gate accepted an invalid fixture output");
+            Console.WriteLine($"RESULT GATE status={sample.Item1} count={sample.Item2} has_bodies={sample.Item3} rejected={rejected}");
+        }
+        Console.WriteLine("RESULT GATE positive and five negatives pass; no modeling API executed");return;
+    }
     var root=Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ScriptPath())!,".."));
     var output=Path.Combine(root,"temp_docs","contract-sol",args.FirstOrDefault(a=>!a.StartsWith("--"))??"consumer");
     Require(!Directory.Exists(output),"Use a new output name; existing evidence is immutable");
@@ -110,6 +124,7 @@ unsafe
             KernelRuntime.InjectAllocationFailure(-1);
             Console.WriteLine($"GM COMPONENT phase={KernelRuntime.LastBooleanComponentPhase} face={KernelRuntime.LastBooleanComponentFace} edge={KernelRuntime.LastBooleanComponentEdge}");
             Console.WriteLine($"GM BOOLEAN error={error} result={result.result} bodies={result.n_bodies} entered={entered} stage={KernelRuntime.LastRegularBooleanStage} faces={KernelRuntime.LastRegularBooleanFace}/{KernelRuntime.LastRegularBooleanOtherFace} sheet={KernelRuntime.LastSheetPartitionStage} curve={KernelRuntime.LastSheetCurve} parameter={KernelRuntime.LastSheetParameter:R} status={KernelRuntime.LastSheetAlgorithmStatus} root_failure={SurfaceIsoPlaneRoots.LastFailure} root_box=[{SurfaceIsoPlaneRoots.LastUnresolvedInterval.Lower:R},{SurfaceIsoPlaneRoots.LastUnresolvedInterval.Upper:R}]");
+            if(error==0)RequireFixtureResult(result.result,result.n_bodies,result.bodies!=null,"GM two-tool subtraction");
             var own=error==0?new ReadOnlySpan<int>(result.bodies,result.n_bodies).ToArray():[];
             Check(KernelRuntime.TopolTrackResultFree(&tracking),"GM tracking free");Check(KernelRuntime.BooleanResultFree(&result),"GM result free");
             if(error!=0)for(var i=0;i<inputs.Length;i++)Require(before[i].AsSpan().SequenceEqual(TransmitManaged(inputs[i])),"GM rollback input "+i);
@@ -120,6 +135,7 @@ unsafe
                 Console.WriteLine($"PK SAME INPUT BOOLEAN error={nativeError} result={nativeResult.result} bodies={nativeResult.n_bodies}");
                 try
                 {
+                    if(nativeError==0)RequireFixtureResult(nativeResult.result,nativeResult.n_bodies,nativeResult.bodies!=null,"PK two-tool subtraction");
                     if(nativeError==0)for(var i=0;i<nativeResult.n_bodies;i++)
                     {
                         FullCheck(nativeResult.bodies[i],"PK output");File.WriteAllBytes(Path.Combine(output,$"pk-output-{i}.x_t"),TransmitNative(nativeResult.bodies[i]));
@@ -151,6 +167,11 @@ unsafe
 static string ScriptPath([CallerFilePath]string path="")=>path;
 static void Check(int error,string label){if(error!=0)throw new Exception(label+": "+error);}
 static void Require(bool pass,string label){if(!pass)throw new Exception(label);}
+static void RequireFixtureResult(int status,int count,bool hasBodies,string label)
+{
+    if(status!=PK_boolean_result_success_c||count!=1||!hasBodies)
+        throw new InvalidOperationException($"{label}: expected PK_boolean_result_success_c and one nonempty result body, got status={status} count={count} has_bodies={hasBodies}");
+}
 
 static unsafe int ReceiveManaged(byte[] bytes)
 {
