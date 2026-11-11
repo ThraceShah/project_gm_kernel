@@ -20,6 +20,7 @@ const hash=crypto.createHash('sha256').update(indexBytes).digest('hex');
 const run=index.runs.find(r=>r.id===index.latestRunId),manifest=JSON.parse(fs.readFileSync(path.join(data,run.manifest)));
 const runRoot=path.dirname(path.join(data,run.manifest));
 const pickingOnly=process.argv[1]==='--picking-only';
+const occlusionOnly=process.argv[1]==='--occlusion-only';
 const rows=[],errors=[];const check=(name,ok,detail)=>{rows.push({name,ok:!!ok,detail});console.log(`${ok?'PASS':'FAIL'} ${name} ${detail?JSON.stringify(detail):''}`);};
 const server=http.createServer((req,res)=>{const u=decodeURIComponent(req.url.split('?')[0]),file=u.startsWith('/data/')?path.join(data,u.slice(6)):path.join(path.resolve('dist'),u==='/'?'index.html':u);try{res.setHeader('Content-Type',file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':file.endsWith('.json')?'application/json':'text/html');res.end(fs.readFileSync(file));}catch{res.statusCode=404;res.end('missing');}});
 await new Promise(r=>server.listen(0,'127.0.0.1',r));
@@ -35,7 +36,16 @@ const same=(a,b)=>a.pose===b.pose&&a.target===b.target;
 try{
  check('published input index matches dispatched hash',hash==='117bb8e7ad20ea90aee004eb18428d2a220e5270795ab9ce81eff380843e3990',hash);
  await page.goto(`http://127.0.0.1:${server.address().port}/`);await wait();await select('support-chain.asymmetric43-base');
- if(pickingOnly){
+ if(occlusionOnly){
+  await page.getByTestId('btn-toggle-dim').click();
+  const box=await hosts().first().boundingBox();await page.mouse.move(box.x+box.width/2,box.y+box.height/2);await page.mouse.down();await page.mouse.move(box.x+box.width/2+box.height/2,box.y+box.height/2,{steps:12});await page.mouse.up();await page.waitForTimeout(600);
+  await page.mouse.move(box.x+box.width/2,box.y+box.height/2);await page.mouse.down();await page.mouse.move(box.x+box.width/2,box.y+box.height*.75,{steps:10});await page.mouse.up();await page.waitForTimeout(450);
+  const view=await stats(),raster=await pixels();check('opaque opposite-side selected edge stays occluded',view.every(s=>s.feature.visibleFraction<.1)&&raster.every(p=>p.yellow<100),{view,raster});
+  check('manual opposite-side orbit stays linked',same(...view));await page.screenshot({path:path.join(out,'opaque-opposite-side.png')});
+  await page.getByText('后态 (After)',{exact:true}).click();await wait();check('manual orbit survives snapshot change',same((await stats())[0],view[0]));
+  await page.locator('[title="自动按快照播放"]').click();await page.waitForTimeout(1200);await page.locator('[title="暂停"]').click();await wait();check('manual orbit survives actual playback',same((await stats())[0],view[0]));
+  check('no occlusion page errors',errors.length===0,errors);
+ }else if(pickingOnly){
   const points=await hosts().evaluateAll(es=>es.map(e=>{const c=e.querySelector('canvas'),x=document.createElement('canvas');x.width=c.width;x.height=c.height;const ctx=x.getContext('2d');ctx.drawImage(c,0,0);const d=ctx.getImageData(0,0,x.width,x.height).data,list=[];for(let i=0;i<d.length;i+=4){const [r,g,b]=[d[i],d[i+1],d[i+2]];if(r>140&&g>110&&b<90&&r-b>80&&Math.abs(r-g)<80)list.push([i/4%x.width,Math.floor(i/4/x.width)]);}list.sort((a,b)=>a[0]-b[0]);const rect=c.getBoundingClientRect();return [.25,.5,.75].map(q=>{const p=list[Math.floor(list.length*q)];return {q,x:rect.x+(p[0]+.5)*rect.width/x.width,y:rect.y+(p[1]+.5)*rect.height/x.height};});}));
   const c=manifest.cases.find(c=>c.id==='support-chain.asymmetric43-base');
   for(const [i,side] of ['gm','pk'].entries()){const mesh=JSON.parse(fs.readFileSync(path.join(runRoot,c.steps[0][side].before))),ids=mesh.edges.filter(e=>e.role==='selected').map(e=>String(e.id));for(const p of points[i]){await page.mouse.click(p.x,p.y);await page.waitForTimeout(80);const picked=await page.getByTestId('entity-inspector').textContent().catch(()=>null);check(`${side} interior pixel-center ${p.q}: selected edge pick`,picked?.includes('边 [')&&ids.some(id=>picked.includes('['+id+']')),{point:p,picked,expected:ids});await page.getByLabel('清除实体选择').click();}}
@@ -71,7 +81,7 @@ try{
  for(const width of [320,390]){await page.setViewportSize({width,height:844});await page.waitForTimeout(200);check(`${width}: document fits and legend stays its own row`,await page.evaluate(()=>document.documentElement.scrollWidth)<=width&&await page.getByTestId('legend-body').evaluate(e=>e.clientHeight<40&&e.scrollWidth>e.clientWidth));await page.getByText(/逐项验收/).click();check(`${width}: overlay close receives focus`,await page.getByTestId('inspection-close').evaluate(e=>document.activeElement===e));await page.screenshot({path:path.join(out,`${width}-overlay.png`)});await page.keyboard.press('Escape');check(`${width}: Escape closes evidence`,await page.getByRole('dialog').count()===0);await page.screenshot({path:path.join(out,`${width}-closed.png`)});}
  check('no uncaught browser errors',errors.length===0,errors);
  }
-}finally{await browser.close();server.close();fs.writeFileSync(path.join(out,pickingOnly?'picking-report.json':'report.json'),JSON.stringify({candidate:'c710171bfea776a77217a3c417bc73f7906ac4fd',base:'424e85d6aac32c2afe7cad12cfd04bea4f0037ab',indexHash:hash,run:manifest.run.id,rows,errors},null,2));}
+}finally{await browser.close();server.close();fs.writeFileSync(path.join(out,occlusionOnly?'occlusion-report.json':pickingOnly?'picking-report.json':'report.json'),JSON.stringify({candidate:'c710171bfea776a77217a3c417bc73f7906ac4fd',base:'424e85d6aac32c2afe7cad12cfd04bea4f0037ab',indexHash:hash,run:manifest.run.id,rows,errors},null,2));}
 if(rows.some(r=>!r.ok))process.exitCode=1;
 """);
 start.ArgumentList.Add("--");

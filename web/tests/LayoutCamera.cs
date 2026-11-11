@@ -15,9 +15,9 @@ import ts from 'typescript';
 import * as THREE from 'three';
 import { pathToFileURL } from 'node:url';
 import { chromium } from 'playwright-core';
-const data = process.argv[1], baseline = process.argv[2] === 'baseline';
+const data = process.argv[1], baseline = process.argv[2] === 'baseline', pickingOnly = process.argv[2] === 'picking';
 const root = baseline ? path.resolve('../temp_docs/layout-camera/baseline/web/dist') : path.resolve('dist');
-const out = path.resolve('../temp_docs/layout-camera'); fs.mkdirSync(out, {recursive:true});
+const out = path.resolve(pickingOnly ? '../temp_docs/ui-c710-review/picking' : '../temp_docs/layout-camera'); fs.mkdirSync(out, {recursive:true});
 const index = JSON.parse(fs.readFileSync(path.join(data, 'index.json')));
 const run = index.runs.find(r => r.id === index.latestRunId);
 const manifest = JSON.parse(fs.readFileSync(path.join(data, run.manifest)));
@@ -72,7 +72,45 @@ const samePose=(a,b)=>['position','target'].every(key=>Math.hypot(...a[key].spli
 try {
   await page.goto(url);await wait();await select('support-chain.asymmetric43-base');
   const before = await capture('before');
-  if(baseline){await page.getByText('后态 (After)',{exact:true}).click();await wait();await page.getByTestId('btn-focus-op').click();await page.waitForTimeout(350);await capture('after-focus');}
+  if(pickingOnly){
+    const c=manifest.cases.find(c=>c.id==='support-chain.asymmetric43-base');
+    const meshes=['gm','pk'].map(side=>JSON.parse(fs.readFileSync(path.join(meshRoot,c.steps[0][side].before))));
+    const inspect=async(point,shot)=>{await page.mouse.click(point.x,point.y);await page.waitForTimeout(60);const text=await page.getByTestId('entity-inspector').textContent().catch(()=>null);if(shot)await page.screenshot({path:path.join(out,shot)});if(await page.getByLabel('清除实体选择').count())await page.getByLabel('清除实体选择').click();return text;};
+    const model=async(i,mesh)=>{
+      const rect=await hosts().nth(i).locator('canvas').boundingBox(),pose=(await stats())[i];
+      const size=await hosts().nth(i).locator('canvas').evaluate(c=>[c.width,c.height]);
+      const camera=new THREE.PerspectiveCamera(45,size[0]/size[1],.001,500);
+      camera.position.fromArray(pose.position.split(',').map(Number));camera.lookAt(new THREE.Vector3().fromArray(pose.target.split(',').map(Number)));camera.updateMatrixWorld();
+      const v=(p,i)=>new THREE.Vector3().fromArray(p,i),project=p=>{const q=p.clone().project(camera);return {x:rect.x+(q.x+1)*rect.width/2,y:rect.y+(1-q.y)*rect.height/2,z:q.z};};
+      const faces=mesh.faces.flatMap(f=>{const ts=[];for(let j=0;j+2<f.indices.length;j+=3)ts.push({face:f,tri:new THREE.Triangle(...f.indices.slice(j,j+3).map(k=>v(f.positions,k*3)))});return ts;});
+      const segments=mesh.edges.flatMap(e=>{const ss=[];for(let j=0;j+5<e.positions.length;j+=6)ss.push({edge:e,a:v(e.positions,j),b:v(e.positions,j+3)});return ss;});
+      const distance=(point,s)=>{const a=project(s.a),b=project(s.b),dx=b.x-a.x,dy=b.y-a.y,t=Math.max(0,Math.min(1,((point.x-a.x)*dx+(point.y-a.y)*dy)/(dx*dx+dy*dy||1)));return Math.hypot(point.x-a.x-dx*t,point.y-a.y-dy*t);};
+      const hits=p=>{const ray=new THREE.Ray(camera.position.clone(),p.clone().sub(camera.position).normalize());return faces.map(({face,tri})=>{const hit=ray.intersectTriangle(tri.a,tri.b,tri.c,false,new THREE.Vector3());return hit?{face,distance:hit.distanceTo(camera.position)}:null;}).filter(Boolean).sort((a,b)=>a.distance-b.distance);};
+      const inside=p=>p.x>rect.x+8&&p.x<rect.x+rect.width-8&&p.y>rect.y+40&&p.y<rect.y+rect.height-8&&Math.abs(p.z)<1;
+      return {rect,camera,project,faces,segments,distance,hits,inside};
+    };
+    for(const width of [1965,390]){
+      await page.setViewportSize({width,height:width===1965?1228:844});await page.waitForTimeout(200);await page.getByTestId('btn-focus-op').click();await page.waitForTimeout(250);
+      const points=await hosts().evaluateAll(es=>es.map(el=>{const c=el.querySelector('canvas'),x=document.createElement('canvas');x.width=c.width;x.height=c.height;const ctx=x.getContext('2d');ctx.drawImage(c,0,0);const d=ctx.getImageData(0,0,c.width,c.height).data,list=[];for(let j=0;j<d.length;j+=4){const [r,g,b]=[d[j],d[j+1],d[j+2]];if(r>140&&g>110&&b<90&&r-b>80&&Math.abs(r-g)<80)list.push([j/4%c.width,Math.floor(j/4/c.width)]);}list.sort((a,b)=>a[0]-b[0]);const rect=c.getBoundingClientRect();return [0,.25,.5,.75,1].map(q=>{const p=list[Math.min(list.length-1,Math.floor(list.length*q))];return {q,x:rect.x+(p[0]+.5)*rect.width/c.width,y:rect.y+(p[1]+.5)*rect.height/c.height};});}));
+      for(const i of [0,1]){const m=await model(i,meshes[i]);for(const p of points[i]){const nearest=m.segments.filter(s=>s.edge.role==='selected').sort((a,b)=>m.distance(p,a)-m.distance(p,b))[0].edge.id;const picked=await inspect(p,width===1965&&(p.q===.25||p.q===1)?`picked-${i}-${p.q}.png`:null);check(`${width} pane ${i} yellow stroke ${p.q} picks actual source edge`,picked?.includes(`[${nearest}]`),{point:p,picked,expected:nearest});}}
+      await page.screenshot({path:path.join(out,`selected-${width}.png`)});
+    }
+    await page.setViewportSize({width:1965,height:1228});await page.waitForTimeout(200);
+    for(const i of [0,1]){
+      let faceTest=false,hiddenTest=false,transparentTest=false;
+      for(const view of ['iso','right','top']){
+        await page.selectOption('[data-testid="select-standard-view"]',view);await page.waitForTimeout(200);const m=await model(i,meshes[i]);
+        if(!faceTest)for(const {face,tri} of m.faces){const p=tri.getMidpoint(new THREE.Vector3()),pixel=m.project(p),front=m.hits(p)[0];if(face.role==='unchanged'&&front?.face.id===face.id&&m.inside(pixel)&&m.segments.every(s=>m.distance(pixel,s)>5)){const picked=await inspect(pixel);check(`pane ${i} ordinary face uses nearest actual surface`,picked?.includes(`[${face.id}]`),{point:pixel,picked,expected:face.id,view});faceTest=true;break;}}
+        for(const segment of m.segments){const p=segment.a.clone().lerp(segment.b,.5),pixel=m.project(p),hits=m.hits(p),opaque=hits.find(h=>h.face.role!=='unchanged'),depth=p.distanceTo(m.camera.position);if(!m.inside(pixel)||m.segments.some(s=>s.edge.id!==segment.edge.id&&m.distance(pixel,s)<4))continue;
+          if(!hiddenTest&&opaque&&opaque.distance<depth-.03){const picked=await inspect(pixel);check(`pane ${i} opaque foreground blocks rear edge`,picked?.includes(`[${opaque.face.id}]`)&&!picked.includes(`[${segment.edge.id}]`),{point:pixel,picked,rear:segment.edge.id,front:opaque.face.id,view});hiddenTest=true;}
+          if(!transparentTest&&hits[0]?.face.role==='unchanged'&&hits[0].distance<depth-.03&&(!opaque||opaque.distance>=depth)){const picked=await inspect(pixel);check(`pane ${i} visible ordinary edge remains pickable through transparent context`,picked?.includes(`[${segment.edge.id}]`),{point:pixel,picked,expected:segment.edge.id,view});transparentTest=true;}
+        }
+        if(faceTest&&hiddenTest&&transparentTest)break;
+      }
+      check(`pane ${i} real-mesh foreground and transparent controls found`,faceTest&&hiddenTest&&transparentTest,{faceTest,hiddenTest,transparentTest});
+    }
+  }
+  else if(baseline){await page.getByText('后态 (After)',{exact:true}).click();await wait();await page.getByTestId('btn-focus-op').click();await page.waitForTimeout(350);await capture('after-focus');}
   else {
     check('initial evidence collapsed',await page.getByRole('dialog').count()===0);
     check('shared legend once outside both canvases',await page.getByTestId('legend-body').count()===1 && await page.getByTestId('legend-body').evaluate(el=>el.getBoundingClientRect().bottom<=document.querySelector('canvas').getBoundingClientRect().top));
