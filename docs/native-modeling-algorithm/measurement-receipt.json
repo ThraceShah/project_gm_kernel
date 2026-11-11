@@ -1,0 +1,51 @@
+{
+  "format": "native-modeling-controlled-receipt-v1",
+  "baselineSource": "270e2b6814afe5a48cd0532e89531f6fb80011be",
+  "baselineNativeSubtree": "afb8cec5cde9769cb68c470ea8da9591a1804e64",
+  "candidateMeasurementSource": "a73bc08dbd39e984dff59dac7bba31a3baf80b4e",
+  "candidateAcceptedSource": "6616cd60a55e50a5d8a5ada7274895c44609676b",
+  "candidateNativeSubtree": "5b4c6104c600b0194bb543e2dc11efa89e2f0f1f",
+  "independentReviewSource": "5a4ad5319b77c0944baf598e07dbbce79782a483",
+  "publicRunnerPin": "Five oracle files are original 270 bytes on both sources; wrapper a73 changes no Native files; nine main/helper/runner hashes matched",
+  "rawReport": {
+    "path": "temp_docs/pk-native-algorithm-work/measurement-6616/temp_docs/native-270-6616-controlled/report.json",
+    "sha256": "fef5e9a8fc33aa9da3d1ab8c932b680f33aa9b0f24214e73e3987c5dfa01e868"
+  },
+  "operationSummary": {
+    "path": "docs/native-modeling-algorithm/operation-summary.json",
+    "sha256": "bfdf3f888e848f6b965ed844a4993dbf7f95a582d7e52bbfb8163762da0c2d39"
+  },
+  "materialBinding": {
+    "path": "docs/native-modeling-algorithm/material-binding.json",
+    "sha256": "df9a43cf55e2cf978d5c009c3920c2315417899d2a0d99f733ad2267b8173d7f"
+  },
+  "startedUtc": "2026-11-11T17:42:47.3159860\u002B00:00",
+  "finishedUtc": "2026-11-11T17:50:06.6601560\u002B00:00",
+  "os": "macOS 27.2.0",
+  "architecture": "Arm64",
+  "runtime": ".NET 10.0.11",
+  "sdk": "10.0.400",
+  "cpu": "Apple M4",
+  "pkVersion": "38.0.150",
+  "pkToySource": "d820719b6d8510d623972ab9d8efc65edbc312f9",
+  "protocol": "ABBA sources per case; three fresh-input operations per process; rep 0 cold, reps 1/2 warm; one process at a time; capture API interval only; unchanged oracle checks; fixed per-case GM/PK order; JIT managed build, default tiering; no cross-host ratio",
+  "originalHarnessExit": 0,
+  "processes": 20,
+  "operationPairs": 60,
+  "allOriginalProcessExitsZero": true,
+  "coldPerSourcePerOperation": 2,
+  "warmPerSourcePerOperation": 4,
+  "systemLoadObserved": {
+    "oneMinuteMin": 3.38,
+    "oneMinuteMax": 15.37,
+    "fiveMinuteMin": 4.13,
+    "fiveMinuteMax": 6.58
+  },
+  "loadScope": "Only this project\u0027s builds, full testhost and other PK oracles were drained; unrelated system/user load was not removed or terminated. No exclusive CPU or thermal qualification",
+  "baselineNativeDllSha256": "f569c162f440610d7a623b74600627d4c05c49f6a3f7961be31b4906909d33a2",
+  "candidateNativeDllSha256": "285166f808d426d0f46f5e4b720c1a909569d9c59cf738ac4499dbecee7451de",
+  "nativeArtifactsUnchangedAcrossWindow": true,
+  "executedScope": "Five independent operations; no new downstream fillet\u002BBoolean combination. Prior suite/lifecycle evidence reused",
+  "notIncluded": "Experimental 241b Cartesian rows; unaccepted functional 4794/60be; no AOT/Windows run; no new main integration or site publication",
+  "nonMeasurementAttempts": "Initial candidate prebuild tool timeout and initial CLI option setup error ended before operation timing; original logs kept. Exactly one ABBA operation window executed"
+}
