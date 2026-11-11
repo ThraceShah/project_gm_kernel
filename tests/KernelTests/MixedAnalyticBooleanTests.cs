@@ -18,7 +18,7 @@ public unsafe class MixedAnalyticBooleanTests:IDisposable
         var body=BooleanOperationTests.Block(0,0,0,4,4,2);var tool=ObliqueCylinder(seam);
         var options=BooleanOperationTests.Options(function);int n;int* bodies;
         var error=KernelRuntime.BodyBoolean(body,1,&tool,&options,&n,&bodies);
-        Assert.True(error==0,$"Boolean={error}, stage={KernelRuntime.LastRegularBooleanStage}, face={KernelRuntime.LastRegularBooleanFace}, sheet={KernelRuntime.LastSheetPartitionStage}");
+        Assert.True(error==0,$"Boolean={error}, stage={KernelRuntime.LastRegularBooleanStage}, face={KernelRuntime.LastRegularBooleanFace}, sheet={KernelRuntime.LastSheetPartitionStage}, curve={KernelRuntime.LastSheetCurve}, parameter={KernelRuntime.LastSheetParameter:R}");
         try
         {
             Assert.Equal(1,n);Assert.Equal(body,bodies[0]);BooleanOperationTests.Counts(body,expectedFaces,expectedEdges,expectedVertices);
@@ -94,7 +94,7 @@ public unsafe class MixedAnalyticBooleanTests:IDisposable
     {
         var options=BooleanOperationTests.Options(ParasolidConstants.PK_boolean_subtract_c);int n;int* products;
         var error=KernelRuntime.BodyBoolean(body,1,&tool,&options,&n,&products);
-        Assert.True(error==0,$"Boolean={error}, stage={KernelRuntime.LastRegularBooleanStage}, face={KernelRuntime.LastRegularBooleanFace}, sheet={KernelRuntime.LastSheetPartitionStage}");
+        Assert.True(error==0,$"Boolean={error}, stage={KernelRuntime.LastRegularBooleanStage}, face={KernelRuntime.LastRegularBooleanFace}, sheet={KernelRuntime.LastSheetPartitionStage}, curve={KernelRuntime.LastSheetCurve}, parameter={KernelRuntime.LastSheetParameter:R}");
         try{Assert.Equal(1,n);}finally{if(products!=null)KernelRuntime.MemoryFree(products);}
     }
 

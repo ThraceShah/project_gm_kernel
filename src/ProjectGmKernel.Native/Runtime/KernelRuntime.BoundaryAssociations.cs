@@ -266,6 +266,15 @@ internal static unsafe partial class KernelRuntime
         else
         {
             if(record.Class is not (CurveClass.Line or CurveClass.Circle or CurveClass.Ellipse))return ParasolidConstants.PK_ERROR_not_implemented;
+            if(record.Class==CurveClass.Line&&TryReadExplicitSpineCurve(record,out var carrier))
+            {
+                // A plane/cylinder pair can own two distinct generators.
+                // Shared supports alone do not select one. Exclude this
+                // entire native line only by a strict gap from the event's
+                // declared spatial enclosure; a failed inverse proves nothing.
+                var residual=IntervalVector.Cross(new IntervalVector(px,py,pz)-new IntervalVector(carrier.Origin),new IntervalVector(carrier.First));
+                if(!residual.X.Value.ContainsZero||!residual.Y.Value.ContainsZero||!residual.Z.Value.ContainsZero)return 0;
+            }
             var vector=new PK_VECTOR_s();WriteVector(&vector,point);var error=CurveParameteriseVectorCore(curve,vector,&parameter);if(error!=0)return error;
             LiftPeriodicEdgeParameter(curve,first,last,ref parameter);if(parameter<first||parameter>last)return ParasolidConstants.PK_ERROR_cant_do_intersect;
             var status=EvaluateCurveCore(in record,parameter,0,false,value,out _);if(status!=AlgorithmStatus.Success)return IntersectionError(status);

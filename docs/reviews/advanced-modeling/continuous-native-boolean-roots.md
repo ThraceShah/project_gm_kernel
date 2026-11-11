@@ -29,11 +29,15 @@
 MSBUILDDISABLENODEREUSE=1 dotnet test tests/KernelTests/KernelTests.csproj -c Release -m:1 -p:BuildInParallel=false -p:UseSharedCompilation=false -p:GmInProcessLinkTasks=true --filter 'FullyQualifiedName~RegularCurvedBoolean|FullyQualifiedName~FinitePlane|FullyQualifiedName~BCurve|FullyQualifiedName~IntersectionEvent|FullyQualifiedName~Parametric|FullyQualifiedName~SurfaceTripleRoot|FullyQualifiedName~OffsetCornerRoot|FullyQualifiedName~NativeSplineBoundaryRoot'
 ```
 
-开发运行 `native-boundary-native45-v1` 的六项 continuous/reloaded 均实际 API 0，fresh receive、完整 BODY_check、原严格 AssertEquivalent、有限 UV 与材料门通过；该运行另有 12 项同域回归失败，**整体原 exit 134，不能记为 45 项通过**。随后按 provider/平面能力收窄新定位器，301 项已验证修复。固定候选完整 45 项和全套单测正在 `native-boundary-native45-v2.*`、`native-boundary-full-suite-v1.*` 执行，最终结果将单独追加。
+开发运行 `native-boundary-native45-v1` 的六项 continuous/reloaded 均实际 API 0，fresh receive、完整 BODY_check、原严格 AssertEquivalent、有限 UV 与材料门通过；该运行另有 12 项同域回归失败，**整体原 exit 134，不能记为 45 项通过**。随后按 provider/平面能力收窄新定位器，301 项已验证修复。固定计算候选 `11c49613f92dc3317118f91d43332ce19ec5a9f7` 的 `native-boundary-native45-v2.*` 已完成：**45/45 几何/拓扑/材料通过，原 exit 2，40 次物性比较未决**。每个前序 subtract 另有独立结果，不计入这 45 个最终操作。全套单测 `native-boundary-full-suite-v1.*` 的圆柱重载两项失败及窄修复见 [有限支路关联](native-cylinder-generator-association.md)。
 
 ```
 MSBUILDDISABLENODEREUSE=1 dotnet run --no-cache scripts/RegularCurvedBooleanOracle.cs -c Release -p:BuildInParallel=false -p:UseSharedCompilation=false -p:GmInProcessLinkTasks=true -- --output-name=native-boundary-routing-fixed-v2
 MSBUILDDISABLENODEREUSE=1 dotnet test tests/KernelTests/KernelTests.csproj -c Release -m:1 -p:BuildInParallel=false -p:UseSharedCompilation=false -p:GmInProcessLinkTasks=true
 ```
 
-所有日志在 `temp_docs/pk-native-acceptance-audit/`；实际新产品在 `temp_docs/regular-curved-boolean-oracle/native-boundary-routing-fixed-v2/`。当前共享 mass bound 合同继续独立返回 Verified / Different / Unresolved；物性未决不签署为完整验收通过。本提交是可复核计算进展，尚未独立接受、合入 main 或发布新看板 run。
+所有日志在 `temp_docs/pk-native-acceptance-audit/`；实际新产品在 `temp_docs/regular-curved-boolean-oracle/native-boundary-routing-fixed-v2/`。该 45 项实际 GM assembly SHA256 为 `3cd502554fb5ffb09ef477571b0f4c69f8a63f5c8fe24251ccde23ac82e663b3`，计算源码及脚本 manifest 为 `native-boundary-fixed11c4961.source.sha256`（SHA256 `44dade388049fdfc40826f0854e2c6bfc7505a957fcab66f32b9aa9c676d8184`）；每个独立 file app 另记录其实际 loaded assembly，不能把不同构建元数据产生的 assembly hash 混写为一个。
+
+同一计算增量还实际执行 shortedge 标准自构造、copy/delete 源、反射/缩放、两次后续 cut 与 XT 重载闭环：`native-root-standard-lifecycle-v1.*` 几何/拓扑/有限 ICurve/UV/材料通过，原 exit 2、8 次物性未决。`native-root-consumer-forward-v1.*` 与 `native-root-consumer-reverse-v1.*` 均为同字节 GM/PK 两工具 Boolean 成功，原 exit 2、各一次物性未决；`native-root-consumer-inject-v1.*` 则 GM 实际 901/failed/零产品、三个输入原字节回滚，PK 同输入实际成功，控制原 exit 0。注入控制不算一次成功的 GM 建模操作。
+
+当前共享 mass bound 合同继续独立返回 Verified / Different / Unresolved；物性未决不签署为完整验收通过。该候选尚未独立接受、合入 main 或发布新看板 run。
