@@ -1,5 +1,6 @@
 // Reviewed package descriptor. Selection expectations must not come from the
 // mutable case manifest, display-manifest item, or the asset being checked.
+// This namespace is owned by the frozen UI, never by producer data/ refreshes.
 export const realUvDisplay = {
   runId: 'real-uv-display',
   directory: 'display/real-uv',
@@ -22,6 +23,12 @@ export const realUvDisplay = {
     },
   },
 } as const;
+
+export function progressAssetUrl(relativePath: string): string {
+  if (relativePath.startsWith('/') || relativePath.includes('\\') || relativePath.split('/').some((part) => part === '..' || part === '.')) throw new Error('Progress asset path must stay relative to the app base');
+  const path = relativePath.startsWith(realUvDisplay.directory + '/') ? relativePath : 'data/' + relativePath;
+  return new URL(path, new URL(import.meta.env.BASE_URL, document.baseURI)).href;
+}
 
 export interface MeshSelection {
   runId: string;

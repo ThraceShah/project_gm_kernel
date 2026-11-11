@@ -1,5 +1,5 @@
 import { IndexData, ManifestData, MeshData, StepMeshRef } from '../types/contract';
-import { MeshSelection, realUvDisplay, validateDisplaySelection } from './realUvDisplay';
+import { MeshSelection, realUvDisplay, validateDisplaySelection, progressAssetUrl } from './realUvDisplay';
 
 export interface LoadResult<T> {
   data: T | null;
@@ -58,7 +58,7 @@ export async function fetchIndexData(
   try {
     const cacheBuster = `_t=${Date.now()}`;
     const displayExample = new URLSearchParams(window.location.search).get('display') === 'real-uv';
-    const url = `data/${displayExample ? 'display/real-uv/' : ''}index.json?${cacheBuster}`;
+    const url = progressAssetUrl(`${displayExample ? realUvDisplay.directory + '/' : ''}index.json?${cacheBuster}`);
     const res = await fetch(url, { signal });
     if (!res.ok) {
       return {
@@ -104,7 +104,7 @@ export async function fetchManifestData(
   try {
     const cacheBuster = `_t=${Date.now()}`;
     // manifestRelPath is relative to data/, e.g. "runs/<id>/manifest.json"
-    const url = `data/${manifestRelPath}?${cacheBuster}`;
+    const url = progressAssetUrl(`${manifestRelPath}?${cacheBuster}`);
     const res = await fetch(url, { signal });
     if (!res.ok) {
       return {
@@ -143,7 +143,8 @@ export async function fetchMeshData(
   catch (err) { return { data: null, error: (err as Error).message }; }
   if (!meshRelPath) return { data: null, error: null };
 
-  const fullKey = JSON.stringify([fromFixture, manifestDir, meshRelPath, selection.runId, selection.caseId, selection.stepId, selection.kernel, selection.stage]);
+  const assetUrl = progressAssetUrl(`${manifestDir}/${meshRelPath}`);
+  const fullKey = JSON.stringify([fromFixture, assetUrl, selection.runId, selection.caseId, selection.stepId, selection.kernel, selection.stage]);
   if (meshCache.has(fullKey)) {
     return { data: meshCache.get(fullKey)!, error: null };
   }
@@ -163,7 +164,7 @@ export async function fetchMeshData(
 
   try {
     const cacheBuster = `_t=${Date.now()}`;
-    const url = `data/${manifestDir}/${meshRelPath}?${cacheBuster}`;
+    const url = `${assetUrl}?${cacheBuster}`;
     const res = await fetch(url, { signal });
     if (!res.ok) {
       const errMsg = `HTTP ${res.status}: 网格文件未找到 (${url})`;
@@ -237,7 +238,7 @@ async function attachSurfaceParameters(mesh: MeshData, bytes: ArrayBuffer, manif
 
 async function attachVerifiedDisplay(mesh: MeshData, bytes: ArrayBuffer, directory: string, snapshot: string, selection: MeshSelection, signal?: AbortSignal) {
   const expectedSnapshot = validateDisplaySelection(directory, snapshot, selection)!;
-  const response = await fetch(`data/${directory}/display-manifest.json`, { signal });
+  const response = await fetch(progressAssetUrl(`${directory}/display-manifest.json`), { signal });
   if (!response.ok) throw new Error('真实 U/V 显示来源清单加载失败');
   const manifestBytes = await response.arrayBuffer();
   if (await sha256(manifestBytes) !== realUvDisplay.displayManifestSha256) throw new Error('真实 U/V unavailable：显示包与独立来源描述符不匹配');
@@ -256,7 +257,7 @@ async function attachVerifiedDisplay(mesh: MeshData, bytes: ArrayBuffer, directo
   if (ids.size !== mesh.faces.length || identifiers.size !== mesh.faces.length || mesh.faces.some((face) => !Number.isInteger(face.identifier) || face.identifier! <= 0)) throw new Error('显示网格 face identifier 不唯一');
   try {
     if (typeof item.path !== 'string' || !/^[a-z-]+\.iso\.json$/.test(item.path)) throw new Error('Invalid display derivative path');
-    const isoResponse = await fetch(`data/${directory}/${item.path}`, { signal });
+    const isoResponse = await fetch(progressAssetUrl(`${directory}/${item.path}`), { signal });
     if (!isoResponse.ok) throw new Error('Derivative unavailable');
     const isoBytes = await isoResponse.arrayBuffer();
     if (await sha256(isoBytes) !== item.sha256) throw new Error('Derivative SHA mismatch');
@@ -287,7 +288,7 @@ async function attachVerifiedDisplay(mesh: MeshData, bytes: ArrayBuffer, directo
     });
     for (const { face, entry } of pending) face.isoparametrics = { uLines: entry.uLines, vLines: entry.vLines, source: entry.source, chordTolerance: iso.chordTolerance };
     mesh.surfaceParameters = { status: 'available', reason: `${pending.length} 个非平面；仅精确矩形 trim；${iso.unsupportedFaces.length} 面未覆盖。采样弦差 ≤ ${iso.chordTolerance}，无解析全局界。` };
-    mesh.displayProvenance = { sourceRun: item.sourceRun, snapshot: item.sourceSnapshot, stage: item.stage, meshSha256: item.sourceMeshSha256, xtSha256: item.inputXtSha256, receiptSha256: item.snapshotReceiptSha256, evidencePath: `data/${directory}/${item.path}` };
+    mesh.displayProvenance = { sourceRun: item.sourceRun, snapshot: item.sourceSnapshot, stage: item.stage, meshSha256: item.sourceMeshSha256, xtSha256: item.inputXtSha256, receiptSha256: item.snapshotReceiptSha256, evidencePath: progressAssetUrl(`${directory}/${item.path}`) };
   } catch (err) {
     if ((err as Error)?.name === 'AbortError') throw err;
     mesh.surfaceParameters = { status: 'unavailable', reason: '等参线来源 / SHA / 面绑定校验失败；未加载派生线' };

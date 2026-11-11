@@ -4,6 +4,7 @@ import { GroupedChecks } from './ChecksTable';
 import { ComparisonView, ComparisonEvidence } from './ComparisonView';
 import { PerformanceView } from './PerformanceView';
 import { ApiParamView } from './ApiParamView';
+import { progressAssetUrl } from '../api/realUvDisplay';
 import {
   CheckSquare,
   Zap,
@@ -171,7 +172,7 @@ export const InspectionPanel: React.FC<InspectionPanelProps> = ({
               <div><dt>范围（run.scope）</dt><dd>{runMeta?.scope ? JSON.stringify(runMeta.scope) : '未记录'}</dd></div>
               <div><dt>配置 / samplesRequested（run.configuration）</dt><dd>{runMeta?.configuration ? JSON.stringify(runMeta.configuration) : '未记录'}</dd></div>
             </dl>
-            <a href={`data/${manifestDir}/manifest.json`} className="text-sky-700 underline" target="_blank" rel="noopener noreferrer">原始 manifest ↗</a>
+            <a href={progressAssetUrl(`${manifestDir}/manifest.json`)} className="text-sky-700 underline" target="_blank" rel="noopener noreferrer">原始 manifest ↗</a>
           </div>}
           {activeTab === 'perf' && <><p className="p-3 text-xs bg-amber-50 text-amber-900">{manifestDir === 'display/real-uv' ? '仅显示派生包，无性能采样或新增几何验收' : `历史已发布采样 · ${runMeta?.generatedAt ?? '采集时间未记录'} · 此记录不作为本轮优化结论。`}</p><PerformanceView perf={testCase.performance} /></>}
           {activeTab === 'params' && (
@@ -191,7 +192,7 @@ export const InspectionPanel: React.FC<InspectionPanelProps> = ({
                     {testCase.evidence.map((ev, idx) => (
                       <a
                         key={idx}
-                        href={`data/${manifestDir}/${ev.path}`}
+                        href={progressAssetUrl(`${manifestDir}/${ev.path}`)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-md text-xs hover:bg-sky-50 hover:border-sky-300 transition-colors group"
