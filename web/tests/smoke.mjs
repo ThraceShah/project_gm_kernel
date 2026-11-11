@@ -14,7 +14,7 @@
  *     empty (null) and the real fail numbers/thresholds/API params are visible.
  *  7. No external CDN, no dev fixture data in the production bundle.
  *  8. Desktop and 390x844 narrow layouts stay usable (drawer sidebar, wide canvas,
- *     no horizontal overflow, collapsible legend, viewable secondary metadata).
+ *     no horizontal overflow, shared external legend, viewable data versions).
  *
  * All expected numbers are read from web/data (index + manifests) - no hardcoded
  * case counts. Browser path is configurable (SMOKE_BROWSER_PATH) or auto-discovered.
@@ -486,6 +486,9 @@ async function inspectionChecks(page, latest, shot) {
 
   // Find an actual unchanged entity by raycast; a missed pick must fail the check.
   await page.getByText('复位视角').click();
+  // The operation-facing underside is predominantly modified geometry. Show
+  // real unchanged context instead of relying on the former oversized pick cone.
+  await page.selectOption('[data-testid="select-standard-view"]', 'iso');
   await page.waitForTimeout(400);
   const host = await bbox(page, '[data-testid="viewer-canvas-host"]');
   const mesh = meshJson(latest, latest.manifest.cases.find((c) => c.id === blend).steps[0].gm.after);
@@ -890,7 +893,7 @@ async function run() {
       await page.waitForTimeout(300);
       const topbar = await page.textContent('[data-testid="case-topbar"]');
       check(`fail[${failCase.id}]: badge is 失败 (FAIL)`, topbar.includes('失败 (FAIL)'));
-      check(`fail[${failCase.id}]: ratio empty (N/A, never 0x)`, topbar.includes('比率: N/A') && !/\b0(\.0+)?x\b/.test(topbar));
+      check(`fail[${failCase.id}]: timing ratio absent from primary view`, !/\b\d+(\.\d+)?x\b/.test(topbar));
       const badgeClass = await page.$eval('[data-testid="case-topbar"] span.rounded', (el) => el.className);
       check(`fail[${failCase.id}]: badge not green`, !/emerald/.test(badgeClass), badgeClass.slice(0, 60));
 
@@ -985,7 +988,7 @@ async function run() {
     const missingBar = await page.textContent('[data-testid="case-topbar"]');
     check('missing: badge 数据缺失 (MISSING)', missingBar.includes('数据缺失 (MISSING)'));
     check('missing: not green', !(await page.$eval('[data-testid="case-topbar"] span.rounded', (el) => el.className)).includes('emerald'));
-    check('missing: ratio empty', missingBar.includes('比率: N/A'));
+    check('missing: timing ratio absent', !/\b\d+(\.\d+)?x\b/.test(missingBar));
     const mStats = await viewerStats(page);
     check('missing: no stale geometry shown', mStats.every((s) => s.bodyId === ''), JSON.stringify(mStats.map((s) => s.bodyId)));
 
@@ -1152,19 +1155,16 @@ async function run() {
     const canvasBox = await bbox(mob, '[data-testid="viewer-canvas-host"]');
     check('mobile: main canvas width >= 250px', canvasBox.width >= 250, `w=${canvasBox.width}`);
 
-    // legend collapsed by default on narrow screens
-    const legendHidden = await mob.$eval('[data-testid="legend-body"]', (el) => getComputedStyle(el).display === 'none');
-    check('mobile: legend collapsed by default (does not cover model)', legendHidden);
-    await mob.click('[data-testid="legend-toggle"]');
-    const legendShown = await mob.$eval('[data-testid="legend-body"]', (el) => getComputedStyle(el).display !== 'none');
-    check('mobile: legend can be opened on demand', legendShown);
-    await mob.click('[data-testid="legend-toggle"]');
+    const legendExternal = await mob.$eval('[data-testid="legend-body"]', (el) => el.getBoundingClientRect().bottom <= document.querySelector('canvas').getBoundingClientRect().top);
+    check('mobile: shared legend does not cover canvas', legendExternal);
+    check('mobile: legend scrolls within one compact row', await mob.$eval('[data-testid="legend-body"]', (el) => el.scrollWidth > el.clientWidth && el.clientHeight < 40));
 
     // secondary metadata hidden but viewable
     await mob.click('[data-testid="header-meta-toggle"]');
-    const metaVisible = await mob.isVisible('[data-testid="header-meta-panel"]');
-    const metaText = metaVisible ? await mob.textContent('[data-testid="header-meta-panel"]') : '';
+    const metaVisible = await mob.isVisible('[data-testid="data-version"]');
+    const metaText = metaVisible ? await mob.textContent('[data-testid="data-version"]') : '';
     check('mobile: secondary run metadata hidden but viewable', metaVisible && metaText.includes(latest.manifest.run.commit.slice(0, 7)), metaText.trim().slice(0, 60));
+    await mob.keyboard.press('Escape');
     await mob.screenshot({ path: shot('webui_v2_mobile_main.png') });
 
     // GM/PK single-view switching

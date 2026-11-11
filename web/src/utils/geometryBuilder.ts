@@ -1,4 +1,7 @@
 import * as THREE from 'three';
+import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js';
+import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js';
+import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import { MeshData, EntityRole } from '../types/contract';
 
 export const ROLE_COLORS: Record<EntityRole, { hex: number; css: string; label: string }> = {
@@ -139,7 +142,12 @@ export function buildThreeGeometry(
         opacity: isUnchanged ? Math.max(unchangedOpacity, 0.4) : 1.0,
       });
 
-      const lines = new THREE.LineSegments(geom, mat);
+      // Native WebGL line widths are capped at 1px on many devices. Preserve
+      // depth occlusion while giving the actual selected edge a readable stroke.
+      const lines = edge.role === 'selected'
+        ? new LineSegments2(new LineSegmentsGeometry().setPositions(edge.positions), new LineMaterial({ color: edgeColor.hex, linewidth: 2.5, depthTest: true, depthWrite: false, toneMapped: false }))
+        : new THREE.LineSegments(geom, mat);
+      if (edge.role === 'selected') { geom.dispose(); mat.dispose(); }
       lines.name = `edge_${edge.id || eIndex}`;
       lines.renderOrder = edge.role === 'selected' ? 4 : 2;
       lines.userData = {

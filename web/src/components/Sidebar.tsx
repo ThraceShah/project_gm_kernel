@@ -1,7 +1,6 @@
 import React from 'react';
 import { Search, CheckCircle2, XCircle, HelpCircle, AlertCircle, Ban, Clock, Filter, Layers } from 'lucide-react';
 import { TestCase, CaseFamily, CaseStatus } from '../types/contract';
-import { formatRatio } from '../utils/formatters';
 
 interface SidebarProps {
   cases: TestCase[];
@@ -242,7 +241,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         ) : (
           filteredCases.map((c) => {
             const isSelected = c.id === selectedCaseId;
-            const perf = formatRatio(c.performance?.ratioGmOverPk);
 
             return (
               <div
@@ -284,15 +282,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     </span>
                   </div>
 
-                  {/* Ratio Tag */}
-                  {c.performance?.ratioGmOverPk ? (
-                    <span
-                      className={`text-[10px] px-1.5 py-0.2 rounded font-mono-code ${perf.badgeClass} flex-shrink-0`}
-                      title={`GM÷PK 耗时倍率: ${perf.text} (${perf.subtext})`}
-                    >
-                      {perf.text}
-                    </span>
-                  ) : null}
                 </div>
 
                 <div className="flex items-center justify-between text-[11px] text-slate-500 font-mono-code">

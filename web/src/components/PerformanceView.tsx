@@ -111,8 +111,8 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({ perf }) => {
             {perf.ratioGmOverPk === null || perf.ratioGmOverPk === undefined
               ? '比率为 null：无有效耗时倍率，不代表 0 倍'
               : perf.ratioGmOverPk < 1.0
-                ? 'GM 具备速度优势'
-                : 'PK 处于性能领先'}
+                ? '仅此历史采样中 GM 耗时较小；不作为本轮优化结论'
+                : '仅此历史采样中 PK 耗时较小；不作为本轮优化结论'}
           </div>
         </div>
       </div>

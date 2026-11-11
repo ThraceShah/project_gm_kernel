@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { TestCase } from '../types/contract';
-import { ChecksTable } from './ChecksTable';
+import React, { useState, useRef, useEffect } from 'react';
+import { TestCase, RunMetadata } from '../types/contract';
+import { GroupedChecks } from './ChecksTable';
+import { ComparisonView, ComparisonEvidence } from './ComparisonView';
 import { PerformanceView } from './PerformanceView';
 import { ApiParamView } from './ApiParamView';
 import {
@@ -16,23 +17,57 @@ import {
 interface InspectionPanelProps {
   testCase: TestCase;
   manifestDir: string;
+  comparison: ComparisonEvidence;
+  runMeta: RunMetadata | null;
+  request?: { id: number; tab: 'checks' | 'data' } | null;
 }
 
 export const InspectionPanel: React.FC<InspectionPanelProps> = ({
   testCase,
   manifestDir,
+  comparison,
+  runMeta,
+  request,
 }) => {
-  const [activeTab, setActiveTab] = useState<'checks' | 'perf' | 'params' | 'evidence'>('checks');
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<'checks' | 'perf' | 'params' | 'evidence' | 'data'>('checks');
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
+  const panelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { setIsCollapsed(true); }, [testCase.id, manifestDir]);
+  useEffect(() => { if (request) { setActiveTab(request.tab); setIsCollapsed(false); } }, [request]);
+  useEffect(() => {
+    if (isCollapsed) return;
+    const previousFocus = document.activeElement as HTMLElement | null;
+    const panel = panelRef.current;
+    panel?.querySelector<HTMLButtonElement>('[data-testid="inspection-close"]')?.focus();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { event.preventDefault(); setIsCollapsed(true); }
+      if (event.key !== 'Tab' || !panel) return;
+      const items = Array.from(panel.querySelectorAll<HTMLElement>('button:not([disabled]), a[href], select:not([disabled]), input:not([disabled]), textarea:not([disabled]), summary, [tabindex="0"]')).filter((el) => {
+        if (!el.getClientRects().length) return false;
+        // Closed native details can retain cached layout rectangles. Their
+        // evidence links must not become the apparent last focusable control.
+        for (let ancestor = el.parentElement; ancestor && ancestor !== panel; ancestor = ancestor.parentElement) {
+          if (ancestor instanceof HTMLDetailsElement && !ancestor.open && !ancestor.querySelector(':scope > summary')?.contains(el)) return false;
+        }
+        return true;
+      });
+      const first = items[0], last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => { document.removeEventListener('keydown', onKey); previousFocus?.focus(); };
+  }, [isCollapsed]);
 
   const failCheckCount = testCase.checks?.filter((c) => c.status === 'fail').length ?? 0;
   const passCheckCount = testCase.checks?.filter((c) => c.status === 'pass').length ?? 0;
 
   return (
-    <div className="bg-white border-t border-slate-200 flex flex-col flex-shrink-0 z-20 shadow-md">
+    <div className="h-10 flex-shrink-0 min-w-0" data-testid="inspection-shell">
+    <div ref={panelRef} role={isCollapsed ? undefined : 'dialog'} aria-modal={isCollapsed ? undefined : true} aria-label="验收与证据" data-testid="inspection-panel" className={`${isCollapsed ? 'h-full' : 'absolute inset-0 z-40 shadow-2xl'} bg-white border-t border-slate-200 flex flex-col min-w-0`}>
       {/* Tab Header Bar */}
-      <div className="flex items-center justify-between border-b border-slate-200 px-4 bg-slate-50/80">
-        <div className="flex items-center gap-1 -mb-px">
+      <div className="flex items-center justify-between border-b border-slate-200 px-2 bg-slate-50 shrink-0 min-w-0">
+        <div className="flex items-center gap-1 -mb-px overflow-x-auto whitespace-nowrap">
           {/* Checks Tab */}
           <button
             onClick={() => {
@@ -46,7 +81,7 @@ export const InspectionPanel: React.FC<InspectionPanelProps> = ({
             }`}
           >
             <CheckSquare className="w-3.5 h-3.5 text-sky-600" />
-            <span>逐项验收 ({testCase.checks?.length ?? 0})</span>
+            <span>逐项验收（{testCase.checks?.length ?? 0} 条记录）</span>
             {failCheckCount > 0 && (
               <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-rose-100 text-rose-800 font-bold">
                 {failCheckCount} 失败
@@ -54,10 +89,11 @@ export const InspectionPanel: React.FC<InspectionPanelProps> = ({
             )}
             {failCheckCount === 0 && passCheckCount > 0 && (
               <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800 font-bold">
-                全通过
+                {passCheckCount} 通过
               </span>
             )}
           </button>
+          <button onClick={() => { setActiveTab('data'); setIsCollapsed(false); }} className={`flex items-center gap-1.5 py-2 px-3 text-xs font-semibold border-b-2 ${activeTab === 'data' && !isCollapsed ? 'border-sky-600 text-sky-900 bg-white' : 'border-transparent text-slate-600'}`}>数据版本</button>
 
           {/* Performance Tab */}
           <button
@@ -73,11 +109,6 @@ export const InspectionPanel: React.FC<InspectionPanelProps> = ({
           >
             <Zap className="w-3.5 h-3.5 text-amber-500" />
             <span>性能指标</span>
-            {testCase.performance?.ratioGmOverPk && (
-              <span className="text-[10px] px-1.5 py-0.2 rounded font-mono-code bg-slate-200 text-slate-700">
-                {testCase.performance.ratioGmOverPk.toFixed(2)}x
-              </span>
-            )}
           </button>
 
           {/* APIs & Parameters Tab */}
@@ -115,9 +146,12 @@ export const InspectionPanel: React.FC<InspectionPanelProps> = ({
 
         {/* Collapse Toggle Button */}
         <button
+          data-testid="inspection-close"
           onClick={() => setIsCollapsed(!isCollapsed)}
+          aria-label={isCollapsed ? '展开验收面板' : '关闭验收面板'}
+          aria-expanded={!isCollapsed}
           title={isCollapsed ? '展开面板' : '折叠面板'}
-          className="p-1 text-slate-400 hover:text-slate-700 transition-colors"
+          className="shrink-0 p-2 text-slate-400 hover:text-slate-700 transition-colors"
         >
           {isCollapsed ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </button>
@@ -125,9 +159,21 @@ export const InspectionPanel: React.FC<InspectionPanelProps> = ({
 
       {/* Tab Content Body */}
       {!isCollapsed && (
-        <div className="h-48 sm:h-64 overflow-y-auto">
-          {activeTab === 'checks' && <ChecksTable checks={testCase.checks} evidenceBaseDir={manifestDir} />}
-          {activeTab === 'perf' && <PerformanceView perf={testCase.performance} />}
+        <div className="flex-1 min-h-0 min-w-0 overflow-auto" data-testid="inspection-content" tabIndex={0}>
+          {activeTab === 'checks' && <><ComparisonView testCase={testCase} evidence={comparison} manifestDir={manifestDir} /><GroupedChecks checks={testCase.checks} evidenceBaseDir={manifestDir} /></>}
+          {activeTab === 'data' && <div data-testid="data-version" className="p-4 space-y-3 text-xs text-slate-700 select-text break-words">
+            <h3 className="font-semibold text-sm">已发布基线 · 真实数据来源</h3>
+            <p>界面更新不表示结果已重新采集；此处展示 manifest 的原始运行数据，不将候选证明或未合并进度计为本 case 的新通过。</p>
+            <dl className="space-y-2 font-mono-code">
+              <div><dt>Run</dt><dd>{runMeta?.id ?? '未记录'}</dd></div>
+              <div><dt>数据采集时间（run.generatedAt）</dt><dd>{runMeta?.generatedAt ?? '未记录'}</dd></div>
+              <div><dt>采集代码（run.commit）</dt><dd>{runMeta?.commit ?? '未记录'}</dd></div>
+              <div><dt>范围（run.scope）</dt><dd>{runMeta?.scope ? JSON.stringify(runMeta.scope) : '未记录'}</dd></div>
+              <div><dt>配置 / samplesRequested（run.configuration）</dt><dd>{runMeta?.configuration ? JSON.stringify(runMeta.configuration) : '未记录'}</dd></div>
+            </dl>
+            <a href={`data/${manifestDir}/manifest.json`} className="text-sky-700 underline" target="_blank" rel="noopener noreferrer">原始 manifest ↗</a>
+          </div>}
+          {activeTab === 'perf' && <><p className="p-3 text-xs bg-amber-50 text-amber-900">历史已发布采样 · {runMeta?.generatedAt ?? '采集时间未记录'} · 此记录不作为本轮优化结论。</p><PerformanceView perf={testCase.performance} /></>}
           {activeTab === 'params' && (
             <ApiParamView
               parameters={testCase.parameters}
@@ -240,6 +286,7 @@ export const InspectionPanel: React.FC<InspectionPanelProps> = ({
           )}
         </div>
       )}
+    </div>
     </div>
   );
 };

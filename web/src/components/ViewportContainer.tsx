@@ -3,6 +3,7 @@ import { MeshViewer, CameraSyncState, FocusTriggerState } from './MeshViewer';
 import { EntityLegend } from './EntityLegend';
 import { MeshData, StandardView } from '../types/contract';
 import { PickedEntity, ROLE_COLORS, EDGE_ROLE_COLORS, GeometryDisplayOptions } from '../utils/geometryBuilder';
+import { extractOperationFocus, mergeOperationFocus } from '../utils/cameraUtils';
 import {
   Box,
   SplitSquareVertical,
@@ -46,9 +47,6 @@ export const ViewportContainer: React.FC<ViewportContainerProps> = ({
   const [rightSyncCam, setRightSyncCam] = useState<CameraSyncState | null>(null);
   const [selectedEntity, setSelectedEntity] = useState<PickedEntity | null>(null);
   const [mobileTab, setMobileTab] = useState<'both' | 'gm' | 'pk'>('both');
-  const [legendOpen, setLegendOpen] = useState<boolean>(() =>
-    typeof window === 'undefined' ? true : window.innerWidth >= 768
-  );
 
   // Focus trigger state
   const [focusTrigger, setFocusTrigger] = useState<FocusTriggerState | null>(null);
@@ -59,6 +57,22 @@ export const ViewportContainer: React.FC<ViewportContainerProps> = ({
   const [showIsoparametrics, setShowIsoparametrics] = useState<boolean>(true);
   const [isolateModified, setIsolateModified] = useState<boolean>(false);
   const [showTools, setShowTools] = useState<boolean>(true);
+  const gmFocus = React.useMemo(() => extractOperationFocus(gmMesh), [gmMesh]);
+  const pkFocus = React.useMemo(() => extractOperationFocus(pkMesh), [pkMesh]);
+  const sharedFocus = React.useMemo(() => mergeOperationFocus([gmFocus, pkFocus]), [gmFocus, pkFocus]);
+  const viewportsRef = useRef<HTMLDivElement>(null);
+  const [sharedAspect, setSharedAspect] = useState(0);
+  useEffect(() => {
+    const root = viewportsRef.current;
+    if (!root) return;
+    const observer = new ResizeObserver(() => {
+      const panes = Array.from(root.querySelectorAll<HTMLElement>('[data-testid="viewer-canvas-host"]'));
+      const aspects = panes.filter((p) => p.clientWidth && p.clientHeight).map((p) => p.clientWidth / p.clientHeight);
+      if (aspects.length) setSharedAspect(Math.min(...aspects));
+    });
+    observer.observe(root);
+    return () => observer.disconnect();
+  }, []);
 
   // Entity IDs are local to a snapshot; do not carry a pick across snapshots.
   useEffect(() => {
@@ -95,14 +109,30 @@ export const ViewportContainer: React.FC<ViewportContainerProps> = ({
   // Stable callbacks: camera sync must never recreate the scene lifecycle.
   const cameraSyncRef = useRef<boolean>(cameraSync);
   cameraSyncRef.current = cameraSync;
+  const latestGmCamera = useRef<CameraSyncState | null>(null);
+  const latestPkCamera = useRef<CameraSyncState | null>(null);
+  useEffect(() => {
+    latestGmCamera.current = null;
+    latestPkCamera.current = null;
+    setLeftSyncCam(null);
+    setRightSyncCam(null);
+  }, [caseId]);
+  useEffect(() => {
+    if (!cameraSync) return;
+    // Relinking adopts one current pose, never two frozen pre-unlink poses.
+    const pose = latestGmCamera.current ?? latestPkCamera.current;
+    if (pose) { setLeftSyncCam(pose); setRightSyncCam(pose); }
+  }, [cameraSync]);
 
   const handleGmCamChange = useCallback((state: CameraSyncState) => {
+    latestGmCamera.current = state;
     if (cameraSyncRef.current) {
       setRightSyncCam(state);
     }
   }, []);
 
   const handlePkCamChange = useCallback((state: CameraSyncState) => {
+    latestPkCamera.current = state;
     if (cameraSyncRef.current) {
       setLeftSyncCam(state);
     }
@@ -180,11 +210,11 @@ export const ViewportContainer: React.FC<ViewportContainerProps> = ({
           <button
             onClick={handleFocusOp}
             data-testid="btn-focus-op"
-            title="聚焦到当前操作受影响区域与最佳观察方向"
+            title={cameraSync ? sharedFocus.reason : gmFocus.reason}
             className="flex items-center gap-1 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 hover:text-sky-200 border border-slate-700 transition-colors text-[11px] font-medium"
           >
             <Focus className="w-3.5 h-3.5 text-sky-400" />
-            <span>查看修改</span>
+            <span>{(cameraSync ? sharedFocus : gmFocus).hasOperationFeatures ? '查看修改' : '全模型（无修改标记）'}</span>
           </button>
           <button
             onClick={handleFocusFull}
@@ -331,6 +361,8 @@ export const ViewportContainer: React.FC<ViewportContainerProps> = ({
         </div>
       </div>
 
+      <EntityLegend />
+
       {/* Mobile Tab Switcher */}
       <div className="md:hidden flex items-center justify-between bg-slate-900 border-b border-slate-800 px-3 py-1 text-xs text-slate-300 z-20">
         <span className="font-semibold text-slate-300 text-[11px]">视图切换:</span>
@@ -364,6 +396,7 @@ export const ViewportContainer: React.FC<ViewportContainerProps> = ({
 
       {/* Viewports Grid */}
       <div
+        ref={viewportsRef}
         className={`flex-1 grid grid-cols-1 md:grid-cols-2 ${
           mobileTab === 'both' ? 'grid-rows-2 md:grid-rows-1' : ''
         } divide-y md:divide-y-0 md:divide-x divide-slate-800 relative min-h-0`}
@@ -378,6 +411,8 @@ export const ViewportContainer: React.FC<ViewportContainerProps> = ({
             kernelName="GM Kernel"
             caseId={caseId}
             meshData={gmMesh}
+            focusInfo={cameraSync ? sharedFocus : gmFocus}
+            sharedAspect={cameraSync ? sharedAspect : undefined}
             isLoading={isLoading}
             emptyMessage="GM 网格未就绪或未生成"
             errorMessage={gmError}
@@ -401,6 +436,8 @@ export const ViewportContainer: React.FC<ViewportContainerProps> = ({
             kernelName="Parasolid (PK)"
             caseId={caseId}
             meshData={pkMesh}
+            focusInfo={cameraSync ? sharedFocus : pkFocus}
+            sharedAspect={cameraSync ? sharedAspect : undefined}
             isLoading={isLoading}
             emptyMessage="Parasolid 基准网格缺失"
             errorMessage={pkError}
@@ -427,17 +464,17 @@ export const ViewportContainer: React.FC<ViewportContainerProps> = ({
       {selectedEntity && (
         <div
           data-testid="entity-inspector"
-          className="absolute top-14 left-1/2 -translate-x-1/2 z-20 bg-slate-900/95 backdrop-blur-xs border border-sky-600/80 rounded-md px-3 py-1.5 shadow-xl flex items-center gap-2 text-xs text-slate-200"
+          className="absolute top-14 left-1/2 -translate-x-1/2 z-20 max-w-[calc(100%-1rem)] whitespace-nowrap bg-slate-900/95 backdrop-blur-xs border border-sky-600/80 rounded-md px-2 py-1.5 shadow-xl flex items-center gap-1 sm:gap-2 text-[11px] text-slate-200"
         >
-          <Box className="w-3.5 h-3.5 text-sky-400" />
-          <span className="font-semibold">
+          <Box className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+          <span className="font-semibold truncate">
             {selectedEntity.type === 'face' ? '面' : '边'} [
             <span className="font-mono-code text-sky-300">{selectedEntity.id}</span>]
           </span>
           <span className="w-px h-3 bg-slate-700" />
-          <span className="text-[11px] text-slate-400">角色:</span>
+          <span className="hidden sm:inline text-[11px] text-slate-400">角色:</span>
           <span
-            className="px-1.5 py-0.5 rounded text-[11px] font-semibold text-white"
+            className="shrink-0 px-1.5 py-0.5 rounded text-[11px] font-semibold text-white"
             style={{
               backgroundColor:
                 (selectedEntity.type === 'face'
@@ -448,12 +485,13 @@ export const ViewportContainer: React.FC<ViewportContainerProps> = ({
             {ROLE_COLORS[selectedEntity.role]?.label || selectedEntity.role}
           </span>
           {selectedEntity.triangleCount !== undefined && (
-            <span className="text-[10px] text-slate-400 font-mono-code">
+            <span className="hidden sm:inline text-[10px] text-slate-400 font-mono-code">
               ({selectedEntity.triangleCount} 三角片)
             </span>
           )}
           <button
             onClick={() => setSelectedEntity(null)}
+            aria-label="清除实体选择"
             className="ml-2 text-slate-400 hover:text-white text-sm"
           >
             ×
@@ -461,19 +499,6 @@ export const ViewportContainer: React.FC<ViewportContainerProps> = ({
         </div>
       )}
 
-      {/* Floating Entity Legend (Bottom Left, collapsible on narrow screens) */}
-      <div className="absolute bottom-3 left-3 z-20 max-w-[min(22rem,calc(100%-1.5rem))]">
-        <button
-          onClick={() => setLegendOpen((v) => !v)}
-          data-testid="legend-toggle"
-          className="md:hidden mb-1 px-2 py-0.5 rounded text-[11px] bg-slate-900/90 border border-slate-700 text-slate-300 shadow-md"
-        >
-          {legendOpen ? '收起图例' : '图例'}
-        </button>
-        <div className={legendOpen ? 'block' : 'hidden md:block'} data-testid="legend-body">
-          <EntityLegend />
-        </div>
-      </div>
     </div>
   );
 };

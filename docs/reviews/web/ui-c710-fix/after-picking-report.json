@@ -1,0 +1,115 @@
+{
+  "candidate": "c710171bfea776a77217a3c417bc73f7906ac4fd",
+  "base": "424e85d6aac32c2afe7cad12cfd04bea4f0037ab",
+  "indexHash": "117bb8e7ad20ea90aee004eb18428d2a220e5270795ab9ce81eff380843e3990",
+  "run": "20261110T195008Z-610e3ce8",
+  "rows": [
+    {
+      "name": "published input index matches dispatched hash",
+      "ok": true,
+      "detail": "117bb8e7ad20ea90aee004eb18428d2a220e5270795ab9ce81eff380843e3990"
+    },
+    {
+      "name": "gm interior pixel-center 0.25: selected edge pick",
+      "ok": true,
+      "detail": {
+        "point": {
+          "q": 0.25,
+          "x": 545.5,
+          "y": 649.5
+        },
+        "picked": "边 [gm:edge:107]角色:选中 / 关键面×",
+        "expected": [
+          "gm:edge:106",
+          "gm:edge:107"
+        ]
+      }
+    },
+    {
+      "name": "gm interior pixel-center 0.5: selected edge pick",
+      "ok": true,
+      "detail": {
+        "point": {
+          "q": 0.5,
+          "x": 729.5,
+          "y": 649.5
+        },
+        "picked": "边 [gm:edge:106]角色:选中 / 关键面×",
+        "expected": [
+          "gm:edge:106",
+          "gm:edge:107"
+        ]
+      }
+    },
+    {
+      "name": "gm interior pixel-center 0.75: selected edge pick",
+      "ok": true,
+      "detail": {
+        "point": {
+          "q": 0.75,
+          "x": 917.5,
+          "y": 648.5
+        },
+        "picked": "边 [gm:edge:106]角色:选中 / 关键面×",
+        "expected": [
+          "gm:edge:106",
+          "gm:edge:107"
+        ]
+      }
+    },
+    {
+      "name": "pk interior pixel-center 0.25: selected edge pick",
+      "ok": true,
+      "detail": {
+        "point": {
+          "q": 0.25,
+          "x": 1369,
+          "y": 648.5
+        },
+        "picked": "边 [pk:edge:148]角色:选中 / 关键面×",
+        "expected": [
+          "pk:edge:107",
+          "pk:edge:148"
+        ]
+      }
+    },
+    {
+      "name": "pk interior pixel-center 0.5: selected edge pick",
+      "ok": true,
+      "detail": {
+        "point": {
+          "q": 0.5,
+          "x": 1553,
+          "y": 648.5
+        },
+        "picked": "边 [pk:edge:107]角色:选中 / 关键面×",
+        "expected": [
+          "pk:edge:107",
+          "pk:edge:148"
+        ]
+      }
+    },
+    {
+      "name": "pk interior pixel-center 0.75: selected edge pick",
+      "ok": true,
+      "detail": {
+        "point": {
+          "q": 0.75,
+          "x": 1740,
+          "y": 649.5
+        },
+        "picked": "边 [pk:edge:107]角色:选中 / 关键面×",
+        "expected": [
+          "pk:edge:107",
+          "pk:edge:148"
+        ]
+      }
+    },
+    {
+      "name": "no picking page errors",
+      "ok": true,
+      "detail": []
+    }
+  ],
+  "errors": []
+}

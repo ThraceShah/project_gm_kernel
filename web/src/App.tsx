@@ -4,6 +4,7 @@ import { Sidebar } from './components/Sidebar';
 import { ViewportContainer } from './components/ViewportContainer';
 import { TimelineControl } from './components/TimelineControl';
 import { InspectionPanel } from './components/InspectionPanel';
+import { comparisonLabel, useComparisonEvidence } from './components/ComparisonView';
 import {
   fetchIndexData,
   fetchManifestData,
@@ -18,7 +19,7 @@ import {
   CaseFamily,
   CaseStatus,
 } from './types/contract';
-import { formatStatus, formatRatio } from './utils/formatters';
+import { formatStatus } from './utils/formatters';
 import { AlertCircle, RefreshCw, Layers, Database, Sparkles } from 'lucide-react';
 
 export const App: React.FC = () => {
@@ -60,6 +61,7 @@ export const App: React.FC = () => {
 
   // Mobile sidebar drawer
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
+  const [inspectionRequest, setInspectionRequest] = useState<{ id: number; tab: 'checks' | 'data' } | null>(null);
 
   // Request Guard & Cancellation Refs
   const manifestReqRef = useRef<number>(0);
@@ -162,6 +164,7 @@ export const App: React.FC = () => {
     if (!manifestData || !manifestData.cases) return null;
     return manifestData.cases.find((c) => c.id === selectedCaseId) || manifestData.cases[0] || null;
   }, [manifestData, selectedCaseId]);
+  const comparison = useComparisonEvidence(currentCase, manifestDir);
 
   // Reset & clamp step index when case changes
   useEffect(() => {
@@ -175,6 +178,7 @@ export const App: React.FC = () => {
   // time, before child effects can fit a previous case's geometry.
   const meshKey = JSON.stringify([useFixture, selectedRunId, manifestDir, currentCase?.id, safeStepIndex, subState]);
   const cameraContext = JSON.stringify([useFixture, manifestDir, currentCase?.id]);
+  useEffect(() => { setInspectionRequest(null); }, [cameraContext]);
   useEffect(() => {
     if (stepsCount > 0 && currentStepIndex >= stepsCount) {
       setCurrentStepIndex(Math.max(0, stepsCount - 1));
@@ -274,6 +278,7 @@ export const App: React.FC = () => {
         isFixture={useFixture}
         onToggleFixture={handleToggleFixture}
         onOpenSidebar={() => setSidebarOpen(true)}
+        onOpenData={() => setInspectionRequest({ id: Date.now(), tab: 'data' })}
       />
 
       {new URLSearchParams(window.location.search).get('display') === 'real-uv' && <div className="hidden sm:flex bg-slate-800 border-b border-slate-700 px-4 py-1 text-xs text-slate-200 flex-wrap gap-x-3 gap-y-1" data-testid="display-source-bar">
@@ -355,7 +360,7 @@ export const App: React.FC = () => {
           {/* Mobile drawer backdrop */}
           {sidebarOpen && (
             <div
-              className="fixed inset-0 bg-slate-900/40 z-30 md:hidden"
+              className="fixed inset-0 bg-slate-900/40 z-50 md:hidden"
               onClick={() => setSidebarOpen(false)}
               data-testid="sidebar-backdrop"
             />
@@ -364,7 +369,7 @@ export const App: React.FC = () => {
           {/* Left Sidebar: Filter & Case List (drawer on narrow screens) */}
           <div
             data-testid="sidebar-shell"
-            className={`fixed md:static inset-y-0 left-0 z-40 w-80 max-w-[85vw] overflow-hidden transform transition-transform duration-200 ${
+            className={`fixed md:static inset-y-0 left-0 z-[60] w-80 max-w-[85vw] overflow-hidden transform transition-transform duration-200 ${
               sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
             }`}
           >
@@ -385,7 +390,7 @@ export const App: React.FC = () => {
           </div>
 
           {/* Right Area: Dual Viewport + Timeline + Inspection Panel */}
-          <main className="flex-1 flex flex-col overflow-hidden bg-slate-900">
+          <main className="relative min-w-0 flex-1 flex flex-col overflow-hidden bg-slate-900">
             {manifestError ? (
               <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-slate-300">
                 <div className="bg-slate-800 border border-slate-700 rounded-lg p-6 max-w-sm space-y-3 shadow-lg">
@@ -429,23 +434,13 @@ export const App: React.FC = () => {
                       {formatStatus(currentCase.status).label}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
+                  <div className="flex items-center gap-2 min-w-0">
                     <span className="text-[11px] text-slate-400 font-mono-code bg-slate-800 px-2 py-0.5 rounded">
                       {currentCase.operation}
                     </span>
-                    {currentCase.performance?.ratioGmOverPk ? (
-                      <span
-                        className={`text-[11px] px-2 py-0.5 rounded font-mono-code ${
-                          formatRatio(currentCase.performance.ratioGmOverPk).badgeClass
-                        }`}
-                      >
-                        {formatRatio(currentCase.performance.ratioGmOverPk).text}
-                      </span>
-                    ) : (
-                      <span className="text-[11px] px-2 py-0.5 rounded font-mono-code bg-slate-800 text-slate-400">
-                        比率: N/A
-                      </span>
-                    )}
+                    <button data-testid="comparison-summary" onClick={() => setInspectionRequest({ id: Date.now(), tab: 'checks' })} className="text-[11px] text-sky-200 hover:underline text-left">
+                      <strong>PK_DEBUG_BODY_compare</strong> · {comparisonLabel(currentCase, comparison)} ↗
+                    </button>
                   </div>
                 </div>
 
@@ -476,7 +471,7 @@ export const App: React.FC = () => {
                 />
 
                 {/* Bottom Inspection Panel */}
-                <InspectionPanel testCase={currentCase} manifestDir={manifestDir} />
+                <InspectionPanel testCase={currentCase} manifestDir={manifestDir} comparison={comparison} runMeta={manifestData?.run ?? null} request={inspectionRequest} />
               </>
             ) : (
               <div className="flex-1 flex flex-col items-center justify-center text-slate-400 text-xs">

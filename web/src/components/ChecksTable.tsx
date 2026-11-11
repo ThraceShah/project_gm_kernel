@@ -137,3 +137,25 @@ export const ChecksTable: React.FC<ChecksTableProps> = ({ checks, evidenceBaseDi
     </div>
   );
 };
+
+export const GroupedChecks: React.FC<ChecksTableProps> = ({ checks, evidenceBaseDir }) => {
+  const groups = new Map<string, CheckItem[]>();
+  for (const check of checks ?? []) {
+    const group = /equivalence|BODY_compare/.test(`${check.id} ${check.label}`) ? '原主比较验收记录（PK_DEBUG_BODY_compare + type / regions）'
+      : /body-check|BODY_check/.test(`${check.id} ${check.label}`) ? 'BODY_check 有效性'
+      : /-mass-/.test(check.id) ? '物性量'
+      : /-count-\d+$/.test(check.id) ? '拓扑重复计数'
+      : /-api$|-blend-fault$|-body-count$/.test(check.id) ? '操作契约：API return / blend fault / 输出体数量'
+      : /oracle-exit/.test(check.id) ? '原进程 / 场景 exit'
+      : '其他原始验收记录';
+    if (!groups.has(group)) groups.set(group, []);
+    groups.get(group)!.push(check);
+  }
+  return <div className="p-3 space-y-2 min-w-0" data-testid="grouped-checks">
+    <p className="text-[11px] text-slate-500">{checks?.length ?? 0} 条原始验收记录，含重复计数与辅助项；记录数不代表独立能力数。展开保留实测值、微小偏差、阈值与原始证据。</p>
+    {Array.from(groups, ([group, rows]) => <details key={group} className="border border-slate-200 rounded min-w-0">
+      <summary className="cursor-pointer px-3 py-2 bg-slate-50 text-xs font-medium text-slate-700">{group} · {rows.length} 条 · {rows.filter((c) => c.status === 'pass').length} 通过 / {rows.filter((c) => c.status === 'fail').length} 失败 / {rows.filter((c) => c.status !== 'pass' && c.status !== 'fail').length} 其他</summary>
+      <ChecksTable checks={rows} evidenceBaseDir={evidenceBaseDir} />
+    </details>)}
+  </div>;
+};
