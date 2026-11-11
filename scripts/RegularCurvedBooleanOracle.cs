@@ -10,8 +10,13 @@ using static parasolid;
 using ProjectGmKernel.Native.Runtime;
 using System.Runtime.CompilerServices;
 using M=ProjectGmKernel.Native.Generated;
+Console.WriteLine("GM_ASSEMBLY sha256="+Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(typeof(KernelRuntime).Assembly.Location))));
 
-var directory=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","regular-curved-boolean-oracle");Directory.CreateDirectory(directory);
+var outputName=args.Single(x=>x.StartsWith("--output-name=",StringComparison.Ordinal))["--output-name=".Length..];
+Require(outputName.Length>0&&outputName.All(c=>char.IsAsciiLetterOrDigit(c)||c is '-' or '_'),"one new output directory name");
+var directory=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","regular-curved-boolean-oracle",outputName);
+Require(!Directory.Exists(directory),"Existing evidence is immutable");Directory.CreateDirectory(directory);ParasolidMassProperties.BeginEvidence(directory);
+var filter=args.FirstOrDefault(x=>!x.StartsWith("--",StringComparison.Ordinal));
 if(!ParasolidScriptHost.TryStartSession("Independent regular curved solid Booleans",out var host,out var message))throw new Exception(message);
 using(host)unsafe
 {
@@ -23,7 +28,7 @@ using(host)unsafe
         foreach(var kind in new[]{"block","nurbs","closed-cut","disjoint","enclosed-tool","enclosed-target","two-tools","mixed-disjoint","continuous","reloaded","reloaded-block","same-domain","same-domain-reloaded","same-domain-partial","same-domain-partial-reloaded"})
         foreach(var function in new[]{PK_boolean_unite_c,PK_boolean_intersect_c,PK_boolean_subtract_c})
         {
-            var name=$"{kind}-{function}";if(!WebProgressCapture.Select(name))continue;if(args.Length!=0&&!name.Contains(args[0],StringComparison.Ordinal))continue;
+            var name=$"{kind}-{function}";if(!WebProgressCapture.Select(name))continue;if(filter!=null&&!name.Contains(filter,StringComparison.Ordinal))continue;
             try
             {
                 var ours=Produce(true,kind,function);var reference=Produce(false,kind,function);Require(ours.Length==reference.Length,name+" body count");
@@ -33,13 +38,16 @@ using(host)unsafe
                     var bytes=Transmit(ours[i]);File.WriteAllBytes(Path.Combine(directory,name+"-"+i+".x_t"),bytes);var received=Receive(bytes);CheckBody(received,name+" received");
                     var found=-1;var center=Center(received);
                     for(var j=0;j<reference.Length;j++)if(!matched[j]&&Distance(center,Center(reference[j]))<1e-7){found=j;break;}
-                    Require(found>=0,name+" body correspondence");matched[found]=true;CheckBody(reference[found],name+" reference");Compare(reference[found],received,name);Classify(ours[i],reference[found],name);
+                    Require(found>=0,name+" body correspondence");matched[found]=true;CheckBody(reference[found],name+" reference");
+                    File.WriteAllBytes(Path.Combine(directory,name+"-"+i+"-native.x_t"),TransmitNative(reference[found]));
+                    Compare(reference[found],received,name);Classify(ours[i],reference[found],name);
                 }
-                passed++;Console.WriteLine("PASS "+name);
+                passed++;Console.WriteLine("GEOMETRY_TOPOLOGY_PASS "+name);
             }
             catch(Exception ex){failures++;Console.WriteLine("FAIL "+name+": "+ex);}
         }
-        Require(failures==0,$"{failures} regular curved Boolean cases failed");Console.WriteLine($"PASS all {passed} regular curved Boolean cases");
+        Require(failures==0,$"{failures} regular curved Boolean cases failed");Console.WriteLine($"GEOMETRY_TOPOLOGY_PASS all {passed} regular curved Boolean cases mass_unresolved={ParasolidMassProperties.UnresolvedCount}");
+        if(ParasolidMassProperties.UnresolvedCount!=0)Environment.ExitCode=2;
     }
     finally{Check(KernelRuntime.SessionStop(),"own session stop");}
 }
@@ -144,6 +152,13 @@ static unsafe byte[] Transmit(int body)
     try{using var stream=new MemoryStream();for(var p=&block;p!=null;p=p->next)stream.Write(new ReadOnlySpan<byte>(p->bytes,checked((int)p->n_bytes)));return stream.ToArray();}
     finally{Check(KernelRuntime.MemoryBlockFree(&block),"XT buffers");}
 }
+static unsafe byte[] TransmitNative(PK_BODY_t body)
+{
+    var options=new PK_PART_transmit_o_t{transmit_format=PK_transmit_format_text_c,transmit_version=371};PK_MEMORY_block_t block;
+    Check(PK_PART_transmit_b(1,&body,&options,&block),"native text XT transmit");
+    try{using var stream=new MemoryStream();for(var p=&block;p!=null;p=p->next)stream.Write(new ReadOnlySpan<byte>(p->bytes,checked((int)p->n_bytes)));return stream.ToArray();}
+    finally{Check(PK_MEMORY_block_f(&block),"native XT buffers");}
+}
 static unsafe int Receive(byte[] bytes)
 {
     fixed(byte* p=bytes)
@@ -172,25 +187,8 @@ static unsafe void Compare(int reference,int actual,string name)
     Span<int> nativeCounts=stackalloc int[5],selfCounts=stackalloc int[5];
     for(var kind=0;kind<5;kind++){nativeCounts[kind]=Count(reference,kind);selfCounts[kind]=Count(actual,kind);Console.WriteLine($"{name} topology {kind}: native={nativeCounts[kind]} own={selfCounts[kind]}");}
     for(var kind=0;kind<5;kind++)Require(nativeCounts[kind]==selfCounts[kind],name+" topology count "+kind);
-    var options=new PK_DEBUG_BODY_compare_o_t{max_diffs=1024,all_tests=PK_LOGICAL_false,num_tests=PK_LOGICAL_true,tol_dev_tests=PK_LOGICAL_true,tol_tests=PK_LOGICAL_true,
-        class_tests=PK_LOGICAL_true,sense_tests=PK_LOGICAL_true,missing_tests=PK_LOGICAL_true,acc_dev_tests=PK_LOGICAL_false,non_match_tests=PK_LOGICAL_true};PK_DEBUG_BODY_compare_r_t result;
-    Check(PK_DEBUG_BODY_compare(reference,actual,&options,&result),"structural compare");
-    try
-    {
-        var structural=0;Console.WriteLine($"{name} compare={result.global_result}/{result.local_result}, face_pairs={result.n_face_pairs}");
-        for(var i=0;i<result.n_global_diffs;i++)Console.WriteLine($"global diff={result.global_diffs[i].diff}, entities={result.global_diffs[i].n_masters}/{result.global_diffs[i].n_similars}");
-        for(var f=0;f<result.n_face_pairs;f++)for(var i=0;i<result.face_pairs[f].n_local_diffs;i++)
-        {
-            var d=result.face_pairs[f].local_diffs[i];var chart=d.diff==PK_DEBUG_diff_n_cht_pts_c;
-            Console.WriteLine($"{(chart?"CHART":"STRUCTURE")} face={f}, diff={d.diff}, entity={d.master_entity}/{d.similar_entity}, class={d.master_class}/{d.similar_class}, int={d.master_int}/{d.similar_int}, value={d.master_double:R}/{d.similar_double:R}");if(!chart)structural++;
-        }
-        Require(result.global_result==PK_DEBUG_global_res_no_diffs_c&&structural==0,name+" structural differences");
-    }
-    finally{PK_DEBUG_BODY_compare_r_f(&result);}
-    var massOptions=new PK_TOPOL_eval_mass_props_o_t();double* aMass=stackalloc double[15];double* bMass=stackalloc double[15];
-    Check(PK_TOPOL_eval_mass_props(1,&reference,.99999999,&massOptions,aMass,aMass+1,aMass+2,aMass+5,aMass+14),"native mass properties");
-    Check(PK_TOPOL_eval_mass_props(1,&actual,.99999999,&massOptions,bMass,bMass+1,bMass+2,bMass+5,bMass+14),"received mass properties");
-    for(var i=0;i<14;i++)Require(Math.Abs(aMass[i]-bMass[i])<1e-7*(1+Math.Abs(aMass[i])),name+" mass component "+i);
+    ParasolidBodyCompare.AssertEquivalent(reference,actual,name);
+    Require(ParasolidMassProperties.Compare(reference,actual,name)!=MassAgreement.Different,name+" mass intervals prove a difference");
 }
 static unsafe int Count(int body,int kind)
 {

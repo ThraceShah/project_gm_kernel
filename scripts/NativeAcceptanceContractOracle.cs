@@ -12,6 +12,7 @@ if(args.Length!=2||Path.IsPathRooted(args[1]))throw new ArgumentException("new o
 var output=Path.Combine(root,"temp_docs","native-acceptance-contract",args[0]);
 if(Directory.Exists(output))throw new InvalidOperationException("Existing evidence is immutable");
 Directory.CreateDirectory(output);
+ParasolidMassProperties.BeginEvidence(output);
 if(!ParasolidScriptHost.TryStartSession("native acceptance contract",out var host,out var reason))throw new Exception(reason);
 using(host)unsafe
 {
@@ -22,7 +23,35 @@ using(host)unsafe
     Require(ParasolidMassProperties.Classify(1,100,2,100,out _,out _)==MassAgreement.Unresolved,"overlapping broad bounds must not verify equality");
     Require(ParasolidMassProperties.Classify(1,0,2,0,out _,out _)==MassAgreement.Different,"separated numeric control");
     PK_BODY_t correct,wrong;Check(PK_BODY_create_solid_block(2,2,2,null,&correct));Check(PK_BODY_create_solid_block(2.1,2,2,null,&wrong));
-    try{Require(ParasolidMassProperties.Compare(correct,wrong,"wrong-size-control")==MassAgreement.Different,"wrong size must fail mass agreement");}
+    try
+    {
+        Require(ParasolidMassProperties.Compare(correct,wrong,"wrong-size-control")==MassAgreement.Different,"wrong size must fail mass agreement");
+        var correctReload=Receive(Transmit(correct));var wrongReload=Receive(Transmit(wrong));
+        try
+        {
+            var p=new PK_VECTOR_t(1.025,0,1);PK_TOPOL_t owner;Span<PK_enclosure_t> values=stackalloc PK_enclosure_t[4];
+            fixed(PK_enclosure_t* v=values)
+            {
+                Check(PK_BODY_contains_vector(correct,p,v,&owner));Check(PK_BODY_contains_vector(correctReload,p,v+1,&owner));
+                Check(PK_BODY_contains_vector(wrong,p,v+2,&owner));Check(PK_BODY_contains_vector(wrongReload,p,v+3,&owner));
+            }
+            Require(values[0]==PK_enclosure_outside_c&&values[2]==PK_enclosure_inside_c,"wrong-size material negative is separated");
+            Require(ParasolidProbeAgreement.Classify(values)==ProbeAgreement.Different,"definite material flip must fail");
+            values[2]=PK_enclosure_on_c;values[3]=PK_enclosure_on_c;
+            Require(ParasolidProbeAgreement.Classify(values)==ProbeAgreement.Unresolved,"On disagreement must remain pending");
+            values[2]=-157;Require(ParasolidProbeAgreement.Classify(values)==ProbeAgreement.Different,"API failure must fail");
+            Console.WriteLine("PROBE_CONTROLS definite_material_flip=Different On_disagreement=Unresolved API_error=Different");
+        }
+        finally{Check(PK_ENTITY_delete(1,&wrongReload));Check(PK_ENTITY_delete(1,&correctReload));}
+    }
+    finally{Check(PK_ENTITY_delete(1,&wrong));Check(PK_ENTITY_delete(1,&correct));}
+    Check(PK_BODY_create_solid_sphere(1,null,&correct));Check(PK_BODY_create_solid_sphere(1.01,null,&wrong));
+    try{RejectGeometry(correct,wrong,output,"native-wrong-radius","body geometry");}
+    finally{Check(PK_ENTITY_delete(1,&wrong));Check(PK_ENTITY_delete(1,&correct));}
+    var line=new PK_LINE_sf_t(new PK_AXIS1_sf_t(new(0,0,0),new(1,0,0)));PK_CURVE_t carrier;
+    Check(PK_LINE_create(&line,&carrier));Check(PK_CURVE_make_wire_body(carrier,new(0,1),&correct));
+    Check(PK_CURVE_make_wire_body(carrier,new(0,1.01),&wrong));
+    try{RejectGeometry(correct,wrong,output,"native-wrong-finite-trim","unmatched wire edge");}
     finally{Check(PK_ENTITY_delete(1,&wrong));Check(PK_ENTITY_delete(1,&correct));}
     var bytes=File.ReadAllBytes(Path.Combine(root,args[1]));Save(output,"input.x_t",bytes);
     for(var axis=0;axis<3;axis++)
@@ -92,9 +121,23 @@ static unsafe void Full(PK_BODY_t body)
     Check(PK_BODY_check(body,&options,&count,&faults));
     try{Console.WriteLine($"FULL faults={count}");Require(count==0,"full BODY_check");}finally{if(faults!=null)Check(PK_MEMORY_free(faults));}
 }
+static unsafe void RejectGeometry(PK_BODY_t reference,PK_BODY_t wrong,string output,string label,string expectedReason)
+{
+    Full(reference);Full(wrong);Save(output,label+"-reference.x_t",Transmit(reference));var bytes=Transmit(wrong);
+    Save(output,label+".x_t",bytes);var received=Receive(bytes);
+    try
+    {
+        Full(received);var rejected=false;
+        try{ParasolidBodyCompare.AssertEquivalent(reference,received,label);}
+        catch(InvalidOperationException error)when(error.Message.Contains(expectedReason,StringComparison.Ordinal)){rejected=true;}
+        Require(rejected,label+" must fail geometry independently of mass uncertainty");
+        Console.WriteLine($"GEOMETRY_NEGATIVE {label} rejected=True");
+    }
+    finally{Check(PK_ENTITY_delete(1,&received));}
+}
 static unsafe (int Regions,int Shells,int Faces) Counts(PK_BODY_t body)
 {
-    int regions,shells,faces;int* p;Check(PK_BODY_ask_regions(body,&regions,&p));Check(PK_MEMORY_free(p));
+    int regions,shells,faces;PK_TOPOL_t* p;Check(PK_BODY_ask_regions(body,&regions,&p));Check(PK_MEMORY_free(p));
     Check(PK_BODY_ask_shells(body,&shells,&p));Check(PK_MEMORY_free(p));Check(PK_BODY_ask_faces(body,&faces,&p));Check(PK_MEMORY_free(p));
     return(regions,shells,faces);
 }
@@ -128,7 +171,7 @@ static unsafe void ProbePrimitive(double precision)
         PK_BOX_t box;Check(PK_TOPOL_find_box(body,&box));var sign=geometry.position.coord[2]>(box.coord[2]+box.coord[5])*.5?1:-1;
         foreach(var fraction in new[]{0d,.25,.49,.51,.99,1.01,2})
         {
-            var p=geometry.position;p.coord[2]+=sign*precision*fraction;int enclosure,topology,type;
+            var p=geometry.position;p.coord[2]+=sign*precision*fraction;PK_enclosure_t enclosure;PK_TOPOL_t topology;PK_CLASS_t type;
             Check(PK_BODY_contains_vector(body,p,&enclosure,&topology));Check(PK_ENTITY_ask_class(topology,&type));
             Console.WriteLine($"VERTEX_PROBE offset={precision*fraction:R} enclosure={enclosure} owner_class={type}");
         }

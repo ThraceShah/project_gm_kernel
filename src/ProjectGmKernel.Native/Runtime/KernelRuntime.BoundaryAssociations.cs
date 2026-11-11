@@ -138,6 +138,30 @@ internal static unsafe partial class KernelRuntime
         return 0;
     }
 
+    private static int ReadRegularBoundaryAssociations(in RegularBoundaryView input,ref SheetArrangement model)
+    {
+        foreach(var face in input.Faces)
+        for(var l=0;l<face.LoopCount;l++)
+        {
+            var loop=input.Loops[face.FirstLoop+l];
+            foreach(var coedge in input.Coedges.Slice(loop.FirstCoedge,loop.CoedgeCount))
+            {
+                var edge=input.Edges[coedge.Edge];
+                var error=AssociateBoundaryCarrierSurface(ref model,edge.Curve,edge.Start,edge.End,face.Surface,coedge.Edge);if(error!=0)return error;
+            }
+        }
+        for(var e=0;e<input.Edges.Length;e++)
+        {
+            var edge=input.Edges[e];var positive=LocalSenseSign(Curves[GetCurveSlotByTag(edge.Curve)].Sense)>0;
+            for(var end=0;end<2;end++)
+            {
+                var vertex=(end==0)==positive?edge.StartVertex:edge.EndVertex;if(vertex<0)continue;
+                var error=model.AssociateParameter(vertex,edge.Curve,end==0?edge.Start:edge.End,lineOccurrence:e);if(error!=0)return error;
+            }
+        }
+        return 0;
+    }
+
     private static int ReadRollingThirdSurfaceEvents(in RegularBoundaryView input,ReadOnlySpan<FaceSlot> sourceFaces,
         ReadOnlySpan<RollingBandCandidate> bands,scoped Span<RegularFaceCut> cuts,ref SheetArrangement model)
     {
@@ -155,7 +179,7 @@ internal static unsafe partial class KernelRuntime
                 var face=sourceFaces[f];
                 if(face==a.FirstSupport||face==a.SecondSupport||face==b.FirstSupport||face==b.SecondSupport)continue;
                 LastRollingFirstFace=accepted.First;LastRollingSecondFace=f;
-                var error=ReadThirdFaceEvents(input,f,face,cuts,i,ref cutBounds,ref faceBounds[f],ref model,requireProof:true,out var relation);
+                var error=ReadThirdFaceEvents(input,f,face,cuts,i,ref cutBounds,ref faceBounds[f],ref model,out var relation);
                 TraceRollingNetwork?.Invoke(new(){Stage=RollingNetworkStage.BoundaryIncidence,CellSource=face,Surface=input.Faces[f].Surface,
                     Other=a.Surface,OtherBand=b.Surface,Curve=accepted.Cut.Curve,First=accepted.Cut.First,Last=accepted.Cut.Last,Relation=relation});
                 if(error!=0)return error;

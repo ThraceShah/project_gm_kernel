@@ -64,7 +64,8 @@ internal static unsafe partial class KernelRuntime
             // second time destroys the exact parallel-frame certificate.
             error=TranslateRollingLine(edge.CurveTag,p0,out var c0);if(error!=0)return error;
             error=TranslateRollingLine(edge.CurveTag,p1,out var c1);if(error!=0)return error;
-            Curves[GetCurveSlotByTag(c0)].Sense=source.Sense;Curves[GetCurveSlotByTag(c1)].Sense=FlipLocalSense(source.Sense);
+            var lineContactSense=orientation>0?ParasolidConstants.PK_TOPOL_sense_positive_c:ParasolidConstants.PK_TOPOL_sense_negative_c;
+            Curves[GetCurveSlotByTag(c0)].Sense=lineContactSense;Curves[GetCurveSlotByTag(c1)].Sense=FlipLocalSense(lineContactSense);
             var angle=Math.Atan2(Dot(radial1,ProfileCross(axis,radial0)),Dot(radial1,radial0));
             candidate=new(){Source=selected,FirstSupport=fa,SecondSupport=fb,Surface=cylinder,FirstContact=c0,SecondContact=c1,First=lower,Last=upper,Radius=radius,FirstSection=Math.Min(0,angle),LastSection=Math.Max(0,angle)};return 0;
         }

@@ -184,6 +184,7 @@ internal static unsafe partial class KernelRuntime
         internal int AddPoint(in KernelVector3 point,VertexSlot original,out BufferOffset index,out bool reusedByPosition,
             scoped ReadOnlySpan<BoundaryParameter> anchors=default,bool requireProof=false)
         {
+            requireProof|=RequireBoundaryAssociations;
             reusedByPosition=false;
             index=-1;BoundaryEventId proven=-1;
             // The witness identifies a root on one finite input use of one

@@ -188,7 +188,7 @@ internal static unsafe partial class KernelRuntime
         {
             var third=3-cuts[i].First-cuts[i].Second;
             ThirdFaceBounds cutBounds=default,faceBounds=default;
-            var error=ReadThirdFaceEvents(input,third,-1,cuts,i,ref cutBounds,ref faceBounds,ref model,requireProof:true,out _);
+            var error=ReadThirdFaceEvents(input,third,-1,cuts,i,ref cutBounds,ref faceBounds,ref model,out _);
             if(error!=0){events=model.NP;return error;}
         }
         if(separateEnd)

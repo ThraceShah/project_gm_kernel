@@ -93,6 +93,54 @@ internal static unsafe partial class KernelRuntime
         return status;
     }
 
+    private static AlgorithmStatus IsolateFiniteSplinePlane(in ModelingEdge edge,in AnalyticSurface plane,
+        Span<OperationIntersectionPoint> roots,Span<ScalarRootIsolation> isolation,Span<double> spatialErrors,out BufferCount count)
+    {
+        count=0;var slot=GetCurveSlotByTag(edge.Curve);
+        if(Curves[slot].Class!=CurveClass.BCurve)return AlgorithmStatus.Unsupported;
+        var span=new IntersectionCurveSpan{Slot=slot,Scale=1,Lower=edge.Start,Upper=edge.End};
+        Span<IntervalNumber> poles=stackalloc IntervalNumber[4*17],bound=stackalloc IntervalNumber[9];
+        Span<OperationIntersectionPoint> local=stackalloc OperationIntersectionPoint[IntersectionPointCapacity];
+        Span<ScalarRootIsolation> certificates=stackalloc ScalarRootIsolation[IntersectionPointCapacity];
+        for(var p=0;p<GeneralCurvePieceCount(span);p++)
+        {
+            var status=GeneralCurvePiece(span,p,poles,out var degree,out var domain,out var lo,out var hi);if(status!=AlgorithmStatus.Success)return status;
+            if(!(hi>lo))continue;
+            var coincident=true;
+            for(var i=0;i<=degree;i++)
+            {
+                var residual=(poles[4*i]-new IntervalNumber(plane.Origin.X)*poles[4*i+3])*plane.Axis.X
+                    +(poles[4*i+1]-new IntervalNumber(plane.Origin.Y)*poles[4*i+3])*plane.Axis.Y
+                    +(poles[4*i+2]-new IntervalNumber(plane.Origin.Z)*poles[4*i+3])*plane.Axis.Z;
+                coincident&=residual.Magnitude==0;
+            }
+            if(coincident)return AlgorithmStatus.Unsupported;
+            var patch=new SurfaceIntersectionPatch(new BezierSurfacePatch(poles[..(4*(degree+1))],degree,0,domain));
+            var n=0;status=SurfaceIsoPlaneRoots.Find(patch,plane,lo,hi,local,ref n,strictSeparation:true,isolation:certificates);
+            if(status!=AlgorithmStatus.Success)return status;
+            for(var i=0;i<n;i++)
+            {
+                var root=certificates[i].Root;var duplicate=false;
+                for(var j=0;j<count;j++)
+                {
+                    if(root.Upper<isolation[j].Root.Lower||root.Lower>isolation[j].Root.Upper)continue;
+                    if(root.Lower!=root.Upper||root.Lower!=isolation[j].Root.Lower||root.Upper!=isolation[j].Root.Upper)
+                        return AlgorithmStatus.NotConverged;
+                    duplicate=true;break;
+                }
+                if(duplicate)continue;
+                if(count==roots.Length||count==isolation.Length||count==spatialErrors.Length)return AlgorithmStatus.OutputTooSmall;
+                status=patch.Bound(new(root.Lower,root.Upper,0,0),bound);if(status!=AlgorithmStatus.Success)return status;
+                var box=new IntervalVector(bound[0],bound[1],bound[2]);
+                roots[count]=local[i];isolation[count]=certificates[i];
+                spatialErrors[count]=(box-new IntervalVector(local[i].Point)).Norm().Value.Upper;
+                if(!double.IsFinite(spatialErrors[count]))return AlgorithmStatus.NotConverged;
+                count++;
+            }
+        }
+        return AlgorithmStatus.Success;
+    }
+
     private static bool SameCertifiedConicPlaneRoot(in BoundaryParameter first,in BoundaryParameter second)
     {
         // The caller has checked one common source occurrence and overlapping

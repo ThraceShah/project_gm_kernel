@@ -22,7 +22,7 @@ internal static unsafe partial class KernelRuntime
     // extension used by the pairwise intersection provider.
     private static int ReadThirdFaceEvents(in RegularBoundaryView input,BufferOffset face,FaceSlot source,
         scoped Span<RegularFaceCut> cuts,BufferOffset cutIndex,ref ThirdFaceBounds cutBounds,ref ThirdFaceBounds faceBounds,
-        ref SheetArrangement model,bool requireProof,out SurfacePairRelation relation)
+        ref SheetArrangement model,out SurfacePairRelation relation)
     {
         relation=SurfacePairRelation.Unresolved;
         ref readonly var cut=ref cuts[cutIndex].Cut;
@@ -32,7 +32,7 @@ internal static unsafe partial class KernelRuntime
         if(!faceBounds.Checked)
         {
             faceBounds.Checked=true;faceBounds.Margin=model.Tolerance;
-            faceBounds.Available=(surfaceRecord.Class==SurfaceClass.Plane||requireProof&&surfaceRecord.Class==SurfaceClass.Cylinder)&&source>=0&&TryThirdFacePrecision(source,ref faceBounds.Margin)
+            faceBounds.Available=(surfaceRecord.Class is SurfaceClass.Plane or SurfaceClass.Cylinder)&&source>=0&&TryThirdFacePrecision(source,ref faceBounds.Margin)
                 &&RegularFiniteFaceExtent(source,out faceBounds.Box)==AlgorithmStatus.Success;
         }
         var havePlane=surfaceRecord.Class==SurfaceClass.Plane&&faceBounds.Available;
@@ -58,13 +58,11 @@ internal static unsafe partial class KernelRuntime
 
         var canJoin=surfaceRecord.Class==SurfaceClass.Plane&&curve.Class==CurveClass.Line&&cuts[cutIndex].First>=0&&cuts[cutIndex].Second>=0;
         var mixedTriple=IsCylinderPlaneTriple(input,cuts[cutIndex],face);
-        var proofSize=requireProof||mixedTriple?IntersectionPointCapacity:0;
         Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[IntersectionPointCapacity];
-        Span<ScalarRootIsolation> isolation=stackalloc ScalarRootIsolation[proofSize];
-        Span<double> spatialErrors=stackalloc double[proofSize];
+        Span<ScalarRootIsolation> isolation=stackalloc ScalarRootIsolation[IntersectionPointCapacity];
+        Span<double> spatialErrors=stackalloc double[IntersectionPointCapacity];
         var count=0;
-        var proofStatus=proofSize==0?AlgorithmStatus.NotRun:CertifyThirdSurfaceRoots(surface,surfaceRecord,cut,curve,roots,isolation,spatialErrors,out count);
-        if(requireProof)
+        var proofStatus=CertifyThirdSurfaceRoots(surface,surfaceRecord,cut,curve,roots,isolation,spatialErrors,out count);
         {
             LastSheetAlgorithmStatus=proofStatus;
             if(proofStatus==AlgorithmStatus.NotConverged&&canJoin&&(cut.LowerEvent!=0||cut.UpperEvent!=0))
@@ -125,28 +123,6 @@ internal static unsafe partial class KernelRuntime
             relation=resolved;return 0;
         }
 
-        var fallback=proofStatus==AlgorithmStatus.Success?proofStatus
-            :IntersectRegularSurfaceCurve(surface,cut.Curve,cut.First,cut.Last,roots,out count);
-        LastSheetAlgorithmStatus=fallback;
-        if(fallback!=AlgorithmStatus.Success)return IntersectionError(fallback);
-        for(var r=0;r<count;r++)
-        {
-            if(roots[r].Kind!=IntersectionVectorKind.Simple)return ParasolidConstants.PK_ERROR_cant_do_intersect;
-            if(mixedTriple&&proofStatus==AlgorithmStatus.Success)
-            {
-                var mixed=JoinCylinderPlaneCutRoots(input,face,cuts,cutIndex,roots[r],isolation[r],spatialErrors[r],ref model,out var joined,out _);
-                if(mixed!=0)return mixed;if(joined)continue;
-            }
-            fallback=IntersectionSurfaceParameters(surfaceRecord,roots[r].Point,out var uv);if(fallback!=AlgorithmStatus.Success)return IntersectionError(fallback);
-            var error=RegularFaceContains(input,face,uv,out var inside);if(error!=0)return error;if(!inside)continue;
-            if(canJoin)
-            {
-                error=JoinThreePlaneCutRoots(input,face,cuts,cutIndex,ref model,out var joined);
-                if(error!=0)return error;if(joined)continue;
-            }
-            error=model.AddPoint(roots[r].Point,-1,out _);if(error!=0)return error;
-        }
-        return 0;
     }
 
     private static AlgorithmStatus CertifyThirdSurfaceRoots(SurfTag surface,in SurfaceRecord surfaceRecord,in SheetCutCurve cut,in CurveRecord curve,
@@ -188,7 +164,7 @@ internal static unsafe partial class KernelRuntime
             return IsolateFiniteExplicitLevelSet(new(){Curve=cut.Curve,Start=cut.First,End=cut.Last},plane,roots,isolation,spatialErrors,out count);
         if(curve.Class!=CurveClass.ICurve)return AlgorithmStatus.Unsupported;
         var data=ICurveDataPool[curve.DataIndex];
-        if(data.ProgramBlock<=0||data.IsBlendContact!=0||RegularCoincidentSupports(surface,data.Surface0Tag)
+        if(data.IsBlendContact!=0||RegularCoincidentSupports(surface,data.Surface0Tag)
             ||RegularCoincidentSupports(surface,data.Surface1Tag))return AlgorithmStatus.Unsupported;
         return IntersectFiniteIntersectionCurvePlane(cut.Curve,cut.First,cut.Last,plane,roots,out count,isolation,spatialErrors);
     }
@@ -263,7 +239,7 @@ internal static unsafe partial class KernelRuntime
         Span<RegularFaceCut> cuts=stackalloc RegularFaceCut[1]{new(){First=-1,Second=-1,Cut=new(){Curve=carrier,First=first,Last=last}}};
         ThirdFaceBounds cutBounds=default,faceBounds=default;
         error=ReadThirdFaceEvents(view,occurrence,face,cuts,0,
-            ref cutBounds,ref faceBounds,ref model,requireProof:true,out relation);
+            ref cutBounds,ref faceBounds,ref model,out relation);
         events=model.NP-np;return error;
     }
 #endif

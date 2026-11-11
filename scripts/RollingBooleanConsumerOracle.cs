@@ -13,6 +13,7 @@ using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Geometry.Intersection;
 using M=ProjectGmKernel.Native.Generated;
 using static parasolid;
+Console.WriteLine("GM_ASSEMBLY sha256="+Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(typeof(KernelRuntime).Assembly.Location))));
 
 unsafe
 {
@@ -23,6 +24,7 @@ unsafe
     var output=Path.Combine(root,"temp_docs","contract-sol",args.FirstOrDefault(a=>!a.StartsWith("--"))??"consumer");
     Require(!Directory.Exists(output),"Use a new output name; existing evidence is immutable");
     Directory.CreateDirectory(output);
+    ParasolidMassProperties.BeginEvidence(output);
     if(!ParasolidScriptHost.TryStartSession("rolling Boolean consumer",out var host,out var reason))throw new Exception(reason);
     using(host)
     {
@@ -30,7 +32,19 @@ unsafe
         KernelRuntime.ForbidLegacyRegularBlendAssembly=true;
         try
         {
-            var target=ReceiveManaged(File.ReadAllBytes(Path.Combine(root,"tests","KernelTests","Fixtures","generated-short-edge-input.x_t")));
+            int target;int* tools=stackalloc int[2];byte[][]? savedBytes=null;
+            var inputSet=args.SingleOrDefault(a=>a.StartsWith("--input-set=",StringComparison.Ordinal));
+            if(inputSet!=null)
+            {
+                var name=inputSet["--input-set=".Length..];
+                Require(name.Length>0&&name.All(c=>char.IsAsciiLetterOrDigit(c)||c is '-' or '_')&&!args.Contains("--reverse"),"one explicit input set, unchanged selection");
+                var source=Path.Combine(root,"temp_docs","contract-sol",name);
+                savedBytes=new[]{File.ReadAllBytes(Path.Combine(source,"target.x_t")),File.ReadAllBytes(Path.Combine(source,"tool-1.x_t")),File.ReadAllBytes(Path.Combine(source,"tool-2.x_t"))};
+                target=ReceiveManaged(savedBytes[0]);tools[0]=ReceiveManaged(savedBytes[1]);tools[1]=ReceiveManaged(savedBytes[2]);
+            }
+            else
+            {
+            target=ReceiveManaged(File.ReadAllBytes(Path.Combine(root,"tests","KernelTests","Fixtures","generated-short-edge-input.x_t")));
             Span<int> selected=stackalloc int[2];Selection(target,selected);
             if(args.Contains("--reverse"))selected.Reverse();
             var mark=new M.PK_EDGE_set_blend_constant_o_s{o_t_version=2};mark.properties.tolerance=1e-7;int count;
@@ -41,18 +55,18 @@ unsafe
                 if(t.Stage==KernelRuntime.BoundaryTraceStage.CertifiedRoot)
                     Console.WriteLine($"ROOT event={t.StartEvent} curve={t.Curve} cut={t.ProductCurve} source=[{t.First:R},{t.Last:R}] error={t.SpatialError:R} witness={t.Witness}");
             };
-            var error=KernelRuntime.BodyFixBlends(target,&fix,&count,null,null,null,&fault,&edgeFault,&topolFault);
-            Console.WriteLine($"BLEND error={error} count={count} stage={KernelRuntime.LastRollingNetworkStage}");Check(error,"GM fix");
+            var fixError=KernelRuntime.BodyFixBlends(target,&fix,&count,null,null,null,&fault,&edgeFault,&topolFault);
+            Console.WriteLine($"BLEND error={fixError} count={count} stage={KernelRuntime.LastRollingNetworkStage}");Check(fixError,"GM fix");
             var q=1/Math.Sqrt(2);var center=(-7-3.8e-5)*q-.075;
             var oblique=new M.PK_AXIS2_sf_s();oblique.location.coord[0]=-1.5;
             oblique.location.coord[1]=(1+center)*q;oblique.location.coord[2]=(1-center)*q;
             oblique.axis.coord[1]=oblique.axis.coord[2]=q;oblique.ref_direction.coord[1]=q;oblique.ref_direction.coord[2]=-q;
             var meridian=new M.PK_AXIS2_sf_s();meridian.location.coord[0]=-1.55;meridian.location.coord[1]=-2.03;meridian.location.coord[2]=4.8;
             meridian.axis.coord[2]=meridian.ref_direction.coord[0]=1;
-            int* tools=stackalloc int[2];
             Check(KernelRuntime.BodyCreateSolidBlock(.15,.4,2.5,&oblique,tools),"GM oblique tool");
             Check(KernelRuntime.BodyCreateSolidBlock(.10,.16,1.3,&meridian,tools+1),"GM meridian tool");
-            var inputs=new[]{target,tools[0],tools[1]};var before=inputs.Select(TransmitManaged).ToArray();
+            }
+            var inputs=new[]{target,tools[0],tools[1]};var rollbackBytes=inputs.Select(TransmitManaged).ToArray();var before=savedBytes??rollbackBytes;
             var native=new int[3];
             for(var i=0;i<3;i++)
             {
@@ -87,7 +101,7 @@ unsafe
                 json.WriteEndArray();json.WriteEndObject();
             }
             Console.WriteLine($"OPTIONS version={options.o_t_version} function={options.function} default_tol={options.default_tol:R}");
-            var entered=false;KernelRuntime.ForbidSpatialBoundaryReuse=true;
+            var error=0;var entered=false;KernelRuntime.ForbidSpatialBoundaryReuse=false;
             KernelRuntime.TraceFiniteBoundary=t=>
             {
                 if(args.Contains("--trace")&&t.Stage is KernelRuntime.BoundaryTraceStage.Input or KernelRuntime.BoundaryTraceStage.Arrangement or KernelRuntime.BoundaryTraceStage.Successor)
@@ -103,7 +117,7 @@ unsafe
             Console.WriteLine($"GM BOOLEAN error={error} result={result.result} bodies={result.n_bodies} entered={entered} stage={KernelRuntime.LastRegularBooleanStage} faces={KernelRuntime.LastRegularBooleanFace}/{KernelRuntime.LastRegularBooleanOtherFace} sheet={KernelRuntime.LastSheetPartitionStage} curve={KernelRuntime.LastSheetCurve} parameter={KernelRuntime.LastSheetParameter:R} status={KernelRuntime.LastSheetAlgorithmStatus} root_failure={SurfaceIsoPlaneRoots.LastFailure} root_box=[{SurfaceIsoPlaneRoots.LastUnresolvedInterval.Lower:R},{SurfaceIsoPlaneRoots.LastUnresolvedInterval.Upper:R}]");
             var own=error==0?new ReadOnlySpan<int>(result.bodies,result.n_bodies).ToArray():[];
             Check(KernelRuntime.TopolTrackResultFree(&tracking),"GM tracking free");Check(KernelRuntime.BooleanResultFree(&result),"GM result free");
-            if(error!=0)for(var i=0;i<inputs.Length;i++)Require(before[i].AsSpan().SequenceEqual(TransmitManaged(inputs[i])),"GM rollback input "+i);
+            if(error!=0)for(var i=0;i<inputs.Length;i++)Require(rollbackBytes[i].AsSpan().SequenceEqual(TransmitManaged(inputs[i])),"GM rollback input "+i);
             PK_TOPOL_track_r_t nativeTracking=default;PK_boolean_r_t nativeResult=default;
             fixed(int* nativeInputs=native)
             {
@@ -131,7 +145,8 @@ unsafe
                 finally{Check(PK_TOPOL_track_r_f(&nativeTracking),"PK tracking free");Check(PK_boolean_r_f(&nativeResult),"PK result free");}
             }
             Require(args.Contains("--inject")?entered&&error==M.ParasolidConstants.PK_ERROR_memory_full:ownSuccess,"GM Boolean contract incomplete");
-            Console.WriteLine(args.Contains("--inject")?"PASS injected failure and three-input rollback":"PASS same-input Boolean, full check, strict compare and mass");
+            Console.WriteLine(args.Contains("--inject")?"PASS injected failure and three-input rollback":$"GEOMETRY_TOPOLOGY_PASS same-input Boolean mass_unresolved={ParasolidMassProperties.UnresolvedCount}");
+            if(ParasolidMassProperties.UnresolvedCount!=0)Environment.ExitCode=2;
         }
         finally
         {
@@ -191,14 +206,8 @@ static unsafe void FullCheck(int body,string label)
     try{Console.WriteLine($"FULL {label} faults={count}");for(var i=0;i<count;i++)Console.WriteLine($"FAULT {faults[i].state} {faults[i].entity_1}/{faults[i].entity_2}");Require(count==0,label+" faults");}
     finally{if(faults!=null)PK_MEMORY_free(faults);}
 }
-static unsafe void Mass(int reference,int actual)
-{
-    var options=new PK_TOPOL_eval_mass_props_o_t();double* a=stackalloc double[15];double* b=stackalloc double[15];
-    Check(PK_TOPOL_eval_mass_props(1,&reference,.99999999,&options,a,a+1,a+2,a+5,a+14),"PK mass");
-    Check(PK_TOPOL_eval_mass_props(1,&actual,.99999999,&options,b,b+1,b+2,b+5,b+14),"GM mass");
-    var worst=0d;for(var i=0;i<15;i++)worst=Math.Max(worst,Math.Abs(a[i]-b[i])/(1+Math.Abs(a[i])));
-    Console.WriteLine($"MASS normalized15={worst:R}");Require(worst<1e-7,"mass gate");
-}
+static void Mass(PK_BODY_t reference,PK_BODY_t actual)
+    =>Require(ParasolidMassProperties.Compare(reference,actual,"same-input Boolean")!=MassAgreement.Different,"mass intervals prove a difference");
 static void Selection(int body,Span<int> selected)
 {
     var slot=KernelRuntime.ResolveTagRecord(body).Slot;var edge=KernelRuntime.Bodies[slot].FirstEdgeBody;var junction=-1;selected.Clear();

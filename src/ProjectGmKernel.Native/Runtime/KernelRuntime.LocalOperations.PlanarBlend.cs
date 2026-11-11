@@ -206,9 +206,17 @@ internal static unsafe partial class KernelRuntime
         for(var i=0;i<selected.Length;i++)if(Edges[selected[i]].PendingBlendKind==1)
         {
             var polygon=polygons[input.Length+i];var axis=axes[i];var center=centers[i];var radius=Edges[selected[i]].PendingBlendFirst;
+            if(!LocalEdgeFaces(selected[i],out var firstSupport,out var secondSupport))return ParasolidConstants.PK_ERROR_bad_parameter;
+            var supportMask=(1UL<<faces.IndexOf(firstSupport))|(1UL<<faces.IndexOf(secondSupport));
             for(var j=0;j<polygon.Count;j++)
             {
                 var a=indices[polygon.First+j];var b=indices[polygon.First+(j+1)%polygon.Count];var direction=Unit(Sub(vertices[b],vertices[a]));
+                if((mask[a]&mask[b]&supportMask)!=0)
+                {
+                    var support=(mask[a]&mask[b]&(1UL<<faces.IndexOf(firstSupport)))!=0?firstSupport:secondSupport;
+                    var bind=BindPlanarBlendContactLine(ref brep,brep.FindEdge(vertexMap[a],vertexMap[b]),selected[i],support);if(bind!=0)return bind;
+                    continue;
+                }
                 if(Math.Abs(Dot(direction,axis))>1-1e-8)continue;
                 var capMask=mask[a]&mask[b]&((1UL<<input.Length)-1);var cap=-1;
                 for(var f=0;f<input.Length;f++)if((capMask&(1UL<<f))!=0){cap=f;break;}
@@ -220,6 +228,33 @@ internal static unsafe partial class KernelRuntime
         var finish=CompleteArrangedPlanarBlends(ref brep,faces,out var product,products);if(finish!=0)return finish;
         for(var i=0;i<selected.Length;i++)descriptions[i].Result=Faces[products[productCells[i]]].Header.Tag;
         finish=ReplaceLocalBody(body,product,faces,products[..brep.FaceCount]);if(finish==0)made=selected.Length;return finish;
+    }
+
+    private static int BindPlanarBlendContactLine(scoped ref LocalBrep draft,BufferOffset edge,EdgeSlot source,FaceSlot support)
+    {
+        if(edge<0)return ParasolidConstants.PK_ERROR_bad_parameter;
+        var carrier=Curves[GetCurveSlotByTag(Edges[source].CurveTag)];
+        if(carrier.Class!=CurveClass.Line)return ParasolidConstants.PK_ERROR_not_implemented;
+        GetIntersectionLine(carrier,out var origin,out var direction);
+        ref var use=ref draft.Edges[edge];var a=draft.Points[use.StartVertex];var b=draft.Points[use.EndVertex];
+        var squared=Dot(direction,direction);var first=Dot(Sub(a,origin),direction)/squared;var last=Dot(Sub(b,origin),direction)/squared;
+        if(first==last)return ParasolidConstants.PK_ERROR_curve_too_short;
+        var shifted=Sub(a,Scale(direction,first));
+        var curve=CreateLineCurveTag(shifted.X,shifted.Y,shifted.Z,direction.X,direction.Y,direction.Z);
+        if(curve<=0)return ParasolidConstants.PK_ERROR_memory_full;
+        // Keep the selected native line gauge on both contact uses. Their
+        // opposite topological traversal is represented by curve sense.
+        var fin=Edges[source].FirstFinEdge;
+        if(Loops[Fins[fin].Loop].Face!=support)fin=Fins[fin].Other;
+        if(fin<0||Fins[fin].Edge!=source||Loops[Fins[fin].Loop].Face!=support)return ParasolidConstants.PK_ERROR_bad_loop;
+        var positive=(Fins[fin].Sense=='+'?1:-1)*LocalSenseSign(carrier.Sense)>0;
+        Curves[GetCurveSlotByTag(curve)].Sense=positive?ParasolidConstants.PK_TOPOL_sense_positive_c:ParasolidConstants.PK_TOPOL_sense_negative_c;
+        if(positive!=(first<last))
+        {
+            (use.StartVertex,use.EndVertex)=(use.EndVertex,use.StartVertex);
+            for(var c=0;c<draft.CoedgeCount;c++)if(draft.Coedges[c].Edge==edge)draft.Coedges[c].Forward^=1;
+        }
+        use.Curve=curve;use.Start=Math.Min(first,last);use.End=Math.Max(first,last);return 0;
     }
 
     private static int CompleteArrangedPlanarBlends(scoped ref LocalBrep draft,scoped ReadOnlySpan<FaceSlot> sources,out BodyTag body,Span<FaceSlot> products)

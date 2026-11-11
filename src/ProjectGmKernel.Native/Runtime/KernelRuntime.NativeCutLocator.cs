@@ -16,6 +16,8 @@ internal static unsafe partial class KernelRuntime
             return LocateCertifiedLineCut(cut,root,ref parameter,ref isolation,out handled);
         if(root.Certified==PlanePairBlendLineCertificate)
             return LocateCertifiedBladeCut(cut,root,ref parameter,ref isolation,out handled);
+        if(root.Certified==PlanePairSplineLineCertificate)
+            return LocateCertifiedSplineCut(cut,root,ref parameter,ref isolation,out handled);
         if(root.Certified==PlanePairCylinderLineCertificate
             ||root.Certified==NativePlaneCertificate&&cut.Construction==CutConstruction.AnalyticCylinderPlaneConic)
             return LocateCertifiedCylinderConic(cut,root,ref parameter,ref isolation,out handled);
@@ -84,6 +86,37 @@ internal static unsafe partial class KernelRuntime
         var target=Curves[GetCurveSlotByTag(cut.Curve)];
         if(target.Class!=CurveClass.ICurve||!root.BlendStation.Finite)return 0;
         return LocateCertifiedBladeCut(cut,root,ICurveDataPool[target.DataIndex],ref parameter,ref isolation,out handled);
+    }
+
+    private static int LocateCertifiedSplineCut(in SheetCutCurve cut,in RegularBoundaryRoot root,
+        ref double parameter,ref IntervalNumber isolation,out bool handled)
+    {
+        handled=false;var target=Curves[GetCurveSlotByTag(cut.Curve)];
+        if(target.Class!=CurveClass.ICurve||!root.SplineDomain.Valid||!double.IsFinite(root.Root.SpatialError))return 0;
+        var data=ICurveDataPool[target.DataIndex];
+        var shared=TryCertifySupportChart(data.Surface0Tag,root.ContactSurface,out _)
+            &&SameSheetSupport(data.Surface1Tag,root.CuttingSurface)
+            ||TryCertifySupportChart(data.Surface1Tag,root.ContactSurface,out _)
+            &&SameSheetSupport(data.Surface0Tag,root.CuttingSurface);
+        if(!shared)return 0;
+        var checkpoint=CommandScratch.ThreadArenaOffset;
+        try
+        {
+            var compiler=new NestedProgramCompiler();if(!compiler.Ready){handled=true;return ParasolidConstants.PK_ERROR_memory_full;}
+            var status=compiler.Spine(cut.Curve,out var spine);if(status!=AlgorithmStatus.Success){handled=true;return IntersectionError(status);}
+            var program=compiler.View;var definition=program.Spines[spine];
+            var first=program.Surfaces[definition.First];var second=program.Surfaces[definition.Second];
+            if(first.IsBlend||second.IsBlend||first.IsBSpline==second.IsBSpline)return 0;
+            var analytic=first.IsBSpline?second:first;if(analytic.Analytic.Kind!=SurfaceClass.Plane)return 0;
+            handled=true;var radius=new IntervalNumber(-root.Root.SpatialError,root.Root.SpatialError);
+            Span<IntervalNumber> witness=stackalloc IntervalNumber[5]
+            {
+                new IntervalNumber(root.Root.Point.X)+radius,new IntervalNumber(root.Root.Point.Y)+radius,new IntervalNumber(root.Root.Point.Z)+radius,
+                new(root.SplineDomain.U0,root.SplineDomain.U1),new(root.SplineDomain.V0,root.SplineDomain.V1)
+            };
+            return LocateCertifiedChart(cut,program,spine,witness,out parameter,out isolation,root.Root.Point);
+        }
+        finally{CommandScratch.ThreadArenaOffset=checkpoint;}
     }
 
     private static int LocateCertifiedBladeCut(in SheetCutCurve cut,in RegularBoundaryRoot root,in ICurveData data,

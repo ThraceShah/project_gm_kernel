@@ -20,6 +20,25 @@ public unsafe class FinitePlaneSeparationTests:IDisposable
     public void Dispose(){KernelRuntime.SessionStop();}
 
     [Theory]
+    [InlineData(0,1,true)]
+    [InlineData(1e-13,1,false)]
+    [InlineData(-1e-13,0,false)]
+    public void AnExactNativeConicEndIsOwnedButANearbyInteriorOrExteriorRootIsNot(double offset,int expectedCount,bool endpoint)
+    {
+        var circle=new PK_CIRCLE_sf_s{radius=1};circle.basis_set.axis.coord[2]=1;circle.basis_set.ref_direction.coord[0]=1;
+        CurveTag curve;Assert.Equal(0,KernelRuntime.CircleCreate(&circle,&curve));
+        var interval=new PK_INTERVAL_s();interval.value[1]=Math.PI*.5;BodyTag wire;
+        Assert.Equal(0,KernelRuntime.CurveMakeWireBody(curve,interval,&wire));Assert.True(KernelRuntime.TryResolveBodySlot(wire,out var body));
+        var source=KernelRuntime.Bodies[body].FirstEdgeBody;
+        var plane=new PK_PLANE_sf_s();plane.basis_set.axis.coord[1]=1;plane.basis_set.ref_direction.coord[2]=1;plane.basis_set.location.coord[1]=offset;
+        SurfTag cutting;Assert.Equal(0,KernelRuntime.PlaneCreate(&plane,&cutting));
+        Assert.Equal(0,KernelRuntime.TestNativePlaneEdge(source,cutting,out var count,out var vertex,out var station,out _));
+        Assert.Equal(expectedCount,count);
+        if(endpoint){Assert.Equal(KernelRuntime.Edges[source].StartVertex,vertex);Assert.Equal(0,station.Lower);Assert.Equal(0,station.Upper);}
+        else{Assert.Equal(-1,vertex);if(count==1){Assert.True(station.Lower>0);Assert.InRange(1e-13,station.Lower,station.Upper);}}
+    }
+
+    [Theory]
     [InlineData(0,true)]
     [InlineData(1e-13,false)]
     [InlineData(-1e-13,false)]

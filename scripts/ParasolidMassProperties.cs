@@ -6,6 +6,15 @@ internal enum MassAgreement : byte { Verified, Different, Unresolved }
 internal static unsafe class ParasolidMassProperties
 {
     internal static int UnresolvedCount { get; private set; }
+    private static string? evidencePath;
+
+    internal static void BeginEvidence(string output)
+    {
+        evidencePath=Path.Combine(output,"mass-properties.csv");
+        using var file=new FileStream(evidencePath,FileMode.CreateNew,FileAccess.Write);
+        using var writer=new StreamWriter(file);
+        writer.WriteLine("label,property,accuracy,reference,reference_modulus,actual,actual_modulus,normalized_lower,normalized_upper,status");
+    }
 
     internal static MassAgreement Compare(PK_BODY_t reference,PK_BODY_t actual,string label,double accuracy=.99999999999)
     {
@@ -24,6 +33,8 @@ internal static unsafe class ParasolidMassProperties
             if(result==MassAgreement.Different)aggregate=result;
             else if(result==MassAgreement.Unresolved&&aggregate==MassAgreement.Verified)aggregate=result;
             Console.WriteLine($"MASS_BOUND {label} property={names[i]} accuracy={accuracy:R} reference={a[v]:R} reference_modulus={a[e]:R} actual={b[v]:R} actual_modulus={b[e]:R} normalized_lower={lower:R} normalized_upper={upper:R} status={result}");
+            if(evidencePath!=null)
+                File.AppendAllText(evidencePath,FormattableString.Invariant($"\"{label.Replace("\"","\"\"")}\",{names[i]},{accuracy:R},{a[v]:R},{a[e]:R},{b[v]:R},{b[e]:R},{lower:R},{upper:R},{result}\n"));
         }
         Console.WriteLine($"MASS_AGREEMENT {label} status={aggregate} threshold=1E-07 geometry_separate=True");
         if(aggregate==MassAgreement.Unresolved)UnresolvedCount++;

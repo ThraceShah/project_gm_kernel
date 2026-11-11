@@ -9,6 +9,47 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
+    private static bool TryExplicitNativePlaneEnd(in ModelingEdge edge,SurfTag cuttingSurface,ReadOnlySpan<VertexSlot> originals,
+        Span<OperationIntersectionPoint> roots,Span<ScalarRootIsolation> stations,Span<double> errors,out BufferCount count,out FiniteCurveSurfaceRoot endpoint)
+    {
+        count=0;endpoint=default;var curve=Curves[GetCurveSlotByTag(edge.Curve)];
+        if(curve.Class is not (CurveClass.Circle or CurveClass.Ellipse)
+            ||!TryReadExplicitSpineCurve(curve,out var conic)||!TryBoundaryPlane(GetSurfaceSlotByTag(cuttingSurface),out var plane))return false;
+        ConicPlaneCoefficients(conic,plane,out var a,out var b,out var h);
+        var middle=edge.Start+(edge.End-edge.Start)*.5;
+        for(var end=0;end<2;end++)
+        {
+            var upper=end!=0;var at=upper?edge.End:edge.Start;
+            IntervalDual.SinCos(new(new IntervalNumber(at),0),out var sine,out var cosine);
+            // sin(0)=0 and cos(0)=1 are exact identities at the declared
+            // native parameter. No nearby station or quadrant is replaced.
+            var value=at==0?a-h:a*cosine.Value+b*sine.Value-h;
+            var derivative=at==0?b:-a*sine.Value+b*cosine.Value;
+            if(value.Magnitude!=0)continue;
+            var local=upper?new IntervalNumber(middle,edge.End):new IntervalNumber(edge.Start,middle);
+            IntervalDual.SinCos(new(local,0),out sine,out cosine);
+            var acceleration=-a*cosine.Value-b*sine.Value;
+            var slope=-a*sine.Value+b*cosine.Value;
+            var transverse=slope.Finite&&!slope.ContainsZero;
+            if(!transverse&&(derivative.Magnitude!=0||!acceleration.Finite||acceleration.ContainsZero))continue;
+            // f=0 with separated f', or f=f'=0 with separated f'', proves
+            // this endpoint is the only root in this half. Isolate the rest.
+            var remaining=edge;remaining.Start=upper?edge.Start:middle;remaining.End=upper?middle:edge.End;
+            if(IsolateFiniteExplicitLevelSet(remaining,plane,roots,stations,errors,out count)!=AlgorithmStatus.Success){count=0;continue;}
+            var first=edge.StartVertex>=0&&edge.StartVertex<originals.Length?originals[edge.StartVertex]:-1;
+            var last=edge.EndVertex>=0&&edge.EndVertex<originals.Length?originals[edge.EndVertex]:-1;
+            if(FiniteEndpointRoot(edge.Curve,edge.Start,edge.End,first,last,0,at,out endpoint)!=0){count=0;continue;}
+            endpoint.Lower=endpoint.Upper=at;endpoint.Kind=upper?IntersectionVectorKind.End:IntersectionVectorKind.Start;
+            if(count==roots.Length||count==stations.Length||count==errors.Length){count=0;return false;}
+            var index=count++;
+            if(!upper){roots[..index].CopyTo(roots[1..]);stations[..index].CopyTo(stations[1..]);errors[..index].CopyTo(errors[1..]);index=0;}
+            roots[index]=new(){Point=endpoint.Point,First=at,Kind=endpoint.Kind};
+            stations[index]=new(){Root=new(at),MonotoneDomain=local,Certified=true,Increasing=transverse&&slope.Lower>0};errors[index]=endpoint.SpatialError;
+            return true;
+        }
+        return false;
+    }
+
     private static bool TryStationaryNativePlaneEnd(in ModelingEdge edge,SurfTag cuttingSurface,
         ReadOnlySpan<VertexSlot> originals,Span<OperationIntersectionPoint> roots,Span<ScalarRootIsolation> stations,
         Span<double> errors,out BufferCount count,out FiniteCurveSurfaceRoot endpoint)
@@ -145,7 +186,17 @@ internal static unsafe partial class KernelRuntime
         var owns=EnsureCommandScratch();
         try
         {
-            if(!TryNativeCurvePlaneEvents(use,plane,roots,stations,errors,out count))
+            var kind=Curves[GetCurveSlotByTag(use.Curve)].Class;
+            if(kind is CurveClass.Circle or CurveClass.Ellipse)
+            {
+                if(TryExplicitNativePlaneEnd(use,plane,originals,roots,stations,errors,out count,out var end))vertex=end.Vertex;
+                else
+                {
+                    if(!TryBoundaryPlane(GetSurfaceSlotByTag(plane),out var flat))return ParasolidConstants.PK_ERROR_not_implemented;
+                    var status=IsolateFiniteExplicitLevelSet(use,flat,roots,stations,errors,out count);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+                }
+            }
+            else if(!TryNativeCurvePlaneEvents(use,plane,roots,stations,errors,out count))
             {
                 if(!TryStationaryNativePlaneEnd(use,plane,originals,roots,stations,errors,out count,out var endpoint))
                     return ParasolidConstants.PK_ERROR_cant_do_intersect;

@@ -12,9 +12,15 @@ using System.Text;
 using ProjectGmKernel.Native.Runtime;
 using M=ProjectGmKernel.Native.Generated;
 using static parasolid;
+Console.WriteLine("GM_ASSEMBLY sha256="+Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(typeof(KernelRuntime).Assembly.Location))));
 
 var directory=Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","local-operation-oracle"));
+var outputName=args.Single(x=>x.StartsWith("--output-name=",StringComparison.Ordinal))["--output-name=".Length..];
+if(outputName.Length==0||!outputName.All(c=>char.IsAsciiLetterOrDigit(c)||c is '-' or '_'))throw new ArgumentException("one new output directory name is required");
+directory=Path.Combine(directory,outputName);
+if(Directory.Exists(directory))throw new InvalidOperationException("Existing execution evidence is immutable");
 Directory.CreateDirectory(directory);var report=new StringBuilder();
+ParasolidMassProperties.BeginEvidence(directory);
 var axialArrangement=args.Contains("--axial-arrangement",StringComparer.Ordinal);
 var blendArrangement=args.Contains("--blend-arrangement",StringComparer.Ordinal);
 var trace=axialArrangement||blendArrangement?new List<KernelRuntime.BoundaryTrace>():null;
@@ -81,17 +87,10 @@ try
                     for(var kind=0;kind<5;kind++){var actual=Count(received,kind);var expected=Count(reference,kind);Require(actual==expected,$"{c.Name} topology kind {kind}: {actual}/{expected}");}
                     CheckBody(reference,c.Name+" independent",Log);CheckBody(received,c.Name+" received",Log);CompareMass(reference,received,c.Name,Log);
                     CompareMaterialSense(reference,received,c.Name);
-                    if(trace!=null&&c.Shape=="cylinder")ParasolidBodyCompare.AssertEquivalent(reference,received,c.Name+" strict");
-                    if(!CompareBodies(reference,received,c.Name+" raw",Log,true))
-                    {
-                        var first=CanonicalCopy(reference);var second=CanonicalCopy(received);
-                        CompareMaterialSense(reference,first,c.Name+" reference normalization");CompareMaterialSense(received,second,c.Name+" received normalization");
-                        CheckBody(first,c.Name+" canonical independent",Log);CheckBody(second,c.Name+" canonical received",Log);
-                        CompareBodies(first,second,c.Name+" canonical",Log);CompareMass(first,second,c.Name+" canonical",Log);
-                        Check(PK_ENTITY_delete(1,&first),"delete canonical independent");Check(PK_ENTITY_delete(1,&second),"delete canonical received");
-                    }
+                    try{ParasolidBodyCompare.AssertEquivalent(reference,received,c.Name+" strict");}
+                    catch{RecordFiniteCurves(reference,c.Name+" native",Log);RecordFiniteCurves(received,c.Name+" GM fresh",Log);throw;}
                     Check(KernelRuntime.EntityDelete(1,&managed),"delete managed result");Check(PK_ENTITY_delete(1,&reference),"delete reference");Check(PK_ENTITY_delete(1,&received),"delete received");
-                    Log("PASS "+c.Name);
+                    Log("GEOMETRY_TOPOLOGY_PASS "+c.Name);
                 }
                 catch(Exception ex)
                 {
@@ -103,7 +102,8 @@ try
                     }
                 }
             }
-            Log($"Local operation oracle: {executed-failures} passed, {failures} failed.");Require(failures==0,"Local operation oracle failed.");
+            Log($"Local operation geometry: {executed-failures} passed, {failures} failed, mass_unresolved={ParasolidMassProperties.UnresolvedCount}.");Require(failures==0,"Local operation oracle failed.");
+            if(ParasolidMassProperties.UnresolvedCount!=0)Environment.ExitCode=2;
         }
         finally{Check(KernelRuntime.SessionStop(),"managed session stop");}
     }
@@ -300,31 +300,10 @@ static unsafe void CheckBody(int body,string label,Action<string> log)
     var options=new PK_BODY_check_o_t{max_faults=100};int count=0;PK_check_fault_t* faults=null;Check(PK_BODY_check(body,&options,&count,&faults),label+" full PK_BODY_check");
     try{for(var i=0;i<count;i++)log($"{label} fault={faults[i].state} entity={faults[i].entity_1} other={faults[i].entity_2}");Require(count==0,label+" BODY_check faults: "+count);}finally{Free(false,faults);}
 }
-static unsafe bool CompareBodies(int reference,int actual,string label,Action<string> log,bool allowCanonicalization=false)
-{
-    var options=new PK_DEBUG_BODY_compare_o_t{max_diffs=128,all_tests=PK_LOGICAL_false,num_tests=PK_LOGICAL_true,tol_dev_tests=PK_LOGICAL_true,tol_tests=PK_LOGICAL_true,
-        class_tests=PK_LOGICAL_true,sense_tests=PK_LOGICAL_true,missing_tests=PK_LOGICAL_true,acc_dev_tests=PK_LOGICAL_false,non_match_tests=PK_LOGICAL_false};
-    var result=new PK_DEBUG_BODY_compare_r_t();Check(PK_DEBUG_BODY_compare(reference,actual,&options,&result),label+" compare");
-    try
-    {
-        log($"{label}: global={result.global_result}, local={result.local_result}, face pairs={result.n_face_pairs}");var differences=0;var other=0;
-        for(var i=0;i<result.n_global_diffs;i++)log($"  global={result.global_diffs[i].diff} reference={result.global_diffs[i].n_masters} received={result.global_diffs[i].n_similars}");
-        for(var i=0;i<result.n_face_pairs;i++)for(var j=0;j<result.face_pairs[i].n_local_diffs;j++){var d=result.face_pairs[i].local_diffs[j];differences++;if(d.diff!=21958&&d.diff!=21959)other++;log($"  face={result.face_pairs[i].master_face}/{result.face_pairs[i].similar_face} diff={d.diff} entity={d.master_entity}/{d.similar_entity} value={d.master_double:R}/{d.similar_double:R}");if(allowCanonicalization&&differences<3&&d.diff==21959){DumpCurve(d.master_entity,log);DumpCurve(d.similar_entity,log);}}
-        Require(result.global_result==PK_DEBUG_global_res_no_diffs_c&&other==0,label+" structural/class/tolerance/missing differences");
-        if(differences!=0&&allowCanonicalization){log(label+" has representation sense differences; material normals and every oriented fin are separately gated before canonicalization.");return false;}
-        Require(result.local_result==PK_DEBUG_local_res_no_diffs_c&&differences==0,label+" structure/sense/tolerance differs");return true;
-    }
-    finally{Check(PK_DEBUG_BODY_compare_r_f(&result),"free compare result");}
-}
 static unsafe void CompareMass(int reference,int actual,string label,Action<string> log)
 {
-    var options=new PK_TOPOL_eval_mass_props_o_t();double* expected=stackalloc double[15];double* received=stackalloc double[15];
-    // FD §31.1.1: accuracy approaches ONE for more integration work; it is not
-    // a requested error tolerance. Low values are unsuitable for validation.
-    Check(PK_TOPOL_eval_mass_props(1,&reference,.999999999,&options,expected,expected+1,expected+2,expected+5,expected+14),label+" reference mass");
-    Check(PK_TOPOL_eval_mass_props(1,&actual,.999999999,&options,received,received+1,received+2,received+5,received+14),label+" received mass");
-    for(var i=0;i<15;i++)Require(double.IsFinite(expected[i])&&double.IsFinite(received[i])&&Math.Abs(expected[i]-received[i])<=2e-7*Math.Max(1,Math.Abs(expected[i])),label+$" mass property {i}: {expected[i]:R}/{received[i]:R}");
-    log(label+$" volume={expected[0]:R}/{received[0]:R}, area={expected[14]:R}/{received[14]:R}");
+    var status=ParasolidMassProperties.Compare(reference,actual,label);log(label+" mass agreement="+status);
+    Require(status!=MassAgreement.Different,label+" mass intervals prove a difference");
 }
 
 static unsafe void CompareMaterialSense(int reference,int actual,string label)
@@ -408,99 +387,14 @@ static unsafe double Distance(PK_VECTOR_t a,PK_VECTOR_t b)
     var x=a.coord[0]-b.coord[0];var y=a.coord[1]-b.coord[1];var z=a.coord[2]-b.coord[2];return Math.Sqrt(x*x+y*y+z*z);
 }
 static double VectorDot((double X,double Y,double Z) a,(double X,double Y,double Z) b)=>a.X*b.X+a.Y*b.Y+a.Z*b.Z;
-
-// Both independent results undergo exactly this same public-PK canonical
-// attachment on copies. Raw bodies and their diagnostics remain untouched.
-// Material orientation and every oriented fin have already been gated above.
-static unsafe int CanonicalCopy(int source)
+static unsafe void RecordFiniteCurves(PK_BODY_t body,string label,Action<string> log)
 {
-    int body=0;Check(PK_ENTITY_copy(source,&body),"canonical body copy");
-    foreach(var faceTag in Tags(false,body,false))
+    PK_VECTOR_t* ends=stackalloc PK_VECTOR_t[2];PK_VECTOR_t* jet=stackalloc PK_VECTOR_t[2];
+    foreach(var edge in Tags(false,body,true))
     {
-        var face=faceTag;
-        var interiorOptions=new PK_FACE_find_interior_vec_o_t();PK_VECTOR_t point;PK_UV_t uv;
-        Check(PK_FACE_find_interior_vec(face,&interiorOptions,&point,&uv),"canonical face interior");var desired=FaceNormal(face,point,out var cls);
-        int old=0,geometry=0;Check(PK_FACE_ask_surf(face,&old),"canonical original surface");
-        if(cls==PK_CLASS_plane)
-        {
-            PK_PLANE_sf_t sf;Check(PK_PLANE_ask(old,&sf),"canonical plane form");
-            var normal=(sf.basis_set.axis.coord[0],sf.basis_set.axis.coord[1],sf.basis_set.axis.coord[2]);
-            var flip=Math.Abs(normal.Item1)>1e-12?normal.Item1<0:Math.Abs(normal.Item2)>1e-12?normal.Item2<0:normal.Item3<0;
-            if(flip)for(var i=0;i<3;i++)sf.basis_set.axis.coord[i]=-sf.basis_set.axis.coord[i];
-            Check(PK_PLANE_create(&sf,&geometry),"canonical plane create");
-        }
-        else if(cls==PK_CLASS_cyl){PK_CYL_sf_t sf;Check(PK_CYL_ask(old,&sf),"canonical cylinder form");Check(PK_CYL_create(&sf,&geometry),"canonical cylinder create");}
-        else if(cls==PK_CLASS_cone){PK_CONE_sf_t sf;Check(PK_CONE_ask(old,&sf),"canonical cone form");Check(PK_CONE_create(&sf,&geometry),"canonical cone create");}
-        else if(cls==PK_CLASS_sphere){PK_SPHERE_sf_t sf;Check(PK_SPHERE_ask(old,&sf),"canonical sphere form");Check(PK_SPHERE_create(&sf,&geometry),"canonical sphere create");}
-        else if(cls==PK_CLASS_torus){PK_TORUS_sf_t sf;Check(PK_TORUS_ask(old,&sf),"canonical torus form");Check(PK_TORUS_create(&sf,&geometry),"canonical torus create");}
-        else throw new InvalidOperationException("canonicalization unsupported surface class "+cls);
-        Check(PK_SURF_parameterise_vector(geometry,point,&uv),"canonical surface parameter");PK_VECTOR_t value,normalValue;
-        Check(PK_SURF_eval_with_normal(geometry,uv,0,0,PK_LOGICAL_false,&value,&normalValue),"canonical surface normal");
-        var actual=(normalValue.coord[0],normalValue.coord[1],normalValue.coord[2]);var sense=VectorDot(desired,actual)>0?PK_LOGICAL_true:PK_LOGICAL_false;
-        Check(PK_TOPOL_detach_geom(face),"canonical surface detach");
-        Check(PK_FACE_attach_surfs(1,&face,&geometry,&sense),"canonical surface attach");
+        PK_CURVE_t curve;PK_CLASS_t kind;PK_INTERVAL_t range;PK_LOGICAL_t sense;
+        Check(PK_EDGE_ask_geometry(edge,PK_LOGICAL_true,&curve,&kind,ends,&range,&sense),"finite curve sense evidence");
+        Check(PK_CURVE_eval(curve,range.value[0]*.5+range.value[1]*.5,1,jet),"finite curve tangent evidence");
+        log($"FINITE_CURVE {label} edge={edge} curve={curve} class={kind} positive={sense==PK_LOGICAL_true} range={range.value[0]:R}/{range.value[1]:R} ends=({ends[0].coord[0]:R},{ends[0].coord[1]:R},{ends[0].coord[2]:R})/({ends[1].coord[0]:R},{ends[1].coord[1]:R},{ends[1].coord[2]:R}) tangent=({jet[1].coord[0]:R},{jet[1].coord[1]:R},{jet[1].coord[2]:R})");
     }
-    PK_VECTOR_t* ends=stackalloc PK_VECTOR_t[2];int* vertices=stackalloc int[2];
-    foreach(var edgeTag in Tags(false,body,true))
-    {
-        var edge=edgeTag;int old=0,cls=0;var bounds=new PK_INTERVAL_t();PK_LOGICAL_t orientation=default;
-        Check(PK_EDGE_ask_geometry(edge,PK_LOGICAL_true,&old,&cls,ends,&bounds,&orientation),"canonical edge geometry");int curve=0;
-        Check(PK_EDGE_ask_vertices(edge,vertices),"canonical edge vertices");
-        var reverse=orientation==PK_LOGICAL_false;
-        if(cls==PK_CLASS_line)
-        {
-            var a=VertexPosition(false,vertices[0]);var b=VertexPosition(false,vertices[1]);var d=(b.X-a.X,b.Y-a.Y,b.Z-a.Z);var length=Math.Sqrt(VectorDot(d,d));
-            var sf=new PK_LINE_sf_t(new PK_AXIS1_sf_t(new(a.X,a.Y,a.Z),new(d.Item1/length,d.Item2/length,d.Item3/length)));
-            Check(PK_LINE_create(&sf,&curve),"canonical line create");
-        }
-        else
-        {
-            if(cls==PK_CLASS_circle)
-            {
-                PK_CIRCLE_sf_t sf;Check(PK_CIRCLE_ask(old,&sf),"canonical circle form");if(reverse)for(var i=0;i<3;i++)sf.basis_set.axis.coord[i]=-sf.basis_set.axis.coord[i];
-                Check(PK_CIRCLE_create(&sf,&curve),"canonical circle create");
-            }
-            else if(cls==PK_CLASS_ellipse)
-            {
-                PK_ELLIPSE_sf_t sf;Check(PK_ELLIPSE_ask(old,&sf),"canonical ellipse form");if(reverse)for(var i=0;i<3;i++)sf.basis_set.axis.coord[i]=-sf.basis_set.axis.coord[i];
-                Check(PK_ELLIPSE_create(&sf,&curve),"canonical ellipse create");
-            }
-            else throw new InvalidOperationException("canonicalization unsupported curve class "+cls);
-        }
-        Check(PK_TOPOL_detach_geom(edge),"canonical curve detach");
-        Check(PK_EDGE_attach_curves(1,&edge,&curve),"canonical curve attach");
-    }
-    return body;
-}
-static unsafe void DumpCurve(int entity,Action<string> log)
-{
-    int cls=0;Check(PK_ENTITY_ask_class(entity,&cls),"diagnostic class");
-    if(cls>=PK_CLASS_line&&cls<=PK_CLASS_trcurve)
-    {
-        int count=0;int* owners=null;Check(PK_CURVE_ask_edges(entity,&count,&owners),"diagnostic curve owners");
-        if(count>0)
-        {
-            int curve=0;int curveClass=0;var bounds=new PK_INTERVAL_t();PK_LOGICAL_t orientation=default;PK_VECTOR_t* ends=stackalloc PK_VECTOR_t[2];
-            Check(PK_EDGE_ask_geometry(owners[0],PK_LOGICAL_true,&curve,&curveClass,ends,&bounds,&orientation),"diagnostic orientation");
-            log($"    curve={entity} owner={owners[0]} sense={(byte)orientation} t={bounds.value[0]:R},{bounds.value[1]:R}");
-        }
-        Free(false,owners);
-    }
-    if(cls==PK_CLASS_edge)
-    {
-        int curve=0;var bounds=new PK_INTERVAL_t();PK_LOGICAL_t sense=default;PK_VECTOR_t* ends=stackalloc PK_VECTOR_t[2];
-        Check(PK_EDGE_ask_geometry(entity,PK_LOGICAL_true,&curve,&cls,ends,&bounds,&sense),"diagnostic edge geometry");
-        log($"    edge={entity} curve={curve} sense={(byte)sense} t={bounds.value[0]:R},{bounds.value[1]:R}");entity=curve;
-    }
-    if(cls==PK_CLASS_ellipse)
-    {
-        PK_ELLIPSE_sf_t sf;Check(PK_ELLIPSE_ask(entity,&sf),"diagnostic ellipse");
-        log($"    ellipse={entity} p=({sf.basis_set.location.coord[0]:R},{sf.basis_set.location.coord[1]:R},{sf.basis_set.location.coord[2]:R}) axis=({sf.basis_set.axis.coord[0]:R},{sf.basis_set.axis.coord[1]:R},{sf.basis_set.axis.coord[2]:R}) ref=({sf.basis_set.ref_direction.coord[0]:R},{sf.basis_set.ref_direction.coord[1]:R},{sf.basis_set.ref_direction.coord[2]:R})");
-    }
-    else if(cls==PK_CLASS_circle)
-    {
-        PK_CIRCLE_sf_t sf;Check(PK_CIRCLE_ask(entity,&sf),"diagnostic circle");
-        log($"    circle={entity} p=({sf.basis_set.location.coord[0]:R},{sf.basis_set.location.coord[1]:R},{sf.basis_set.location.coord[2]:R}) axis=({sf.basis_set.axis.coord[0]:R},{sf.basis_set.axis.coord[1]:R},{sf.basis_set.axis.coord[2]:R})");
-    }
-    else log($"    entity={entity} class={cls}");
 }

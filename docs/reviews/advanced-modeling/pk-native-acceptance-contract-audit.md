@@ -41,3 +41,25 @@ MSBUILDDISABLENODEREUSE=1 dotnet run scripts/NativeAcceptanceContractOracle.cs -
 这不取代严格实体比较、完整 BODY_check、有限裁剪、材料和回滚验收。非法/非有限估计或模量直接失败；不通过缩放姿态、增大阈值或挑选分量消除差异。
 
 `native-contract-bounds.{log,exit}` 实际外部退出 0 验证的是控制实验执行及断言，三个压印数值结果均为 Unresolved，不能将该进程成功说成 15 项数值精度已经通过。新建真实 2.1×2×2 对 2×2×2 block 判 Different；相同精确数值判 Verified；宽误差界包住两个不同点值仍判 Unresolved。命令同上，仅输出名改为 `imprint-bounds-v1`，对应原生输入/输出保存在 `temp_docs/native-acceptance-contract/imprint-bounds-v1/`。此增量尚未切换原 ShortEdge/看板生产合同，后续整套候选统一接入。
+
+## 当前计算修正与合同接入
+
+默认 regular Boolean 现在要求边界关联，不再由 `ForbidSpatialBoundaryReuse` 诊断开关选择身份安全规则。输入顶点按原拓扑身份读取；来源边的有限 native 端点和支持面使用分别登记；第三体交点始终需要证明。普通入口仍拒绝未认证的 cylinder junction，失败恢复原输入与池状态。
+
+原 roof fixture 的相邻面分别发现同一个原生根，旧路径靠 XYZ 邻近归并。当前实现对实际 BCurve/plane 和 BSurface/line 求交保留完整隔离区间；精确 affine NURBS 只有在全部定义极点满足该平面方程时才使用其标量平面方程，持久几何仍为原 BSurface。两个平面与一个 BSurface 的交点从同一有限 plane-pair line 的三维位置及原生 UV 隔离域传递到各 ICurve 的实际 CHART，目标 contraction 同时约束 XYZ 和该 BSurface 的 UV；不按盒子重叠或位置接近宣告同根。
+
+投影替换 fixture 的另一个失败是有限椭圆端点。实际输入给出的方程为 `f(t)=-1.0000000000000013*sin(t)`，trim 为 `[0,pi/2]`。旧 locator 将端点表达为跨过 trim 的 `[-8.590467018205802e-14,+8.590467018205802e-14]`，不能证明它属于哪个有限使用。当前对**已声明的 native t=0** 使用 `sin(0)=0, cos(0)=1` 的精确恒等式；分离的导数证明前半段只有此根，后半段独立完整隔离。此根保留原 POINT/vertex 身份、原 trim 和原坐标。没有将附近参数或 binary64 的 pi/2 吸附到象限。三个新增控制分别保留精确端点、保留 1e-13 的内部根、排除 -1e-13 的外部根。
+
+开发窄验 `default-current-focused.{log,exit}` 为 **38/38，原始 exit 0**，包括默认开关关闭时真实进入投影替换的故障注入及三输入字节/池/分配回滚；allocation IL guard 检查 2939 方法为 CLEAN。真实 PK oracle `regular-native-two-tools` 的 unite/intersect/subtract 三项均通过完整 BODY_check、共享 AssertEquivalent 和材料分类；仅规定的 n_cht_pts 为诊断。其数值结果有两项 Unresolved，故进程原始 exit 2，而不是整体数值通过。
+
+`RollingBooleanConsumerOracle.cs --input-set=<name>` 接受明确的已验证原生 XT 三输入目录。GM 和真实 PK receive **同一组原始字节**；GM 导入后的重新 transmit 字节另用于回滚比较，不替换输入。`default-exact-native-end` 的三输入 SHA 仍为 `37ac232e62340c29f4f6ba94807775b7d39ba3a64d445c75791499c1a811b0ba`、`ad885c46aeb0c22a384cc4f3c567cbdc0030ed55c30a57ee99af98d4d186aec2`、`8056a1bf6862831b1d4de1da36af94f6bd5164fcaf019b5f5fc8d51644c40792`。两方 Boolean 实际 error=0/result=21650/一个实体，实际进入 projected replacement，fresh GM XT 的完整检查 0、严格比较 0 差异。mass 为 Unresolved，原 exit 2。这是 Boolean 操作的成功证据，不重新签署其固定 f9 输入产品的构造资格。
+
+Block single fillet 的旧 oracle 将 curve_sense 差异降级后在重附着的 canonical copies 上比较，Web 严格比较则正确拒绝。现已删除该归一化路径及 curve/surface sense 白名单。接触直线从所选原生线保留参数方向与 gauge，并从它在各支持面上的真实 fin use 导出 sense；rolling line provider 同样使用来源 fin，而不是固定令第一个 contact 继承 source sense。single 与 parallel 两个真实独立构造结果均可直接通过原始产品的严格比较。`local-single-contract` 为原始 exit 0，物性报告 Verified；`local-parallel-network-fin-fixed` 严格比较 0 差异。额外 all-edge block/oriented 控制仍有原先未关闭的圆弧 sense 差异，不能据 single/parallel 通过签署全部 local operation catalog；本增量不改其 all-edge 构造路径。
+
+当前 ShortEdge、regular curved Boolean、同输入 Boolean 与 local oracle 使用同一个物性报告合同：每个新输出目录的 `mass-properties.csv` 保留 15 分量估计、原生模量、归一化差上下界和 Verified/Different/Unresolved。几何/拓扑硬门失败仍拒绝；若所有硬门通过但存在数值未决，完整执行后打印 GEOMETRY_TOPOLOGY_PASS 并返回 **2**。不保留旧点值门槛作为另一条活动合同，不改历史原始日志或退出码。
+
+固定 510 点的新表逐行保留四方结果，差异集合分别计算，原坐标和历史文件不变。`probes-import` 实际原 exit 2：native-roundtrip 7、GM-native 11、GM-fresh 14、fresh-native 7，四方并集 16 项均为 On 分歧，0 API 错误、0 Inside/Outside 对立，当前标 Unresolved。它们不因 native 自身的 7 项差异而被整批免责。最近有限 FACE/EDGE/VERTEX 的原生 range、重新计算的空间距离与局部 precision 保留在日志；range 的 nominal 结果并非距离误差界，没有证明有限距离界的项仍明确未决。当前表不宣称已经关闭 510 门。
+
+`native-contract-complete.{log,exit}` 的真实控制执行 exit 0：错误尺寸的积分区间判 Different；原生错误球半径与错误有限 wire trim 在 fresh XT receive 后均由未修改的 AssertEquivalent 拒绝；明确分离的真实材料翻转判 Different，On 分歧不签通过，API 错误拒绝。控制目录为 `temp_docs/native-acceptance-contract/native-contract-complete-control-v1/`，保留每个实际 XT 与 manifest。这些是负控与合同执行证据，不能冒充 GM 正向建模成功。
+
+以上为已保存的开发窄验，不是最终固定 SHA 全操作验收。后续统一用 `dotnet run --no-cache`，保留实际加载 GM 程序集 SHA256，并集中记录固定候选的完整生命周期、受影响回归、source/artifact hashes 与原始退出码；看板仍使用固定 f9 历史 run，未来新 run 须明确区分几何通过、数值未决与真实硬失败。

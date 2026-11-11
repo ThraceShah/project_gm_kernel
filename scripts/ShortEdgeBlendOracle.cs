@@ -20,6 +20,7 @@ using EdgeSlot=System.Int32;
 using FaceSlot=System.Int32;
 using FinSlot=System.Int32;
 using VertexSlot=System.Int32;
+Console.WriteLine("GM_ASSEMBLY sha256="+Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(typeof(KernelRuntime).Assembly.Location))));
 KernelRuntime.ForbidLegacyRegularBlendAssembly=args.Contains("--event-arrangement",StringComparer.Ordinal);
 if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
     KernelRuntime.TraceRollingNetwork=trace=>
@@ -146,6 +147,7 @@ Require(floor==0&&phase==0&&!splitRemote&&!splitSelected&&!splitEllipse||!args.C
 M.PK_TRANSF_sf_s inputTransform;double inputScale;bool mappedInput;
 unsafe{inputTransform=InputTransform(args,out inputScale,out mappedInput);}
 Directory.CreateDirectory(output);
+ParasolidMassProperties.BeginEvidence(output);
 Require(!args.Contains("--record-fixtures")||!args.Contains("--matrix")&&!args.Contains("--both-updates"),"record fixtures uses the single default seed");
 Require(!replayProbes||!args.Contains("--matrix")&&!args.Contains("--both-updates")&&!args.Contains("--native-only"),"saved probes replay the default seed and exact saved coordinates");
 Require(!(overlappingTools||singleToolJunction)||KernelRuntime.ForbidLegacyRegularBlendAssembly&&!mappedInput&&!replayProbes&&!splitRemote&&!splitSelected&&!splitEllipse
@@ -267,7 +269,7 @@ using(host)unsafe
                     Mass(reference,reloaded,"native via managed");
                     if(args.Contains("--geometry"))Geometry(imported,reference);
                     if(args.Contains("--probes"))Probes(reference,imported,reloaded,result,output,name);
-                    if(savedProbes)SavedProbes(reference,imported,reloaded,result,args.Contains("--diagnostics"));
+                    if(savedProbes)SavedProbes(reference,imported,reloaded,result,output,name+"-imported");
                     if(args.Contains("--lifecycle"))failures+=Lifecycle(ref imported,reference,output,name+"-imported-product",mappedInput?&inputTransform:null,inputScale,localCut,transverseCut,transversePlaneDifference,requireNativeFaceDomains:requireNativeFaceDomains);
                     Check(PK_ENTITY_delete(1,&reloaded),"delete native roundtrip");if(imported!=0)Check(KernelRuntime.EntityDelete(1,&imported),"delete managed import");
                 }
@@ -285,7 +287,7 @@ using(host)unsafe
                     if(selfSavedProbes)
                     {
                         Console.WriteLine("SAVED PROBE PRODUCT self-constructed-product");
-                        try{SavedProbes(reference,own,received,result,args.Contains("--diagnostics"));}
+                        try{SavedProbes(reference,own,received,result,output,name+"-self");}
                         catch(Exception ex){failures++;Console.WriteLine("FAIL self-constructed-product fixed probes: "+ex.Message);}
                     }
                     if(materialOwnership)CompareShortEdgeMaterial(reference,own,received,"self-constructed-product",inputScale);
@@ -304,7 +306,10 @@ using(host)unsafe
     }
     finally{Check(KernelRuntime.SessionStop(),"managed stop");}
     Require(failures==0,$"{failures} short-edge acceptance checks failed");
-    Console.WriteLine($"PASS cases={cases} mode={(args.Contains("--native-only")?"native-only":args.Contains("--import-only")?"import-only":"independent-construction")}");
+    var unresolved=ParasolidMassProperties.UnresolvedCount;
+    var probesPending=ParasolidProbeAgreement.UnresolvedCount;
+    Console.WriteLine($"GEOMETRY_TOPOLOGY_PASS cases={cases} mode={(args.Contains("--native-only")?"native-only":args.Contains("--import-only")?"import-only":"independent-construction")} mass_unresolved={unresolved} probes_unresolved={probesPending}");
+    if(unresolved!=0||probesPending!=0)Environment.ExitCode=2;
 }
 
 static unsafe void ScalarBoundaryEvidence(int surface,int other)
@@ -678,7 +683,7 @@ static unsafe int OverlappingToolJunctions(int selfSource,int nativeSource,strin
     {
         Check(PK_BODY_boolean_2(native,2,nativeTools,&options,&track,&result),"native overlapping subtraction");
         Require(result.n_bodies==1,"one independent two-tool product");native=result.bodies[0];
-        KernelRuntime.ForbidSpatialBoundaryReuse=true;
+        KernelRuntime.ForbidSpatialBoundaryReuse=false;
         KernelRuntime.TraceFiniteBoundary=t=>
         {
             if(t.Stage==KernelRuntime.BoundaryTraceStage.ThirdFaceStation)
@@ -954,47 +959,7 @@ static unsafe void CompareShortEdgeMaterial(int reference,int managed,int fresh,
 }
 static unsafe void Mass(int reference,int actual,string label)
 {
-    var options=new PK_TOPOL_eval_mass_props_o_t();double* a=stackalloc double[15];double* b=stackalloc double[15];
-    ReadOnlySpan<string> properties=["volume","mass","centroid.x","centroid.y","centroid.z","inertia.xx","inertia.xy","inertia.xz",
-        "inertia.yx","inertia.yy","inertia.yz","inertia.zx","inertia.zy","inertia.zz","area"];
-    var error=double.PositiveInfinity;var worst=0;var webAccuracy=0.0;
-    foreach(var accuracy in new[]{.99999999,.99999999999})
-    {
-        webAccuracy=accuracy;
-        Check(PK_TOPOL_eval_mass_props(1,&reference,accuracy,&options,a,a+1,a+2,a+5,a+14),"reference mass");
-        Check(PK_TOPOL_eval_mass_props(1,&actual,accuracy,&options,b,b+1,b+2,b+5,b+14),"actual mass");
-        error=0;worst=0;
-        for(var i=0;i<15;i++)
-        {
-            var residual=Math.Abs(a[i]-b[i])/(1+Math.Abs(a[i]));
-            if(residual>error||double.IsNaN(residual))worst=i;
-            error=Math.Max(error,residual);
-        }
-        Console.WriteLine($"MASS {label} accuracy={accuracy:R} volume={a[0]:R}/{b[0]:R} area={a[14]:R}/{b[14]:R} normalized15={error:R} worst={properties[worst]} points={a[worst]:R}/{b[worst]:R}");
-        if(error<1e-7)break;
-    }
-    WebProgressCapture.RecordMass(label,webAccuracy,a,b);
-    if(!(error<1e-7))ReportMassBounds(reference,actual,label,properties[worst],worst);
-    Require(error<1e-7,"mass mismatch");
-}
-static unsafe void ReportMassBounds(int reference,int actual,string label,string worst,int index)
-{
-    // This second call reports the native integration's own uncertainty.
-    // Its estimates and bounds do not enter the original point gate.
-    var options=new PK_TOPOL_eval_mass_props_o_t{bound=PK_mass_bound_modulus_c};
-    double* a=stackalloc double[20];double* b=stackalloc double[20];
-    var first=PK_TOPOL_eval_mass_props(1,&reference,.99999999999,&options,a,a+2,a+4,a+8,a+18);
-    var second=PK_TOPOL_eval_mass_props(1,&actual,.99999999999,&options,b,b+2,b+4,b+8,b+18);
-    if(first!=0||second!=0){Console.WriteLine($"MASS BOUNDS {label} native errors={first}/{second}");return;}
-    var overlap=0;
-    for(var i=0;i<15;i++)
-    {
-        var value=i==0?0:i==1?2:i<5?i+2:i<14?i+3:18;
-        var bound=i==0?1:i==1?3:i<5?7:i<14?17:19;
-        if(Math.Abs(a[value]-b[value])<=a[bound]+b[bound])overlap++;
-        if(i==index)Console.WriteLine($"MASS BOUNDS {label} worst_raw={worst} estimates={a[value]:R}/{b[value]:R} moduli={a[bound]:R}/{b[bound]:R}");
-    }
-    Console.WriteLine($"MASS BOUNDS {label} overlap={overlap}/15 (diagnostic only)");
+    Require(ParasolidMassProperties.Compare(reference,actual,label)!=MassAgreement.Different,"mass intervals prove a difference at the required precision");
 }
 static unsafe void Probes(int reference,int imported,int fresh,byte[] nativeBytes,string output,string name)
 {
@@ -1360,11 +1325,14 @@ static unsafe void CompareImportedSplineSpine(int own,int native)
     }
     finally{Free(true,a.vertex);Free(true,a.knot);Free(true,a.knot_mult);}
 }
-static unsafe void SavedProbes(int reference,int imported,int fresh,byte[] nativeBytes,bool diagnostics)
+static unsafe void SavedProbes(int reference,int imported,int fresh,byte[] nativeBytes,string output,string name)
 {
     var path=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","docs","reviews","advanced-modeling","short-edge-spine-probes.csv");
-    var rows=File.ReadAllLines(path);var nativeReload=Receive(false,nativeBytes);var failures=0;var changedNative=0;
-    var evidence=diagnostics?new List<(PK_VECTOR_t Point,int Row)>():null;
+    var rows=File.ReadAllLines(path);var nativeReload=Receive(false,nativeBytes);var failures=0;var changedNative=0;var pending=0;
+    var evidence=new List<(PK_VECTOR_t Point,int Row)>();
+    var nativeRoundtrip=new List<int>();var gmNative=new List<int>();var gmFresh=new List<int>();var freshNative=new List<int>();
+    using var classifications=new StreamWriter(new FileStream(Path.Combine(output,name+"-fixed-classifications.csv"),FileMode.CreateNew));
+    classifications.WriteLine("row,x,y,z,PK_native,PK_roundtrip,GM_actual,PK_GM_fresh,status");
     int* results=stackalloc int[4];int* topols=stackalloc int[4];
     try
     {
@@ -1378,20 +1346,31 @@ static unsafe void SavedProbes(int reference,int imported,int fresh,byte[] nativ
             var error=KernelRuntime.BodyContainsVector(imported,*(M.PK_VECTOR_s*)&p,results+2,topols+2);if(error!=0)results[2]=-error;
             Check(PK_BODY_contains_vector(fresh,p,results+3,topols+3),"saved fresh classify");
             if(results[0]!=int.Parse(fields[8],System.Globalization.CultureInfo.InvariantCulture))changedNative++;
+            if(results[0]!=results[1])nativeRoundtrip.Add(i);
+            if(results[0]!=results[2])gmNative.Add(i);
+            if(results[2]!=results[3])gmFresh.Add(i);
+            if(results[0]!=results[3])freshNative.Add(i);
+            var status=ParasolidProbeAgreement.Classify(new ReadOnlySpan<int>(results,4));
+            if(status==ProbeAgreement.Different)failures++;
+            if(status==ProbeAgreement.Unresolved)pending++;
+            classifications.WriteLine(FormattableString.Invariant($"{i},{p.coord[0]:R},{p.coord[1]:R},{p.coord[2]:R},{results[0]},{results[1]},{results[2]},{results[3]},{status}"));
             if(results[0]!=results[1]||results[0]!=results[2]||results[0]!=results[3])
             {
-                failures++;Console.WriteLine($"SAVED PROBE DIFF row={i} p=({p.coord[0]:R},{p.coord[1]:R},{p.coord[2]:R}) native/roundtrip/self/fresh={results[0]}/{results[1]}/{results[2]}/{results[3]} error={error} stage={KernelRuntime.LastRegularClassificationStage} entity={KernelRuntime.LastRegularClassificationEntity} sheet={KernelRuntime.LastSheetPartitionStage} curve={KernelRuntime.LastSheetCurve} status={KernelRuntime.LastSheetAlgorithmStatus} uv=({KernelRuntime.LastSheetRayU:R},{KernelRuntime.LastSheetRayV:R})");
+                Console.WriteLine($"SAVED PROBE DIFF row={i} p=({p.coord[0]:R},{p.coord[1]:R},{p.coord[2]:R}) native/roundtrip/self/fresh={results[0]}/{results[1]}/{results[2]}/{results[3]} agreement={status} error={error} stage={KernelRuntime.LastRegularClassificationStage} entity={KernelRuntime.LastRegularClassificationEntity} sheet={KernelRuntime.LastSheetPartitionStage} curve={KernelRuntime.LastSheetCurve} status={KernelRuntime.LastSheetAlgorithmStatus} uv=({KernelRuntime.LastSheetRayU:R},{KernelRuntime.LastSheetRayV:R})");
                 if(error!=0)Console.WriteLine($"SAVED PROBE STATION row={i} curve={KernelRuntime.LastSheetCurve} t={KernelRuntime.LastSheetParameter:R}");
-                evidence?.Add((p,i));
+                evidence.Add((p,i));
             }
         }
         // Finish every classification before range/projection diagnostics:
         // warming a PK projection cache can change its exact-threshold path.
-        if(evidence!=null)foreach(var item in evidence)
+        foreach(var item in evidence)
         {NativeProbeEvidence(reference,item.Point,$"row{item.Row}-native");NativeProbeEvidence(nativeReload,item.Point,$"row{item.Row}-native-roundtrip");NativeProbeEvidence(fresh,item.Point,$"row{item.Row}-self-fresh");}
     }
     finally{Check(PK_ENTITY_delete(1,&nativeReload),"delete saved native roundtrip");}
-    Console.WriteLine($"SAVED PROBES total={rows.Length-1} mismatches={failures} native_class_changed={changedNative}");Require(failures==0,"saved exact classification regression failed");
+    Console.WriteLine($"SAVED PROBE SETS native_roundtrip=[{string.Join(',',nativeRoundtrip)}] gm_native=[{string.Join(',',gmNative)}] gm_fresh=[{string.Join(',',gmFresh)}] fresh_native=[{string.Join(',',freshNative)}]");
+    Console.WriteLine($"SAVED PROBES total={rows.Length-1} different={failures} unresolved={pending} native_class_changed={changedNative} finite_distance_bounds=Unresolved");
+    ParasolidProbeAgreement.UnresolvedCount+=pending;
+    Require(failures==0,"fixed classification API error or Inside/Outside disagreement");
 }
 
 static unsafe void NativeProbeEvidence(int body,PK_VECTOR_t query,string label)

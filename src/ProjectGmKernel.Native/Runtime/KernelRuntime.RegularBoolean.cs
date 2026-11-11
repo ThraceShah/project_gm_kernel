@@ -22,7 +22,7 @@ internal static unsafe partial class KernelRuntime
         var tangencyWords=(SheetPointLimit*sizeof(BoundaryTangency)+sizeof(double)-1)/sizeof(double);
         var memory=scratch.Take(213000+2*SheetPointLimit+tangencyWords);if(memory.IsEmpty)return ParasolidConstants.PK_ERROR_memory_full;
         ModelingPerformance.Context performance=default;using var measurement=new ModelingPerformance.Scope(&performance,immutableGeometry:true);ModelingPerformance.Stage(RegularBooleanStage.Read);
-        var ownedCount=0;Span<double> sectionChartMemory=default;
+        var ownedCount=0;Span<double> sectionChartMemory=default,incidenceMemory=default;
         try
         {
             var bytes=MemoryMarshal.AsBytes(memory);var cursor=0;
@@ -34,7 +34,7 @@ internal static unsafe partial class KernelRuntime
                 Faces=ModelSpan<ModelingFace>(bytes,ref cursor,SheetFaceLimit),Sources=ModelSpan<FaceSlot>(bytes,ref cursor,SheetFaceLimit),
                 Sides=ModelSpan<sbyte>(bytes,ref cursor,SheetFaceLimit),Witnesses=ModelSpan<PK_UV_s>(bytes,ref cursor,SheetFaceLimit),Tolerance=Math.Min(options->default_tol,1e-8),
                 Parameters=ModelSpan<BoundaryParameter>(bytes,ref cursor,2*SheetPointLimit),
-                Tangencies=ModelSpan<BoundaryTangency>(bytes,ref cursor,SheetPointLimit),
+                Tangencies=ModelSpan<BoundaryTangency>(bytes,ref cursor,SheetPointLimit),RequireBoundaryAssociations=true,
             };
             var inputEdges=ModelSpan<ModelingEdge>(bytes,ref cursor,RegularInputEdges);var originalEdges=ModelSpan<EdgeSlot>(bytes,ref cursor,RegularInputEdges);
             var inputCoedges=ModelSpan<ModelingCoedge>(bytes,ref cursor,RegularInputCoedges);var inputLoops=ModelSpan<ModelingLoop>(bytes,ref cursor,RegularInputLoops);
@@ -48,9 +48,10 @@ internal static unsafe partial class KernelRuntime
             var halfedges=ModelSpan<SheetHalfedge>(bytes,ref cursor,2*SheetEdgeLimit);var cycleCoedges=ModelSpan<ModelingCoedge>(bytes,ref cursor,2*SheetEdgeLimit);
             var cycles=ModelSpan<SheetCycle>(bytes,ref cursor,SheetLoopLimit);if(cursor>bytes.Length)return ParasolidConstants.PK_ERROR_memory_full;
             var error=ReadRegularBoundaries(inputs,model.Points,model.OriginalVertices,inputEdges,originalEdges,inputCoedges,inputLoops,inputFaces,sources,owners,offsets,
-                out model.NP,out var ne,out var nc,out var nl,out var nf,model.Tolerance,model.VertexPrecisions);if(error!=0)return error;
+                out model.NP,out var ne,out var nc,out var nl,out var nf,model.VertexPrecisions);if(error!=0)return error;
             model.VertexMergeCandidates[..model.NP].Clear();
             var input=new RegularBoundaryView(inputEdges[..ne],inputCoedges[..nc],inputLoops[..nl],inputFaces[..nf]);
+            error=ReadRegularBoundaryAssociations(input,ref model);if(error!=0)return error;
             Span<SheetCutCurve> supportCuts=stackalloc SheetCutCurve[GeneralIntersectionBranchLimit];var familyCount=0;var cutCount=0;
             RegularAxialContact axialContact=default;var haveAxialContact=false;
             Span<SurfaceIntersectionNode> supportPoints=stackalloc SurfaceIntersectionNode[64];
@@ -124,6 +125,19 @@ internal static unsafe partial class KernelRuntime
                     sourceFaces:sources[..nf]);if(error!=0)return error;
             }
             LastRegularBooleanOtherFace=-1;
+            var incidenceCount=2*(ne+cutCount);
+            if(incidenceCount!=0)
+            {
+                incidenceMemory=scratch.Take((incidenceCount*sizeof(BoundaryCarrierSurface)+sizeof(double)-1)/sizeof(double));
+                if(incidenceMemory.IsEmpty)return ParasolidConstants.PK_ERROR_memory_full;
+                model.CarrierSurfaces=MemoryMarshal.Cast<double,BoundaryCarrierSurface>(incidenceMemory)[..incidenceCount];
+                error=ReadRegularBoundaryAssociations(input,ref model);if(error!=0)return error;
+                foreach(var pair in cuts[..cutCount])
+                {
+                    error=AssociateBoundaryCarrierSurface(ref model,pair.Cut.Curve,pair.Cut.First,pair.Cut.Last,input.Faces[pair.First].Surface);if(error!=0)return error;
+                    error=AssociateBoundaryCarrierSurface(ref model,pair.Cut.Curve,pair.Cut.First,pair.Cut.Last,input.Faces[pair.Second].Surface);if(error!=0)return error;
+                }
+            }
             // With several tools, intersections of three different bodies
             // also split the curves on the target. The final classification
             // applies BooleanMaterial to the union of all tools.
@@ -132,17 +146,17 @@ internal static unsafe partial class KernelRuntime
                 Span<ThirdFaceBounds> faceBounds=stackalloc ThirdFaceBounds[nf];faceBounds.Clear();
                 // Prove rolling/plane triples on their shared finite line
                 // first. The two scalar passes then consume those identities.
-                for(var pass=ForbidSpatialBoundaryReuse?0:1;pass<2;pass++)
+                for(var pass=0;pass<2;pass++)
                 for(var c=0;c<cutCount;c++)
                 {
                     var cut=cuts[c];ThirdFaceBounds cutBounds=default;
                     for(var f=0;f<nf;f++)
                     {
                         if(owners[f]==owners[cut.First]||owners[f]==owners[cut.Second])continue;
-                        var joint=ForbidSpatialBoundaryReuse&&IsBlendPlaneLineTriple(input,cut,f);
+                        var joint=IsBlendPlaneLineTriple(input,cut,f);
                         if(joint!=(pass==0))continue;
                         error=joint?ReadBlendPlaneLineJoint(input,f,sources[f],cuts[..cutCount],c,ref cutBounds,ref faceBounds[f],ref model)
-                            :ReadThirdFaceEvents(input,f,sources[f],cuts[..cutCount],c,ref cutBounds,ref faceBounds[f],ref model,ForbidSpatialBoundaryReuse,out _);
+                            :ReadThirdFaceEvents(input,f,sources[f],cuts[..cutCount],c,ref cutBounds,ref faceBounds[f],ref model,out _);
                         if(error!=0)
                         {
                             LastRegularBooleanStage=RegularBooleanStage.ThirdFace;
@@ -237,6 +251,6 @@ internal static unsafe partial class KernelRuntime
             for(var i=0;i<ownedCount;i++){var curve=owned[i].Curve;error=EntityDelete(1,&curve);if(error!=0)return error;}
             return 0;
         }
-        finally{scratch.Return(sectionChartMemory);scratch.Return(memory);}
+        finally{scratch.Return(incidenceMemory);scratch.Return(sectionChartMemory);scratch.Return(memory);}
     }
 }

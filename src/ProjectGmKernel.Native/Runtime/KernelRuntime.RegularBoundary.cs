@@ -21,14 +21,14 @@ internal static unsafe partial class KernelRuntime
     private static int ReadRegularBoundaries(ReadOnlySpan<BodyTag> bodies,Span<KernelVector3> points,Span<VertexSlot> vertices,
         Span<ModelingEdge> edges,Span<EdgeSlot> sourceEdges,Span<ModelingCoedge> coedges,Span<ModelingLoop> loops,
         Span<ModelingFace> faces,Span<FaceSlot> sources,Span<BufferOffset> owners,Span<BufferOffset> offsets,
-        out BufferCount np,out BufferCount ne,out BufferCount nc,out BufferCount nl,out BufferCount nf,double tolerance=1e-8,Span<double> vertexPrecisions=default)
+        out BufferCount np,out BufferCount ne,out BufferCount nc,out BufferCount nl,out BufferCount nf,Span<double> vertexPrecisions=default)
     {
         np=ne=nc=nl=nf=0;
         for(var b=0;b<bodies.Length;b++)
         {
             offsets[b]=nf;var slot=TagRec(bodies[b]).Slot;if(Xt.IsOpaque(slot))return ParasolidConstants.PK_ERROR_not_implemented;
             var vertex=Bodies[slot].FirstVertexBody;
-            for(var v=0;v<Bodies[slot].VertexCountBody;v++,vertex=Vertices[vertex].NextInBody){var error=ReadRegularOriginalVertex(vertex,slot,points,vertices,vertexPrecisions,tolerance,ref np,out _);if(error!=0)return error;}
+            for(var v=0;v<Bodies[slot].VertexCountBody;v++,vertex=Vertices[vertex].NextInBody){var error=ReadRegularOriginalVertex(vertex,points,vertices,vertexPrecisions,ref np,out _);if(error!=0)return error;}
             var face=Bodies[slot].FirstFaceBody;
             for(var f=0;f<Bodies[slot].FaceCountBody;f++,face=Faces[face].NextInBody)
             {
@@ -60,7 +60,7 @@ internal static unsafe partial class KernelRuntime
                                 var oldVertex=side==0?edge.StartVertex:edge.EndVertex;var v=-1;
                                 if(oldVertex>=0)
                                 {
-                                    var error=ReadRegularOriginalVertex(oldVertex,slot,points,vertices,vertexPrecisions,tolerance,ref np,out v);if(error!=0)return error;
+                                    var error=ReadRegularOriginalVertex(oldVertex,points,vertices,vertexPrecisions,ref np,out v);if(error!=0)return error;
                                 }
                                 if(side==0)start=v;else end=v;
                             }

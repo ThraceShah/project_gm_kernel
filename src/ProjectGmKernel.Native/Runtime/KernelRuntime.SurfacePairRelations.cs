@@ -126,8 +126,8 @@ internal static unsafe partial class KernelRuntime
         Span<RegularFaceCut> cuts,ref BufferCount cutCount,ref SheetArrangement model)
     {
         Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[IntersectionPointCapacity];
-        var guarded=ForbidSpatialBoundaryReuse||model.RequireBoundaryAssociations;var precision=model.Tolerance;
-        if(guarded&&(!TryThirdFacePrecision(sources[first],ref precision)||!TryThirdFacePrecision(sources[second],ref precision)))
+        var precision=model.Tolerance;
+        if(!TryThirdFacePrecision(sources[first],ref precision)||!TryThirdFacePrecision(sources[second],ref precision))
             return ParasolidConstants.PK_ERROR_cant_do_intersect;
         var a=input.Faces[first];var b=input.Faces[second];
         for(var al=0;al<a.LoopCount;al++)
@@ -137,8 +137,6 @@ internal static unsafe partial class KernelRuntime
             {
                 var indexA=input.Coedges[loopA.FirstCoedge+ai].Edge;
                 var edgeA=input.Edges[indexA];
-                var intervalA=new PK_INTERVAL_s();intervalA.value[0]=edgeA.Start;intervalA.value[1]=edgeA.End;
-                var error=ResolveIntersectionCurve(edgeA.Curve,intervalA,out var spanA);if(error!=0)return error;
                 for(var bl=0;bl<b.LoopCount;bl++)
                 {
                     var loopB=input.Loops[b.FirstLoop+bl];
@@ -150,22 +148,15 @@ internal static unsafe partial class KernelRuntime
                         {
                             for(var r=0;r<exactCount;r++)
                             {
-                                error=AssociateCoincidentLineRoot(input,cuts[..cutCount],indexA,indexB,roots[r],ref model);
+                                var error=AssociateCoincidentLineRoot(input,cuts[..cutCount],indexA,indexB,roots[r],ref model);
                                 if(error!=0)return error;
                             }
                             continue;
                         }
-                        if(guarded)
-                        {
-                            if(TryFiniteCarrierExtent(new(){Curve=edgeA.Curve,First=edgeA.Start,Last=edgeA.End},Curves[GetCurveSlotByTag(edgeA.Curve)],out var extentA)
-                                &&TryFiniteCarrierExtent(new(){Curve=edgeB.Curve,First=edgeB.Start,Last=edgeB.End},Curves[GetCurveSlotByTag(edgeB.Curve)],out var extentB)
-                                &&ThirdFaceBoxesDisjoint(extentA,extentB,precision))continue;
-                            return ParasolidConstants.PK_ERROR_not_implemented;
-                        }
-                        var intervalB=new PK_INTERVAL_s();intervalB.value[0]=edgeB.Start;intervalB.value[1]=edgeB.End;
-                        error=ResolveIntersectionCurve(edgeB.Curve,intervalB,out var spanB);if(error!=0)return error;
-                        var status=IntersectCurveSpans(spanA,spanB,roots,out var nr);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
-                        for(var r=0;r<nr;r++){error=model.AddPoint(roots[r].Point,-1,out _);if(error!=0)return error;}
+                        if(TryFiniteCarrierExtent(new(){Curve=edgeA.Curve,First=edgeA.Start,Last=edgeA.End},Curves[GetCurveSlotByTag(edgeA.Curve)],out var extentA)
+                            &&TryFiniteCarrierExtent(new(){Curve=edgeB.Curve,First=edgeB.Start,Last=edgeB.End},Curves[GetCurveSlotByTag(edgeB.Curve)],out var extentB)
+                            &&ThirdFaceBoxesDisjoint(extentA,extentB,precision))continue;
+                        return ParasolidConstants.PK_ERROR_not_implemented;
                     }
                 }
             }

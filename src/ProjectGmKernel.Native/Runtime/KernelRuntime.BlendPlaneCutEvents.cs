@@ -1,5 +1,6 @@
 using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Computation.Numerics;
+using ProjectGmKernel.Native.Geometry.Bounds;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Geometry.Intersection;
 
@@ -9,7 +10,7 @@ internal static unsafe partial class KernelRuntime
 {
     private static bool IsBlendPlaneLineTriple(in RegularBoundaryView input,in RegularFaceCut pair,BufferOffset third)
         =>pair.Cut.Construction==CutConstruction.AnalyticPlanePair&&pair.First>=0&&pair.Second>=0
-            &&RegularCutSupportClass(input,third)==SurfaceClass.BlendSurface
+            &&RegularCutSupportClass(input,third) is SurfaceClass.BlendSurface or SurfaceClass.BSurface
             &&RegularCutSupportClass(input,pair.First)==SurfaceClass.Plane&&RegularCutSupportClass(input,pair.Second)==SurfaceClass.Plane
             &&Curves[GetCurveSlotByTag(pair.Cut.Curve)].Class==CurveClass.Line;
 
@@ -53,8 +54,10 @@ internal static unsafe partial class KernelRuntime
         Span<ScalarRootIsolation> stations=stackalloc ScalarRootIsolation[IntersectionPointCapacity];
         Span<double> errors=stackalloc double[IntersectionPointCapacity];
         Span<IntervalNumber> blendStations=stackalloc IntervalNumber[IntersectionPointCapacity];
-        var status=IsolateFiniteBlendLine(new(){Curve=cut.Curve,Start=cut.First,End=cut.Last},GetSurfaceSlotByTag(blend),
-            points,stations,errors,out var count,poles,blendStations);
+        Span<SurfaceParameterBox> splineDomains=stackalloc SurfaceParameterBox[IntersectionPointCapacity];
+        var spline=RegularCutSupportClass(input,third)==SurfaceClass.BSurface;
+        var status=IsolateFiniteSurfaceLine(new(){Curve=cut.Curve,Start=cut.First,End=cut.Last},GetSurfaceSlotByTag(blend),
+            points,stations,errors,out var count,poles,blendStations,spline?splineDomains:default);
         LastSheetAlgorithmStatus=status;if(status!=AlgorithmStatus.Success)return IntersectionError(status);
         Span<BoundaryParameter> anchors=stackalloc BoundaryParameter[3];Span<FiniteCurveSurfaceRoot> roots=stackalloc FiniteCurveSurfaceRoot[3];
         var exactPositionAxes=ExactCutLineCoordinateMask(cut.Curve,poles);
@@ -64,7 +67,8 @@ internal static unsafe partial class KernelRuntime
             roots[0]=ThirdFiniteRoot(points[i],stations[i],errors[i]);
             anchors[0]=ThirdCutAnchor(input,pair,third,current,i,roots[0]);
             var sourceRoot=new RegularBoundaryRoot{Curve=cut.Curve,Root=roots[0],ContactSurface=blend,BlendStation=blendStations[i],
-                Certified=PlanePairBlendLineCertificate,ExactPositionAxes=exactPositionAxes};
+                Certified=spline?PlanePairSplineLineCertificate:PlanePairBlendLineCertificate,ExactPositionAxes=exactPositionAxes,
+                SplineDomain=spline?splineDomains[i]:default};
             status=FindBlendPlaneJointArc(input,cuts,third,pair.First,pair.Second,b,sourceRoot,out anchors[1],out roots[1]);
             if(status==AlgorithmStatus.Success)
                 status=FindBlendPlaneJointArc(input,cuts,third,pair.Second,pair.First,a,sourceRoot,out anchors[2],out roots[2]);
@@ -114,7 +118,8 @@ internal static unsafe partial class KernelRuntime
     {
         if(!root.Certified||pair.First<0||pair.Second<0||RegularCutSupportClass(input,third)!=SurfaceClass.Plane)return false;
         var a=RegularCutSupportClass(input,pair.First);var b=RegularCutSupportClass(input,pair.Second);
-        if(!(a==SurfaceClass.BlendSurface&&b==SurfaceClass.Plane||a==SurfaceClass.Plane&&b==SurfaceClass.BlendSurface))return false;
+        if(!((a is SurfaceClass.BlendSurface or SurfaceClass.BSurface)&&b==SurfaceClass.Plane
+            ||a==SurfaceClass.Plane&&(b is SurfaceClass.BlendSurface or SurfaceClass.BSurface)))return false;
         var carrier=Curves[GetCurveSlotByTag(pair.Cut.Curve)];var surface=input.Faces[third].Surface;
         var witness=1+(RegularInputEdges+cut)*IntersectionPointCapacity+ordinal;
         foreach(ref readonly var anchor in model.Parameters[..model.ParameterCount])

@@ -1,6 +1,7 @@
 using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Generated;
+using ProjectGmKernel.Native.Geometry.Bounds;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Geometry.Intersection;
 using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
@@ -16,6 +17,7 @@ internal static unsafe partial class KernelRuntime
     private const byte ExplicitPlaneCertificate=4;
     private const byte PlanePairBlendLineCertificate=5;
     private const byte PlanePairCylinderLineCertificate=6;
+    private const byte PlanePairSplineLineCertificate=7;
     private struct RegularBoundaryRoot
     {
         internal CurveTag Curve;
@@ -24,6 +26,7 @@ internal static unsafe partial class KernelRuntime
         internal SurfTag ContactSurface,ContactSupport,CuttingSurface;
         internal FiniteCurveSurfaceRoot Root;
         internal IntervalNumber BlendStation;
+        internal SurfaceParameterBox SplineDomain;
         internal BufferOffset InputCoedge;
         internal BoundaryRootWitnessId Witness;
         internal byte Certified;
@@ -128,7 +131,7 @@ internal static unsafe partial class KernelRuntime
                     for(var r=0;r<n;r++){var root=r==0?certificate.FirstRoot:certificate.SecondRoot;roots[r]=new(){Point=root.Point,First=root.Parameter,Kind=root.Kind};}
                     break;
                 }
-                if(!known&&certificates.IsEmpty&&TryFiniteLinePlaneEvent(edge,inputEdge,surface,out proof))
+                if(!known&&certificates.IsEmpty&&TryFiniteLinePlaneEvent(edge,inputEdge,surface,out proof,allowExactEnd:true))
                 {
                     known=linePlane=true;n=proof.Count;
                     if(n!=0)roots[0]=new(){Point=proof.FirstRoot.Point,First=proof.FirstRoot.Parameter,Kind=proof.FirstRoot.Kind};
@@ -156,20 +159,26 @@ internal static unsafe partial class KernelRuntime
                     var blend=BlendedEdgeDataPool[Surfaces[surfaceSlot].DataIndex];
                     planePairLine=TryReadExplicitSpineCurve(Curves[GetCurveSlotByTag(blend.SpineTag)],out _)
                         &&TryPlanePairSourceLine(input,face,inputCoedge,edge,linePoles);
-                    var isolated=IsolateFiniteBlendLine(edge,surfaceSlot,roots,nativeRoots,spatialErrors,out n,
+                    var isolated=IsolateFiniteSurfaceLine(edge,surfaceSlot,roots,nativeRoots,spatialErrors,out n,
                         planePairLine?linePoles:default,blendStations);
                     lineProof=isolated==AlgorithmStatus.Success;
                     if(planePairLine&&!lineProof){LastSheetAlgorithmStatus=isolated;return IntersectionError(isolated);}
                     if(planePairLine)exactPositionAxes=ExactCutLineCoordinateMask(edge.Curve,linePoles);
                 }
-                var conicPlaneProof=!known&&certificates.IsEmpty&&surfaceClass==SurfaceClass.Plane&&(curveClass is CurveClass.Circle or CurveClass.Ellipse)
-                    &&TryPrepareSurface(Surfaces[surfaceSlot],out var plane)
-                    &&IsolateFiniteExplicitLevelSet(edge,plane,roots,nativeRoots,spatialErrors,out n)==AlgorithmStatus.Success
-                    &&AllStrictlyInterior(edge,nativeRoots[..n]);
+                if(!known&&!lineProof&&certificates.IsEmpty&&curveClass==CurveClass.Line&&surfaceClass==SurfaceClass.BSurface
+                    &&!TryAffinePlanarSurface(surfaceSlot,out _,out _,out _))
+                    lineProof=IsolateFiniteSurfaceLine(edge,surfaceSlot,roots,nativeRoots,spatialErrors,out n,default,default)==AlgorithmStatus.Success;
+                var conicPlaneProof=!known&&certificates.IsEmpty&&(curveClass is CurveClass.Circle or CurveClass.Ellipse or CurveClass.BCurve)
+                    &&TryBoundaryPlane(surfaceSlot,out var plane)
+                    &&(curveClass==CurveClass.BCurve?IsolateFiniteSplinePlane(edge,plane,roots,nativeRoots,spatialErrors,out n)
+                        :IsolateFiniteExplicitLevelSet(edge,plane,roots,nativeRoots,spatialErrors,out n))==AlgorithmStatus.Success
+                    &&AllNativePlaneRoots(edge,nativeRoots[..n]);
                 var nativeProof=!known&&!lineProof&&!conicPlaneProof&&certificates.IsEmpty&&TryNativeCurvePlaneEvents(edge,surface,roots,nativeRoots,spatialErrors,out n);
                 FiniteCurveSurfaceRoot endpoint=default;
                 if(!nativeProof&&!known&&!lineProof&&!conicPlaneProof&&certificates.IsEmpty&&!originals.IsEmpty&&curveClass==CurveClass.ICurve)
                     nativeProof=TryStationaryNativePlaneEnd(edge,surface,originals,roots,nativeRoots,spatialErrors,out n,out endpoint);
+                if(!nativeProof&&!known&&!lineProof&&!conicPlaneProof&&certificates.IsEmpty&&!originals.IsEmpty)
+                    nativeProof=TryExplicitNativePlaneEnd(edge,surface,originals,roots,nativeRoots,spatialErrors,out n,out endpoint);
                 var status=known||nativeProof||lineProof||conicPlaneProof?AlgorithmStatus.Success:conicProof?IsolateFiniteExplicitCylinder(edge,surface,roots,nativeRoots,spatialErrors,out n)
                     :IntersectRegularSurfaceCurve(surface,edge.Curve,edge.Start,edge.End,roots,out n);
                 LastSheetAlgorithmStatus=status;if(status!=AlgorithmStatus.Success)return IntersectionError(status);
@@ -193,6 +202,19 @@ internal static unsafe partial class KernelRuntime
                         if(nativeProof||conicProof||lineProof||conicPlaneProof)
                         {
                             witness.Lower=nativeRoots[r].Root.Lower;witness.Upper=nativeRoots[r].Root.Upper;witness.SpatialError=spatialErrors[r];
+                        }
+                        if((linePlane||conicPlaneProof)&&witness.Lower==witness.Upper
+                            &&(witness.Parameter==edge.Start||witness.Parameter==edge.End))
+                        {
+                            var upper=witness.Parameter==edge.End;var positive=LocalSenseSign(Curves[GetCurveSlotByTag(edge.Curve)].Sense)>0;
+                            var eventId=upper==positive?edge.EndVertex:edge.StartVertex;
+                            witness.NativeEnd=upper?FiniteNativeEnd.Last:FiniteNativeEnd.First;
+                            if(eventId>=0&&eventId<originals.Length&&originals[eventId]>=0)
+                            {
+                                var endpointError=SheetOriginalVertex(originals[eventId],out var position);if(endpointError!=0)return endpointError;
+                                var discrepancy=ProfileDistance(position,witness.Point);if(discrepancy>OperationIntersection.DistanceTolerance)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                                witness.Point=position;witness.Vertex=originals[eventId];witness.SpatialError+=discrepancy;
+                            }
                         }
                         if(endpoint.NativeEnd!=FiniteNativeEnd.None&&endpoint.Parameter==witness.Parameter)witness=endpoint;
                         points[count++]=new(){Curve=edge.Curve,InputEdge=inputEdge,InputCoedge=inputCoedge,TangentSupport=proof.TangentSupport,ContactSurface=record.Surface,ContactSupport=contactSupport,CuttingSurface=surface,
@@ -250,6 +272,14 @@ internal static unsafe partial class KernelRuntime
         return true;
     }
 
+    private static bool AllNativePlaneRoots(in ModelingEdge edge,ReadOnlySpan<ScalarRootIsolation> isolation)
+    {
+        foreach(ref readonly var root in isolation)
+            if(!root.Certified||!(root.Root.Lower>edge.Start&&root.Root.Upper<edge.End)
+                &&!(root.Root.Lower==root.Root.Upper&&(root.Root.Lower==edge.Start||root.Root.Lower==edge.End)))return false;
+        return true;
+    }
+
     private static bool TryNativeCurvePlaneEvents(in ModelingEdge edge,SurfTag surface,Span<OperationIntersectionPoint> roots,
         Span<ScalarRootIsolation> isolation,Span<double> spatialErrors,out BufferCount count)
     {
@@ -272,8 +302,8 @@ internal static unsafe partial class KernelRuntime
         result=default;
         if(!double.IsFinite(edge.Start)||!double.IsFinite(edge.End)||edge.Start>=edge.End)return false;
         var record=Curves[GetCurveSlotByTag(edge.Curve)];var planeSlot=GetSurfaceSlotByTag(surface);
-        if(record.Class!=CurveClass.Line||Surfaces[planeSlot].Class!=SurfaceClass.Plane
-            ||!TryReadExplicitSpineCurve(record,out var line)||!TryPrepareSurface(Surfaces[planeSlot],out var plane))return false;
+        if(record.Class!=CurveClass.Line||!TryReadExplicitSpineCurve(record,out var line)
+            ||!TryBoundaryPlane(planeSlot,out var plane))return false;
         if(!TryLinePlaneRatio(line,plane,out var numerator,out var denominator))return false;
         var axis=new IntervalVector(line.First);
         var t=numerator/denominator;if(!t.Finite)return false;
@@ -307,12 +337,25 @@ internal static unsafe partial class KernelRuntime
         return numerator.Finite&&denominator.Finite&&!denominator.ContainsZero;
     }
 
+    private static bool TryBoundaryPlane(SurfaceSlot slot,out AnalyticSurface plane)
+    {
+        if(TryPrepareSurface(Surfaces[slot],out plane)&&plane.Kind==SurfaceClass.Plane)return true;
+        if(!TryAffinePlanarSurface(slot,out plane,out _,out _))return false;
+        // The affine view retains the native NURBS. Its rounded normal is
+        // usable as an exact root equation only when every defining pole
+        // lies on that equation without an arithmetic uncertainty.
+        var view=GetBSurfaceView(BSurfaceDataStore[Surfaces[slot].DataIndex]);
+        for(var i=0;i<view.UVertexCount*view.VVertexCount;i++)
+            if(!ExactPointOnPlaneLevel(new IntervalVector(ProfileEuclideanPole(view.Vertices,3,i)),plane))return false;
+        return true;
+    }
+
     private static bool SameCertifiedLinePlaneRoot(CurveTag carrier,SurfTag first,SurfTag second)
     {
         var line=GetCurveSlotByTag(carrier);var a=GetSurfaceSlotByTag(first);var b=GetSurfaceSlotByTag(second);
-        if(line<0||a<0||b<0||Curves[line].Class!=CurveClass.Line||Surfaces[a].Class!=SurfaceClass.Plane||Surfaces[b].Class!=SurfaceClass.Plane
+        if(line<0||a<0||b<0||Curves[line].Class!=CurveClass.Line
             ||!TryReadExplicitSpineCurve(Curves[line],out var geometry)
-            ||!TryPrepareSurface(Surfaces[a],out var p)||!TryPrepareSurface(Surfaces[b],out var q)
+            ||!TryBoundaryPlane(a,out var p)||!TryBoundaryPlane(b,out var q)
             ||!TryLinePlaneRatio(geometry,p,out var n0,out var d0)||!TryLinePlaneRatio(geometry,q,out var n1,out var d1))return false;
         // The quotient need not be a representable parameter. Compare the
         // two exact coefficient pairs, or prove their cross difference zero.

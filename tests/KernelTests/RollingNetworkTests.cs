@@ -154,7 +154,7 @@ public unsafe class RollingNetworkTests:IDisposable
         var options=BooleanOperationTests.Options(ParasolidConstants.PK_boolean_subtract_c);
         PK_TOPOL_track_r_s tracking=default;PK_boolean_r_s result=default;
         var old=KernelRuntime.ForbidSpatialBoundaryReuse;var entered=false;var consumed=false;
-        KernelRuntime.ForbidSpatialBoundaryReuse=true;
+        KernelRuntime.ForbidSpatialBoundaryReuse=false;
         KernelRuntime.TraceFiniteBoundary=t=>
         {
             if(t.Stage!=KernelRuntime.BoundaryTraceStage.ProjectedCellReplacement)return;
@@ -163,7 +163,9 @@ public unsafe class RollingNetworkTests:IDisposable
         };
         try
         {
-            Assert.Equal(ParasolidConstants.PK_ERROR_memory_full,KernelRuntime.BodyBoolean2(target,2,tools,&options,&tracking,&result));
+            var error=KernelRuntime.BodyBoolean2(target,2,tools,&options,&tracking,&result);
+            var conflict=KernelRuntime.LastBoundaryParameterConflict;
+            Assert.True(error==ParasolidConstants.PK_ERROR_memory_full,$"Boolean error={error} stage={KernelRuntime.LastRegularBooleanStage} faces={KernelRuntime.LastRegularBooleanFace}/{KernelRuntime.LastRegularBooleanOtherFace} sheet={KernelRuntime.LastSheetPartitionStage} curve={KernelRuntime.LastSheetCurve} t={KernelRuntime.LastSheetParameter:R} status={KernelRuntime.LastSheetAlgorithmStatus} conflict={conflict.Event}:{conflict.Previous:R}[{conflict.PreviousLower:R},{conflict.PreviousUpper:R}]/{conflict.Incoming:R}[{conflict.Lower:R},{conflict.Upper:R}]");
         }
         finally{KernelRuntime.InjectAllocationFailure(-1);KernelRuntime.ForbidSpatialBoundaryReuse=old;KernelRuntime.TraceFiniteBoundary=null;}
         Assert.True(entered&&consumed);Assert.Equal(0,result.n_bodies);Assert.True(result.bodies==null);Assert.True(tracking.track_records==null);

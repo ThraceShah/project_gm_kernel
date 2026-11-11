@@ -26,7 +26,7 @@ public unsafe class RegularCurvedBooleanTests:IDisposable
         var options=BooleanOperationTests.Options(ParasolidConstants.PK_boolean_subtract_c);
         PK_TOPOL_track_r_s tracking=default;PK_boolean_r_s result=default;
         var previous=KernelRuntime.ForbidSpatialBoundaryReuse;
-        KernelRuntime.ForbidSpatialBoundaryReuse=true;
+        KernelRuntime.ForbidSpatialBoundaryReuse=false;
         try
         {
             Assert.Equal(ParasolidConstants.PK_ERROR_not_implemented,KernelRuntime.BodyBoolean2(target,2,tools,&options,&tracking,&result));
@@ -54,7 +54,7 @@ public unsafe class RegularCurvedBooleanTests:IDisposable
         var blocks=KernelRuntime.BlocksLiveBytes;var returns=KernelRuntime.ReturnOutstandingBlocks;
         var options=BooleanOperationTests.Options(ParasolidConstants.PK_boolean_subtract_c);
         PK_TOPOL_track_r_s tracking=default;PK_boolean_r_s result=default;
-        var previous=KernelRuntime.ForbidSpatialBoundaryReuse;KernelRuntime.ForbidSpatialBoundaryReuse=true;
+        var previous=KernelRuntime.ForbidSpatialBoundaryReuse;KernelRuntime.ForbidSpatialBoundaryReuse=false;
         try
         {
             Assert.Equal(ParasolidConstants.PK_ERROR_not_implemented,KernelRuntime.BodyBoolean2(target,1,&tool,&options,&tracking,&result));
@@ -76,7 +76,7 @@ public unsafe class RegularCurvedBooleanTests:IDisposable
     {
         BodyTag target;Assert.Equal(0,KernelRuntime.BodyCreateSolidCyl(4,4,null,&target));
         var tool=BooleanOperationTests.Block(5,0,1,2,2,2);var options=BooleanOperationTests.Options(ParasolidConstants.PK_boolean_subtract_c);
-        var previous=KernelRuntime.ForbidSpatialBoundaryReuse;KernelRuntime.ForbidSpatialBoundaryReuse=true;
+        var previous=KernelRuntime.ForbidSpatialBoundaryReuse;KernelRuntime.ForbidSpatialBoundaryReuse=false;
         try
         {
             PK_TOPOL_track_r_s tracking=default;PK_boolean_r_s result=default;
@@ -124,7 +124,7 @@ public unsafe class RegularCurvedBooleanTests:IDisposable
         var before=XtBrepImportTests.Transmit(target);var beforeTool=XtBrepImportTests.Transmit(tool);
         var blocks=KernelRuntime.BlocksLiveBytes;var returns=KernelRuntime.ReturnOutstandingBlocks;
         var curves=KernelRuntime.Curves.AliveCount;var surfaces=KernelRuntime.Surfaces.AliveCount;
-        var previous=KernelRuntime.ForbidSpatialBoundaryReuse;KernelRuntime.ForbidSpatialBoundaryReuse=true;
+        var previous=KernelRuntime.ForbidSpatialBoundaryReuse;KernelRuntime.ForbidSpatialBoundaryReuse=false;
         var publicationFailed=false;
         try
         {
@@ -175,7 +175,8 @@ public unsafe class RegularCurvedBooleanTests:IDisposable
         var target=RoofSolid();var tool=BooleanOperationTests.Block(.25,.25,.25,1,1,1);
         var options=BooleanOperationTests.Options(function);int count;int* bodies;
         var error=KernelRuntime.BodyBoolean(target,1,&tool,&options,&count,&bodies);
-        Assert.True(error==0,$"Boolean error={error}, stage={KernelRuntime.LastRegularBooleanStage}, face={KernelRuntime.LastRegularBooleanFace}, sheet={KernelRuntime.LastSheetPartitionStage}");
+        var conflict=KernelRuntime.LastBoundaryParameterConflict;
+        Assert.True(error==0,$"Boolean error={error}, stage={KernelRuntime.LastRegularBooleanStage}, face={KernelRuntime.LastRegularBooleanFace}, sheet={KernelRuntime.LastSheetPartitionStage}, curve={KernelRuntime.LastSheetCurve}, t={KernelRuntime.LastSheetParameter:R}, status={KernelRuntime.LastSheetAlgorithmStatus}, conflict={conflict.Event}: {conflict.Previous:R} [{conflict.PreviousLower:R},{conflict.PreviousUpper:R}] vs {conflict.Incoming:R} [{conflict.Lower:R},{conflict.Upper:R}]");
         try
         {
             Assert.Equal(1,count);Assert.Equal(target,bodies[0]);Assert.True(KernelRuntime.TryResolveBodySlot(target,out var slot));
@@ -198,7 +199,8 @@ public unsafe class RegularCurvedBooleanTests:IDisposable
     {
         var target=RoofSolid();int* tools=stackalloc int[2]{BooleanOperationTests.Block(.25,.35,.2,1,1,1.1),BooleanOperationTests.Block(.83,.62,.17,.8,.7,.91)};
         var options=BooleanOperationTests.Options(function);int count;int* bodies;
-        Assert.Equal(0,KernelRuntime.BodyBoolean(target,2,tools,&options,&count,&bodies));
+        var error=KernelRuntime.BodyBoolean(target,2,tools,&options,&count,&bodies);
+        Assert.True(error==0,$"Boolean error={error} stage={KernelRuntime.LastRegularBooleanStage} faces={KernelRuntime.LastRegularBooleanFace}/{KernelRuntime.LastRegularBooleanOtherFace} sheet={KernelRuntime.LastSheetPartitionStage} curve={KernelRuntime.LastSheetCurve} t={KernelRuntime.LastSheetParameter:R} status={KernelRuntime.LastSheetAlgorithmStatus}");
         try{Assert.Equal(1,count);BooleanOperationTests.Counts(bodies[0],faces,edges,vertices);}
         finally{KernelRuntime.MemoryFree(bodies);}
     }

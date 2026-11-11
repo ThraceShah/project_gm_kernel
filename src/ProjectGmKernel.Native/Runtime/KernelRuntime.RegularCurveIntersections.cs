@@ -135,9 +135,9 @@ internal static unsafe partial class KernelRuntime
         return AlgorithmStatus.Success;
     }
 
-    private static AlgorithmStatus IsolateFiniteBlendLine(in ModelingEdge edge,SurfaceSlot surface,Span<OperationIntersectionPoint> output,
+    private static AlgorithmStatus IsolateFiniteSurfaceLine(in ModelingEdge edge,SurfaceSlot surface,Span<OperationIntersectionPoint> output,
         Span<ScalarRootIsolation> lineParameters,Span<double> spatialErrors,out BufferCount count,
-        scoped ReadOnlySpan<IntervalNumber> linePoles,Span<IntervalNumber> blendStations)
+        scoped ReadOnlySpan<IntervalNumber> linePoles,Span<IntervalNumber> blendStations,Span<SurfaceParameterBox> supportDomains=default)
     {
         count=0;if(!TryReadExplicitSpineCurve(Curves[GetCurveSlotByTag(edge.Curve)],out var line))return AlgorithmStatus.Unsupported;
         if(!(edge.End>edge.Start))return AlgorithmStatus.InvalidInput;
@@ -156,7 +156,7 @@ internal static unsafe partial class KernelRuntime
         Span<ScalarRootIsolation> nominalParameters=stackalloc ScalarRootIsolation[nominal.Length];
         Span<double> nominalErrors=stackalloc double[nominal.Length];
         var nominalCount=0;
-        if(corrected&&IsolateFiniteBlendLine(edge,surface,nominal,nominalParameters,nominalErrors,out nominalCount,default,default)!=AlgorithmStatus.Success)nominalCount=0;
+        if(corrected&&IsolateFiniteSurfaceLine(edge,surface,nominal,nominalParameters,nominalErrors,out nominalCount,default,default)!=AlgorithmStatus.Success)nominalCount=0;
         Span<IntervalNumber> poles=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars];
         Span<IntervalNumber> enclosure=stackalloc IntervalNumber[9];
         Span<SurfaceIntersectionNode> roots=stackalloc SurfaceIntersectionNode[64];
@@ -201,7 +201,13 @@ internal static unsafe partial class KernelRuntime
                 while(at>0&&interval.Lower<lineParameters[at-1].Root.Lower)
                 {accepted[at]=accepted[at-1];lineParameters[at]=lineParameters[at-1];output[at]=output[at-1];spatialErrors[at]=spatialErrors[at-1];
                     if(corrected)blendStations[at]=blendStations[at-1];at--;}
-                accepted[at]=proof;lineParameters[at]=new(){Root=interval};spatialErrors[at]=error;
+                accepted[at]=proof;lineParameters[at]=new(){Root=interval,Certified=true};spatialErrors[at]=error;
+                if(!supportDomains.IsEmpty)
+                {
+                    if(count>supportDomains.Length)return AlgorithmStatus.OutputTooSmall;
+                    for(var k=count-1;k>at;k--)supportDomains[k]=supportDomains[k-1];
+                    supportDomains[at]=proof.First;
+                }
                 if(corrected)blendStations[at]=new(proof.First.U0,proof.First.U1);
                 output[at]=new(){Point=point.Value,First=t,U=Math.Clamp(roots[r].U,proof.First.U0,proof.First.U1),
                     V=Math.Clamp(roots[r].V,proof.First.V0,proof.First.V1),Kind=IntersectionVectorKind.Simple};
