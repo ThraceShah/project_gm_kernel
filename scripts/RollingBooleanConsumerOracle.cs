@@ -88,7 +88,7 @@ unsafe
             KernelRuntime.TraceFiniteBoundary=t=>
             {
                 if(args.Contains("--trace")&&t.Stage is KernelRuntime.BoundaryTraceStage.Input or KernelRuntime.BoundaryTraceStage.Arrangement or KernelRuntime.BoundaryTraceStage.Successor)
-                    Console.WriteLine($"BOOLEAN {t.Stage} surface={t.Surface} source={t.Source} face={t.Face} edge={t.Edge} curve={t.Curve} events={t.StartEvent}/{t.EndEvent}");
+                    Console.WriteLine($"BOOLEAN {t.Stage} surface={t.Surface} source={t.Source} face={t.Face} edge={t.Edge} curve={t.Curve} events={t.StartEvent}/{t.EndEvent} forward={t.Forward} next={t.NextEdge} angles={t.StartAngle:R}/{t.EndAngle:R}");
                 if(t.Stage!=KernelRuntime.BoundaryTraceStage.ProjectedCellReplacement)return;
                 entered=true;Console.WriteLine("PROJECTED replacement entered");
                 if(args.Contains("--inject"))KernelRuntime.InjectAllocationFailure(0);
@@ -96,6 +96,7 @@ unsafe
             M.PK_TOPOL_track_r_s tracking=default;M.PK_boolean_r_s result=default;
             error=KernelRuntime.BodyBoolean2(target,2,tools,&options,&tracking,&result);
             KernelRuntime.InjectAllocationFailure(-1);
+            Console.WriteLine($"GM COMPONENT phase={KernelRuntime.LastBooleanComponentPhase} face={KernelRuntime.LastBooleanComponentFace} edge={KernelRuntime.LastBooleanComponentEdge}");
             Console.WriteLine($"GM BOOLEAN error={error} result={result.result} bodies={result.n_bodies} entered={entered} stage={KernelRuntime.LastRegularBooleanStage} faces={KernelRuntime.LastRegularBooleanFace}/{KernelRuntime.LastRegularBooleanOtherFace} sheet={KernelRuntime.LastSheetPartitionStage} curve={KernelRuntime.LastSheetCurve} parameter={KernelRuntime.LastSheetParameter:R} status={KernelRuntime.LastSheetAlgorithmStatus} root_failure={SurfaceIsoPlaneRoots.LastFailure} root_box=[{SurfaceIsoPlaneRoots.LastUnresolvedInterval.Lower:R},{SurfaceIsoPlaneRoots.LastUnresolvedInterval.Upper:R}]");
             var own=error==0?new ReadOnlySpan<int>(result.bodies,result.n_bodies).ToArray():[];
             Check(KernelRuntime.TopolTrackResultFree(&tracking),"GM tracking free");Check(KernelRuntime.BooleanResultFree(&result),"GM result free");

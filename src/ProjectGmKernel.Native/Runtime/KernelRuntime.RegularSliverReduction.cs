@@ -61,8 +61,11 @@ internal static unsafe partial class KernelRuntime
             if(planeAtStart)newPlaneEdge.StartVertex=endpoint;else newPlaneEdge.EndVertex=endpoint;
             if(wallAtStart)newWallEdge.StartVertex=endpoint;else newWallEdge.EndVertex=endpoint;
             model.Edges[planeEdge]=newPlaneEdge;model.Edges[wallEdge]=newWallEdge;
+            LastBooleanComponentPhase=BooleanComponentPhase.ProjectedPlaneNeighbor;LastBooleanComponentFace=cell.PlaneFace;
             error=RearrangeSliverNeighbor(ref model,cell.PlaneFace,cell.PlaneSide,replacement,cell.Original,boundary,halfedges,cycleCoedges,cycles);if(error!=0)return error;
+            LastBooleanComponentPhase=BooleanComponentPhase.ProjectedWallNeighbor;LastBooleanComponentFace=cell.WallFace;
             error=RearrangeSliverNeighbor(ref model,cell.WallFace,cell.WallSide,replacement,cell.Original,boundary,halfedges,cycleCoedges,cycles);if(error!=0)return error;
+            LastBooleanComponentPhase=BooleanComponentPhase.ProjectedCrossNeighbor;LastBooleanComponentFace=cell.CrossFace;
             error=RearrangeSliverNeighbor(ref model,cell.CrossFace,cell.CrossSide,-1,cell.Original,boundary,halfedges,cycleCoedges,cycles);if(error!=0)return error;
             selected[f]=0;
             var sourceCurve=model.Edges[cell.WallSide].Curve;

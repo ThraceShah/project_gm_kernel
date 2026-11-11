@@ -5,6 +5,11 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
+    internal enum BooleanComponentPhase:byte{None,MergeCells,MergeCycleWitness,MergeEdges,ProjectedCells,ProjectedPlaneNeighbor,ProjectedWallNeighbor,ProjectedCrossNeighbor,ProductIncidence,ProductOpenEdge,ProductWinding}
+    [ThreadStatic] internal static BooleanComponentPhase LastBooleanComponentPhase;
+    [ThreadStatic] internal static BufferOffset LastBooleanComponentFace;
+    [ThreadStatic] internal static BufferOffset LastBooleanComponentEdge;
+
     // A tool hidden inside another tool cannot leave an imprint through a
     // surviving source face. Cancel common cell edges before building shells.
     private static int MergeRegularBooleanCells(scoped ref SheetArrangement model,Span<byte> selected,Span<byte> reversed,bool mergeCoincidentGeometry=false)
@@ -74,6 +79,7 @@ internal static unsafe partial class KernelRuntime
                     var length=nc-begin;if(nl==loops.Length||length>normalized.Length)return ParasolidConstants.PK_ERROR_not_implemented;
                     var reverse=LocalSenseSign(face.Sense)*LocalSenseSign(Surfaces[GetSurfaceSlotByTag(face.Surface)].Sense)<0;
                     for(var i=0;i<length;i++){var value=coedges[begin+(reverse?length-1-i:i)];value.Forward^=reverse?(byte)1:(byte)0;normalized[i]=value;}
+                    LastBooleanComponentPhase=BooleanComponentPhase.MergeCycleWitness;LastBooleanComponentFace=seed;
                     var error=SheetCycleWitness(face.Surface,model.Edges[..model.NE],normalized[..length],out _,out var positive,
                         model.SectionCharts[..model.SectionChartCount]);if(error!=0)return error;
                     if(positive!=0){if(outer>=0)return ParasolidConstants.PK_ERROR_bad_loop;outer=nl;}
@@ -85,6 +91,7 @@ internal static unsafe partial class KernelRuntime
                 model.Witnesses[nf]=model.Witnesses[seed];reversed[nf]=reversed[seed];selected[nf++]=1;
             }
             coedges[..nc].CopyTo(model.Coedges);loops[..nl].CopyTo(model.Loops);model.NF=nf;model.NC=nc;model.NL=nl;
+            LastBooleanComponentPhase=BooleanComponentPhase.MergeEdges;
             return MergeRegularBooleanEdges(ref model,mergeCoincidentGeometry);
         }
         finally{scratch.Return(memory);}

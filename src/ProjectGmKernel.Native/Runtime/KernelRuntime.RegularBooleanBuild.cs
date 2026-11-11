@@ -34,7 +34,11 @@ internal static unsafe partial class KernelRuntime
                 }
             }
         }
-        for(var e=0;e<model.NE;e++)if(first[e]>=0&&second[e]<0)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+        for(var e=0;e<model.NE;e++)if(first[e]>=0&&second[e]<0)
+        {
+            LastBooleanComponentPhase=BooleanComponentPhase.ProductOpenEdge;LastBooleanComponentFace=first[e];LastBooleanComponentEdge=e;
+            return ParasolidConstants.PK_ERROR_cant_do_intersect;
+        }
         var componentCount=0;
         for(var seed=0;seed<model.NF;seed++)
         {
@@ -68,6 +72,7 @@ internal static unsafe partial class KernelRuntime
         for(var c=0;c<componentCount;c++)
         {
             var n=RegularComponentMembers(components,c,members);var face=members[0];var uv=model.Witnesses[face];var surface=GetSurfaceSlotByTag(model.Faces[face].Surface);
+            LastBooleanComponentPhase=BooleanComponentPhase.ProductWinding;LastBooleanComponentFace=face;
             SurfaceDerivativeLayout.TryCreate(1,1,out var layout);
             var status=EvaluateSurfaceCore(in Surfaces[surface],uv.param[0],uv.param[1],in layout,jet,0);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
             witnesses[c]=jet[0];var normal=ProfileCross(jet[layout.GetIndex(1,0)],jet[layout.GetIndex(0,1)]);

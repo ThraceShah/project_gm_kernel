@@ -163,3 +163,39 @@ lifecycle was used to qualify this increment.
 An initial allocation-check invocation assumed a normal-build assembly path,
 which is absent in this testhooks-only build and exited 134 before loading IL.
 The explicit testhooks assembly path above ran the actual guard successfully.
+
+## Increment 2: identify the first remaining return
+
+The diagnostic-only component phase markers distinguish cell merging, projected
+neighbor rebuilding, product incidence and product winding. They reset at the
+Boolean entry and leave the modeling choices unchanged. They are separate from
+the frozen source-root repair `3344c539ab919b3f545cde2c3f15e9072440f86e`.
+
+The first `component-phase` run (exit 134) left the marker at `ProjectedCells`.
+Read-only inspection showed that this marker alone could also survive a
+successful projection pass into the next product-building call; it did **not**
+establish a failure inside projection. A second, more precise `component-return`
+run (exit 134) reports `ProductOpenEdge`, face 3, edge 13. The exact return is the
+open-edge check in `BuildRegularBooleanProducts`: `first[e]>=0 && second[e]<0`.
+This is the first remaining API failure, before cavity winding or B-rep assembly.
+
+Before selection/merging, the trace has both finite uses of that edge:
+
+| Arrangement support / source face | Cell before compaction | Edge / carrier | Directed events |
+| --- | --- | --- | --- |
+| plane 171 / source 3 | 4 | edge 13 / curve 208 | 5 → 44 |
+| rolling 176 / source 16 | 12 | edge 13 / curve 208 | 44 → 5 |
+
+These cell indices belong to the arrangement before selection; `ProductOpenEdge`
+face 3 belongs to the later compacted model and is not the same index space.
+The retained event identity alone does not establish which material cell should
+survive. The next investigation must locate whether selection or the later
+cell/edge merging removes the opposite use. No epsilon, edge deletion or missing
+incidence exemption has been introduced.
+
+Both diagnostic runs retain the exact same candidate target and two tool hashes
+as Increment 1. Real PK receives all three with zero full-check faults, and its
+same-input Boolean returns 0 / one body / zero output faults. GM returns 157 and
+restores all three inputs byte-identically. The projected replacement callback
+and its injected 901 are still unreached. The old `RayIntersections` fields are
+stale at this incidence failure and must not be interpreted as its cause.

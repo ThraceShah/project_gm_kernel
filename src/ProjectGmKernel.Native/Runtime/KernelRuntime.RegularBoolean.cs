@@ -17,6 +17,7 @@ internal static unsafe partial class KernelRuntime
     private static int RegularCurvedBoolean(ReadOnlySpan<BodyTag> inputs,PK_BODY_boolean_o_s* options,PK_TOPOL_track_r_s* tracking,PK_boolean_r_s* result)
     {
         LastRegularBooleanStage=RegularBooleanStage.Read;LastRegularBooleanFace=LastRegularBooleanOtherFace=-1;
+        LastBooleanComponentPhase=BooleanComponentPhase.None;LastBooleanComponentFace=LastBooleanComponentEdge=-1;
         if(options->merge_imprinted!=0||options->tracking!=0)return ParasolidConstants.PK_ERROR_not_implemented;
         var scratch=CommandScratch.Current;
         var tangencyWords=(SheetPointLimit*sizeof(BoundaryTangency)+sizeof(double)-1)/sizeof(double);
@@ -225,12 +226,15 @@ internal static unsafe partial class KernelRuntime
             else
             {
                 LastRegularBooleanStage=RegularBooleanStage.Components;ModelingPerformance.Stage(RegularBooleanStage.Components);
+                LastBooleanComponentPhase=BooleanComponentPhase.MergeCells;LastBooleanComponentFace=-1;
                 error=MergeRegularBooleanCells(ref model,selected,reversed,coincident);if(error!=0)return error;
                 if(options->function==ParasolidConstants.PK_boolean_subtract_c)
                 {
+                    LastBooleanComponentPhase=BooleanComponentPhase.ProjectedCells;LastBooleanComponentFace=-1;
                     error=ReduceProjectedRollingCells(TagRec(inputs[0]).Slot,input,sources[..nf],ref model,selected,reversed,owned,ref ownedCount,
                         halfedges,cycleCoedges,cycles);if(error!=0)return error;
                 }
+                LastBooleanComponentPhase=BooleanComponentPhase.ProductIncidence;
                 error=BuildRegularBooleanProducts(inputs,ref model,selected[..model.NF],reversed[..model.NF],options,result);if(error!=0)return error;
                 if(!targetClash)result->result=ParasolidConstants.PK_boolean_result_no_clash_c;
             }
