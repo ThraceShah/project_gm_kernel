@@ -22,6 +22,19 @@ if(mode=="evidence")
     Require(Git("rev-parse","4b2405e:src")=="0c5d23f6f4e3e7aabe5034888f92812c3ecb07ad","src tree");
     foreach(var parent in new[]{"97174392b97e8c5976e56e2890c58314c74c73b5","f9ffc0985eb1e5ce53f649af66751de7c6c77353"})
         Require(Git("merge-base",parent,"4b2405e")==parent,"real parent ancestor");
+    var functional=Git("diff","--name-only","f9c5920","9717439","--","src/ProjectGmKernel.Native").Split('\n');
+    var performance=Git("diff","--name-only","f9c5920","f9ffc09","--","src/ProjectGmKernel.Native").Split('\n');
+    var union=functional.Union(performance).Order().ToArray();
+    Require(functional.Length==27&&performance.Length==14&&union.Length==40,"two-parent Native union");
+    Require(union.SequenceEqual(Git("diff","--name-only","f9c5920","4b2405e","--","src/ProjectGmKernel.Native").Split('\n').Order()),"no extra Native imports");
+    foreach(var file in union)
+    {
+        if(file.EndsWith("/SurfaceIntersectionPatch.cs",StringComparison.Ordinal)||file.EndsWith("/KernelRuntime.RegularBooleanCuts.cs",StringComparison.Ordinal)||file.EndsWith("/KernelRuntime.SheetArrangement.cs",StringComparison.Ordinal))continue;
+        Require(Git("rev-parse","4b2405e:"+file)==Git("rev-parse",(performance.Contains(file)?"f9ffc09:":"9717439:")+file),"unchanged accepted parent bytes "+file);
+    }
+    foreach(var file in new[]{"tests/KernelTests/BlendIntersectionTests.cs","tests/KernelTests/NestedBlendCacheEmptyReadSetTests.cs"})
+        Require(Git("rev-parse","f9ffc09:"+file)==Git("rev-parse","4b2405e:"+file),"unmodified formerly failing test");
+    receipt["merge"]=new JsonObject{["functionalFiles"]=27,["performanceFiles"]=14,["unionFiles"]=40,["unchangedParentFiles"]=37};
     foreach(var name in new[]{"final-source.sha256","final-artifacts.sha256","handoff-current-v2/files.sha256","suite-loaded-files.sha256"})
     {
         var file=Path.Combine(originals,name);var count=0;
@@ -121,7 +134,54 @@ else if(mode=="negative")
         await Run("audit-"+variant,"dotnet",["run","scripts/NativeModelingWorkComparison.cs","-c","Release","-p:UseSharedCompilation=false","--","--audit",Path.GetRelativePath(script,derived),"--repeat","1"],null);
     }
 }
-else throw new ArgumentException("evidence|execute|negative");
+else if(mode=="results")
+{
+    var receipt=new JsonObject{["calculationCommit"]="4b2405e3945929c5bb93677a68b0ee79e430b2f3",["executionSource"]=Read(Path.Combine(output,"mirror8.command.json"))["source"]!.DeepClone(),
+        ["nativeTree"]=Git("rev-parse","HEAD:src/ProjectGmKernel.Native"),["srcTree"]=Git("rev-parse","HEAD:src"),["originals"]=new JsonArray(),["independentExecutions"]=new JsonArray()};
+    foreach(var name in new[]{"regular45-final","mixed18-final","shortedge-lifecycle-final","rigid-small-final","mirror8-final","nurbs-lifecycle-final","oblique-final","rollback-final","face-query-final","direction-controls-final","controls-off-current","controls-on-current","full-suite-v1","current-runner-v2"})
+    {
+        var prefix=Path.Combine(originals,name);var exit=int.Parse(File.ReadAllText(prefix+".exit"));
+        receipt["originals"]!.AsArray().Add((JsonNode)new JsonObject{["id"]=name,["rawExit"]=exit,["logSha256"]=Hash(prefix+".log"),["exitSha256"]=Hash(prefix+".exit")});
+        Console.WriteLine($"ORIGINAL {name} rawExit={exit}");
+    }
+    foreach(var name in new[]{"mirror8","oblique","focused","audit-intact","audit-no-modulus","audit-no-body-check","audit-no-compare","audit-no-estimates-lower","audit-no-evidence-links","audit-rejected-compare-evidence"})
+    {
+        var prefix=Path.Combine(output,name);var exit=int.Parse(File.ReadAllText(prefix+".exit"));
+        receipt["independentExecutions"]!.AsArray().Add((JsonNode)new JsonObject{["id"]=name,["rawExit"]=exit,["logSha256"]=Hash(prefix+".log"),["commandSha256"]=Hash(prefix+".command.json"),["exitSha256"]=Hash(prefix+".exit"),["modelingExecuted"]=name is "mirror8" or "oblique" or "focused"});
+        Console.WriteLine($"INDEPENDENT {name} rawExit={exit}");
+    }
+    foreach(var name in new[]{"mirror8","oblique"})
+    {
+        var directory=Path.Combine(output,"capture-"+name);var capture=Read(Path.Combine(directory,"capture.json"));
+        Require(capture["captureErrors"]!.AsArray().Count==0,"observer errors");
+        var groups=capture["checks"]!.AsArray().GroupBy(c=>c!["status"]!.GetValue<string>()).ToDictionary(g=>g.Key,g=>g.Count());
+        Require(groups.GetValueOrDefault("fail")==0,"independent geometry failure");
+        Console.WriteLine($"INDEPENDENT_CAPTURE {name} steps={capture["steps"]!.AsArray().Count} {string.Join(',',groups.Select(g=>$"{g.Key}:{g.Value}"))}");
+        Binding(Path.Combine(directory,"identity/kernel.dll"));Binding(Path.Combine(directory,"identity/oracle.dll"));
+        foreach(var reportPath in Directory.EnumerateFiles(Path.Combine(directory,"evidence"),"quality-*.json"))
+        {
+            var report=Read(reportPath);if(name=="oblique")Require(report["sourceBinding"]!=null,"same-call source binding");
+            if(report["mask"] is JsonNode mask)Require(mask["max_diffs"]!.GetValue<int>()>0&&!mask["all_tests"]!.GetValue<bool>()&&!mask["acc_dev_tests"]!.GetValue<bool>()&&mask["tol_dev_tests"]!.GetValue<bool>()&&report["status"]!.GetValue<string>()=="Verified","strict actual comparison");
+        }
+        if(name=="oblique")
+        {
+            Require(groups.GetValueOrDefault("pass")==123&&groups.GetValueOrDefault("missing")==0,"complete oblique capture");
+            Require(capture["steps"]![0]!["sourceBinding"]!["kind"]!.GetValue<string>()=="independent-construction"&&capture["steps"]![1]!["sourceBinding"]!["kind"]!.GetValue<string>()=="same-byte-fork","upstream/downstream origins");
+        }
+    }
+    var mirror=Path.Combine(root,"temp_docs/short-edge-blend-oracle/independent-4b2405e-mirror8/a1-r0.5-t1E-07-reverseFalse-default-input-mirror-s8");
+    Require(Hash(mirror+"-input.x_t")=="262963ce0b899972272970ace0eff5da8b9161dbf007bd01f20a9d3037a8d1a2","exact original PK seed");
+    Require(Hash(mirror+"-input-fresh.x_t")=="10b9eaeaf01d1c0e5cc1b1655fa3884844d026b90e25713ae4031139183c0c54","exact transformed GM input");
+    Require(Hash(mirror+"-self.x_t")=="e17986c1c2e8f442eb7ad79d74a93e434e4155bd83b35db2d273d8202f0de65a","same successful GM product");
+    var off=Path.Combine(author,"temp_docs/native-acceptance-contract/unified-controls-off-current/mass-properties.csv");
+    var on=Path.Combine(author,"temp_docs/native-acceptance-contract/unified-controls-on-current/mass-properties.csv");
+    Require(Hash(off)==Hash(on)&&Hash(off)=="74f2bba7042662f1b773aa078b3e2796634089e742db74a23225a40ccb02a975","off/on original CSV equality");
+    receipt["checkerExit"]=0;receipt["finding"]="B1: runner audit accepts missing or contradictory current quality evidence; modeling geometry acceptance remains separate";
+    receipt["acceptance"]=new JsonObject{["limitedGeometryIntegration"]="accepted",["currentHandoff"]="accepted with explicit raw exits and missing/negative-control display",["runnerAutomaticQuality"]="blocked:B1",["macFixedSourceExecution"]="accepted",["macPerformance"]="unproven"};
+    File.WriteAllText(Path.Combine(output,"results.receipt.json"),receipt.ToJsonString());
+    Console.WriteLine("RESULTS_CHECKER_PASS; checker success does not qualify negative captures or unresolved mass");
+}
+else throw new ArgumentException("evidence|execute|negative|results");
 
 async Task Oracle(string name,string file,string[] extra,string? selector)
 {
