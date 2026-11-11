@@ -234,7 +234,17 @@ static JsonObject FinishSample(BenchCase bench,string label,string caseDirectory
     {
         var partners=pkRows.Where(r=>r.Rep==group.Key).ToList();
         if(group.Count()==1&&partners.Count==1)
-            pairs.Add(new JsonObject{["rep"]=group.Key,["gmMs"]=JsonValue.Create(group.Single().Ms),["pkMs"]=JsonValue.Create(partners[0].Ms)});
+        {
+            // Serialization protection: a missing/non-finite ms keeps the
+            // sample unqualified (Qualify already rejects it with a reason);
+            // the pair persists null instead of NaN so the failure evidence
+            // still writes out and any artifact write failure fails the run
+            // closed instead of losing the record.
+            var gmMs=group.Single().Ms;var pkMs=partners[0].Ms;
+            if(!double.IsFinite(gmMs)||!double.IsFinite(pkMs))
+                verdict.Reasons.Add($"rep {group.Key} pair holds non-finite ms (gm={gmMs}, pk={pkMs}); stored as null");
+            pairs.Add(new JsonObject{["rep"]=group.Key,["gmMs"]=double.IsFinite(gmMs)?JsonValue.Create(gmMs):null,["pkMs"]=double.IsFinite(pkMs)?JsonValue.Create(pkMs):null});
+        }
     }
     var benchLines=new JsonArray();
     var profileLines=new JsonArray();
@@ -483,6 +493,20 @@ static int ValidateFixtures(string directory,TextWriter log)
     Check("valid",true,_=>{});
     Check("capture-errors",false,c=>c["captureErrors"]=new JsonArray((JsonNode?)JsonValue.Create("boom")));
     Check("nan-time",false,c=>c["timings"]![0]!.AsObject().Remove("ms"));
+    // Serialization protection: a non-finite pair value persists as null with
+    // a reason so the failure evidence writes out; the JSON write must not throw.
+    {
+        RunFixture("nan-time-json",bench,2,c=>c["timings"]![0]!.AsObject().Remove("ms"),out var nanSample);
+        try
+        {
+            var written=nanSample.ToJsonString();
+            var ok=!nanSample["qualified"]!.GetValue<bool>()&&written.Contains("\"gmMs\":null",StringComparison.Ordinal)
+                &&((JsonArray)nanSample["qualificationReasons"]!).Any(r=>r!.GetValue<string>().Contains("non-finite ms",StringComparison.Ordinal));
+            if(!ok)failures++;
+            log.WriteLine($"  fixture nan-time-json: {(ok?"ok":"WRONG (expected unqualified sample with null pair value and non-finite reason)")}");
+        }
+        catch(Exception e){failures++;log.WriteLine($"  fixture nan-time-json: WRONG (JSON write threw {e.GetType().Name})");}
+    }
     Check("zero-time",false,c=>c["timings"]![1]!["ms"]=JsonValue.Create(0.0));
     Check("negative-time",false,c=>c["timings"]![1]!["ms"]=JsonValue.Create(-1.0));
     Check("api-error",false,c=>c["timings"]![0]!["error"]=JsonValue.Create(5));
