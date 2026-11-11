@@ -41,6 +41,18 @@ public unsafe class ProfileModelingTests : IDisposable
     }
 
     [Theory]
+    [InlineData(false,false)] [InlineData(true,false)] [InlineData(true,true)]
+    public void PlanarSheetAndObliqueExtrusionReleaseEachOwnedGeometryOnce(bool extrude,bool productFirst)
+    {
+        var before=PoolCounts();var pointsBefore=KernelRuntime.Points.AliveCount;var blocks=KernelRuntime.ReturnOutstandingBlocks;
+        var profile=MakePolygon(false,false);var product=extrude?Extrude(profile,.35):0;
+        if(productFirst&&product!=0)Assert.Equal(0,KernelRuntime.EntityDelete(1,&product));
+        Assert.Equal(0,KernelRuntime.EntityDelete(1,&profile));
+        if(!productFirst&&product!=0){AssertPublicCheck(product);Assert.Equal(0,KernelRuntime.EntityDelete(1,&product));}
+        Assert.Equal(before,PoolCounts());Assert.Equal(pointsBefore,KernelRuntime.Points.AliveCount);Assert.Equal(blocks,KernelRuntime.ReturnOutstandingBlocks);
+    }
+
+    [Theory]
     [InlineData(0.8)]
     [InlineData(-0.8)]
     [InlineData(6.283185307179586)]
