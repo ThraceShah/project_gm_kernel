@@ -9,9 +9,10 @@ Linux x64 / PK 38.0 / PKToy `d820719` before execution. No C ABI or AOT work.
 ## Acceptance runner correction
 
 `RegularSolidBlendOracle` and `SupportBlendChainOracle` now use the existing
-shared strict comparator and mass estimate/modulus contract. Only chart-point
-counts are diagnostic; sense, finite geometry, matching and structural gates
-remain hard conditions. Different fails; Unresolved preserves external exit 2
+shared strict comparator and mass estimate/modulus contract. Chart-point
+counts remain diagnostic; raw curve-sense differences additionally require the
+complete finite analytic proof described below. Other sense, finite geometry,
+matching and structural gates remain hard conditions. Different fails; Unresolved preserves external exit 2
 after remaining operations. Each invocation requires a new `--output-name` and
 refuses an existing evidence directory. Both print the loaded GM assembly hash.
 
@@ -164,6 +165,67 @@ All input/product/mass hashes are in
 `b055abaea9c88446d0983d911de087dbd406bcf25d647a9bf85bcc813919e56d`.
 This is a fixed Blend-to-Boolean input handoff with layered status, not a
 qualification of any later Boolean or overall Blend completion.
+
+## Finite analytic direction adjudication
+
+The current helper retains the original native comparison mask, all raw local
+differences and their entities/faces. A 21959 difference can pass only for a
+unique Line, Circle or Ellipse boundary edge on each solid, with exactly two
+incident uses whose corresponding faces are supplied by native BODY_compare.
+Every other local/global difference remains a hard condition, apart from the
+existing chart-count diagnostic. Unsupported classes, tolerant fin overrides,
+ambiguous edge/face associations or unproved bounds fail; this is not a general
+curve exception or a procedural-curve equivalence claim.
+
+For a line, the proof uses an explicit affine native map `s=alpha*t+beta`.
+The complete residual `A0-B0-beta*Bd + t*(Ad-alpha*Bd)` is enclosed over the
+entire actual source trim. An interval dot product certifies tangent sign.
+For a conic `C+X*cos(t)+Y*sin(t)`, the map is `s=theta+sigma*t+2*pi*k`, with
+`sigma` equal to +1 or -1. Outward coefficient residuals bound the difference
+at **every** parameter. A Gram-matrix lower bound and the complete derivative
+coefficient residual prove consistent tangent direction, including small-radius
+or poorly conditioned inputs. The selected finite intervals map both ways;
+endpoint coverage errors are bounded by the complete target speed bound.
+Integer periodic lifts are enclosed using the true 2*pi interval, not an
+assumed exact binary64 period. The short Taylor enclosure for sin/cos rounds
+every operation outward; its omitted remainder is bounded for the full phase
+range. No fitted or sampled curve establishes any of these results.
+
+The complete coefficient-plus-trim distance bound must fit both the actual
+reported edge precision and the stricter working cap 1e-9. Corresponding
+topological endpoints and their unchanged precisions must also agree within
+the stricter edge/vertex bound. Each matched face's directed fin use is checked
+through `PK_FIN_is_positive`, edge/curve sense and the certified native tangent
+map. Any separate fin curve must report the same carrier and orientation.
+Thus reversing a raw edge/curve orientation is accepted only when both incident
+uses and endpoint association compensate correctly. The original geometry,
+trims, gauges and topology are never rewritten for comparison.
+
+The original two-real-PK control is preserved as external exit 1. Its new
+execution `native-gauge-certified-v1.{log,exit}` proves the actual 16 raw
+curve-sense records under this contract and returns 0; it still qualifies no GM
+construction. `certified-directions-v1.{log,exit}` and
+`certified-directions-reverse-v2.{log,exit}` each execute all 17 independent GM/PK
+Blend constructions and their copy/delete/transform/reload lifecycles. Both
+have 332 proof records (the same edge is reported on each incident face and
+again in lifecycle comparisons), 15 complete passes, two original oblique seed
+cleanup failures, two mass comparisons Unresolved and original external exit 1.
+All 17 constructions and lifecycle geometry comparisons pass; neither process
+is described as fully passing while seed ownership remains unresolved.
+
+The comparator control runner now requires a new output name and retains every
+actual XT. It covers native edge reversal, freshly received raw Line/Circle
+sense reversal with both fin uses compensated (full BODY_check zero), and the
+existing degree-elevated/knot-inserted positives. Wrong dimensions, translation,
+finite wire trim, spline interior, surface pole, uncompensated curve sense,
+one wrong incident fin, material orientation and a compensated-but-wrong
+circle radius remain rejection controls. `direction-controls-v4.{log,exit}`
+executes 10 positives and 10 negatives, original exit 0. The first new control's
+null-free error (906) is separately preserved in `direction-controls-v2` and is
+not counted as successful; `v3` has the earlier 10-positive/9-negative catalog.
+The final tightening to each endpoint's own precision is covered by the new
+`direction-controls-v5` execution. These are comparator controls and cannot
+replace construction, ownership or mass evidence.
 
 Previously accepted f9 short-edge matrix/lifecycle evidence is reused read-only
 as scoped by the dispatch; no full 96/1885/347 rerun has been performed here.

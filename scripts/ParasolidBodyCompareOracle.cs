@@ -10,6 +10,11 @@ using ProjectGmKernel.Native.Runtime;
 using M = ProjectGmKernel.Native.Generated;
 using static parasolid;
 
+var outputName=args.Single(x=>x.StartsWith("--output-name=",StringComparison.Ordinal))["--output-name=".Length..];
+if(outputName.Length==0||!outputName.All(c=>char.IsAsciiLetterOrDigit(c)||c is '-' or '_'))throw new ArgumentException("one new output name is required");
+var directory=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","body-compare-regression",outputName);
+if(Directory.Exists(directory))throw new InvalidOperationException("Existing execution evidence is immutable");Directory.CreateDirectory(directory);
+
 unsafe
 {
     if (!ParasolidScriptHost.TryStartSession("Body comparison regression", out var host, out var message))
@@ -57,7 +62,46 @@ unsafe
             ParasolidBodyCompare.AssertEquivalent(Sheet(0, false, true), received, "degree-elevated sheet");
             ParasolidBodyCompare.AssertEquivalent(Sheet(0, false, false, true), received, "knot-inserted sheet");
             Reject(sheet, Receive(Sheet(0.01, true, false), "wrong-pole-sheet"), "wrong pole sheet", "body geometry");
-            Console.WriteLine("PASS body comparison regression: 6 positive and 5 negative XT controls");
+            foreach(var cylinder in new[]{false,true})
+            {
+                PK_BODY_t original, reversed;Check(cylinder?PK_BODY_create_solid_cyl(1,2,null,&original):PK_BODY_create_solid_block(1,1,1,null,&original),"native direction original");
+                Check(PK_ENTITY_copy(original,&reversed),"native direction copy");int n;PK_EDGE_t* edges;
+                Check(PK_BODY_ask_edges(reversed,&n,&edges),"native direction edges");
+                try{Check(PK_EDGE_reverse(edges[0]),"native compensated edge reverse");}finally{PK_MEMORY_free(edges);}
+                var freshOriginal=NativeRoundtrip(original,cylinder?"circle-original":"line-original");
+                var freshReversed=NativeRoundtrip(reversed,cylinder?"circle-edge-reversed":"line-edge-reversed");
+                ParasolidBodyCompare.AssertEquivalent(freshOriginal,freshReversed,cylinder?"native circle directed-use compensation":"native line directed-use compensation");
+                PK_BODY_t compensated;
+                Check(cylinder?KernelRuntime.BodyCreateSolidCyl(1,2,null,&compensated):KernelRuntime.BodyCreateSolidBlock(1,1,1,null,&compensated),"analytic directed-use fixture");
+                var bodyRecord=KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(compensated).Slot];
+                ref var boundary=ref KernelRuntime.Edges[bodyRecord.FirstEdgeBody];
+                KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(boundary.CurveTag)].Sense=M.ParasolidConstants.PK_TOPOL_sense_negative_c;
+                (boundary.StartVertex,boundary.EndVertex)=(boundary.EndVertex,boundary.StartVertex);
+                var fin=boundary.FirstFinEdge;
+                for(var side=0;side<2;side++,fin=KernelRuntime.Fins[fin].Other)
+                    KernelRuntime.Fins[fin].Sense=KernelRuntime.Fins[fin].Sense=='+'?'-':'+';
+                var compensatedFresh=Receive(compensated,cylinder?"circle-compensated-raw-sense":"line-compensated-raw-sense");
+                CheckFull(compensatedFresh);
+                ParasolidBodyCompare.AssertEquivalent(freshOriginal,compensatedFresh,cylinder?"certified circle raw-sense compensation":"certified line raw-sense compensation");
+                if(cylinder)
+                {
+                    ref var circleData=ref KernelRuntime.CircleDataPool[KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(boundary.CurveTag)].DataIndex];
+                    var radius=circleData.Radius;circleData.Radius*=1.05;
+                    Reject(freshOriginal,Receive(compensated,"compensated-wrong-radius"),"compensated wrong circle radius","body geometry");circleData.Radius=radius;
+                }
+                KernelRuntime.Fins[boundary.FirstFinEdge].Sense=KernelRuntime.Fins[boundary.FirstFinEdge].Sense=='+'?'-':'+';
+                Reject(freshOriginal,Receive(compensated,cylinder?"circle-wrong-fin-direction":"line-wrong-fin-direction"),"wrong incident fin direction","body geometry");
+            }
+            PK_BODY_t source;Check(KernelRuntime.BodyCreateSolidBlock(1,1,1,null,&source),"wrong direction seed");
+            Check(PK_BODY_create_solid_block(1,1,1,null,&reference),"wrong direction reference");
+            var record=KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(source).Slot];var edge=KernelRuntime.Edges[record.FirstEdgeBody];
+            ref var changed=ref KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(edge.CurveTag)];
+            changed.Sense=M.ParasolidConstants.PK_TOPOL_sense_negative_c;
+            Reject(reference,Receive(source,"uncompensated-curve-sense"),"uncompensated curve sense","body geometry");
+            Check(KernelRuntime.BodyCreateSolidBlock(1,1,1,null,&source),"wrong material seed");
+            record=KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(source).Slot];KernelRuntime.Faces[record.FirstFaceBody].Orientation=M.ParasolidConstants.PK_TOPOL_sense_negative_c;
+            Reject(reference,Receive(source,"wrong-material-face"),"wrong material orientation","body geometry");
+            Console.WriteLine("PASS body comparison regression: 10 positive and 10 negative XT controls");
         }
         finally { Check(KernelRuntime.SessionStop(), "managed stop"); }
     }
@@ -131,7 +175,7 @@ static unsafe PK_BODY_t Sheet(double poleDelta, bool managed, bool raiseDegree, 
     return body;
 }
 
-static unsafe PK_BODY_t Receive(PK_BODY_t managed, string name)
+unsafe PK_BODY_t Receive(PK_BODY_t managed, string name)
 {
     var options = new M.PK_PART_transmit_o_s
     {
@@ -140,8 +184,6 @@ static unsafe PK_BODY_t Receive(PK_BODY_t managed, string name)
     };
     var block = new M.PK_MEMORY_block_s();
     Check(KernelRuntime.PartTransmitB(1, &managed, &options, &block), "managed transmit");
-    var directory = Path.Combine(Path.GetDirectoryName(ScriptPath())!, "..", "temp_docs", "body-compare-regression");
-    Directory.CreateDirectory(directory);
     var path = Path.Combine(directory, name + ".x_t");
     try
     {
@@ -166,12 +208,39 @@ static unsafe PK_BODY_t Receive(PK_BODY_t managed, string name)
     }
 }
 
+unsafe PK_BODY_t NativeRoundtrip(PK_BODY_t body,string name)
+{
+    var options=new PK_PART_transmit_o_t{transmit_format=PK_transmit_format_text_c,transmit_version=371};PK_MEMORY_block_t block;
+    Check(PK_PART_transmit_b(1,&body,&options,&block),"native control transmit");
+    byte[] bytes;
+    try
+    {
+        using var stream=new MemoryStream();for(var part=&block;part!=null;part=part->next)stream.Write(new ReadOnlySpan<byte>(part->bytes,checked((int)part->n_bytes)));
+        bytes=stream.ToArray();File.WriteAllBytes(Path.Combine(directory,name+".x_t"),bytes);
+    }
+    finally{Check(PK_MEMORY_block_f(&block),"free native control transmit");}
+    fixed(byte* pointer=bytes)
+    {
+        var input=new PK_MEMORY_block_t(null,(ulong)bytes.Length,pointer);var receive=new PK_PART_receive_o_t{transmit_format=PK_transmit_format_text_c};int count;PK_PART_t* parts;
+        Check(PK_PART_receive_b(input,&receive,&count,&parts),"native control receive");
+        try{if(count!=1)throw new InvalidOperationException("one native control result");return parts[0];}
+        finally{Check(PK_MEMORY_free(parts),"free native control receive");}
+    }
+}
+
 static void Reject(PK_BODY_t reference, PK_BODY_t actual, string label, string expectedReason)
 {
     try { ParasolidBodyCompare.AssertEquivalent(reference, actual, label); }
     catch (InvalidOperationException exception) when (exception.Message.Contains(expectedReason, StringComparison.Ordinal))
     { Console.WriteLine("PASS rejected " + label); return; }
     throw new InvalidOperationException(label + " incorrectly passed");
+}
+static unsafe void CheckFull(PK_BODY_t body)
+{
+    var options=new PK_BODY_check_o_t{max_faults=100};int count;PK_check_fault_t* faults;
+    Check(PK_BODY_check(body,&options,&count,&faults),"control full BODY_check");
+    try{if(count!=0)throw new InvalidOperationException("direction control BODY_check faults="+count);}
+    finally{if(faults!=null)Check(PK_MEMORY_free(faults),"free control full check");}
 }
 
 static string ScriptPath([CallerFilePath] string path = "") => path;
