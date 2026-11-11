@@ -93,6 +93,11 @@ if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
         }
     };
 
+var benchRepeat=1;var benchOption=args.SingleOrDefault(x=>x.StartsWith("--bench-repeat=",StringComparison.Ordinal));
+if(benchOption!=null)benchRepeat=int.Parse(benchOption["--bench-repeat=".Length..],System.Globalization.CultureInfo.InvariantCulture);
+Require(benchRepeat>=1&&benchRepeat<=64,"bench repeat must be in 1..64");
+ModelingPerformance.Enabled=args.Contains("--bench-profile",StringComparer.Ordinal);
+if(ModelingPerformance.Enabled)PrintKernelIdentity("start");
 var researchPrecision=NumberOption(args,"--research-precision=",0);
 Require(researchPrecision==0||double.IsFinite(researchPrecision)&&researchPrecision>0&&args.Contains("--native-only")&&args.Contains("--diagnostics")&&!args.Contains("--record-fixtures"),
     "research precision requires native-only diagnostics and cannot update fixtures");
@@ -211,6 +216,9 @@ using(host)unsafe
             var transversePlaneDifference=-7+(radius-.5)-transverseOffset;
             cases++;
             Console.WriteLine("CASE "+name);
+            for(var benchRep=0;benchRep<benchRepeat;benchRep++)
+            {
+            double prepareMs=0,pkCallMs=0,midMs=0,gmCallMs=0;var benchStart=Stopwatch.GetTimestamp();
             try
             {
                 var reference=Seed(angle,floor,splitRemote,phase);CheckBody(reference,"generated input");Counts(reference,8,splitRemote?18:17,splitRemote?12:11);
@@ -224,8 +232,11 @@ using(host)unsafe
                 if(args.Contains("--native-only")&&args.Contains("--diagnostics"))ProductEdges(reference,"native-before-fix");
                 if(researchPrecision!=0)Check(PK_SESSION_set_precision(researchPrecision),"set research precision");
                 int nativeError;
+                prepareMs=Stopwatch.GetElapsedTime(benchStart).TotalMilliseconds;
+                var pkCallStart=Stopwatch.GetTimestamp();
                 try{nativeError=Fillet(false,reference,angle,radius*inputScale,tolerance*inputScale,reverse,procedural,mappedInput?&inputTransform:null,inputScale,splitSelected,splitEllipse,splitFraction,(int)rotateMarks);}
                 finally{if(researchPrecision!=0)Check(PK_SESSION_set_precision(precision),"restore default precision");}
+                pkCallMs=Stopwatch.GetElapsedTime(pkCallStart).TotalMilliseconds;
                 Check(nativeError,"native fix");CheckBody(reference,"native fillet");
                 if(args.Contains("--native-only")&&args.Contains("--diagnostics"))ProductEdges(reference,"native-after-fix");
                 var result=Transmit(false,reference);File.WriteAllBytes(Path.Combine(output,name+"-native.x_t"),result);
@@ -280,7 +291,10 @@ using(host)unsafe
                 catch(Exception ex){failures++;Console.WriteLine("FAIL native editable roundtrip: "+ex.Message);}
                 if(!args.Contains("--native-only")&&!args.Contains("--import-only"))
                 {
+                    midMs=Stopwatch.GetElapsedTime(benchStart).TotalMilliseconds-prepareMs-pkCallMs;
+                    var gmCallStart=Stopwatch.GetTimestamp();
                     Check(Fillet(true,own,angle,radius*inputScale,tolerance*inputScale,reverse,procedural,mappedInput?&inputTransform:null,inputScale,splitSelected,splitEllipse,splitFraction,(int)rotateMarks),"managed fix");
+                    gmCallMs=Stopwatch.GetElapsedTime(gmCallStart).TotalMilliseconds;
                     var ownResult=Transmit(true,own);File.WriteAllBytes(Path.Combine(output,name+"-self.x_t"),ownResult);
                     var received=Receive(false,ownResult);CheckBody(received,"managed fillet");
                     WebProgressCapture.BindQuality("independent fillet",own,reference,received,ownResult,result);
@@ -305,16 +319,24 @@ using(host)unsafe
                     Check(PK_ENTITY_delete(1,&received),"delete managed roundtrip");
                 }
                 if(own!=0)Check(KernelRuntime.EntityDelete(1,&own),"delete managed seed");Check(PK_ENTITY_delete(1,&reference),"delete reference");
+                Console.WriteLine($"BENCH case={name} rep={benchRep} prepare-ms={prepareMs:F3} pk-call-ms={pkCallMs:F3} mid-ms={midMs:F3} gm-call-ms={gmCallMs:F3} tail-ms={Stopwatch.GetElapsedTime(benchStart).TotalMilliseconds-prepareMs-pkCallMs-midMs-gmCallMs:F3} case-ms={Stopwatch.GetElapsedTime(benchStart).TotalMilliseconds:F3}");
             }
             catch(Exception ex){failures++;Console.WriteLine("FAIL "+name+": "+ex.Message);}
+            }
         }
     }
-    finally{Check(KernelRuntime.SessionStop(),"managed stop");}
+    finally{Check(KernelRuntime.SessionStop(),"managed stop");if(ModelingPerformance.Enabled)PrintKernelIdentity("end");}
     Require(failures==0,$"{failures} short-edge acceptance checks failed");
     var unresolved=ParasolidMassProperties.UnresolvedCount;
     var probesPending=ParasolidProbeAgreement.UnresolvedCount;
     Console.WriteLine($"GEOMETRY_TOPOLOGY_PASS cases={cases} mode={(args.Contains("--native-only")?"native-only":args.Contains("--import-only")?"import-only":"independent-construction")} mass_unresolved={unresolved} probes_unresolved={probesPending}");
     if(unresolved!=0||probesPending!=0)Environment.ExitCode=2;
+}
+
+static void PrintKernelIdentity(string phase)
+{
+    var assembly=typeof(KernelRuntime).Assembly;using var file=File.OpenRead(assembly.Location);
+    Console.WriteLine($"KERNEL_IDENTITY phase={phase} mvid={assembly.ManifestModule.ModuleVersionId} bytes={file.Length} sha256={Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(file))}");
 }
 
 static unsafe void ScalarBoundaryEvidence(int surface,int other)
@@ -619,6 +641,7 @@ static unsafe int Cut(bool own,int body,int tool)
     var webMs=Stopwatch.GetElapsedTime(started).TotalMilliseconds;
     WebProgressCapture.BooleanAfter(own,error==0?new ReadOnlySpan<int>(bodies,n).ToArray():[],webMs,error,0,null);
     Console.WriteLine($"TIME {(own?"self":"PK")} Boolean error={error} ms={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F3} stage={KernelRuntime.LastRegularBooleanStage} face={KernelRuntime.LastRegularBooleanFace} other={KernelRuntime.LastRegularBooleanOtherFace} sheet={KernelRuntime.LastSheetPartitionStage} curve={KernelRuntime.LastSheetCurve} t={KernelRuntime.LastSheetParameter:R} status={KernelRuntime.LastSheetAlgorithmStatus} uv=({KernelRuntime.LastSheetRayU:R},{KernelRuntime.LastSheetRayV:R}) proof_only={KernelRuntime.ForbidSpatialBoundaryReuse}");
+    if(own&&ModelingPerformance.Enabled)PrintProfile("Boolean",webMs);
     if(own&&error!=0&&KernelRuntime.TraceFiniteBoundary!=null)
     {
         var target=KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(body).Slot];var cutter=KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(tool).Slot];
@@ -1615,6 +1638,14 @@ static unsafe void CompareFiniteIntersections(PK_BODY_t reference,PK_BODY_t actu
     }
 }
 
+static void PrintProfile(string operation,double apiMs)
+{
+    var p=ModelingPerformance.Last;var milliseconds=1000.0/Stopwatch.Frequency;
+    Console.WriteLine($"PROFILE operation={operation} api-ms={apiMs:F3} elapsed-ms={p.ElapsedTicks*milliseconds:F3} pairs={p.SurfacePairs} ssi-cells={p.SsiCells} root-cells={p.RootCells} roots={p.Roots} budget-failures={p.BudgetFailures} winding={p.WindingCalls} bound-requests={p.BoundRequests} bound-evaluations={p.BoundEvaluations} cache-hits={p.BoundCacheHits} failure-cache-hits={p.BoundFailureCacheHits} bound-ms={p.BoundTicks*milliseconds:F3}");
+    Console.WriteLine($"WORK jacobians={p.JacobianCalls} directions={p.JacobianDirections} residual-directions={p.ResidualDirections} record-builds={p.JacobianRecordBuilds} record-nodes={p.JacobianRecordNodes} record-rebinds={p.JacobianRecordRebinds} direct-spline-point-columns={p.DirectSplinePointColumns}");
+    foreach(var use in Enum.GetValues<RootIsolationUse>())if(p.RootCalls[(int)use]!=0||p.RootCellsByUse[(int)use]!=0)Console.WriteLine($"ROOT_WORK use={use} calls={p.RootCalls[(int)use]} cells={p.RootCellsByUse[(int)use]} bound-failures={p.RootBoundFailures[(int)use]} exclusions={p.RootLevelExclusions[(int)use]} nonmonotone={p.RootNonmonotone[(int)use]}");
+    foreach(var stage in Enum.GetValues<KernelRuntime.RegularBooleanStage>())if(p.Stages[(int)stage]!=0)Console.WriteLine($"PROFILE stage={stage} ms={p.Stages[(int)stage]*milliseconds:F3}");
+}
 static unsafe int Fillet(bool own,int body,double angle,double radius,double tolerance,bool reverse,bool procedural,M.PK_TRANSF_sf_s* input,double unitScale,bool splitSelected,bool splitEllipse,double splitFraction,int rotateMarks)
 {
     int n;int* edges;Check(own?KernelRuntime.BodyAskEdges(body,&n,&edges):PK_BODY_ask_edges(body,&n,&edges),"edges");
@@ -1682,6 +1713,7 @@ static unsafe int Fillet(bool own,int body,double angle,double radius,double tol
     WebProgressCapture.After(own,body,webElapsed,error,count,made,fault,webUnders,webTopols);
     WebProgressCapture.FreeBlendTracking(own,count,webUnders,webTopols);
     Console.WriteLine($"FIX {(own?"self":"PK")} error={error} faces={count} fault={fault} edge={edgeFault} topol={topolFault} stage={KernelRuntime.LastRegularBlendStage} network={KernelRuntime.LastRollingNetworkStage} SSI={KernelRuntime.LastGeneralIntersectionStage}/{KernelRuntime.LastGeneralIntersectionStatus}/{KernelRuntime.LastGeneralIntersectionNodes}/{KernelRuntime.LastGeneralIntersectionSegments} ms={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F3}");
+    if(own&&ModelingPerformance.Enabled)PrintProfile("FixBlends",webElapsed);
     if(own&&error!=0&&KernelRuntime.ForbidLegacyRegularBlendAssembly)
     {
         Console.WriteLine($"ROLLING FAILURE faces={KernelRuntime.LastRollingFirstFace}/{KernelRuntime.LastRollingSecondFace} sheet={KernelRuntime.LastSheetPartitionStage} curve={KernelRuntime.LastSheetCurve} t={KernelRuntime.LastSheetParameter:R} status={KernelRuntime.LastSheetAlgorithmStatus} uv=({KernelRuntime.LastSheetRayU:R},{KernelRuntime.LastSheetRayV:R})");

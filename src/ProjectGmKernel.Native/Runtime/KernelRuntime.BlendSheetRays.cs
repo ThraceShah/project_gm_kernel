@@ -121,7 +121,7 @@ internal static unsafe partial class KernelRuntime
             if(first>covered)return AlgorithmStatus.NotConverged;covered=last;
             var coordinate=new SurfaceIntersectionPatch(new SurfaceIntersectionPatch(program,data.ProgramSpine,side,first,last),cache);
             var record=Curves[GetCurveSlotByTag(edge.Curve)];coordinate=new(coordinate,edge.Curve,record.Header.Generation,record.Sense);var n=0;
-            var status=SurfaceIsoPlaneRoots.Find(coordinate,level,first,last,roots,ref n,0,true,isolated);if(status!=AlgorithmStatus.Success)return status;
+            var status=SurfaceIsoPlaneRoots.Find(coordinate,level,first,last,roots,ref n,0,true,isolated,use:RootIsolationUse.NativeSupportCoordinate);if(status!=AlgorithmStatus.Success)return status;
             for(var root=0;root<n;root++)
             {
                 var duplicate=false;for(var previous=0;previous<count;previous++)duplicate|=accepted[previous].SameRoot(isolated[root]);if(duplicate)continue;

@@ -2,6 +2,7 @@ using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Geometry.Bounds;
 using ProjectGmKernel.Native.Runtime;
+using System.Runtime.CompilerServices;
 
 namespace ProjectGmKernel.Native.Geometry.Evaluation;
 
@@ -140,6 +141,9 @@ internal static partial class JointNestedBlendEvaluation
         output[6]=frame.X.Derivative;output[7]=frame.Y.Derivative;output[8]=frame.Z.Derivative;return AlgorithmStatus.Success;
     }
 
+    // Active scratch prefixes are written before use; keep the explicit
+    // matrix, RHS and live spline-cache initialization inside their owners.
+    [SkipLocalsInit]
     private static AlgorithmStatus BoundSegment(in NestedBlendProgram program,BlendSurfaceIndex surface,BlendSpineIndex spine,in SurfaceParameterBox domain,Span<IntervalNumber> output,Span<BufferCount> reachBudget=default,
         Span<IntervalNumber> curvature=default,BufferOffset curvatureSide=0,Span<IntervalNumber> supportParameter=default,BufferOffset parameterSide=0,
         Span<IntervalNumber> captureWitness=default,ReadOnlySpan<IntervalNumber> requireWitness=default,BufferOffset rootChart=-1,
@@ -156,6 +160,8 @@ internal static partial class JointNestedBlendEvaluation
         var status=EvaluateCore(program,spine,-1,u,0,layout,point,false,default,out _,out _,snapshot:snapshot,nodeSnapshot:occurrences,counts:counts);
         if(status!=AlgorithmStatus.Success)return status==AlgorithmStatus.Unsupported?status:AlgorithmStatus.NotConverged;
         var n=counts[0];var nodes=occurrences[..counts[1]];var t=new IntervalNumber(domain.U0,domain.U1);
+        var cartesianSpline=captureWitness.IsEmpty&&requireWitness.IsEmpty&&CartesianSplineRows(program,nodes,n);
+        var substitutedConic=captureWitness.IsEmpty&&requireWitness.IsEmpty&&ConicConstraintSubstitution(program,nodes,n);
         Span<BufferOffset> fixedCharts=stackalloc BufferOffset[MaxOccurrences];
         for(var i=0;i<nodes.Length;i++)
         {
@@ -184,12 +190,21 @@ internal static partial class JointNestedBlendEvaluation
             rhs[..n].Clear();rhs[column]=1;status=SmallLinearSolve.LuSolveInPlace(jacobian,n,pivots,rhs[..n]);if(status!=AlgorithmStatus.Success)return status;
             for(var row=0;row<n;row++)inverse[row*n+column]=rhs[row];
         }
+        if(cartesianSpline){status=CartesianSplineInverse(program,nodes,state[..n],inverse[..(n*n)]);if(status!=AlgorithmStatus.Success)return status;}
+        if(substitutedConic){status=ConicSubstitutionInverse(program,nodes,state[..n],inverse[..(n*n)]);if(status!=AlgorithmStatus.Success)return status;}
         Span<IntervalNumber> boxes=stackalloc IntervalNumber[MaxVariables],image=stackalloc IntervalNumber[MaxVariables],centerF=stackalloc IntervalNumber[MaxVariables];
         Span<IntervalNumber> intervalJacobian=stackalloc IntervalNumber[MaxVariables*MaxVariables],remainder=stackalloc IntervalNumber[MaxVariables*MaxVariables];
         Span<IntervalDual> variables=stackalloc IntervalDual[MaxVariables],equations=stackalloc IntervalDual[MaxVariables];
         Span<IntervalSplineContact> splineCache=stackalloc IntervalSplineContact[MaxVariables];
+        var recordCapacity=!substitutedConic&&CanRecordJacobian(program,nodes,n)?64+512*nodes.Length:0;
+        Span<IntervalExpressionNode> recordNodes=stackalloc IntervalExpressionNode[recordCapacity];
+        Span<IntervalNumber> recordDerivatives=stackalloc IntervalNumber[recordCapacity*n];
+        Span<BufferOffset> recordOutputs=stackalloc BufferOffset[MaxVariables];
+        var jacobianRecord=new IntervalJacobianRecord(recordNodes,recordDerivatives,recordOutputs[..n]);
         for(var i=0;i<n;i++)variables[i]=new(state[i],0);
-        status=IntervalResidual(program,nodes,variables[..n],t,equations[..n],fixedCharts);if(status!=AlgorithmStatus.Success)return status;
+        status=substitutedConic?ConicSubstitutionResidual(program,nodes,variables[..n],t,equations[..n],fixedCharts,out _,out _,out _)
+            :cartesianSpline?CartesianSplineResidual(program,nodes,variables[..n],t,equations[..n],fixedCharts,default)
+            :IntervalResidual(program,nodes,variables[..n],t,equations[..n],fixedCharts);if(status!=AlgorithmStatus.Success)return status;
         for(var i=0;i<n;i++)centerF[i]=equations[i].Value;
         var certified=false;var derivativeScale=0.0;for(var i=0;i<n;i++)derivativeScale=Math.Max(derivativeScale,Math.Abs(snapshot[i][1]));
         for(var expansion=0;expansion<6&&!certified;expansion++)
@@ -200,7 +215,7 @@ internal static partial class JointNestedBlendEvaluation
                 var radius=factor*(2*Math.Max(Math.Abs(snapshot[i][1]),.1*derivativeScale)*Math.Max(Math.Abs(domain.U1-u),Math.Abs(domain.U0-u))+1e-10*(1+Math.Abs(state[i])));
                 boxes[i]=new(Math.BitDecrement(state[i]-radius),Math.BitIncrement(state[i]+radius));
             }
-            status=IntervalJacobian(program,nodes,boxes[..n],t,intervalJacobian[..(n*n)],variables,equations,fixedCharts,splineCache);if(status!=AlgorithmStatus.Success)continue;
+            status=IntervalJacobianWithRecord(program,nodes,boxes[..n],t,intervalJacobian[..(n*n)],variables,equations,fixedCharts,splineCache,ref jacobianRecord,cartesianSpline,substitutedConic);if(status!=AlgorithmStatus.Success)continue;
             Precondition(inverse[..(n*n)],intervalJacobian[..(n*n)],n,remainder);
             certified=true;
             for(var row=0;row<n;row++)
@@ -222,7 +237,7 @@ internal static partial class JointNestedBlendEvaluation
         for(var iteration=0;iteration<6;iteration++)
         {
             for(var i=0;i<n;i++)boxes[i]=new(Math.Max(boxes[i].Lower,image[i].Lower),Math.Min(boxes[i].Upper,image[i].Upper));
-            status=IntervalJacobian(program,nodes,boxes[..n],t,intervalJacobian[..(n*n)],variables,equations,fixedCharts,splineCache);if(status!=AlgorithmStatus.Success)return status;
+            status=IntervalJacobianWithRecord(program,nodes,boxes[..n],t,intervalJacobian[..(n*n)],variables,equations,fixedCharts,splineCache,ref jacobianRecord,cartesianSpline,substitutedConic);if(status!=AlgorithmStatus.Success)return status;
             Precondition(inverse[..(n*n)],intervalJacobian[..(n*n)],n,remainder);
             for(var row=0;row<n;row++)
             {
@@ -263,7 +278,9 @@ internal static partial class JointNestedBlendEvaluation
                 if(status!=AlgorithmStatus.Success)return status;
             }
         }
-        status=IntervalResidual(program,nodes,variables[..n],new(t,1),equations[..n],fixedCharts,splineCache);if(status!=AlgorithmStatus.Success)return status;
+        status=substitutedConic?ConicSubstitutionResidual(program,nodes,variables[..n],new(t,1),equations[..n],fixedCharts,out _,out _,out _)
+            :cartesianSpline?CartesianSplineResidual(program,nodes,variables[..n],new(t,1),equations[..n],fixedCharts,splineCache)
+            :IntervalResidual(program,nodes,variables[..n],new(t,1),equations[..n],fixedCharts,splineCache);if(status!=AlgorithmStatus.Success)return status;
         for(var i=0;i<n;i++)image[i]=-equations[i].Derivative;
         status=SolveIntervals(intervalJacobian[..(n*n)],image[..n],n);if(status!=AlgorithmStatus.Success)return status;
         if(parameterIndex>=0)
@@ -373,22 +390,40 @@ internal static partial class JointNestedBlendEvaluation
     }
 
     private static AlgorithmStatus IntervalJacobian(in NestedBlendProgram program,ReadOnlySpan<Occurrence> nodes,ReadOnlySpan<IntervalNumber> boxes,
-        IntervalNumber parameter,Span<IntervalNumber> matrix,Span<IntervalDual> variables,Span<IntervalDual> equations,ReadOnlySpan<BufferOffset> fixedCharts,Span<IntervalSplineContact> cache)
+        IntervalNumber parameter,Span<IntervalNumber> matrix,Span<IntervalDual> variables,Span<IntervalDual> equations,ReadOnlySpan<BufferOffset> fixedCharts,Span<IntervalSplineContact> cache,bool cartesianSpline=false)
     {
-        var n=boxes.Length;for(var i=0;i<n;i++)variables[i]=new(boxes[i],0);
-        cache.Clear();
+        var n=boxes.Length;ModelingPerformance.Jacobian(n);for(var i=0;i<n;i++)variables[i]=new(boxes[i],0);
+        if(HasAnyUv(nodes))cache.Clear();
         foreach(var node in nodes)for(var side=0;side<2;side++)
         {
             var uv=side==0?node.FirstUv:node.SecondUv;if(uv<0)continue;var spine=program.Spines[node.Spine];var source=program.Surfaces[side==0?spine.First:spine.Second];
             if(SplineContactMatches(cache[uv],source,boxes[uv],boxes[uv+1]))continue;
             var status=CacheSplineContact(program,source,boxes[uv],boxes[uv+1],ref cache[uv]);if(status!=AlgorithmStatus.Success)return status;
         }
-        for(var column=0;column<n;column++)
+        var firstColumn=0;
+        if(cartesianSpline)
         {
-            variables[column]=new(boxes[column],1);var status=IntervalResidual(program,nodes,variables[..n],parameter,equations[..n],fixedCharts,cache);if(status!=AlgorithmStatus.Success)return status;
+            var status=CartesianSplinePointColumns(program,nodes,variables[..n],parameter,equations[..n],fixedCharts,cache,matrix);
+            if(status!=AlgorithmStatus.Success)return status;firstColumn=3;
+        }
+        else if(PlaneSplinePointColumns(program,nodes,boxes,parameter,fixedCharts,cache,matrix,out var pointStatus))
+        {
+            if(pointStatus!=AlgorithmStatus.Success)return pointStatus;firstColumn=3;
+        }
+        for(var column=firstColumn;column<n;column++)
+        {
+            ModelingPerformance.ResidualDirection();
+            variables[column]=new(boxes[column],1);
+            var status=cartesianSpline?CartesianSplineResidual(program,nodes,variables[..n],parameter,equations[..n],fixedCharts,cache)
+                :IntervalResidual(program,nodes,variables[..n],parameter,equations[..n],fixedCharts,cache);if(status!=AlgorithmStatus.Success)return status;
             for(var row=0;row<n;row++)matrix[row*n+column]=equations[row].Derivative;variables[column]=new(boxes[column],0);
         }
         return AlgorithmStatus.Success;
+    }
+    private static bool HasAnyUv(ReadOnlySpan<Occurrence> nodes)
+    {
+        foreach(var node in nodes)if(node.FirstUv>=0||node.SecondUv>=0)return true;
+        return false;
     }
     private static void Precondition(ReadOnlySpan<double> inverse,ReadOnlySpan<IntervalNumber> jacobian,BufferCount n,Span<IntervalNumber> result)
     {

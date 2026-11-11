@@ -12,6 +12,10 @@ using System.Runtime.CompilerServices;
 using M=ProjectGmKernel.Native.Generated;
 Console.WriteLine("GM_ASSEMBLY sha256="+Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(typeof(KernelRuntime).Assembly.Location))));
 
+var benchRepeat=1;var benchOption=args.SingleOrDefault(x=>x.StartsWith("--bench-repeat=",StringComparison.Ordinal));
+if(benchOption!=null)benchRepeat=int.Parse(benchOption["--bench-repeat=".Length..],System.Globalization.CultureInfo.InvariantCulture);
+Require(benchRepeat>=1&&benchRepeat<=64,"bench repeat must be in 1..64");
+ModelingPerformance.Enabled=args.Contains("--bench-profile",StringComparer.Ordinal);
 var outputName=args.Single(x=>x.StartsWith("--output-name=",StringComparison.Ordinal))["--output-name=".Length..];
 Require(outputName.Length>0&&outputName.All(c=>char.IsAsciiLetterOrDigit(c)||c is '-' or '_'),"one new output directory name");
 var directory=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","regular-curved-boolean-oracle",outputName);
@@ -34,6 +38,8 @@ using(host)unsafe
         foreach(var function in new[]{PK_boolean_unite_c,PK_boolean_intersect_c,PK_boolean_subtract_c})
         {
             var name=$"{kind}-{function}";if(!WebProgressCapture.Select(name))continue;if(filter!=null&&!name.Contains(filter,StringComparison.Ordinal))continue;
+            for(var benchRep=0;benchRep<benchRepeat;benchRep++)
+            {
             try
             {
                 Exception? ownFailure=null,nativeFailure=null;int[] ours=[],reference=[];var intermediate=new Dictionary<string,int>();
@@ -67,6 +73,7 @@ using(host)unsafe
                 passed++;Console.WriteLine("GEOMETRY_TOPOLOGY_PASS "+name);
             }
             catch(Exception ex){failures++;Console.WriteLine("FAIL "+name+": "+ex);}
+            }
         }
         Require(failures==0,$"{failures} regular curved Boolean cases failed");Console.WriteLine($"GEOMETRY_TOPOLOGY_PASS all {passed} regular curved Boolean cases mass_unresolved={ParasolidMassProperties.UnresolvedCount}");
         if(ParasolidMassProperties.UnresolvedCount!=0)Environment.ExitCode=2;
@@ -132,6 +139,7 @@ static unsafe int[] Produce(bool own,string kind,int function,double tolerance=1
         var started=System.Diagnostics.Stopwatch.GetTimestamp();
         var error=own?KernelRuntime.BodyBoolean2(target,toolCount,tools,(M.PK_BODY_boolean_o_s*)&options,(M.PK_TOPOL_track_r_s*)&tracking,(M.PK_boolean_r_s*)&result):PK_BODY_boolean_2(target,toolCount,tools,&options,&tracking,&result);
         var ms=System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+        if(own&&ModelingPerformance.Enabled)PrintProfile($"Boolean {kind}-{function}",ms);
         try
         {
             var output=error==0?new ReadOnlySpan<int>(result.bodies,result.n_bodies).ToArray():[];
@@ -144,6 +152,14 @@ static unsafe int[] Produce(bool own,string kind,int function,double tolerance=1
     Check(finalError,$"{(own?"own":"native")} {kind} Boolean");
     try{var result=new int[count];new ReadOnlySpan<int>(bodies,count).CopyTo(result);if(kind=="mixed-disjoint"&&function==PK_boolean_unite_c)Require(result.Contains(tools[1]),"disjoint tool body identity");return result;}
     finally{if(bodies!=null)Check(own?KernelRuntime.MemoryFree(bodies):PK_MEMORY_free(bodies),"Boolean buffers");}
+}
+static void PrintProfile(string operation,double apiMs)
+{
+    var p=ModelingPerformance.Last;var milliseconds=1000.0/System.Diagnostics.Stopwatch.Frequency;
+    Console.WriteLine($"PROFILE operation={operation} api-ms={apiMs:F3} elapsed-ms={p.ElapsedTicks*milliseconds:F3} pairs={p.SurfacePairs} ssi-cells={p.SsiCells} root-cells={p.RootCells} roots={p.Roots} budget-failures={p.BudgetFailures} winding={p.WindingCalls} bound-requests={p.BoundRequests} bound-evaluations={p.BoundEvaluations} cache-hits={p.BoundCacheHits} failure-cache-hits={p.BoundFailureCacheHits} bound-ms={p.BoundTicks*milliseconds:F3}");
+    Console.WriteLine($"WORK jacobians={p.JacobianCalls} directions={p.JacobianDirections} residual-directions={p.ResidualDirections} record-builds={p.JacobianRecordBuilds} record-nodes={p.JacobianRecordNodes} record-rebinds={p.JacobianRecordRebinds} direct-spline-point-columns={p.DirectSplinePointColumns}");
+    foreach(var use in Enum.GetValues<RootIsolationUse>())if(p.RootCalls[(int)use]!=0||p.RootCellsByUse[(int)use]!=0)Console.WriteLine($"ROOT_WORK use={use} calls={p.RootCalls[(int)use]} cells={p.RootCellsByUse[(int)use]} bound-failures={p.RootBoundFailures[(int)use]} exclusions={p.RootLevelExclusions[(int)use]} nonmonotone={p.RootNonmonotone[(int)use]}");
+    foreach(var stage in Enum.GetValues<KernelRuntime.RegularBooleanStage>())if(p.Stages[(int)stage]!=0)Console.WriteLine($"PROFILE stage={stage} ms={p.Stages[(int)stage]*milliseconds:F3}");
 }
 static unsafe int Roof(bool own,double dx,double dy,double dz,double bulge)
 {

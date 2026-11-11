@@ -29,7 +29,7 @@ internal static unsafe partial class KernelRuntime
         patch=new SurfaceIntersectionPatch(patch,data.Surface1Tag,support.Header.Generation,support.Sense);
         var iso=new SurfaceIntersectionPatch(patch,false,v,lower,upper);
         var found=0;
-        var status=SurfaceIsoPlaneRoots.Find(iso,plane,lower,upper,roots,ref found,strictSeparation:true,isolation:isolation);
+        var status=SurfaceIsoPlaneRoots.Find(iso,plane,lower,upper,roots,ref found,strictSeparation:true,isolation:isolation,use:RootIsolationUse.Contact);
         if(status!=AlgorithmStatus.Success)return false;
         Span<IntervalNumber> jet=stackalloc IntervalNumber[9];
         Span<KernelVector3> point=stackalloc KernelVector3[1];

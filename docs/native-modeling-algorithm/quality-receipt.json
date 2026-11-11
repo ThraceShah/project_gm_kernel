@@ -1,0 +1,64 @@
+{
+  "format": "native-modeling-algorithm-quality-v1",
+  "candidateSource": "6616cd60a55e50a5d8a5ada7274895c44609676b",
+  "candidateNativeTree": "5b4c6104c600b0194bb543e2dc11efa89e2f0f1f",
+  "baselineSource": "270e2b6814afe5a48cd0532e89531f6fb80011be",
+  "baselineNativeTree": "afb8cec5cde9769cb68c470ea8da9591a1804e64",
+  "candidate": {
+    "total": 1914,
+    "passed": 1912,
+    "failed": 2,
+    "executed": 1914,
+    "rawExit": 1,
+    "trx": {
+      "path": "temp_docs/pk-native-algorithm-work/test-results/combined-6616-full.trx",
+      "sha256": "4f8eaa8b6d0dfdf4477d085b81b785de5a7f688eab958d1c7fe877e0d30d38ac"
+    },
+    "log": {
+      "path": "temp_docs/pk-native-algorithm-work/combined-6616-full.log",
+      "sha256": "a397bca17f3ff057c79b684c0938e077219aeafa48dcaeda18afff2e179aece0"
+    }
+  },
+  "baseline": {
+    "total": 2,
+    "passed": 0,
+    "failed": 2,
+    "executed": 2,
+    "rawExit": 1,
+    "trx": {
+      "path": "temp_docs/pk-native-algorithm-work/test-results/integrated-270-baseline-failures.trx",
+      "sha256": "a13dd3091a694a4818fecab5af69c0717257fcc36c22aa2bafc869bd35f87c01"
+    },
+    "log": {
+      "path": "temp_docs/pk-native-algorithm-work/integrated-270-baseline-failures.log",
+      "sha256": "462552da8573550b362a56205489ed06870c2a49f70a62c882f3de44b7f55e31"
+    }
+  },
+  "baselineScope": "Only the two full-suite failures; baseline full suite was not run",
+  "failures": [
+    {
+      "name": "KernelTests.BlendIntersectionTests.NativeCurveTubeBoundsItsSupportingBlendParameterAndDerivative",
+      "message": "Assert.Equal() Failure: Values differ\nExpected: Success\nActual:   NotConverged",
+      "sameFixedBaselineMessage": true
+    },
+    {
+      "name": "KernelTests.NestedBlendCacheEmptyReadSetTests.SupportingBlendSectionConsumersKeepIndependentChecksWithReuseDisabled",
+      "message": "Assert.Equal() Failure: Values differ\nExpected: Success\nActual:   NotConverged",
+      "sameFixedBaselineMessage": true
+    }
+  ],
+  "testSources": [
+    {
+      "path": "tests/KernelTests/BlendIntersectionTests.cs",
+      "candidateSha256": "36f5549180214fb95c86fc6c7787532953eab962b87085aa4705887183856d23",
+      "baselineSha256": "36f5549180214fb95c86fc6c7787532953eab962b87085aa4705887183856d23"
+    },
+    {
+      "path": "tests/KernelTests/NestedBlendCacheEmptyReadSetTests.cs",
+      "candidateSha256": "7979ab090034c14d73a224692c4de1cfd6e9aea371b4ae16649649b71d119769",
+      "baselineSha256": "7979ab090034c14d73a224692c4de1cfd6e9aea371b4ae16649649b71d119769"
+    }
+  ],
+  "originalEvidence": "Original logs/TRX/exit files are unchanged; checker success does not override operation/test raw exits",
+  "newFormalPerformanceMeasurement": "not executed"
+}

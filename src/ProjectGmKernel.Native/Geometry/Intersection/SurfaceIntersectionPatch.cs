@@ -80,14 +80,14 @@ internal readonly ref struct SurfaceIntersectionPatch
     {
         if(supportParameterSide!=0)
         {
-            if(ModelingPerformance.TryBound(cacheTag,cacheGeneration,cacheSense,surface,true,box,output,supportParameterSide))return AlgorithmStatus.Success;
+            if(ModelingPerformance.TryBound(cacheTag,cacheGeneration,cacheSense,surface,true,box,output,out var cached,double.NaN,supportParameterSide))return cached;
             Span<IntervalNumber> parameter=stackalloc IntervalNumber[2];
             var started=ModelingPerformance.StartBound();
             var found=JointNestedBlendEvaluation.BoundSpineSupportU(blend,surface,box.U0,box.U1,supportParameterSide-1,parameter);
             ModelingPerformance.EndBound(started);
             if(found!=AlgorithmStatus.Success)return found;
             output[..9].Clear();output[0]=parameter[0];output[3]=parameter[1];
-            ModelingPerformance.StoreBound(cacheTag,cacheGeneration,cacheSense,surface,true,box,output,supportParameterSide);return found;
+            ModelingPerformance.StoreBound(cacheTag,cacheGeneration,cacheSense,surface,true,box,output,AlgorithmStatus.Success,double.NaN,supportParameterSide);return found;
         }
         if(normalOffset!=0&&isBlend)return AlgorithmStatus.Unsupported;
         var mapped=isoAxis==1?new SurfaceParameterBox(isoParameter,isoParameter,box.U0,box.U1)
@@ -97,14 +97,18 @@ internal readonly ref struct SurfaceIntersectionPatch
             var t=new IntervalNumber(box.U0,box.U1);var u=lineU+t*lineDU;var v=lineV+t*lineDV;
             mapped=new(u.Lower,u.Upper,v.Lower,v.Upper);
         }
-        AlgorithmStatus status;
-        if(isBlend&&ModelingPerformance.TryBound(cacheTag,cacheGeneration,cacheSense,surface,isSpine,mapped,output))status=AlgorithmStatus.Success;
-        else
+        AlgorithmStatus status;var failureScale=isBlend?AnalyticFailureScale():double.NaN;
+        if(!isBlend||!ModelingPerformance.TryBound(cacheTag,cacheGeneration,cacheSense,surface,isSpine,mapped,output,out status,failureScale))
         {
             var started=isBlend?ModelingPerformance.StartBound():0;
             status=isSpine?JointNestedBlendEvaluation.BoundSpine(blend,surface,mapped,output)
                 :isBlend?JointNestedBlendEvaluation.Bound(blend,surface,mapped,output):OffsetBezierBounds.Bound(bezier,mapped,normalOffset,output);
-            if(isBlend){ModelingPerformance.EndBound(started);if(status==AlgorithmStatus.Success)ModelingPerformance.StoreBound(cacheTag,cacheGeneration,cacheSense,surface,isSpine,mapped,output);}
+            if(isBlend)
+            {
+                ModelingPerformance.EndBound(started);
+                if(status==AlgorithmStatus.Success||status==AlgorithmStatus.NotConverged&&double.IsFinite(failureScale))
+                    ModelingPerformance.StoreBound(cacheTag,cacheGeneration,cacheSense,surface,isSpine,mapped,output,status,failureScale);
+            }
         }
         if(status!=AlgorithmStatus.Success)return status;
         if(isoAxis!=0)
@@ -123,6 +127,21 @@ internal readonly ref struct SurfaceIntersectionPatch
             output[6]=output[7]=output[8]=0;output[6+axis]=1;
         }
         return status;
+    }
+
+    private double AnalyticFailureScale()
+    {
+        if(!isSpine||supportParameterSide!=0||(uint)surface>=(uint)blend.Spines.Length)return double.NaN;
+        var root=blend.Spines[surface];
+        if(root.Curve.Kind!=CurveClass.None||root.ChartCount<2||root.ChartOffset<0||root.ChartCount>blend.Charts.Length-root.ChartOffset)return double.NaN;
+        // The analytic joint system uses fixed stack workspaces and fixed
+        // iteration limits. Spline workspaces can vary with a compiler view;
+        // never retain a failure that could be caused by that available space.
+        foreach(ref readonly var instruction in blend.Surfaces)if(instruction.IsBSpline)return double.NaN;
+        foreach(ref readonly var instruction in blend.Spines)if(instruction.Curve.Kind==CurveClass.BCurve)return double.NaN;
+        // Newton accuracy also sees the full compiler view, including supports
+        // outside this root's DAG. Negative entries must match that scale.
+        return JointNestedBlendEvaluation.ResidualAccuracyScale(blend,surface);
     }
 
     // Estimates only guide local optimization. Accepted upper bounds are

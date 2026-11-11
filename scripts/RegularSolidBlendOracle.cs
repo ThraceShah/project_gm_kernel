@@ -13,6 +13,10 @@ using System.Diagnostics;
 using System.Globalization;
 using M=ProjectGmKernel.Native.Generated;
 
+var benchRepeat=1;var benchOption=args.SingleOrDefault(x=>x.StartsWith("--bench-repeat=",StringComparison.Ordinal));
+if(benchOption!=null)benchRepeat=int.Parse(benchOption["--bench-repeat=".Length..],CultureInfo.InvariantCulture);
+Require(benchRepeat>=1&&benchRepeat<=64,"bench repeat must be in 1..64");
+ModelingPerformance.Enabled=args.Contains("--bench-profile",StringComparer.Ordinal);
 KernelRuntime.ForbidLegacyRegularBlendAssembly=args.Contains("--event-arrangement",StringComparer.Ordinal);
 var cutArg=args.SingleOrDefault(x=>x.StartsWith("--cut-x=",StringComparison.Ordinal));
 var cutX=cutArg==null?.5:double.Parse(cutArg[8..],CultureInfo.InvariantCulture);
@@ -80,6 +84,8 @@ using(host)unsafe
                 if(name=="affine-plane-nurbs"&&!args.Contains(name,StringComparer.Ordinal))continue;
                 if(args.Length!=0&&!args.Contains(name,StringComparer.Ordinal))continue;
                 if(lifecycleOnly&&name!="plane-nurbs")continue;
+                for(var benchRep=0;benchRep<benchRepeat;benchRep++)
+                {
                 cases++;
                 Console.WriteLine($"CASE {name}, radius={radius:R}, fix.update=v261");
                 File.Delete(Path.Combine(directory,name+"-fillet.x_t"));File.Delete(Path.Combine(directory,name+"-fillet-cut.x_t"));
@@ -133,6 +139,7 @@ using(host)unsafe
                 }
                 catch(Exception ex){failures++;Console.WriteLine("FAIL "+name+" construction: "+ex.Message);}
                 Console.WriteLine($"TIME case {name} ms={Stopwatch.GetElapsedTime(caseStarted).TotalMilliseconds:F3}");
+                }
             }
             Require(cases>0,"no matching freeform solid fillet cases");Require(failures==0,$"{failures} freeform solid fillet checks failed");
             Console.WriteLine(lifecycleOnly?"PASS independent freeform solid fillet lifecycle":$"PASS all {cases} freeform solid fillet{(roundingOnly?"":" and subsequent cutting")} cases");
@@ -212,6 +219,7 @@ static unsafe int Fillet(bool own,int body,double radius,bool concave=false)
     var webElapsed=Stopwatch.GetElapsedTime(started).TotalMilliseconds;
     WebProgressCapture.After(own,body,webElapsed,error,count,blends,fault,webUnders,webTopols);
     WebProgressCapture.FreeBlendTracking(own,count,webUnders,webTopols);
+    if(own&&ModelingPerformance.Enabled)PrintProfile("FixBlends",webElapsed);
     Console.WriteLine($"TIME {(own?"self":"PK")} BODY_fix_blends radius={radius:R} ms={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F3}, error={error}");
     Console.WriteLine($"{(own?"own":"native")} fix error={error}, count={count}, fault={fault}, edge={fe}, topol={ft}");Check(error,"fix constant blend");
     try
@@ -390,6 +398,14 @@ static unsafe int Cut(bool own,int body,double x)
     var webMs=Stopwatch.GetElapsedTime(started).TotalMilliseconds;WebProgressCapture.BooleanAfter(own,error==0?new ReadOnlySpan<int>(bodies,n).ToArray():[],webMs,error,0,null);
     Console.WriteLine($"TIME {(own?"self":"PK")} BODY_boolean x={x:R} ms={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F3}, error={error}");Check(error,"cut filleted solid");
     try{Require(n==1,"one cut solid");return bodies[0];}finally{Free(own,bodies);}
+}
+static void PrintProfile(string operation,double apiMs)
+{
+    var p=ModelingPerformance.Last;var milliseconds=1000.0/System.Diagnostics.Stopwatch.Frequency;
+    Console.WriteLine($"PROFILE operation={operation} api-ms={apiMs:F3} elapsed-ms={p.ElapsedTicks*milliseconds:F3} pairs={p.SurfacePairs} ssi-cells={p.SsiCells} root-cells={p.RootCells} roots={p.Roots} budget-failures={p.BudgetFailures} winding={p.WindingCalls} bound-requests={p.BoundRequests} bound-evaluations={p.BoundEvaluations} cache-hits={p.BoundCacheHits} failure-cache-hits={p.BoundFailureCacheHits} bound-ms={p.BoundTicks*milliseconds:F3}");
+    Console.WriteLine($"WORK jacobians={p.JacobianCalls} directions={p.JacobianDirections} residual-directions={p.ResidualDirections} record-builds={p.JacobianRecordBuilds} record-nodes={p.JacobianRecordNodes} record-rebinds={p.JacobianRecordRebinds} direct-spline-point-columns={p.DirectSplinePointColumns}");
+    foreach(var use in Enum.GetValues<RootIsolationUse>())if(p.RootCalls[(int)use]!=0||p.RootCellsByUse[(int)use]!=0)Console.WriteLine($"ROOT_WORK use={use} calls={p.RootCalls[(int)use]} cells={p.RootCellsByUse[(int)use]} bound-failures={p.RootBoundFailures[(int)use]} exclusions={p.RootLevelExclusions[(int)use]} nonmonotone={p.RootNonmonotone[(int)use]}");
+    foreach(var stage in Enum.GetValues<KernelRuntime.RegularBooleanStage>())if(p.Stages[(int)stage]!=0)Console.WriteLine($"PROFILE stage={stage} ms={p.Stages[(int)stage]*milliseconds:F3}");
 }
 static unsafe int Notch(bool own,int body)
 {
