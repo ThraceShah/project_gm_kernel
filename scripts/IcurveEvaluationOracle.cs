@@ -785,6 +785,27 @@ static unsafe void RunNonUniformChartLivePkReceive(Action<string> log, string re
             }
 
             log($"{logPrefix}: PASS (non-uniform f_i recursion matches PK TMax, D0, D1, and geometric D2)");
+            // A closed CHART has separate end gauges. Inspect genuine PK's
+            // inverse at both ends and immediately inside them; no additive
+            // parameter period or quadrant snapping is imposed on either side.
+            var span=record.TMax-record.TMin;
+            foreach(var t in new[]{record.TMin,record.TMin+span*1e-6,record.TMax-span*1e-6,record.TMax})
+            {
+                CheckOur(KernelRuntime.CurveEval(icurve,t,1,ours),"our seam eval");
+                ParasolidScriptHost.Check(PK_CURVE_eval(pkCurve,t,1,reference),"PK seam eval");
+                var point=reference[0];double nativeParameter;
+                ParasolidScriptHost.Check(PK_CURVE_parameterise_vector(pkCurve,point,&nativeParameter),"PK seam parameterise");
+                var vector=new M.PK_VECTOR_s();for(var component=0;component<3;component++)vector.coord[component]=point.coord[component];
+                double managedParameter;CheckOur(KernelRuntime.CurveParameteriseVector(icurve,vector,&managedParameter),"our seam parameterise");
+                var delta=Distance(ours,reference);
+                log($"{logPrefix}: seam t={t:R} native_inverse={nativeParameter:R} managed_inverse={managedParameter:R} position_error={delta:R}");
+                if(!(delta<1e-8))throw new InvalidOperationException("seam native parameter position mismatch");
+                CheckOur(KernelRuntime.CurveEval(icurve,managedParameter,0,ours),"our seam inverse eval");
+                ParasolidScriptHost.Check(PK_CURVE_eval(pkCurve,nativeParameter,0,reference),"PK seam inverse eval");
+                if(!(Distance(ours,reference)<1e-8))throw new InvalidOperationException("seam inverse branch mismatch");
+                if(t>record.TMin&&t<record.TMax&&Math.Abs(nativeParameter-managedParameter)/baseScale>1e-7)
+                    throw new InvalidOperationException("seam interior native inverse parameter mismatch");
+            }
         }
         finally
         {

@@ -658,6 +658,12 @@ internal static unsafe partial class KernelRuntime
                             return ParasolidConstants.PK_ERROR_cant_do_intersect;
                         sourceVertex=root.Vertex;sourcePoint=root.Point;
                     }
+                    if(sourceVertex<0)for(var r=0;r<nRoots;r++)
+                    {
+                        if(rootParameters[r]!=sourceParameter
+                            ||!TryCertifiedContactRootPoint(cut,roots[r],end==0?cut.First:cut.Last,point,out var retained))continue;
+                        sourcePoint=retained;break;
+                    }
                     // Certified original incidence selects the event;
                     // position is only a check of the cut against it.
                     var priorEvents=model.NP;
@@ -715,7 +721,8 @@ internal static unsafe partial class KernelRuntime
                                 Surface=root.ContactSurface,OtherSurface=root.CuttingSurface,Edge=root.InputEdge,InputCoedge=root.InputCoedge,StartEvent=endpoint,EndEvent=endpoint,
                                 Source=-1,Face=-1,Product=-1,Witness=root.Witness,
                                 Generation=Curves[GetCurveSlotByTag(root.Curve)].Header.Generation,
-                                First=root.Root.Lower,Last=root.Root.Upper,SpatialError=root.Root.SpatialError});
+                                First=root.Root.Lower,Last=root.Root.Upper,SpatialError=root.Root.SpatialError,
+                                StartPoint=model.Points[endpoint],EndPoint=root.Root.Point});
                         }
                         else if(model.RequireBoundaryAssociations)
                         {
