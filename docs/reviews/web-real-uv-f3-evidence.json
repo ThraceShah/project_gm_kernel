@@ -1,0 +1,731 @@
+{
+  "candidateCode": "b5858a763b4930f2f671323e74b75a55778130bf",
+  "candidateFinal": "f3fb9432ae97609f34391cffef819f62a9dd161d",
+  "baseUi": "424e85d6aac32c2afe7cad12cfd04bea4f0037ab",
+  "producer": "eecab6d51cae79a687fa459af512adc3e03895f5",
+  "sourceEvidence": [
+    {
+      "kernel": "PK",
+      "stage": "before",
+      "snapshot": "snapshot-0",
+      "meshSha": "555d53765eb2ef485d38c3e8da70b08f66b6e808da1ece1fc9a11b9b21d7b3b3",
+      "xtSha": "b8d68482be02624d762960c7b27117240821d08e084f9e3ea93e4d46ad1ece9b",
+      "receiptSha": "84748e9d67c7a55211a4ed7bfe66b4f1b69451e39744ff5ab5d542d08696eec6",
+      "isoSha": "94cbcddfac053c4971a4dffa77ece2daeccecf0ddc95734620d3f3c3eee5a8fb"
+    },
+    {
+      "kernel": "PK",
+      "stage": "after",
+      "snapshot": "snapshot-1",
+      "meshSha": "1024e741e3f4c4daadbef671e43c3aa78a05966861e80a5d9cea41716f36baed",
+      "xtSha": "1f37d48acee672430a170bb650e27ac3f288da96d8fb837d9bc328a605722146",
+      "receiptSha": "8c4ebb23c0b4e158bea00f91e2c96e09243e3d20fa157ac3c656006f6775eaf8",
+      "isoSha": "9fa3bb4313eb0cf98e9c8aadf54610697197de6a0c7d3c1d4b1f3bd231dbe6a3"
+    },
+    {
+      "kernel": "GM",
+      "stage": "before",
+      "snapshot": "snapshot-2",
+      "meshSha": "f19b18867e17ae47fac8b2b2a0489b27f3049da6c3f03d9e87fcd5bbd0d06b22",
+      "xtSha": "4045d6ddfa7b589597afbde6bc67dff8a667d601577ed0c99f8778a15f037dc8",
+      "receiptSha": "46078f12262c052b9385deaa9e4dfacafa0ed747cc797131a1d1dc6fa6d4d152",
+      "isoSha": "6c36c4d940cf7d6178afe5f550a51f26561b27e4a2c6bb2ec7d537eaa685ec13"
+    },
+    {
+      "kernel": "GM",
+      "stage": "after",
+      "snapshot": "snapshot-3",
+      "meshSha": "ee8ef5dbb75f97a7942c5647e315b942743550c71994ec62f0992fbcc3f495f1",
+      "xtSha": "7e215d8c01fcac57e5f7d08f7e8abc374dc536e3267a6118609ce7f576bf56b3",
+      "receiptSha": "78c839d3446e9cbbea3c34a2a902bed90a23f06738c3a1e0f15d0382e2ca3861",
+      "isoSha": "d12092402e590ce680233bcddb1bb1fa528d99b44df5a3eeae59becb8b6a82a5"
+    }
+  ],
+  "sourceProbe": {
+    "exit": 0,
+    "receivedBodies": 4,
+    "facesBound": [
+      6,
+      7,
+      6,
+      7
+    ],
+    "supportedFaces": 4,
+    "evaluatedPoints": 680,
+    "maxXyzError": 0,
+    "parameterHash": null
+  },
+  "sizeInfo": {
+    "package": 167168,
+    "dist": 18781760,
+    "uiOnlyExcludingData": 863275,
+    "data": 17918485,
+    "fixtures": 0
+  },
+  "browserChecks": [
+    {
+      "name": "before actual dual U5/V5",
+      "ok": true,
+      "detail": [
+        {
+          "testid": "viewer-canvas-host",
+          "bodyId": "gm:27",
+          "faceCount": "6",
+          "edgeCount": "12",
+          "triangleCount": "96",
+          "roleFaces": "{\"unchanged\":4,\"support\":2}",
+          "roleEdges": "{\"unchanged\":11,\"selected\":1}",
+          "hasIsoparametrics": "true",
+          "isoparametricsCount": "10",
+          "uLineCount": "5",
+          "vLineCount": "5",
+          "dimmedOpacity": "0.25",
+          "cameraPos": "1.78,1.46,2.14",
+          "cameraTarget": "0.50,0.50,0.54"
+        },
+        {
+          "testid": "viewer-canvas-host",
+          "bodyId": "pk:51",
+          "faceCount": "6",
+          "edgeCount": "12",
+          "triangleCount": "96",
+          "roleFaces": "{\"support\":2,\"unchanged\":4}",
+          "roleEdges": "{\"selected\":1,\"deleted\":1,\"unchanged\":10}",
+          "hasIsoparametrics": "true",
+          "isoparametricsCount": "10",
+          "uLineCount": "5",
+          "vLineCount": "5",
+          "dimmedOpacity": "0.25",
+          "cameraPos": "1.78,1.46,2.14",
+          "cameraTarget": "0.50,0.50,0.54"
+        }
+      ]
+    },
+    {
+      "name": "after actual dual U5/V5",
+      "ok": true,
+      "detail": [
+        {
+          "testid": "viewer-canvas-host",
+          "bodyId": "gm:27",
+          "faceCount": "7",
+          "edgeCount": "15",
+          "triangleCount": "220",
+          "roleFaces": "{\"unchanged\":4,\"modified\":2,\"newBlend\":1}",
+          "roleEdges": "{\"unchanged\":15}",
+          "hasIsoparametrics": "true",
+          "isoparametricsCount": "10",
+          "uLineCount": "5",
+          "vLineCount": "5",
+          "dimmedOpacity": "0.25",
+          "cameraPos": "0.50,2.59,1.58",
+          "cameraTarget": "0.50,0.50,0.54"
+        },
+        {
+          "testid": "viewer-canvas-host",
+          "bodyId": "pk:51",
+          "faceCount": "7",
+          "edgeCount": "15",
+          "triangleCount": "130",
+          "roleFaces": "{\"modified\":2,\"unchanged\":4,\"newBlend\":1}",
+          "roleEdges": "{\"unchanged\":15}",
+          "hasIsoparametrics": "true",
+          "isoparametricsCount": "10",
+          "uLineCount": "5",
+          "vLineCount": "5",
+          "dimmedOpacity": "0.25",
+          "cameraPos": "0.50,2.59,1.58",
+          "cameraTarget": "0.50,0.50,0.54"
+        }
+      ]
+    },
+    {
+      "name": "settled-pose actual U/V pixels both panes",
+      "ok": true,
+      "detail": {
+        "on": [
+          {
+            "cyan": 623,
+            "purple": 554,
+            "bright": 40585
+          },
+          {
+            "cyan": 634,
+            "purple": 547,
+            "bright": 40625
+          }
+        ],
+        "off": [
+          {
+            "cyan": 474,
+            "purple": 0,
+            "bright": 37581
+          },
+          {
+            "cyan": 490,
+            "purple": 0,
+            "bright": 37606
+          }
+        ],
+        "pose": [
+          "0.50,-1.38,1.92",
+          "0.50,-1.38,1.92"
+        ]
+      }
+    },
+    {
+      "name": "wrong current case/step should reject",
+      "ok": false,
+      "detail": {
+        "currentCase": "review.wrong-case",
+        "currentStep": "operation-999",
+        "stats": [
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "gm:27",
+            "faceCount": "6",
+            "edgeCount": "12",
+            "triangleCount": "96",
+            "roleFaces": "{\"unchanged\":4,\"support\":2}",
+            "roleEdges": "{\"unchanged\":11,\"selected\":1}",
+            "hasIsoparametrics": "true",
+            "isoparametricsCount": "10",
+            "uLineCount": "5",
+            "vLineCount": "5",
+            "dimmedOpacity": "0.25",
+            "cameraPos": "1.78,1.46,2.14",
+            "cameraTarget": "0.50,0.50,0.54"
+          },
+          {
+            "testid": "viewer-canvas-host",
+            "bodyId": "pk:51",
+            "faceCount": "6",
+            "edgeCount": "12",
+            "triangleCount": "96",
+            "roleFaces": "{\"support\":2,\"unchanged\":4}",
+            "roleEdges": "{\"selected\":1,\"deleted\":1,\"unchanged\":10}",
+            "hasIsoparametrics": "true",
+            "isoparametricsCount": "10",
+            "uLineCount": "5",
+            "vLineCount": "5",
+            "dimmedOpacity": "0.25",
+            "cameraPos": "1.78,1.46,2.14",
+            "cameraTarget": "0.50,0.50,0.54"
+          }
+        ]
+      }
+    },
+    {
+      "name": "mesh-hash rejects without replacing geometry/lines",
+      "ok": true,
+      "detail": [
+        {
+          "testid": "viewer-canvas-host",
+          "bodyId": "",
+          "faceCount": "0",
+          "edgeCount": "0",
+          "triangleCount": "0",
+          "roleFaces": "{}",
+          "roleEdges": "{}",
+          "hasIsoparametrics": "false",
+          "isoparametricsCount": "0",
+          "uLineCount": "0",
+          "vLineCount": "0",
+          "dimmedOpacity": "0.25",
+          "cameraPos": "1.78,1.46,2.14",
+          "cameraTarget": "0.50,0.50,0.54"
+        },
+        {
+          "testid": "viewer-canvas-host",
+          "bodyId": "pk:51",
+          "faceCount": "7",
+          "edgeCount": "15",
+          "triangleCount": "130",
+          "roleFaces": "{\"modified\":2,\"unchanged\":4,\"newBlend\":1}",
+          "roleEdges": "{\"unchanged\":15}",
+          "hasIsoparametrics": "true",
+          "isoparametricsCount": "10",
+          "uLineCount": "5",
+          "vLineCount": "5",
+          "dimmedOpacity": "0.25",
+          "cameraPos": "1.78,1.46,2.14",
+          "cameraTarget": "0.50,0.50,0.54"
+        }
+      ]
+    },
+    {
+      "name": "iso-hash rejects without replacing geometry/lines",
+      "ok": true,
+      "detail": [
+        {
+          "testid": "viewer-canvas-host",
+          "bodyId": "gm:27",
+          "faceCount": "7",
+          "edgeCount": "15",
+          "triangleCount": "220",
+          "roleFaces": "{\"unchanged\":4,\"modified\":2,\"newBlend\":1}",
+          "roleEdges": "{\"unchanged\":15}",
+          "hasIsoparametrics": "false",
+          "isoparametricsCount": "0",
+          "uLineCount": "0",
+          "vLineCount": "0",
+          "dimmedOpacity": "0.25",
+          "cameraPos": "1.78,1.46,2.14",
+          "cameraTarget": "0.50,0.50,0.54"
+        },
+        {
+          "testid": "viewer-canvas-host",
+          "bodyId": "pk:51",
+          "faceCount": "7",
+          "edgeCount": "15",
+          "triangleCount": "130",
+          "roleFaces": "{\"modified\":2,\"unchanged\":4,\"newBlend\":1}",
+          "roleEdges": "{\"unchanged\":15}",
+          "hasIsoparametrics": "true",
+          "isoparametricsCount": "10",
+          "uLineCount": "5",
+          "vLineCount": "5",
+          "dimmedOpacity": "0.25",
+          "cameraPos": "1.78,1.46,2.14",
+          "cameraTarget": "0.50,0.50,0.54"
+        }
+      ]
+    },
+    {
+      "name": "mesh-hash-pk rejects without replacing geometry/lines",
+      "ok": true,
+      "detail": [
+        {
+          "testid": "viewer-canvas-host",
+          "bodyId": "gm:27",
+          "faceCount": "7",
+          "edgeCount": "15",
+          "triangleCount": "220",
+          "roleFaces": "{\"unchanged\":4,\"modified\":2,\"newBlend\":1}",
+          "roleEdges": "{\"unchanged\":15}",
+          "hasIsoparametrics": "true",
+          "isoparametricsCount": "10",
+          "uLineCount": "5",
+          "vLineCount": "5",
+          "dimmedOpacity": "0.25",
+          "cameraPos": "1.78,1.46,2.14",
+          "cameraTarget": "0.50,0.50,0.54"
+        },
+        {
+          "testid": "viewer-canvas-host",
+          "bodyId": "",
+          "faceCount": "0",
+          "edgeCount": "0",
+          "triangleCount": "0",
+          "roleFaces": "{}",
+          "roleEdges": "{}",
+          "hasIsoparametrics": "false",
+          "isoparametricsCount": "0",
+          "uLineCount": "0",
+          "vLineCount": "0",
+          "dimmedOpacity": "0.25",
+          "cameraPos": "1.78,1.46,2.14",
+          "cameraTarget": "0.50,0.50,0.54"
+        }
+      ]
+    },
+    {
+      "name": "iso-hash-pk rejects without replacing geometry/lines",
+      "ok": true,
+      "detail": [
+        {
+          "testid": "viewer-canvas-host",
+          "bodyId": "gm:27",
+          "faceCount": "7",
+          "edgeCount": "15",
+          "triangleCount": "220",
+          "roleFaces": "{\"unchanged\":4,\"modified\":2,\"newBlend\":1}",
+          "roleEdges": "{\"unchanged\":15}",
+          "hasIsoparametrics": "true",
+          "isoparametricsCount": "10",
+          "uLineCount": "5",
+          "vLineCount": "5",
+          "dimmedOpacity": "0.25",
+          "cameraPos": "1.78,1.46,2.14",
+          "cameraTarget": "0.50,0.50,0.54"
+        },
+        {
+          "testid": "viewer-canvas-host",
+          "bodyId": "pk:51",
+          "faceCount": "7",
+          "edgeCount": "15",
+          "triangleCount": "130",
+          "roleFaces": "{\"modified\":2,\"unchanged\":4,\"newBlend\":1}",
+          "roleEdges": "{\"unchanged\":15}",
+          "hasIsoparametrics": "false",
+          "isoparametricsCount": "0",
+          "uLineCount": "0",
+          "vLineCount": "0",
+          "dimmedOpacity": "0.25",
+          "cameraPos": "1.78,1.46,2.14",
+          "cameraTarget": "0.50,0.50,0.54"
+        }
+      ]
+    },
+    {
+      "name": "missing-face-mapping rejects without replacing geometry/lines",
+      "ok": true,
+      "detail": [
+        {
+          "testid": "viewer-canvas-host",
+          "bodyId": "gm:27",
+          "faceCount": "7",
+          "edgeCount": "15",
+          "triangleCount": "220",
+          "roleFaces": "{\"unchanged\":4,\"modified\":2,\"newBlend\":1}",
+          "roleEdges": "{\"unchanged\":15}",
+          "hasIsoparametrics": "false",
+          "isoparametricsCount": "0",
+          "uLineCount": "0",
+          "vLineCount": "0",
+          "dimmedOpacity": "0.25",
+          "cameraPos": "1.78,1.46,2.14",
+          "cameraTarget": "0.50,0.50,0.54"
+        },
+        {
+          "testid": "viewer-canvas-host",
+          "bodyId": "pk:51",
+          "faceCount": "7",
+          "edgeCount": "15",
+          "triangleCount": "130",
+          "roleFaces": "{\"modified\":2,\"unchanged\":4,\"newBlend\":1}",
+          "roleEdges": "{\"unchanged\":15}",
+          "hasIsoparametrics": "true",
+          "isoparametricsCount": "10",
+          "uLineCount": "5",
+          "vLineCount": "5",
+          "dimmedOpacity": "0.25",
+          "cameraPos": "1.78,1.46,2.14",
+          "cameraTarget": "0.50,0.50,0.54"
+        }
+      ]
+    },
+    {
+      "name": "wrong-iso-case rejects without replacing geometry/lines",
+      "ok": true,
+      "detail": [
+        {
+          "testid": "viewer-canvas-host",
+          "bodyId": "gm:27",
+          "faceCount": "7",
+          "edgeCount": "15",
+          "triangleCount": "220",
+          "roleFaces": "{\"unchanged\":4,\"modified\":2,\"newBlend\":1}",
+          "roleEdges": "{\"unchanged\":15}",
+          "hasIsoparametrics": "false",
+          "isoparametricsCount": "0",
+          "uLineCount": "0",
+          "vLineCount": "0",
+          "dimmedOpacity": "0.25",
+          "cameraPos": "1.78,1.46,2.14",
+          "cameraTarget": "0.50,0.50,0.54"
+        },
+        {
+          "testid": "viewer-canvas-host",
+          "bodyId": "pk:51",
+          "faceCount": "7",
+          "edgeCount": "15",
+          "triangleCount": "130",
+          "roleFaces": "{\"modified\":2,\"unchanged\":4,\"newBlend\":1}",
+          "roleEdges": "{\"unchanged\":15}",
+          "hasIsoparametrics": "true",
+          "isoparametricsCount": "10",
+          "uLineCount": "5",
+          "vLineCount": "5",
+          "dimmedOpacity": "0.25",
+          "cameraPos": "1.78,1.46,2.14",
+          "cameraTarget": "0.50,0.50,0.54"
+        }
+      ]
+    },
+    {
+      "name": "load-failure rejects without replacing geometry/lines",
+      "ok": true,
+      "detail": [
+        {
+          "testid": "viewer-canvas-host",
+          "bodyId": "",
+          "faceCount": "0",
+          "edgeCount": "0",
+          "triangleCount": "0",
+          "roleFaces": "{}",
+          "roleEdges": "{}",
+          "hasIsoparametrics": "false",
+          "isoparametricsCount": "0",
+          "uLineCount": "0",
+          "vLineCount": "0",
+          "dimmedOpacity": "0.25",
+          "cameraPos": "1.78,1.46,2.14",
+          "cameraTarget": "0.50,0.50,0.54"
+        },
+        {
+          "testid": "viewer-canvas-host",
+          "bodyId": "pk:51",
+          "faceCount": "7",
+          "edgeCount": "15",
+          "triangleCount": "130",
+          "roleFaces": "{\"modified\":2,\"unchanged\":4,\"newBlend\":1}",
+          "roleEdges": "{\"unchanged\":15}",
+          "hasIsoparametrics": "true",
+          "isoparametricsCount": "10",
+          "uLineCount": "5",
+          "vLineCount": "5",
+          "dimmedOpacity": "0.25",
+          "cameraPos": "1.78,1.46,2.14",
+          "cameraTarget": "0.50,0.50,0.54"
+        }
+      ]
+    },
+    {
+      "name": "all public browser-reachable mesh/line/summary links resolve",
+      "ok": true,
+      "detail": [
+        {
+          "path": "/data/display/real-uv/meshes/pk-before.mesh.json",
+          "status": 200
+        },
+        {
+          "path": "/data/display/real-uv/pk-before.iso.json",
+          "status": 200
+        },
+        {
+          "path": "/data/display/real-uv/display/snapshot-0.receipt.json",
+          "status": 200
+        },
+        {
+          "path": "/data/display/real-uv/meshes/pk-after.mesh.json",
+          "status": 200
+        },
+        {
+          "path": "/data/display/real-uv/pk-after.iso.json",
+          "status": 200
+        },
+        {
+          "path": "/data/display/real-uv/display/snapshot-1.receipt.json",
+          "status": 200
+        },
+        {
+          "path": "/data/display/real-uv/meshes/gm-before.mesh.json",
+          "status": 200
+        },
+        {
+          "path": "/data/display/real-uv/gm-before.iso.json",
+          "status": 200
+        },
+        {
+          "path": "/data/display/real-uv/display/snapshot-2.receipt.json",
+          "status": 200
+        },
+        {
+          "path": "/data/display/real-uv/meshes/gm-after.mesh.json",
+          "status": 200
+        },
+        {
+          "path": "/data/display/real-uv/gm-after.iso.json",
+          "status": 200
+        },
+        {
+          "path": "/data/display/real-uv/display/snapshot-3.receipt.json",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "name": "render-only package no raw XT, vendor binary, private path or credential",
+      "ok": true,
+      "detail": {
+        "sizeInfo": {
+          "package": 167168,
+          "dist": 18781760,
+          "uiOnlyExcludingData": 863275,
+          "data": 17918485,
+          "fixtures": 0
+        },
+        "forbidden": []
+      }
+    },
+    {
+      "name": "390px real UV count and finite viewport",
+      "ok": true,
+      "detail": [
+        {
+          "w": 390,
+          "h": 124,
+          "testid": "viewer-canvas-host",
+          "bodyId": "gm:27",
+          "faceCount": "7",
+          "edgeCount": "15",
+          "triangleCount": "220",
+          "roleFaces": "{\"unchanged\":4,\"modified\":2,\"newBlend\":1}",
+          "roleEdges": "{\"unchanged\":15}",
+          "hasIsoparametrics": "true",
+          "isoparametricsCount": "10",
+          "uLineCount": "5",
+          "vLineCount": "5",
+          "dimmedOpacity": "0.25",
+          "cameraPos": "1.76,1.76,2.05",
+          "cameraTarget": "0.50,0.50,0.54"
+        },
+        {
+          "w": 390,
+          "h": 123,
+          "testid": "viewer-canvas-host",
+          "bodyId": "pk:51",
+          "faceCount": "7",
+          "edgeCount": "15",
+          "triangleCount": "130",
+          "roleFaces": "{\"modified\":2,\"unchanged\":4,\"newBlend\":1}",
+          "roleEdges": "{\"unchanged\":15}",
+          "hasIsoparametrics": "true",
+          "isoparametricsCount": "10",
+          "uLineCount": "5",
+          "vLineCount": "5",
+          "dimmedOpacity": "0.25",
+          "cameraPos": "1.76,1.76,2.05",
+          "cameraTarget": "0.50,0.50,0.54"
+        }
+      ]
+    },
+    {
+      "name": "default query leaves historical index selected",
+      "ok": true,
+      "detail": {
+        "selected": "20261110T180347Z-90acd4a9"
+      }
+    },
+    {
+      "name": "render-only performance remains unqualified N/A",
+      "ok": true,
+      "detail": "GM Kernel vs Parasolid 对比工作台\nPROD WORKBENCH\n独立真实 U/V 显示源 · 返回基线\nOracle: 38.0.150\n显示源:\n真实 U/V · 独立显示样例 (eecab6d)\neecab6d\n2026/11/11 14:11:17\n相机联动\n复位视角\n刷新\n真实 U/V · 独立显示源\nr2-curved-receipt-eecab6d · sample-0 · operation-1；无新增几何验收或性能结果\n返回 live17 基线\n全部 (1)\n倒角 Blend\n布尔 Boolean\n全状态\n通过 0\n失败 0\n缺失 0\n诊断 1\nPlane / NURBS · 真实 U/V 显示样例\nsolid-blend.plane-nurbs\n真实曲面 U/V（仅显示）\n显示 1 / 1 项\nSchema v1\n未适配 = 展示/导出适配器未实现（非内核能力缺失）；缺失 = 本次 run 未执行。状态含义以各用例 manifest notes 为准。\nPlane / NURBS · 真实 U/V 显示样例\n(solid-blend.plane-nurbs)\n诊断测试 (DIAGNOSTIC)\n真实曲面 U/V（仅显示）\n比率: N/A\n视角:\n查看修改\n全模型\n标准视图\n轴测 (Isometric)\n主视 (Front)\n俯视 (Top)\n右视 (Right)\n显示模式:\n未修改半透明\n25%\n等参线\n完整模型\n刀具\n双侧联动\nGM Kernel\nParasolid PK_TOPOL_facet / PK_GEOM_render_line\nU/V等参线\nU = 常数 u · V = 常数 v · snapshot-2 / before\n1 个非平面；仅精确矩形 trim；5 面未覆盖。采样弦差 ≤ 0.001，无解析全局界。\n来源 / 面参数 / trim / 误差证据 · mesh f19b18867e17\nParasolid (PK)\nParasolid PK_TOPOL_facet / PK_GEOM_render_line\nU/V等参线\nU = 常数 u · V = 常数 v · snapshot-0 / before\n1 个非平面；仅精确矩形 trim；5 面未覆盖。采样弦差 ≤ 0.001，无解析全局界。\n来源 / 面参数 / trim / 误差证据 · mesh 555d53765eb2\n视角实时同步\n实体角色与视觉图例 (Roles & Lines)\n选中边\n选中 / 关键面\n新圆角 / 生成面\n修改面\n删除面 (仅前态)\n未改动实体\n曲面等参线 (U/V)\n未修改半透明\n步骤:\n过渡操作前 / 后（receipt.stage）\n前态 (Before)\n后态 (After)\n1/2\n0.5x\n1x\n2x\n离散快照切换 (真实几何无形变插值)\n逐项验收 (0)\n性能指标\nAPI 与参数\n证据与日志 (1)\n\n此用例尚未录入基准性能测试数据"
+    },
+    {
+      "name": "no uncaught errors during positive display checks",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "name": "before paired changed pixels contain both U/V colors",
+      "ok": true,
+      "detail": [
+        {
+          "changed": 4465,
+          "cyan": 3144,
+          "purple": 253,
+          "camera": "1.78,1.46,2.14",
+          "triangles": "96"
+        },
+        {
+          "changed": 4358,
+          "cyan": 3035,
+          "purple": 257,
+          "camera": "1.78,1.46,2.14",
+          "triangles": "96"
+        }
+      ]
+    }
+  ],
+  "exploratoryDiagnostics": [
+    {
+      "name": "U/V toggle changes actual pixels both directions in both panes",
+      "ok": false,
+      "detail": {
+        "on": [
+          {
+            "cyan": 219,
+            "purple": 19,
+            "bright": 111954
+          },
+          {
+            "cyan": 193,
+            "purple": 5,
+            "bright": 111893
+          }
+        ],
+        "off": [
+          {
+            "cyan": 203,
+            "purple": 0,
+            "bright": 111659
+          },
+          {
+            "cyan": 236,
+            "purple": 0,
+            "bright": 111663
+          }
+        ]
+      }
+    },
+    {
+      "name": "visible front-under U/V pixels",
+      "ok": true,
+      "detail": {
+        "on": [
+          {
+            "cyan": 656,
+            "purple": 468,
+            "bright": 42740
+          },
+          {
+            "cyan": 619,
+            "purple": 444,
+            "bright": 43132
+          }
+        ],
+        "off": [
+          {
+            "cyan": 487,
+            "purple": 0,
+            "bright": 37672
+          },
+          {
+            "cyan": 498,
+            "purple": 0,
+            "bright": 37856
+          }
+        ]
+      }
+    },
+    {
+      "name": "before actual U/V pixel delta both panes",
+      "ok": false,
+      "detail": {
+        "on": [
+          {
+            "cyan": 72960,
+            "purple": 253,
+            "bright": 121955
+          },
+          {
+            "cyan": 72881,
+            "purple": 257,
+            "bright": 122117
+          }
+        ],
+        "off": [
+          {
+            "cyan": 74263,
+            "purple": 0,
+            "bright": 121955
+          },
+          {
+            "cyan": 74183,
+            "purple": 0,
+            "bright": 122117
+          }
+        ]
+      }
+    }
+  ],
+  "ui424Regression": {
+    "exit": 0,
+    "passed": 38,
+    "assertionsChanged": false,
+    "transportOnlyAdaptation": "ephemeral port and source filename for stdin execution"
+  },
+  "scope": "One real captured operation, rectangular trims, render only; consumer acceptance BLOCKED by unbound selected context"
+}
