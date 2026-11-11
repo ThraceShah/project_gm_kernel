@@ -1,422 +1,207 @@
 #!/usr/bin/env dotnet run
+#:property TargetFramework=net10.0
 #:property AllowUnsafeBlocks=true
 #:property UsePskernelSharpUsings=true
 #:property UseParasolidScriptHost=true
 #:project ../third_party/PKToy/PskernelSharp/PskernelSharp.csproj
 
-using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
+using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using static parasolid;
+using BodyTag = System.Int32;
+using FaceTag = System.Int32;
+using SurfaceTag = System.Int32;
+using PersistentIdentifier = System.Int32;
+using EntityClass = System.Int32;
 
-if (!ParasolidScriptHost.TryStartSession("export web isoparametrics", out var host, out var reason))
-    throw new Exception(reason);
-
-using (host)
+var script = ScriptPath();
+var scriptDirectory = Path.GetDirectoryName(script)!;
+var root = Path.GetFullPath("..", scriptDirectory);
+try
 {
-    Run();
-}
-
-static string GetScriptDir([CallerFilePath] string path = "") => Path.GetDirectoryName(path)!;
-
-static unsafe void Run()
-{
-    Console.WriteLine("Starting true isoparametric curve extraction for representative case solid-blend.plane-nurbs...");
-
-    var baseDir = Path.GetFullPath(Path.Combine(GetScriptDir(), ".."));
-    var meshesDir = Path.Combine(baseDir, "web", "data", "runs", "20261110T180347Z-90acd4a9", "cases", "solid-blend.plane-nurbs", "sample-0", "meshes");
-
-    if (!Directory.Exists(meshesDir))
-        throw new DirectoryNotFoundException($"Meshes directory not found: {meshesDir}");
-
-    // Register frustrum line collector
-    PK_SESSION_frustrum_t prevFrustrum;
-    Check(PK_SESSION_ask_frustrum(&prevFrustrum), "PK_SESSION_ask_frustrum");
-    var frustrum = prevFrustrum;
-    frustrum.goopsg = &Collector.Open;
-    frustrum.gosgmt = &Collector.Segment;
-    frustrum.goclsg = &Collector.Close;
-    Check(PK_SESSION_register_frustrum(&frustrum), "PK_SESSION_register_frustrum");
-
-    try
+    if (args.Contains("--help"))
     {
-        // 1. Generate before body: Block + NURBS roof
-        int pkBefore = CreateRoof(bulge: 0.4);
-        int gmBefore = CreateRoof(bulge: 0.4);
-
-        // 2. Generate after body: Fillet on roof edge
-        int pkAfter = CreateRoof(bulge: 0.4);
-        FilletRoof(pkAfter, radius: 0.1);
-        int gmAfter = ReceiveXtOrFallback(Path.Combine(baseDir, "temp_docs", "regular-solid-blend-oracle", "plane-nurbs-fillet.x_t"), () =>
+        Console.WriteLine("dotnet run scripts/ExportWebIsoparametrics.cs -- --snapshot <receipt.json> --output <new.iso.json> [--chord-error 0.001] [--count 5]\nPaths resolve relative to scripts/. Receipt paths resolve relative to its directory. Requires same-capture XT/mesh receipt; never reconstructs bodies or writes historical runs. Only PK_FACE_is_uvbox-confirmed nonplanar faces are supported. Other trims are explicitly unsupported.");
+        return 0;
+    }
+    var parsed = new Dictionary<string,string>(StringComparer.Ordinal);
+    for (var i=0;i<args.Length;i+=2)
+    {
+        if(i+1==args.Length || args[i] is not ("--snapshot" or "--output" or "--chord-error" or "--count") || !parsed.TryAdd(args[i],args[i+1]))
+            throw new ArgumentException("Expected unique --snapshot, --output, --chord-error, --count options.");
+    }
+    var receiptPath=Path.GetFullPath(parsed["--snapshot"],scriptDirectory);
+    var output=Path.GetFullPath(parsed["--output"],scriptDirectory);
+    var tolerance=double.Parse(parsed.GetValueOrDefault("--chord-error","0.001"),CultureInfo.InvariantCulture);
+    var count=int.Parse(parsed.GetValueOrDefault("--count","5"),CultureInfo.InvariantCulture);
+    if(!double.IsFinite(tolerance)||tolerance<=0||count is <1 or >64)throw new ArgumentException("Positive finite chord error and count 1..64 required.");
+    if(File.Exists(output)||output.StartsWith(Path.Combine(root,"web","data","runs")+Path.DirectorySeparatorChar,StringComparison.Ordinal))
+        throw new IOException("Output must be a new render-only derivative outside immutable runs/.");
+    var receipt=JsonNode.Parse(File.ReadAllBytes(receiptPath))!.AsObject();
+    var receiptDirectory=Path.GetDirectoryName(receiptPath)!;
+    var meshPath=Resolve(receiptDirectory,Required(receipt,"meshPath"));
+    var xtPath=Resolve(receiptDirectory,Required(receipt,"xtPath"));
+    var meshBytes=File.ReadAllBytes(meshPath);var xtBytes=File.ReadAllBytes(xtPath);
+    if(Hash(meshBytes)!=Required(receipt,"meshSha256")||Hash(xtBytes)!=Required(receipt,"xtSha256"))
+        throw new InvalidDataException("Snapshot receipt SHA does not match actual mesh/XT bytes.");
+    var mesh=JsonNode.Parse(meshBytes)!.AsObject();
+    var kernel=Required(receipt,"kernel");
+    if(kernel is not ("GM" or "PK")||mesh["source"]?["kernel"]?.GetValue<string>()!=kernel)
+        throw new InvalidDataException("Snapshot kernel identity mismatch.");
+    foreach(var key in new[]{"sourceRun","sourceSnapshot","caseId","stepId","parameterHash","captureCodeSha256"})_ = Required(receipt,key);
+    // The capture-time link is required in the mesh as well as the receipt. A name/identifier alone is never provenance.
+    if(mesh["source"]?["snapshotXtSha256"]?.GetValue<string>()!=Hash(xtBytes))
+        throw new InvalidDataException("Mesh has no matching capture-time snapshotXtSha256 binding.");
+    if(!ParasolidScriptHost.TryStartSession("verified web UV display",out var session,out var reason))
+        throw new InvalidOperationException("ENV_NOT_READY: "+reason);
+    using(session)unsafe
+    {
+        var body=Receive(xtBytes);
+        try
         {
-            var b = CreateRoof(bulge: 0.4);
-            FilletRoof(b, radius: 0.1);
-            return b;
-        });
-
-        // Extract isoparametrics
-        ProcessMeshFile(pkBefore, Path.Combine(meshesDir, "pk-0-before.json"), "PK before");
-        ProcessMeshFile(gmBefore, Path.Combine(meshesDir, "gm-0-before.json"), "GM before", fallbackRoofIdent: 75);
-        ProcessMeshFile(pkAfter, Path.Combine(meshesDir, "pk-0-after-0.json"), "PK after");
-        ProcessMeshFile(gmAfter, Path.Combine(meshesDir, "gm-0-after-0.json"), "GM after (from transmitted XT)");
-
-        // Cleanup
-        DeleteEntity(pkBefore);
-        DeleteEntity(gmBefore);
-        DeleteEntity(pkAfter);
-        DeleteEntity(gmAfter);
-
-        Console.WriteLine("Successfully exported true isoparametric lines to all 4 mesh snapshots of solid-blend.plane-nurbs!");
-    }
-    finally
-    {
-        Check(PK_SESSION_register_frustrum(&prevFrustrum), "restore frustrum");
-    }
-}
-
-static unsafe void ProcessMeshFile(int body, string jsonPath, string label, int fallbackRoofIdent = 0)
-{
-    if (!File.Exists(jsonPath))
-    {
-        Console.WriteLine($"Skipping {label}: file does not exist ({jsonPath})");
-        return;
-    }
-
-    Collector.Clear();
-
-    var options = new PK_TOPOL_render_line_o_t();
-    options.edge = PK_render_edge_no_c;
-    options.param = PK_render_param_number_free_c;
-    options.param_u_number = 5;
-    options.param_v_number = 5;
-    options.is_curve_chord_tol = PK_LOGICAL_true;
-    options.curve_chord_tol = 0.01;
-    options.bcurve = PK_render_bcurve_polyline_c;
-
-    Check(PK_TOPOL_render_line(1, &body, null, 0, &options), $"{label} PK_TOPOL_render_line");
-
-    var faceLinesByIdent = new Dictionary<int, List<double[]>>();
-    foreach (var (faceTag, polyline) in Collector.ExtractedLines)
-    {
-        int ident = 0;
-        if (PK_ENTITY_ask_identifier(faceTag, &ident) == 0 && ident > 0)
-        {
-            if (!faceLinesByIdent.TryGetValue(ident, out var list))
+            var mapped=ValidateMesh(body,mesh);
+            var faces=new JsonArray();var unsupported=new JsonArray();
+            foreach(var (face,meshFace) in mapped)
             {
-                list = new List<double[]>();
-                faceLinesByIdent[ident] = list;
+                SurfaceTag surface=0;Check(PK_FACE_ask_surf(face,&surface),"face surface");
+                EntityClass surfaceClass=0;Check(PK_ENTITY_ask_class(surface,&surfaceClass),"surface class");
+                PK_LOGICAL_t rectangular=PK_LOGICAL_false;PK_UVBOX_t bounds=default;
+                Check(PK_FACE_is_uvbox(face,&rectangular,&bounds),"exact rectangular trim classification");
+                if(surfaceClass==PK_CLASS_plane||rectangular!=PK_LOGICAL_true)
+                {
+                    unsupported.Add((JsonNode)new JsonObject{["faceId"]=meshFace["id"]!.DeepClone(),["identifier"]=meshFace["identifier"]!.DeepClone(),["reason"]=surfaceClass==PK_CLASS_plane?"Planar face omitted":"Nonrectangular trim unsupported; no approximate trim or outline substituted"});
+                    continue;
+                }
+                // PK_UVBOX order: u min, v min, u max, v max. The API confirms the trimmed face itself equals this rectangle.
+                var u0=bounds.param[0];var v0=bounds.param[1];var u1=bounds.param[2];var v1=bounds.param[3];
+                if(!(u1>u0&&v1>v0)||!new[]{u0,v0,u1,v1}.All(double.IsFinite))throw new InvalidDataException("Invalid finite UV rectangle.");
+                var uLines=new JsonArray();var vLines=new JsonArray();var evidence=new JsonArray();
+                var evaluatedSurface=surface;
+                foreach(var direction in new[]{"u","v"})
+                for(var k=1;k<=count;k++)
+                {
+                    var parameter=(direction=="u"?u0:v0)+(direction=="u"?u1-u0:v1-v0)*k/(count+1.0);
+                    var low=direction=="u"?v0:u0;var high=direction=="u"?v1:u1;
+                    Point At(double varying)=>Evaluate(evaluatedSurface,face,direction=="u"?parameter:varying,direction=="u"?varying:parameter);
+                    var samples=new List<(double T,Point P)>{(low,At(low))};var maxError=0.0;
+                    void Subdivide(double a,Point pa,double b,Point pb,int depth)
+                    {
+                        var mid=(a+b)/2;var pm=At(mid);
+                        var quarter=At(a+(b-a)*.25);var threeQuarter=At(a+(b-a)*.75);
+                        var error=Math.Max(DistanceToSegment(pm,pa,pb),Math.Max(DistanceToSegment(quarter,pa,pb),DistanceToSegment(threeQuarter,pa,pb)));
+                        if(error>tolerance)
+                        {
+                            if(depth>=24)throw new InvalidDataException("Chord-error subdivision limit reached.");
+                            Subdivide(a,pa,mid,pm,depth+1);Subdivide(mid,pm,b,pb,depth+1);
+                        }
+                        else {maxError=Math.Max(maxError,error);samples.Add((b,pb));}
+                    }
+                    // Initial subdivisions protect against a whole-span symmetric sample alias; still a sampled display error, not an analytic bound.
+                    for(var segment=0;segment<16;segment++)
+                    {
+                        var a=low+(high-low)*segment/16;var b=low+(high-low)*(segment+1)/16;
+                        Subdivide(a,At(a),b,At(b),0);
+                    }
+                    var xyz=new JsonArray();var uv=new JsonArray();
+                    foreach(var (t,p) in samples)
+                    {
+                        xyz.Add((JsonNode?)JsonValue.Create(p.X));xyz.Add((JsonNode?)JsonValue.Create(p.Y));xyz.Add((JsonNode?)JsonValue.Create(p.Z));
+                        uv.Add((JsonNode?)JsonValue.Create(direction=="u"?parameter:t));uv.Add((JsonNode?)JsonValue.Create(direction=="u"?t:parameter));
+                    }
+                    (direction=="u"?uLines:vLines).Add((JsonNode)xyz);
+                    evidence.Add((JsonNode)new JsonObject{["direction"]=direction,["constantParameter"]=parameter,["varyingRange"]=Numbers(low,high),["uvSamples"]=uv,["sampledChordError"]=maxError,["trimCheck"]="PK_FACE_is_uvbox=true; every evaluated UV including endpoints and chord probes checked by PK_FACE_contains_vectors"});
+                }
+                faces.Add((JsonNode)new JsonObject{["faceId"]=meshFace["id"]!.DeepClone(),["identifier"]=meshFace["identifier"]!.DeepClone(),["meshEntityTag"]=meshFace["entityTag"]!.DeepClone(),["receivedFaceTag"]=face,["surfaceClass"]=surfaceClass,["trimUvBox"]=Numbers(u0,v0,u1,v1),["trimMethod"]="PK_FACE_is_uvbox confirmed exact face rectangle",["uLines"]=uLines,["vLines"]=vLines,["curves"]=evidence,["source"]="PK_SURF_eval on capture XT; U means constant u, V means constant v"});
             }
-            list.Add(polyline);
-        }
-    }
-
-    if (fallbackRoofIdent > 0 && faceLinesByIdent.Count == 1)
-    {
-        foreach (var kvp in faceLinesByIdent)
-        {
-            faceLinesByIdent[fallbackRoofIdent] = kvp.Value;
-            break;
-        }
-    }
-
-    Console.WriteLine($"[{label}] Extracted {Collector.ExtractedLines.Count} total polylines across {faceLinesByIdent.Count} curved faces.");
-
-    // Enrich JSON
-    var jsonText = File.ReadAllText(jsonPath);
-    var doc = JsonNode.Parse(jsonText);
-    if (doc is not JsonObject rootObj) return;
-
-    var facesArray = rootObj["faces"] as JsonArray;
-    if (facesArray == null) return;
-
-    int enrichedFaces = 0;
-    foreach (var node in facesArray)
-    {
-        if (node is not JsonObject faceObj) continue;
-        int ident = faceObj["identifier"]?.GetValue<int>() ?? 0;
-
-        if (faceLinesByIdent.TryGetValue(ident, out var polylines) && polylines.Count > 0)
-        {
-            enrichedFaces++;
-            var uLinesNode = new JsonArray();
-            foreach (var pl in polylines)
+            PK_SESSION_kernel_version_t version=default;Check(PK_SESSION_ask_kernel_version(&version),"PK runtime version");
+            var result=new JsonObject
             {
-                var arr = new JsonArray();
-                foreach (var v in pl) arr.Add(JsonValue.Create(Math.Round(v, 6)));
-                uLinesNode.Add(arr);
-            }
-
-            var isoObj = new JsonObject
-            {
-                ["source"] = "Parasolid PK_TOPOL_render_line (param_u_number=5, param_v_number=5, chord_tol=0.01)",
-                ["uLines"] = uLinesNode,
-                ["vLines"] = new JsonArray()
+                ["schemaVersion"]=2,["type"]="render-only-isoparametrics-derivative",["status"]=faces.Count>0?"available":"unsupported",
+                ["sourceRun"]=receipt["sourceRun"]!.DeepClone(),["sourceSnapshot"]=receipt["sourceSnapshot"]!.DeepClone(),["kernel"]=kernel,
+                ["caseId"]=receipt["caseId"]!.DeepClone(),["stepId"]=receipt["stepId"]!.DeepClone(),["parameterHash"]=receipt["parameterHash"]!.DeepClone(),
+                ["sourceMeshSha256"]=Hash(meshBytes),["inputXtSha256"]=Hash(xtBytes),["snapshotReceiptSha256"]=Hash(File.ReadAllBytes(receiptPath)),
+                ["captureCodeSha256"]=receipt["captureCodeSha256"]!.DeepClone(),["exporterSha256"]=Hash(File.ReadAllBytes(script)),
+                ["pkVersion"]=$"{version.major_revision}.{version.minor_revision}.{version.build_number}",["generatedAt"]=DateTimeOffset.UtcNow.ToString("O"),
+                ["chordTolerance"]=tolerance,["errorMethod"]="Quarter/midpoint sampled chord deviation with adaptive subdivision; no global analytic error bound claimed",
+                ["source"]="scripts/ExportWebIsoparametrics.cs; display only, excluded from primary acceptance",["faces"]=faces,["unsupportedFaces"]=unsupported
             };
-            faceObj["isoparametrics"] = isoObj;
+            Directory.CreateDirectory(Path.GetDirectoryName(output)!);
+            using var stream=new FileStream(output,FileMode.CreateNew,FileAccess.Write);
+            using var writer=new Utf8JsonWriter(stream);result.WriteTo(writer);
+            Console.WriteLine($"DISPLAY_ONLY {kernel}: {faces.Count} supported faces, {unsupported.Count} omitted; XT {Hash(xtBytes)} mesh {Hash(meshBytes)} output {output}");
         }
+        finally{Check(PK_ENTITY_delete(1,&body),"delete received snapshot");}
     }
-
-    // Save enriched file
-    var writeOptions = new JsonSerializerOptions { WriteIndented = false };
-    File.WriteAllText(jsonPath, rootObj.ToJsonString(writeOptions));
-    Console.WriteLine($"[{label}] Enriched {enrichedFaces} faces with true isoparametric lines in {Path.GetFileName(jsonPath)}");
+    return 0;
 }
+catch(Exception ex){Console.Error.WriteLine(ex.GetType().Name+": "+ex.Message);return 1;}
 
-static unsafe int ReceiveXtOrFallback(string xtPath, Func<int> fallback)
+static string ScriptPath([CallerFilePath]string path="")=>path;
+static string Hash(byte[] bytes)=>Convert.ToHexStringLower(SHA256.HashData(bytes));
+static string Required(JsonObject obj,string name)=>obj[name]?.GetValue<string>() is {Length:>0} value?value:throw new InvalidDataException("Required snapshot field: "+name);
+static string Resolve(string directory,string relative)
 {
-    if (File.Exists(xtPath))
+    if(Path.IsPathRooted(relative))throw new InvalidDataException("Snapshot paths must be relative.");
+    return Path.GetFullPath(relative,directory);
+}
+static JsonArray Numbers(params double[] values)=>new(values.Select(x=>(JsonNode?)JsonValue.Create(x)).ToArray());
+static void Check(PK_ERROR_code_t error,string operation){if(error!=0)throw new InvalidOperationException($"{operation}: PK error {error}");}
+static unsafe BodyTag Receive(byte[] bytes)
+{
+    fixed(byte* data=bytes)
     {
-        var bytes = File.ReadAllBytes(xtPath);
-        fixed (byte* p = bytes)
-        {
-            var block = new PK_MEMORY_block_t(null, (ulong)bytes.Length, p);
-            var opt = new PK_PART_receive_o_t { transmit_format = PK_transmit_format_text_c };
-            int n = 0;
-            int* parts = null;
-            if (PK_PART_receive_b(block, &opt, &n, &parts) == 0 && n == 1 && parts != null)
-            {
-                int body = parts[0];
-                PK_MEMORY_free(parts);
-                return body;
-            }
-        }
+        var block=new PK_MEMORY_block_t(null,(ulong)bytes.Length,data);var options=new PK_PART_receive_o_t{transmit_format=PK_transmit_format_text_c};
+        var count=0;BodyTag* parts=null;Check(PK_PART_receive_b(block,&options,&count,&parts),"receive actual snapshot XT");
+        try{if(count!=1||parts==null)throw new InvalidDataException("Expected exactly one snapshot body.");return parts[0];}finally{PK_MEMORY_free(parts);}
     }
-    return fallback();
 }
-
-static unsafe int CreateRoof(double bulge = 0.4)
+static unsafe List<(FaceTag Face,JsonObject MeshFace)> ValidateMesh(BodyTag body,JsonObject mesh)
 {
-    // Create base block: 1x1x1
-    int body;
-    var basis = new PK_AXIS2_sf_t(new PK_VECTOR_t(0.5, 0.5, 0), new PK_VECTOR1_t(0, 0, 1), new PK_VECTOR1_t(1, 0, 0));
-    Check(PK_BODY_create_solid_block(1.0, 1.0, 1.0, &basis, &body), "create base block");
-
-    int nFaces;
-    int* faces;
-    Check(PK_BODY_ask_faces(body, &nFaces, &faces), "block faces");
-    int topFace = 0;
+    var count=0;FaceTag* faces=null;Check(PK_BODY_ask_faces(body,&count,&faces),"snapshot faces");
     try
     {
-        for (int i = 0; i < nFaces; i++)
+        var originals=mesh["faces"]!.AsArray();if(originals.Count!=count)throw new InvalidDataException("Snapshot/mesh face count mismatch.");
+        var byIdent=new Dictionary<PersistentIdentifier,FaceTag>();
+        for(var i=0;i<count;i++){PersistentIdentifier ident=0;Check(PK_ENTITY_ask_identifier(faces[i],&ident),"face persistent ID");if(ident<=0||!byIdent.TryAdd(ident,faces[i]))throw new InvalidDataException("Ambiguous XT face identity.");}
+        var seen=new HashSet<PersistentIdentifier>();var mapped=new List<(FaceTag,JsonObject)>();
+        foreach(var node in originals)
         {
-            int surf;
-            Check(PK_FACE_ask_surf(faces[i], &surf), "face surf");
-            PK_PLANE_sf_t plane;
-            Check(PK_PLANE_ask(surf, &plane), "plane ask");
-            if (Math.Abs(plane.basis_set.axis.coord[2]) > 0.9 && Math.Abs(plane.basis_set.location.coord[2] - 1.0) < 1e-6)
+            var face=node!.AsObject();var ident=face["identifier"]!.GetValue<PersistentIdentifier>();
+            if(!seen.Add(ident)||!byIdent.TryGetValue(ident,out var tag))throw new InvalidDataException("Missing or duplicate mesh face identity.");
+            SurfaceTag surf=0;Check(PK_FACE_ask_surf(tag,&surf),"mapping surface");
+            var positions=face["positions"]!.AsArray();if(positions.Count<9||positions.Count%3!=0)throw new InvalidDataException("Invalid mesh vertices.");
+            for(var i=0;i<positions.Count;i+=3)
             {
-                topFace = faces[i];
-                break;
+                var p=new PK_VECTOR_t(positions[i]!.GetValue<double>(),positions[i+1]!.GetValue<double>(),positions[i+2]!.GetValue<double>());PK_UV_t uv=default;
+                Check(PK_SURF_parameterise_vector(surf,p,&uv),"mesh vertex parameterisation");
+                var actual=Evaluate(surf,tag,uv.param[0],uv.param[1]);
+                // DisplayBridge stores float32 mesh positions; this checks float conversion only, never a geometric acceptance threshold.
+                var scale=1+Math.Max(Math.Abs(p.coord[0]),Math.Max(Math.Abs(p.coord[1]),Math.Abs(p.coord[2])));
+                if(Distance(actual,new(p.coord[0],p.coord[1],p.coord[2]))>scale*2e-6)throw new InvalidDataException("Mesh vertex does not match capture XT face.");
             }
+            mapped.Add((tag,face));
         }
+        return mapped;
     }
-    finally
-    {
-        PK_MEMORY_free(faces);
-    }
-
-    if (topFace == 0) throw new Exception("Top face not found on block");
-
-    // Create freeform BSpline surface
-    double* poles = stackalloc double[45];
-    double* knots = stackalloc double[2] { 0, 1 };
-    int* um = stackalloc int[2] { 5, 5 };
-    int* vm = stackalloc int[2] { 3, 3 };
-
-    for (int i = 0; i < 5; i++)
-    {
-        for (int j = 0; j < 3; j++)
-        {
-            int at = 3 * (i * 3 + j);
-            poles[at] = i / 4.0;
-            poles[at + 1] = j / 2.0;
-            poles[at + 2] = 1.0 + (i == 2 && j == 1 ? bulge : 0.0);
-        }
-    }
-
-    var sf = new PK_BSURF_sf_t
-    {
-        u_degree = 4,
-        v_degree = 2,
-        n_u_vertices = 5,
-        n_v_vertices = 3,
-        vertex_dim = 3,
-        vertex = poles,
-        n_u_knots = 2,
-        n_v_knots = 2,
-        u_knot = knots,
-        v_knot = knots,
-        u_knot_mult = um,
-        v_knot_mult = vm,
-        form = PK_BSURF_form_arbitrary_c,
-        u_knot_type = PK_knot_non_uniform_c,
-        v_knot_type = PK_knot_non_uniform_c,
-        self_intersecting = PK_self_intersect_false_c,
-        convexity = PK_convexity_unset_c
-    };
-
-    int roofSurf;
-    Check(PK_BSURF_create(&sf, &roofSurf), "create bsurf roof");
-    Check(PK_TOPOL_detach_geom(topFace), "detach top plane");
-
-    PK_LOGICAL_t sense = PK_LOGICAL_true;
-    Check(PK_FACE_attach_surfs(1, &topFace, &roofSurf, &sense), "attach freeform roof");
-
-    return body;
+    finally{PK_MEMORY_free(faces);}
 }
-
-static unsafe void FilletRoof(int body, double radius = 0.1)
+static unsafe Point Evaluate(SurfaceTag surface,FaceTag face,double u,double v)
 {
-    int nEdges;
-    int* edges;
-    Check(PK_BODY_ask_edges(body, &nEdges, &edges), "body edges");
-    int selected = 0;
-    int* vertices = stackalloc int[2];
-    PK_VECTOR_t* ends = stackalloc PK_VECTOR_t[2];
-
-    try
-    {
-        for (int e = 0; e < nEdges; e++)
-        {
-            Check(PK_EDGE_ask_vertices(edges[e], vertices), "edge vertices");
-            if (vertices[0] == 0 || vertices[1] == 0) continue;
-
-            for (int v = 0; v < 2; v++)
-            {
-                int pt;
-                Check(PK_VERTEX_ask_point(vertices[v], &pt), "vertex point");
-                PK_POINT_sf_t sf;
-                Check(PK_POINT_ask(pt, &sf), "point sf");
-                ends[v] = sf.position;
-            }
-
-            if (Math.Abs(ends[0].coord[1]) + Math.Abs(ends[1].coord[1]) + Math.Abs(ends[0].coord[2] - 1.0) + Math.Abs(ends[1].coord[2] - 1.0) < 1e-6)
-            {
-                selected = edges[e];
-                break;
-            }
-        }
-    }
-    finally
-    {
-        PK_MEMORY_free(edges);
-    }
-
-    if (selected == 0) throw new Exception("Roof front edge not found for filleting");
-
-    var blendOpt = new PK_EDGE_set_blend_constant_o_t();
-    blendOpt.properties.tolerance = 1e-7;
-    int count;
-    int* marked;
-    Check(PK_EDGE_set_blend_constant(1, &selected, radius, &blendOpt, &count, &marked), "set blend constant");
-    PK_MEMORY_free(marked);
-
-    var fixOpt = new PK_BODY_fix_blends_o_t
-    {
-        tolerance = 1e-7,
-        local_check = PK_LOGICAL_true,
-        update = PK_blend_edge_update_v261_c
-    };
-    int nBlends;
-    int* blends;
-    int fault;
-    int fe;
-    int ft;
-    Check(PK_BODY_fix_blends(body, &fixOpt, &nBlends, &blends, null, null, &fault, &fe, &ft), "fix blends");
-    PK_MEMORY_free(blends);
+    var uv=new PK_UV_t(u,v);var options=new PK_FACE_contains_vectors_o_t{n_uvs=1,uvs=&uv};var topol=0;
+    Check(PK_FACE_contains_vectors(face,&options,&topol),"trim containment");
+    if(topol==0)throw new InvalidDataException($"UV ({u:R},{v:R}) outside trimmed face {face}.");
+    PK_VECTOR_t p=default;Check(PK_SURF_eval(surface,uv,0,0,PK_LOGICAL_false,&p),"true UV surface evaluation");
+    if(!double.IsFinite(p.coord[0])||!double.IsFinite(p.coord[1])||!double.IsFinite(p.coord[2]))throw new InvalidDataException("Nonfinite surface point.");
+    return new(p.coord[0],p.coord[1],p.coord[2]);
 }
-
-static unsafe void DeleteEntity(int entity)
+static double Distance(Point a,Point b)=>Math.Sqrt((a.X-b.X)*(a.X-b.X)+(a.Y-b.Y)*(a.Y-b.Y)+(a.Z-b.Z)*(a.Z-b.Z));
+static double DistanceToSegment(Point p,Point a,Point b)
 {
-    if (entity != 0) PK_ENTITY_delete(1, &entity);
+    var x=b.X-a.X;var y=b.Y-a.Y;var z=b.Z-a.Z;var length=x*x+y*y+z*z;
+    var t=length>0?Math.Clamp(((p.X-a.X)*x+(p.Y-a.Y)*y+(p.Z-a.Z)*z)/length,0,1):0;
+    return Distance(p,new(a.X+t*x,a.Y+t*y,a.Z+t*z));
 }
-
-static void Check(PK_ERROR_code_t err, string msg)
-{
-    if (err != 0) throw new Exception($"{msg} failed with PK error {err}");
-}
-
-static unsafe class Collector
-{
-    public static readonly List<(int FaceTag, double[] Polyline)> ExtractedLines = new();
-
-    public static void Clear()
-    {
-        ExtractedLines.Clear();
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    public static void Open(int* type, int* count, int* tags, int* n, double* data, int* nl, int* lt, int* fail)
-    {
-        *fail = CONTIN;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    public static void Segment(int* type, int* count, int* tags, int* n, double* data, int* nl, int* lt, int* fail)
-    {
-        *fail = CONTIN;
-        if (*count < 1 || tags == null || data == null || *nl < 2) return;
-
-        int faceTag = tags[0];
-        int lineType = lt[1];
-
-        if (lineType == L3TPPY) // 3006: 3D polyline points
-        {
-            int nPoints = *n;
-            if (nPoints < 2 || nPoints > 5000) return;
-            var polyline = new double[nPoints * 3];
-            for (int i = 0; i < polyline.Length; i++)
-            {
-                polyline[i] = data[i];
-            }
-            ExtractedLines.Add((faceTag, polyline));
-        }
-        else if (lineType == L3TPCI) // 3002: Circular arc
-        {
-            if (*n < 13) return;
-            // Center (0..2), Normal (3..5), RefDir (6..8), Radius (9), StartAngle (10), EndAngle (11), Sense (12)
-            double cx = data[0], cy = data[1], cz = data[2];
-            double nx = data[3], ny = data[4], nz = data[5];
-            double rx = data[6], ry = data[7], rz = data[8];
-            double radius = data[9];
-            double startAngle = data[10];
-            double endAngle = data[11];
-
-            // Normalize ref dir
-            double rlen = Math.Sqrt(rx * rx + ry * ry + rz * rz);
-            if (rlen > 1e-12) { rx /= rlen; ry /= rlen; rz /= rlen; }
-
-            // cross(normal, refDir)
-            double bx = ny * rz - nz * ry;
-            double by = nz * rx - nx * rz;
-            double bz = nx * ry - ny * rx;
-            double blen = Math.Sqrt(bx * bx + by * by + bz * bz);
-            if (blen > 1e-12) { bx /= blen; by /= blen; bz /= blen; }
-
-            int samples = 16;
-            var polyline = new double[samples * 3];
-            for (int s = 0; s < samples; s++)
-            {
-                double frac = (double)s / (samples - 1);
-                double theta = startAngle + frac * (endAngle - startAngle);
-                double cosT = Math.Cos(theta);
-                double sinT = Math.Sin(theta);
-
-                polyline[s * 3] = cx + radius * (cosT * rx + sinT * bx);
-                polyline[s * 3 + 1] = cy + radius * (cosT * ry + sinT * by);
-                polyline[s * 3 + 2] = cz + radius * (cosT * rz + sinT * bz);
-            }
-            ExtractedLines.Add((faceTag, polyline));
-        }
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    public static void Close(int* type, int* count, int* tags, int* n, double* data, int* nl, int* lt, int* fail)
-    {
-        *fail = CONTIN;
-    }
-}
+readonly record struct Point(double X,double Y,double Z);
