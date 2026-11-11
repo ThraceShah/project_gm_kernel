@@ -154,14 +154,14 @@ var evBasic=new JsonArray((JsonNode)new JsonObject{["label"]="03e 原 operation-
 foreach(var (opCase,title,family) in new[]{("sphere","gconic / sphere subtract（暖 −11.26% / 1.1269x，配对 PK 0.2805x）","boolean"),("planar","gconic / planar subtract（暖 +65.66% 回退、冷 +18.66% 回退，保留）","boolean"),("curved","gconic / curved block subtract（暖 −84.38% / 6.4015x，配对 75.6049x）","boolean"),("solidblend","gconic / plane-NURBS fillet（暖 −56.56% / 2.3019x，配对 438.1989x）","blend"),("shortedge","gconic / shortedge FixBlends（暖 −87.03% / 7.7080x，配对 340.1703x / 中位比 334.0140x）","blend")})
 {
     var op=ops[opCase];
-    var steps=ImportRep2("meas."+opCase,opCase);
+    var steps=ImportRep2("gconic."+opCase,opCase);
     string Row(string src,string temp)
     {
         var s=op[src]![temp]!;
         return $"n={s["n"]!.GetValue<int>()} GM中位 {F(s["gmMedianMs"]!.GetValue<double>())} [{F(s["gmMinMs"]!.GetValue<double>())},{F(s["gmMaxMs"]!.GetValue<double>())}] PK中位 {F(s["pkMedianMs"]!.GetValue<double>())} 配对ratio中位 {F(s["ratioMedian"]!.GetValue<double>())} 中位数之比 {F(s["ratioOfMedians"]!.GetValue<double>())}";
     }
     var checks=new JsonArray(
-        Check("quality-"+opCase,"每 rep 质量门（API/step/error/status/body/count/点值物性、fresh XT 真实 PK 接收、BODY_compare/BODY_check、有限曲线）通过","pass",6,6,0,"pairs","60 对全过、2028 检查 pass；60 compare 保持 max_diffs=1024 等原 mask；点值物性门见 meas.mass-qualification","evidence/operation-summary.json"),
+        Check("quality-"+opCase,"每 rep 质量门（API/step/error/status/body/count/点值物性、fresh XT 真实 PK 接收、BODY_compare/BODY_check、有限曲线）通过","pass",6,6,0,"pairs","每 pair fresh PK receive/full BODY_check/strict/finite + 900 项 PK 点值 mass 过；60 compare 原 mask、96 条 chart 诊断、仅 n_cht_pts 可降级；详见 gconic.quality-layering","evidence/operation-summary.json"),
         Check("warm-"+opCase,"暖（每源 4）：基线 "+Row("baseline","warm")+"；候选 "+Row("candidate","warm"),"pass",op["candidate"]!["warm"]!["gmMedianMs"]!.GetValue<double>(),op["baseline"]!["warm"]!["gmMedianMs"]!.GetValue<double>(),null,"ms","右列=基线暖 GM 中位数；配对 ratio 中位数与中位数之比分列不互换","evidence/operation-summary.json"),
         Check("cold-"+opCase,"冷（每源 2）：基线 "+Row("baseline","cold")+"；候选 "+Row("candidate","cold"),"diagnostic",null,null,null,"ms","冷数据未删（含离群值）；冷配对比值中位数与时间中位数之比差异大，不能互换","evidence/operation-summary.json"),
         Check("change-"+opCase,"GM 暖变化 "+F(op["gmWarmChangePercent"]!.GetValue<double>())+"%；暖加速 "+F(op["gmWarmSpeedup"]!.GetValue<double>())+"x","diagnostic",op["gmWarmChangePercent"]!.GetValue<double>(),null,null,"%","回退/微差均保留不归因；这是该固定窗口观测","evidence/operation-summary.json"),
@@ -234,7 +234,7 @@ var manifest=new JsonObject
     ["cases"]=cases
 };
 File.WriteAllText(Path.Combine(run,"manifest.json"),manifest.ToJsonString());
-var index=new JsonObject{["schemaVersion"]=1,["generatedAt"]=now.ToString("O"),["latestRunId"]=runId,["runs"]=new JsonArray((JsonNode)new JsonObject{["id"]=runId,["commit"]=Candidate,["generatedAt"]=now.ToString("O"),["label"]="6616 受控测量验收快照（元数据修正版）：270e2b6→6616cd6（单窗口，回退/边界照实，未签功能集成）",["manifest"]=$"runs/{runId}/manifest.json"})};
+var index=new JsonObject{["schemaVersion"]=1,["generatedAt"]=now.ToString("O"),["latestRunId"]=runId,["runs"]=new JsonArray((JsonNode)new JsonObject{["id"]=runId,["commit"]=Candidate,["generatedAt"]=now.ToString("O"),["label"]="G+Conic 受控测量验收快照：6616→74c29e0（单窗口合计收益，回退/边界照实，不拆孤立贡献）",["manifest"]=$"runs/{runId}/manifest.json"})};
 File.WriteAllText(Path.Combine(output,"index.json"),index.ToJsonString());
 var runBytes=Directory.EnumerateFiles(run,"*",SearchOption.AllDirectories).Sum(f=>new FileInfo(f).Length);
 File.WriteAllText(Path.Combine(evidenceDir,"run-receipt.json"),new JsonObject
