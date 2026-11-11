@@ -1,3 +1,5 @@
+#!/usr/bin/env dotnet run
+#:property TargetFramework=net10.0
 using System.IO.Compression;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;

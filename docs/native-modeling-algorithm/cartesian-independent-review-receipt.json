@@ -1,0 +1,108 @@
+{
+  "schema": 1,
+  "verdict": "accepted-with-explicit-scope",
+  "report": "docs/Native_Spline_Cartesian_Independent_Review.md",
+  "reviewedBase": "6616cd60a55e50a5d8a5ada7274895c44609676b",
+  "reviewedHead": "94f60da64836da33eafaea7ce5912c9d5132660e",
+  "nativeSource": "ddd23111f873a2bf70b239372c9c36aa35c2a38c",
+  "nativeSubtree": "cf417678e17e5b106f7c4734091c55c9a7b021be",
+  "reviewBranch": "review/native-spline-cartesian-94f",
+  "firstPushedIntegrityReview": "6de842a91ba9d228dc3cd3e24f0173b37a6b4034",
+  "authorNativeTestsRunnerUnchanged": true,
+  "policyBodySha256": "55f16ce0cf53bbb37ddd91920445f32468eb8e2b5b6e28f6fb90856810afcca1",
+  "host": "qingyu2",
+  "privateEnvironment": "ENV_READY native PK38.0 linux-x64; no private payload committed",
+  "originalArchive": {
+    "path": "temp_docs/incoming/mac-cartesian-ddd2311-quality.zip",
+    "bytes": 216112,
+    "sha256": "f24b72186f221d91679b80d5f30a232951de7204492c01c396ac954ae8270adb",
+    "files": 75,
+    "uncompressedBytes": 1051242,
+    "manifestFilesVerified": 74,
+    "receiptIsAdditional75thFile": true,
+    "safePathsNoDuplicatesNoSymlinksVerifiedBeforeExtraction": true,
+    "nativeTestsDiffExactAgainstFixedGitObjects": true,
+    "runnerDiffExactAgainstFixedGitObjects": true,
+    "historicalExecutingBinaryIndependentlyBound": false,
+    "earlyFailedFixtureFullSourceSnapshotPresent": false
+  },
+  "reviewScripts": [
+    { "path": "scripts/ReviewCartesianArtifact.cs", "sha256": "d5babe526165a9b18135a3343d6461ade57acc68dd5fef0273eb367dac7129c1" },
+    { "path": "scripts/ReviewSplineCartesian.cs", "sha256": "9e97454e0f898006377485e0d069ea88289cb9c72428b1dff8667c7c224267c2" }
+  ],
+  "independentExecutions": [
+    {
+      "name": "private environment check after ensure",
+      "log": "temp_docs/cartesian-independent-review/environment-check.log",
+      "sha256": "e2659884a38f786faf5553e25f34b02b9ebab6a714468b15d2e4cc47a2117e2f",
+      "exitFile": "temp_docs/cartesian-independent-review/environment-check.exit",
+      "rawExit": 0
+    },
+    {
+      "name": "original archive integrity and fresh isolated extraction",
+      "log": "temp_docs/cartesian-independent-review/artifact-check.log",
+      "sha256": "812c3abd900d79efe969946819eaa4030371893a8524cd3b1186c9184a88a7c4",
+      "exitFile": "temp_docs/cartesian-independent-review/artifact-check.exit",
+      "rawExit": 0,
+      "meaning": "checker success only; original exit values unchanged"
+    },
+    {
+      "name": "review harness compile attempt; missing unsafe",
+      "log": "temp_docs/cartesian-independent-review/reproducer-attempt1.log",
+      "sha256": "956a62183fef965f03395692c37c9c2e9c09f4e6aafb669895556b39ca3a635f",
+      "exitFile": "temp_docs/cartesian-independent-review/reproducer-attempt1.exit",
+      "rawExit": 1
+    },
+    {
+      "name": "review harness PK rectangular layout error; not production failure",
+      "log": "temp_docs/cartesian-independent-review/reproducer-attempt2.log",
+      "sha256": "654c2691b86de544d8564c6cdaf96b3d101f24e3533782c6b8c35c17ce2b7a7b",
+      "exitFile": "temp_docs/cartesian-independent-review/reproducer-attempt2.exit",
+      "rawExit": 134
+    },
+    {
+      "name": "corrected independent math and archived lifecycle",
+      "log": "temp_docs/cartesian-independent-review/reproducer-attempt3.log",
+      "sha256": "31a6abc3c39811e8db27b73b191f02a4a20e0e24e7759edef355cb940eae0c27",
+      "exitFile": "temp_docs/cartesian-independent-review/reproducer-attempt3.exit",
+      "rawExit": 0
+    },
+    {
+      "name": "exact non-dyadic pole rounding example; no reconstructed historical source",
+      "log": "temp_docs/cartesian-independent-review/fixture-mechanism.log",
+      "sha256": "27f8f43ff45cd4f0eb9b09d8e550e4361ac82994105d17ef315b840492b99424",
+      "exitFile": "temp_docs/cartesian-independent-review/fixture-mechanism.exit",
+      "rawExit": 0
+    },
+    {
+      "name": "complete final delivered review script",
+      "log": "temp_docs/cartesian-independent-review/reproducer-final.log",
+      "sha256": "57e115f561c10cbb73bfb018f68307a85bc1b53cea25caf7ea857ece7a526c58",
+      "exitFile": "temp_docs/cartesian-independent-review/reproducer-final.exit",
+      "rawExit": 0,
+      "pkJetMatrices": 48,
+      "c1CrossingTubes": 8,
+      "nearestFocalCounterexampleRejected": true,
+      "archivedLifecycleRealPkReceiveCheckStrictCompare": true,
+      "archivedLifecycleMassNormalizedResidual": 5.391722360075773e-9
+    }
+  ],
+  "acceptedScope": [
+    "fixed guarded five-dimensional native plane/spline residual and proof assembly",
+    "whole-box regular frame, original C1 nonperiodic eligibility and original failure gates",
+    "original raw0 curved/reloaded, independent NURBS fillet/lifecycle and non-target shortedge evidence",
+    "fresh independent real PK recheck of the original lifecycle product and reference"
+  ],
+  "notClaimed": [
+    "full suite green; historical 1912/1914 raw1 remains",
+    "new full suite, 80-test or 288-test rerun",
+    "new formal ABBA, speedup ratio or complete PK performance target",
+    "GM mass API tri-state Verified",
+    "GM independent construction of shortedge PK seed",
+    "complete curved tracking/roles",
+    "new fillet-then-Boolean combination",
+    "historical executing DLL identity from another process PDB",
+    "NativeAOT, Mac or Windows execution during review",
+    "main integration or deployment"
+  ]
+}
