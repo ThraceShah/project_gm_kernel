@@ -82,6 +82,26 @@ public class NestedBlendBoundsTests
         var bounds=new IntervalNumber[9];Assert.NotEqual(AlgorithmStatus.Success,JointNestedBlendEvaluation.Bound(program,4,new(.2,.3,.1,.9),bounds));
     }
 
+    [Fact]
+    public unsafe void NestedTubeKeepsItsFullBoxMappingWhenARepeatedJacobianIsReused()
+    {
+        var program=new NestedBlendProgram(NestedBlendSeriesTests.Surfaces(),NestedBlendSeriesTests.Spines(),NestedBlendSeriesTests.Charts());
+        var domain=new SurfaceParameterBox(.2,.6,.1,.9);Span<IntervalNumber> expected=stackalloc IntervalNumber[9],actual=stackalloc IntervalNumber[9];
+        var enabled=ModelingPerformance.Enabled;var reuse=JointNestedBlendEvaluation.ReuseStableJacobian;
+        try
+        {
+            ModelingPerformance.Enabled=true;JointNestedBlendEvaluation.ReuseStableJacobian=false;JointNestedBlendEvaluation.TestContractionMaps=0;
+            ModelingPerformance.Context first=default,second=default;
+            using(var scope=new ModelingPerformance.Scope(&first))Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.Bound(program,4,domain,expected));
+            var maps=JointNestedBlendEvaluation.TestContractionMaps;var calls=ModelingPerformance.Last.JacobianCalls;Assert.Equal(6,maps);
+            JointNestedBlendEvaluation.ReuseStableJacobian=true;JointNestedBlendEvaluation.TestContractionMaps=0;
+            using(var scope=new ModelingPerformance.Scope(&second))Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.Bound(program,4,domain,actual));
+            Assert.Equal(maps,JointNestedBlendEvaluation.TestContractionMaps);Assert.InRange(ModelingPerformance.Last.JacobianCalls,1,calls);
+            for(var i=0;i<9;i++){Assert.Equal(expected[i].Lower,actual[i].Lower);Assert.Equal(expected[i].Upper,actual[i].Upper);}
+        }
+        finally{JointNestedBlendEvaluation.ReuseStableJacobian=reuse;ModelingPerformance.Enabled=enabled;}
+    }
+
     private static void Check(in NestedBlendProgram program,BlendSurfaceIndex surface,in SurfaceParameterBox box)
     {
         Span<IntervalNumber> bounds=stackalloc IntervalNumber[9];Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.Bound(program,surface,box,bounds));

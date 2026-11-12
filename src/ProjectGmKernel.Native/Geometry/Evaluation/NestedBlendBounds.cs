@@ -10,8 +10,8 @@ internal static partial class JointNestedBlendEvaluation
 {
     internal static bool ReuseSplineContactBounds=true;
 #if KERNEL_TEST_HOOKS
-    internal static bool ReuseStableSplineJacobian=true;
-    internal static BufferCount TestSplineContractionMaps;
+    internal static bool ReuseStableJacobian=true;
+    internal static BufferCount TestContractionMaps;
 #endif
     /// <summary>Certified local implicit tube, followed by interval analytic
     /// differentiation. Chart error estimates and sampled jets are not bounds.</summary>
@@ -255,22 +255,22 @@ internal static partial class JointNestedBlendEvaluation
         for(var iteration=0;iteration<6;iteration++)
         {
 #if KERNEL_TEST_HOOKS
-            if(cartesianSpline)TestSplineContractionMaps++;
+            TestContractionMaps++;
 #endif
             var changed=false;
             for(var i=0;i<n;i++)
             {
                 var next=new IntervalNumber(Math.Max(boxes[i].Lower,image[i].Lower),Math.Min(boxes[i].Upper,image[i].Upper));
-                if(cartesianSpline)changed|=BitConverter.DoubleToInt64Bits(next.Lower)!=BitConverter.DoubleToInt64Bits(boxes[i].Lower)
+                changed|=BitConverter.DoubleToInt64Bits(next.Lower)!=BitConverter.DoubleToInt64Bits(boxes[i].Lower)
                     ||BitConverter.DoubleToInt64Bits(next.Upper)!=BitConverter.DoubleToInt64Bits(boxes[i].Upper);
                 boxes[i]=next;
             }
             // The program, CHART, native parameter and workspace stay fixed
             // in this proof. An identical full box has the same successful J
             // and preconditioned remainder; still execute every map below.
-            var reuse=cartesianSpline&&!changed;
+            var reuse=!changed;
 #if KERNEL_TEST_HOOKS
-            reuse&=ReuseStableSplineJacobian;
+            reuse&=ReuseStableJacobian;
 #endif
             if(!reuse)
             {

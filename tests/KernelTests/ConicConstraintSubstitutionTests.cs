@@ -49,6 +49,30 @@ public class ConicConstraintSubstitutionTests
         Assert.Equal(AlgorithmStatus.NotConverged,JointNestedBlendEvaluation.TestConicSubstitutionMatrix(program,boxes,matrix,directional));
     }
 
+    [Theory]
+    [InlineData(false,false)] [InlineData(true,false)] [InlineData(false,true)] [InlineData(true,true)]
+    public unsafe void ConicAndWitnessPathsKeepEveryMapAndBitwiseResultsWhenFullBoxesRepeat(bool cylinder,bool witness)
+    {
+        var program=Program(false,false,false,boundCylinder:cylinder);var domain=new SurfaceParameterBox(.01,.011,0,0);
+        Span<IntervalNumber> expected=stackalloc IntervalNumber[9],actual=stackalloc IntervalNumber[9],firstWitness=stackalloc IntervalNumber[7],secondWitness=stackalloc IntervalNumber[7];
+        var enabled=ModelingPerformance.Enabled;var reuse=JointNestedBlendEvaluation.ReuseStableJacobian;
+        try
+        {
+            ModelingPerformance.Enabled=true;JointNestedBlendEvaluation.ReuseStableJacobian=false;JointNestedBlendEvaluation.TestContractionMaps=0;
+            ModelingPerformance.Context first=default,second=default;
+            using(var scope=new ModelingPerformance.Scope(&first))
+                Assert.Equal(AlgorithmStatus.Success,witness?JointNestedBlendEvaluation.BoundSharedSpineWitness(program,1,domain,expected,firstWitness):JointNestedBlendEvaluation.BoundSpine(program,1,domain,expected));
+            var maps=JointNestedBlendEvaluation.TestContractionMaps;var calls=ModelingPerformance.Last.JacobianCalls;Assert.Equal(6,maps);
+            JointNestedBlendEvaluation.ReuseStableJacobian=true;JointNestedBlendEvaluation.TestContractionMaps=0;
+            using(var scope=new ModelingPerformance.Scope(&second))
+                Assert.Equal(AlgorithmStatus.Success,witness?JointNestedBlendEvaluation.BoundSharedSpineWitness(program,1,domain,actual,secondWitness):JointNestedBlendEvaluation.BoundSpine(program,1,domain,actual));
+            Assert.Equal(maps,JointNestedBlendEvaluation.TestContractionMaps);Assert.InRange(ModelingPerformance.Last.JacobianCalls,1,calls);
+            for(var i=0;i<9;i++){Assert.Equal(expected[i].Lower,actual[i].Lower);Assert.Equal(expected[i].Upper,actual[i].Upper);}
+            if(witness)for(var i=0;i<7;i++){Assert.Equal(firstWitness[i].Lower,secondWitness[i].Lower);Assert.Equal(firstWitness[i].Upper,secondWitness[i].Upper);}
+        }
+        finally{JointNestedBlendEvaluation.ReuseStableJacobian=reuse;ModelingPerformance.Enabled=enabled;}
+    }
+
     private static NestedBlendProgram Program(bool ellipse,bool reversed,bool cylinder,bool degenerate=false,bool boundCylinder=false)
     {
         BlendSurfaceInstruction[] surfaces=[
