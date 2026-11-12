@@ -1,0 +1,132 @@
+{
+  "checkedUtc": "2026-11-12T03:28:37.400Z",
+  "rows": [
+    {
+      "name": "default view is project overview with counters",
+      "ok": true,
+      "detail": {}
+    },
+    {
+      "name": "catalog rows rendered",
+      "ok": true,
+      "detail": {
+        "rowCount": 463
+      }
+    },
+    {
+      "name": "query-gap row keeps fail + real evidence + hash-anchored label",
+      "ok": true,
+      "detail": {}
+    },
+    {
+      "name": "no fake clickable evidence links",
+      "ok": true,
+      "detail": {}
+    },
+    {
+      "name": "cross-suite row unverified with borrow documented",
+      "ok": true,
+      "detail": {}
+    },
+    {
+      "name": "cross-suite row is not green",
+      "ok": true,
+      "detail": {}
+    },
+    {
+      "name": "search narrows the matrix",
+      "ok": true,
+      "detail": {
+        "searchCount": 9
+      }
+    },
+    {
+      "name": "family filter works",
+      "ok": true,
+      "detail": {
+        "boolCount": 186
+      }
+    },
+    {
+      "name": "issues filter works",
+      "ok": true,
+      "detail": {
+        "issueCount": 59
+      }
+    },
+    {
+      "name": "STEP: unequal-chamfer link lands on operation-5 (index 4)",
+      "ok": false,
+      "detail": {
+        "index": "0",
+        "text": "当前步骤：operation-1（第 1 步）"
+      }
+    },
+    {
+      "name": "STEP: rim-fillet link lands on operation-1 (index 0) — same run/case, no manifest reload",
+      "ok": true,
+      "detail": {
+        "index": "0",
+        "text": "当前步骤：operation-1（第 1 步）"
+      }
+    },
+    {
+      "name": "STEP: prism-all-chamfer lands on blend.planar-chamfer operation-1",
+      "ok": true,
+      "detail": {
+        "index": "0",
+        "text": "当前步骤：operation-1（第 1 步）"
+      }
+    },
+    {
+      "name": "STEP: reopen after case switch still lands on operation-5",
+      "ok": false,
+      "detail": {
+        "index": "0",
+        "text": "当前步骤：operation-1（第 1 步）"
+      }
+    },
+    {
+      "name": "STEP: same-case step switch (op-4=both-rim-chamfer) lands on operation-4 (index 3)",
+      "ok": true,
+      "detail": {
+        "index": "3",
+        "text": "当前步骤：operation-4（第 4 步）"
+      }
+    },
+    {
+      "name": "reload lands on overview again",
+      "ok": true,
+      "detail": {}
+    },
+    {
+      "name": "EVENT UI: top counter equals recomputed pass rows",
+      "ok": true,
+      "detail": {
+        "counter": "182",
+        "recomputedPassRows": 182,
+        "failRows": 1
+      }
+    },
+    {
+      "name": "390px mobile renders overview rows",
+      "ok": true,
+      "detail": {
+        "mobRows": 463
+      }
+    },
+    {
+      "name": "missing overview data shows explicit failure screen (no fake data)",
+      "ok": true,
+      "detail": {}
+    },
+    {
+      "name": "no uncaught JS errors",
+      "ok": true,
+      "detail": {
+        "errors": []
+      }
+    }
+  ],
+  "errors": []
+}

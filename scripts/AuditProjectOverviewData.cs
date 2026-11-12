@@ -4,29 +4,31 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
 
-// Independent audit of the project-overview candidate data facts (read-only over
-// all originals). Re-derives per-scenario evidence from the sealed operation
-// logs with a correct phase-aware parser, replicates the candidate builder's
-// extractor semantics to pin the mechanism of every disagreement, checks
-// selector provenance (cross-suite borrowing), the short-edge grid dual match,
-// the named non-grid evidence (transverse/probes/standard argv+exits), and the
-// 1654 measurement schema claims. Also demonstrates the extractor's latent
-// failure modes on isolated synthetic logs. Writes a derived receipt under
-// docs/reviews/web/receipts/. This checker's exit code is an audit exit code
-// only; it never restates any original modeling process exit.
+// Narrow re-verification audit of the f463 fix (2bece5d -> f4632281) against the
+// independent review B1-B6. Runs against a fixed target tree (--target, default
+// this script's own tree) and writes receipts into THIS script's tree, so the
+// author candidate is only read. Every finding is classified:
+//   error = real unfixed/wrong data fact under the accepted contract
+//   note  = documented by-design behavior or stale-contract false positive
+// Covers: B1 own-suite attribution, B2 extractor semantics (first/last key,
+// no-PASS key, PASS-after-FAIL), B3 transverse/probes dimension split, B5 mass
+// phase rules and the measurement three-state derivation, stats recomputation,
+// and evidence-existence checks for every record that cites original logs.
 var scripts=Path.GetDirectoryName(ScriptPath())!;
-var root=Path.GetFullPath("..",scripts);Directory.SetCurrentDirectory(root);
-var outDir=Path.Combine("docs","reviews","web","receipts");Directory.CreateDirectory(outDir);
-var tmpDir=Path.Combine("temp_docs","independent-overview-audit");Directory.CreateDirectory(tmpDir);
-var findings=new JsonArray();int Find(string kind,string detail){findings.Add((JsonNode?)JsonValue.Create(kind+" :: "+detail));Console.WriteLine("FINDING "+kind+" :: "+detail);return 0;}
+var reviewRoot=Path.GetFullPath("..",scripts);
+var target=Path.GetFullPath(Option("--target",reviewRoot));Directory.SetCurrentDirectory(target);
+var outDir=Path.Combine(reviewRoot,"docs","reviews","web","receipts");Directory.CreateDirectory(outDir);
+var tmpDir=Path.Combine(reviewRoot,"temp_docs","f463-reverify");Directory.CreateDirectory(tmpDir);
+var findings=new JsonArray();
+void Finding(string kind,string detail){findings.Add((JsonNode)new JsonObject{{"kind",kind},{"verdict","error"},{"detail",detail}});Console.WriteLine("ERROR "+kind+" :: "+detail);}
+void Note(string kind,string detail){findings.Add((JsonNode)new JsonObject{{"kind",kind},{"verdict","note"},{"detail",detail}});Console.WriteLine("NOTE  "+kind+" :: "+detail);}
 
-// ---- inputs (all read-only originals)
 var registry=JsonNode.Parse(File.ReadAllText(Path.Combine("scripts","web-progress-registry.json")))!.AsObject();
 var overview=JsonNode.Parse(File.ReadAllText(Path.Combine("web","data","project-overview.json")))!.AsObject();
 var rows=overview["catalog"]!.AsArray().OfType<JsonObject>().ToDictionary(c=>c["id"]!.GetValue<string>(),StringComparer.Ordinal);
-var uniLog=Path.GetFullPath(Path.Combine("..","gm-native-unified-delivery","temp_docs","unified-delivery"),root);
-var blendLog=Path.GetFullPath(Path.Combine("..","gm-blend-functional-delivery","temp_docs","blend-functional","final-integrated"),root);
-var pkLog=Path.GetFullPath(Path.Combine("..","gm-pk-native-delivery","temp_docs","pk-native-delivery"),root);
+var uniLog=Path.GetFullPath(Path.Combine("..","gm-native-unified-delivery","temp_docs","unified-delivery"),target);
+var blendLog=Path.GetFullPath(Path.Combine("..","gm-blend-functional-delivery","temp_docs","blend-functional","final-integrated"),target);
+var pkLog=Path.GetFullPath(Path.Combine("..","gm-pk-native-delivery","temp_docs","pk-native-delivery"),target);
 var logs=new Dictionary<string,string>(StringComparer.Ordinal)
 {
     ["regular45"]=Path.Combine(uniLog,"regular45-final.log"),
@@ -34,276 +36,224 @@ var logs=new Dictionary<string,string>(StringComparer.Ordinal)
     ["complete"]=Path.Combine(blendLog,"complete-catalog.log"),
 };
 foreach(var kv in logs)if(!File.Exists(kv.Value))throw new FileNotFoundException(kv.Value);
-// the oracle source that produced each log (from the log preambles/producer tree)
-var logSource=new Dictionary<string,string>(StringComparer.Ordinal)
-{
-    ["regular45"]="scripts/RegularCurvedBooleanOracle.cs",
-    ["mixed18"]="scripts/MixedAnalyticBooleanOracle.cs",
-    ["complete"]="scripts/LocalBlendCatalog",
-};
 
-// ---- correct phase-aware parse: one record per (log,key), mass kept per phase
-var phaseFindings=new JsonArray();
-Dictionary<string,(List<(int v,int u,int d,string? agree,int line,bool pass,bool fail)> phases,int passLines,int failLines)> CorrectParse(string path)
+// ---- correct phase-aware parse (accepted B2/B5 semantics)
+Dictionary<string,(List<(int V,int U,int D,string? Agreement,bool Pass)> Phases,int PassLines,int FailLines)> Parse(string path)
 {
-    var res=new Dictionary<string,(List<(int,int,int,string?,int,bool,bool)>,int,int)>(StringComparer.Ordinal);
-    void Ensure(string k,int ln){if(!res.ContainsKey(k))res[k]=(new(),0,0);}
-    int ln=0;
+    var res=new Dictionary<string,(List<(int V,int U,int D,string? Agreement,bool Pass)> Phases,int PassLines,int FailLines)>(StringComparer.Ordinal);
+    void Ensure(string k){if(!res.ContainsKey(k))res[k]=(new(),0,0);}
     foreach(var raw in File.ReadLines(path))
     {
-        ln++;
         var t=raw.Trim();
         if(t.StartsWith("MASS_BOUND ",StringComparison.Ordinal))
         {
-            var k=t.Split(' ')[1].TrimEnd(':');Ensure(k,0);
-            var e=res[k];int v=e.Item1.Count>0?e.Item1[^1].Item1:0,u=e.Item1.Count>0?e.Item1[^1].Item2:0,d=e.Item1.Count>0?e.Item1[^1].Item3:0;
-            bool closed=e.Item1.Count>0&&(e.Item1[^1].Item4!=null||e.Item1[^1].Item6);
-            if(e.Item1.Count==0||closed)e.Item1.Add((0,0,0,null,ln,false,false));
-            var last=e.Item1[^1];
-            if(t.EndsWith("status=Verified",StringComparison.Ordinal))last=(last.Item1+1,last.Item2,last.Item3,last.Item4,last.Item5,false,false);
-            else if(t.EndsWith("status=Unresolved",StringComparison.Ordinal))last=(last.Item1,last.Item2+1,last.Item3,last.Item4,last.Item5,false,false);
-            else if(t.EndsWith("status=Different",StringComparison.Ordinal))last=(last.Item1,last.Item2,last.Item3+1,last.Item4,last.Item5,false,false);
-            e.Item1[^1]=last;
+            var k=t.Split(' ')[1].TrimEnd(':');Ensure(k);
+            var f=res[k];bool closed=f.Phases.Count>0&&(f.Phases[^1].Item4!=null||f.Phases[^1].Item5);
+            if(f.Phases.Count==0||closed)f.Phases.Add((0,0,0,null,false));
+            var last=f.Phases[^1];
+            if(t.EndsWith("status=Verified",StringComparison.Ordinal))f.Phases[^1]=(last.Item1+1,last.Item2,last.Item3,last.Item4,false);
+            else if(t.EndsWith("status=Unresolved",StringComparison.Ordinal))f.Phases[^1]=(last.Item1,last.Item2+1,last.Item3,last.Item4,false);
+            else if(t.EndsWith("status=Different",StringComparison.Ordinal))f.Phases[^1]=(last.Item1,last.Item2,last.Item3+1,last.Item4,false);
         }
         else if(t.StartsWith("MASS_AGREEMENT ",StringComparison.Ordinal))
         {
-            var k=t.Split(' ')[1].TrimEnd(':');Ensure(k,0);
-            var e=res[k];bool closed=e.Item1.Count>0&&(e.Item1[^1].Item4!=null||e.Item1[^1].Item6);
-            if(e.Item1.Count==0||closed)e.Item1.Add((0,0,0,null,ln,false,false));
+            var k=t.Split(' ')[1].TrimEnd(':');Ensure(k);
+            var f=res[k];bool closed=f.Phases.Count>0&&(f.Phases[^1].Item4!=null||f.Phases[^1].Item5);
+            if(f.Phases.Count==0||closed)f.Phases.Add((0,0,0,null,false));
             var st=t.Contains("status=Verified",StringComparison.Ordinal)?"Verified":t.Contains("status=Different",StringComparison.Ordinal)?"Different":t.Contains("status=Unresolved",StringComparison.Ordinal)?"Unresolved":"?";
-            var last=e.Item1[^1];e.Item1[^1]=(last.Item1,last.Item2,last.Item3,st,last.Item5,false,false);
+            var last=f.Phases[^1];f.Phases[^1]=(last.Item1,last.Item2,last.Item3,st,false);
         }
         else if(t.StartsWith("GEOMETRY_TOPOLOGY_PASS ",StringComparison.Ordinal))
         {
-            var k=t.Split(' ')[1].TrimEnd(':');Ensure(k,0);
-            var e=res[k];res[k]=(e.Item1,e.Item2+1,e.Item3);
-            if(e.Item1.Count==0)e.Item1.Add((0,0,0,null,ln,false,false));
-            var last=e.Item1[^1];e.Item1[^1]=(last.Item1,last.Item2,last.Item3,last.Item4,last.Item5,true,false);
+            var k=t.Split(' ')[1].TrimEnd(':');Ensure(k);
+            var f=res[k];res[k]=(f.Phases,f.PassLines+1,f.FailLines);
+            if(f.Phases.Count==0)f.Phases.Add((0,0,0,null,true));
+            else{var last=f.Phases[^1];f.Phases[^1]=(last.Item1,last.Item2,last.Item3,last.Item4,true);}
         }
         else if(t.StartsWith("GEOMETRY_TOPOLOGY_FAIL ",StringComparison.Ordinal)||t.StartsWith("FAIL ",StringComparison.Ordinal))
         {
-            var k=t.Split(' ')[1].TrimEnd(':');Ensure(k,0);
-            var e=res[k];res[k]=(e.Item1,e.Item2,e.Item3+1);
-            if(e.Item1.Count==0)e.Item1.Add((0,0,0,null,ln,false,false));
-            var last=e.Item1[^1];e.Item1[^1]=(last.Item1,last.Item2,last.Item3,last.Item4,last.Item5,false,true);
+            var k=t.Split(' ')[1].TrimEnd(':');Ensure(k);
+            var f=res[k];res[k]=(f.Phases,f.PassLines,f.FailLines+1);
         }
     }
     return res;
 }
+var data=new Dictionary<string,Dictionary<string,(List<(int V,int U,int D,string? Agreement,bool Pass)> Phases,int PassLines,int FailLines)>>(StringComparer.Ordinal);
+foreach(var kv in logs)data[kv.Key]=Parse(kv.Value);
+var suiteOwnLog=new Dictionary<string,string>(StringComparer.Ordinal){["regular-curved"]="regular45",["mixed-analytic"]="mixed18",["local-blend"]="complete"};
 
-// ---- candidate builder's extractor semantics, replicated exactly
-Dictionary<string,(bool pass,bool fail,int v,int u,int d)> BuilderParse(string path)
-{
-    var scenarioAudit=new Dictionary<string,(bool,bool,int,int,int)>(StringComparer.Ordinal);
-    string? current=null;bool pass=false,fail=false;int v=0,u=0,d=0;
-    void Flush(){if(current!=null&&!scenarioAudit.ContainsKey(current))scenarioAudit[current]=(pass,fail,v,u,d);}
-    foreach(var line in File.ReadLines(path))
-    {
-        var t=line.Trim();
-        if(t.StartsWith("GEOMETRY_TOPOLOGY_PASS ",StringComparison.Ordinal)){Flush();current=t.Split(' ')[1].TrimEnd(':');pass=true;fail=false;v=0;u=0;d=0;continue;}
-        if(t.StartsWith("GEOMETRY_TOPOLOGY_FAIL ",StringComparison.Ordinal)||t.StartsWith("FAIL ",StringComparison.Ordinal))
-        {
-            var key=t.Split(' ')[1].TrimEnd(':');
-            if(current!=key){Flush();current=key;}
-            fail=true;continue;
-        }
-        if(t.StartsWith("MASS_BOUND ",StringComparison.Ordinal))
-        {
-            var key=t.Split(' ')[1].TrimEnd(':');
-            if(current!=key){Flush();current=key;}
-            if(t.EndsWith("status=Verified",StringComparison.Ordinal))v++;
-            else if(t.EndsWith("status=Unresolved",StringComparison.Ordinal))u++;
-            else if(t.EndsWith("status=Different",StringComparison.Ordinal))d++;
-            continue;
-        }
-    }
-    Flush();
-    return scenarioAudit;
-}
-
-var correct=new Dictionary<string,Dictionary<string,(List<(int v,int u,int d,string? agree,int line,bool pass,bool fail)> phases,int passLines,int failLines)>>(StringComparer.Ordinal);
-var builder=new Dictionary<string,Dictionary<string,(bool pass,bool fail,int v,int u,int d)>>(StringComparer.Ordinal);
-foreach(var kv in logs){correct[kv.Key]=CorrectParse(kv.Value);builder[kv.Key]=BuilderParse(kv.Value);}
-
-// ---- 1) per-row evidence re-derivation (own-suite only) vs committed overview
-int borrowed=0,underCredited=0,overCredited=0,phaseMerged=0;
-var rowAudit=new JsonArray();
+int errors=0;
+// ---- B1: cross-suite rows must be unverified and documented; own-suite rows signed from own log
 foreach(var entry in registry["cases"]!.AsArray().OfType<JsonObject>())
 {
     var id=entry["id"]!.GetValue<string>();var suite=entry["suite"]!.GetValue<string>();
-    var selector=entry["selector"]?.GetValue<string>();
-    if(selector==null)continue;
-    string? ownLog=suite=="local-blend"?"complete":suite=="mixed-analytic"?"mixed18":suite=="regular-curved"?"regular45":null;
-    var appears=logs.Keys.Where(l=>correct[l].ContainsKey(selector)).ToList();
+    var selector=entry["selector"]?.GetValue<string>();if(selector==null)continue;
+    var appears=logs.Keys.Where(l=>data[l].ContainsKey(selector)).ToList();
     if(appears.Count==0)continue;
     var row=rows[id];
     var f=row["dimensions"]!["function"]!["status"]!.GetValue<string>();
     var m=row["dimensions"]!["mass"]!["status"]!.GetValue<string>();
-    string expectF;string expectM;string evidenceLog=appears[0];
-    var rec=correct[evidenceLog][selector];
-    bool ownEvidence=ownLog!=null&&appears.Contains(ownLog);
-    if(ownEvidence)
+    bool own=suiteOwnLog.TryGetValue(suite,out var ownLog)&&appears.Contains(ownLog);
+    if(own)
     {
-        var or=correct[ownLog!][selector];
-        expectF=or.failLines>0?"fail":or.passLines>0?"pass":"unverified";
-        int v=0,u=0,d=0;foreach(var ph in or.phases){v+=ph.v;u+=ph.u;d+=ph.d;}
-        expectM=d>0?"different":u>0?"unresolved":v>0?"verified":"unverified";
-        // phase merging: combined state must equal the state of the phase that
-        // carries the key's own pass marker (the definitive stage), else flag.
-        var defPhase=or.phases.LastOrDefault(p=>p.pass);
-        if(or.phases.Count>1&&defPhase.agree!=null)
+        var rec=data[suiteOwnLog[suite]][selector];
+        string expectF=rec.FailLines>0?"fail":rec.PassLines>0?"pass":"unverified";
+        var defAgree=rec.Phases.Where(p=>p.Pass).Select(p=>p.Agreement).LastOrDefault();
+        int v=0,u=0,d=0;foreach(var ph in rec.Phases){v+=ph.V;u+=ph.U;d+=ph.D;}
+        string expectM=defAgree=="Verified"?"verified":defAgree=="Different"?"different":defAgree=="Unresolved"?"unresolved":d>0?"different":u>0?"unresolved":v>0?"verified":"unverified";
+        if(f!=expectF)Finding("function-mismatch",$"{id}: overview={f} own-log-derived={expectF} (passLines={rec.PassLines} failLines={rec.FailLines})");
+        if(m!=expectM)Finding("mass-mismatch",$"{id}: overview={m} own-PASS-phase-derived={expectM} (defAgree={defAgree??"none"}; merged {v}V/{u}U/{d}D)");
+        if(rec.Phases.Count>1)
         {
-            string defState=defPhase.agree;
-            string comb=d>0?"Different":u>0?"Unresolved":v>0?"Verified":"?";
-            if(!string.Equals(comb,defState,StringComparison.OrdinalIgnoreCase))
-            {
-                phaseMerged++;
-                Find("mass-phase-merged",$"{id}: 合并 {or.phases.Count} 相态分量({v}V/{u}U/{d}D)得 {comb}，而含自身 PASS 的最终相态 MASS_AGREEMENT={defPhase.agree}（行 {defPhase.line}）");
-            }
+            var note=row["dimensions"]!["mass"]!["note"]!.GetValue<string>();
+            if(!note.Contains("逐相态",StringComparison.Ordinal)||!note.Contains("为准",StringComparison.Ordinal))Finding("phase-breakdown-missing",$"{id}: {rec.Phases.Count} 相态但 mass note 无逐相态分列/自身 PASS 相态为准字样");
         }
     }
     else
     {
-        expectF="unverified";expectM="unverified";
-        borrowed++;
-        Find("cross-suite-borrow",$"{id}: suite={suite}，selector 在 {string.Join("/",appears)} 日志出现但非本套件（registry source={entry["source"]!.GetValue<string>()}），看板签 function={f}/mass={m}，证据列={row["dimensions"]!["function"]!["lastVerified"]!["evidence"]!.GetValue<string>()}");
+        if(f!="unverified"||m!="unverified")Finding("cross-suite-signed",$"{id}: 他套件 selector（见 {string.Join("/",appears)}）却签 function={f}/mass={m}");
+        var note=row["dimensions"]!["function"]!["note"]!.GetValue<string>();
+        if(!note.Contains("本套件无执行证据",StringComparison.Ordinal)&&!note.Contains("退未验证",StringComparison.Ordinal))Finding("borrow-undocumented",$"{id}: 跨套件借用未在 note 注明");
+        else Note("cross-suite-borrow-documented",$"{id}: 他套件 selector 已退未验证并注明借源（旧脚本 borrow 告警=文档性）");
     }
-    if(f!=expectF)
+}
+
+// ---- B3: named non-grid rows per accepted dimension split
+var tStrict=rows["short-edge.transverse-strict-lifecycle"];var tWitness=rows["short-edge.transverse-witness-lifecycle"];
+if(tWitness["dimensions"]!["function"]!["status"]!.GetValue<string>()!="pass")Finding("B3-witness-function","witness function 应=pass（执行范围）");
+if(tWitness["dimensions"]!["mass"]!["status"]!.GetValue<string>()!="fail")Finding("B3-witness-mass","witness mass 应=点值门红 fail，实际="+tWitness["dimensions"]!["mass"]!["status"]!.GetValue<string>());
+var wNote=tWitness["dimensions"]!["mass"]!["note"]!.GetValue<string>();
+if(!wNote.Contains("1.2044611267910417E-07",StringComparison.Ordinal)||!wNote.Contains("1.126468644220207E-07",StringComparison.Ordinal))Finding("B3-witness-values","witness mass note 缺两 cut 阶段数值");
+if(wNote.Contains("Different",StringComparison.Ordinal)&&wNote.Contains("modulus Different",StringComparison.Ordinal)&&!wNote.Contains("非当前 modulus",StringComparison.Ordinal))Finding("B3-witness-modulus","witness 不得签当前 modulus Different");
+if(!wNote.Contains("exit 134",StringComparison.Ordinal))Finding("B3-witness-exit","witness 注记缺原 exit 134");
+if(tStrict["dimensions"]!["function"]!["status"]!.GetValue<string>()!="unverified")Finding("B3-strict-function","strict function 应=unverified（无执行日志）");
+if(!tStrict["dimensions"]!["function"]!["note"]!.GetValue<string>().Contains("无执行日志",StringComparison.Ordinal))Finding("B3-strict-note","strict 注记未写明无执行日志");
+foreach(var pid in new[]{"short-edge.self-fixed-probes","short-edge.imported-fixed-probes"})
+{
+    var p=rows[pid];
+    if(p["dimensions"]!["query"]!["status"]!.GetValue<string>()!="unresolved")Finding("B3-probes-query",pid+" query 应=unresolved（510 未决）");
+    if(p["dimensions"]!["function"]!["status"]!.GetValue<string>()!="pass")Finding("B3-probes-function",pid+" function 应=pass（BRep 构造过）");
+}
+if(rows["short-edge.standard-strict-lifecycle"]["dimensions"]!["function"]!["status"]!.GetValue<string>()!="pass")Finding("B3-standard","standard lifecycle function 应=pass");
+
+// ---- round2 record: every claimed FAIL key must exist in the cited evidence
+foreach(var rec in overview["verificationRecords"]!.AsArray().OfType<JsonObject>())
+{
+    var title=rec["title"]!.GetValue<string>();
+    if(!title.Contains("round2",StringComparison.Ordinal))continue;
+    var ev=rec["evidence"]!.GetValue<string>();
+    // claimed keys: the tokens after 键 up to the closing paren
+    var keys=new List<string>();
+    foreach(var part in title.Split('（').Last().Split('）')[0].Split('/').Select(s=>s.Trim()))
     {
-        if(expectF=="pass"&&f=="unverified"){underCredited++;Find("under-credited-pass",$"{id}: 日志 {evidenceLog} 有自身 GEOMETRY_TOPOLOGY_PASS（{string.Join(",",rec.passLines)} 行）但看板=unverified（builder 首键 flush 语义丢失）");}
-        else if(expectF=="unverified"&&f=="pass"){overCredited++;Find("over-credited-pass",$"{id}: 本套件无证据但看板=pass");}
-        else Find("function-status-mismatch",$"{id}: overview={f} re-derived={expectF}");
+        var k=part.Replace("键","").Trim();
+        if(k.EndsWith("-round2",StringComparison.Ordinal))keys.Add(k);
     }
-    if(m!=expectM&&!ownEvidence)Find("mass-borrowed",$"{id}: mass={m} 来自他套件日志 {evidenceLog}");
-    else if(m!=expectM&&ownEvidence)Find("mass-status-mismatch",$"{id}: overview mass={m} re-derived(merged)={expectM}");
-    rowAudit.Add((JsonNode)new JsonObject{{"id",JsonValue.Create(id)},{"suite",JsonValue.Create(suite)},{"logs",JsonValue.Create(string.Join("/",appears))},{"ownEvidence",JsonValue.Create(ownEvidence)},{"overviewFunction",JsonValue.Create(f)},{"derivedFunction",JsonValue.Create(expectF)},{"overviewMass",JsonValue.Create(m)},{"derivedMass",JsonValue.Create(expectM)}});
-}
-
-// ---- 2) builder-replica mechanism proof on real logs (first-key loss + stale inheritance)
-foreach(var l in logs.Keys)
-{
-    var b=builder[l];var c=correct[l];
-    foreach(var key in c.Keys)
+    Console.WriteLine("ROUND2 record keys: "+string.Join(" | ",keys)+" evidence="+ev);
+    foreach(var k in keys)
     {
-        var bb=b[key];var cc=c[key];
-        bool realPass=cc.passLines>0;
-        if(realPass&&!bb.pass)Find("builder-flush-loss",$"{l}/{key}: 真实 PASS 行 {string.Join(",",cc.passLines)}，builder 记录 pass=false（首键 flush 于自身标记之前，后续完整记录被 ContainsKey 丢弃）");
-        if(!realPass&&bb.pass)Find("builder-stale-green",$"{l}/{key}: 无自身 PASS 标记，builder 记录 pass=true（前一键 PASS 的 stale 状态被继承）");
+        bool inLogs=logs.Values.Any(p=>File.ReadLines(p).Any(l=>l.Contains(k,StringComparison.Ordinal)));
+        bool anyFail=logs.Values.Any(p=>File.ReadLines(p).Any(l=>l.Trim().StartsWith("FAIL ",StringComparison.Ordinal)));
+        if(!inLogs)Finding("round2-unsourced",$"verificationRecord interaction.round2-failures 声称键 \"{k}\" 的「原日志 FAIL mass 行」在所引 {ev} 及三个套件日志中不存在（字节哈希未变：regular45=9cd6ba94…/mixed18=ad0aa117…/complete=2b2d07c4…；三日志 FAIL 行总数={(anyFail?"见下":"0")}）");
+    }
+    if(!File.ReadAllText(Path.Combine(uniLog,"regular45-final.log")).Contains("round2",StringComparison.Ordinal)&&ev.Contains("regular45-final.log",StringComparison.Ordinal))
+        Finding("round2-evidence-citation",$"该记录 evidence 指向 regular45-final.log，但该文件（SHA256 9cd6ba940cae8ce3b694c47a031e81f1a3986de720b88f6f8824ca6b6adcb7a5）无任何 round2/FAIL 行——引用源与内容不符");
+}
+
+// ---- B5 residual: qualityStatusCounts three-state derivation (code-level)
+var prodSrc=File.ReadAllText(Path.Combine("scripts","BuildProjectOverview.cs"));
+if(prodSrc.Contains("qk.ContainsKey(\"Unresolved\")?\"unresolved\":\"verified\"",StringComparison.Ordinal))
+{
+    // replicate the derivation to show the mis-green cases
+    string Derive(Dictionary<string,int> qk)=>qk.ContainsKey("Unresolved")?"unresolved":"verified";
+    var withDifferent=new Dictionary<string,int>{{"Different",2}};var empty=new Dictionary<string,int>();
+    if(Derive(withDifferent)=="verified"&&Derive(empty)=="verified")
+        Finding("B5-three-state-residual","质量三态推导仍是 qk.ContainsKey(\"Unresolved\")?\"unresolved\":\"verified\"：qk={Different:2}→verified（应=different/红）、qk={}→verified（缺证据应=unverified）——Different 与空集未实修");
+}
+var sphereRow=rows["analytic-boolean.equal-overlap-subtract"];
+var massNote=sphereRow["dimensions"]!["mass"]!["note"]!.GetValue<string>();
+if(massNote.Contains("（分量级）",StringComparison.Ordinal))Finding("B5-label-residual","测量 mass note 仍标「（分量级）」");
+if(!massNote.Contains("样本级",StringComparison.Ordinal))Finding("B5-label-missing","测量 mass note 缺样本级口径标签");
+var perfNote=sphereRow["dimensions"]!["performance"]!["note"]!.GetValue<string>();
+if(perfNote.Contains("performanceQualified=false",StringComparison.Ordinal)&&!perfNote.Contains("runnerPerformanceQualified",StringComparison.Ordinal))Finding("B5-schema-residual","performance note 引用不存在字段 performanceQualified");
+var exitNote=sphereRow["dimensions"]!["performance"]!["lastVerified"]!["exit"]!.GetValue<string>();
+if(!exitNote.Contains("measurement-receipt",StringComparison.Ordinal)&&!exitNote.Contains("runnerRawExit",StringComparison.Ordinal))Note("B5-exit-citation","performance exit 注记="+exitNote);
+
+// ---- stats recomputation (facts, not targets)
+var recount=new Dictionary<string,int>(StringComparer.Ordinal);
+foreach(var r in rows.Values)
+{
+    foreach(var w in new[]{"function","mass","query","performance"})
+    {
+        var st=r["dimensions"]![w]!["status"]!.GetValue<string>();
+        var k=w+":"+st;recount[k]=recount.TryGetValue(k,out var n)?n+1:1;
+    }
+    var cv=r["dimensions"]!["currentVersion"]?.GetValue<string>()??"not-retested";
+    var ck="current:"+(cv=="reverified"?"reverified":"not-retested");recount[ck]=recount.TryGetValue(ck,out var m0)?m0+1:1;
+}
+foreach(var kv in recount.OrderBy(kv=>kv.Key))
+{
+    var inSummary=overview["summary"]![kv.Key]?.GetValue<int>()??-1;
+    if(inSummary!=kv.Value)Finding("summary-drift",$"summary[{kv.Key}]={inSummary} 但按行重算={kv.Value}");
+}
+Console.WriteLine("RECOUNT "+string.Join(", ",recount.OrderBy(kv=>kv.Key).Select(kv=>$"{kv.Key}={kv.Value}")));
+
+// ---- mappingAudit provenance fields
+var ma=overview["mappingAudit"]!.AsArray().OfType<JsonObject>().ToList();
+if(ma.Any(e=>e["suite"]==null||e["sourceLog"]==null))Finding("mapping-audit-fields","mappingAudit 条目缺 suite/sourceLog 字段");
+if(ma.Count!=195+ (overview["deliveries"]!.AsArray().Count>7?0:0))Console.WriteLine("mappingAudit entries="+ma.Count);
+var borrowEntries=ma.Where(e=>(e["via"]?.GetValue<string>()??"").Contains("borrowed",StringComparison.Ordinal)).ToList();
+foreach(var be in borrowEntries)
+{
+    var cid=be["catalogId"]!.GetValue<string>();
+    if(rows[cid]["dimensions"]!["function"]!["status"]!.GetValue<string>()!="unverified")Finding("mapping-borrow-signed",$"mappingAudit borrowed 条目 {cid} 对应行却非 unverified");
+}
+
+// ---- events entry delivered
+var eventsTracked=File.Exists(Path.Combine("web","data","overview-events.json"));
+if(!eventsTracked)Finding("events-entry-missing","web/data/overview-events.json 不存在于候选树");
+else Note("events-entry-present","web/data/overview-events.json 存在（内容="+File.ReadAllText(Path.Combine("web","data","overview-events.json")).Trim()+"）");
+
+// ---- B2 synthetic semantics against the accepted extractor rules (per key)
+void SynthCheck(string name,string key,string[] lines,string expectF)
+{
+    int pass=0,fail=0;
+    foreach(var l in lines){var t=l.Trim();if(t.StartsWith("GEOMETRY_TOPOLOGY_PASS "+key,StringComparison.Ordinal))pass++;if(t.StartsWith("FAIL "+key,StringComparison.Ordinal)||t.StartsWith("GEOMETRY_TOPOLOGY_FAIL "+key,StringComparison.Ordinal))fail++;}
+    string got=fail>0?"fail":pass>0?"pass":"unverified";
+    if(got!=expectF)Finding("synth-semantic",$"{name}: key {key} 期望 {expectF} 实得 {got}");
+    else Note("synth-semantic",$"{name}: key {key} {expectF} ✓（PASS/FAIL 不可丢）");
+}
+SynthCheck("first-key-own-pass","k1",new[]{"MASS_BOUND k1 property=x status=Verified","GEOMETRY_TOPOLOGY_PASS k1"},"pass");
+SynthCheck("no-marker-key","k2",new[]{"MASS_BOUND k1 property=x status=Verified","GEOMETRY_TOPOLOGY_PASS k1","MASS_BOUND k2 property=x status=Unresolved"},"unverified");
+SynthCheck("pass-then-fail","k1",new[]{"MASS_BOUND k1 property=x status=Verified","GEOMETRY_TOPOLOGY_PASS k1","FAIL k1 mass: mass mismatch"},"fail");
+SynthCheck("fail-then-pass","k1",new[]{"FAIL k1 mass: mass mismatch","MASS_BOUND k1 property=x status=Verified","GEOMETRY_TOPOLOGY_PASS k1"},"fail");
+// real-log FAIL preservation: any FAIL line in the three logs must map to a fail row or a documented non-463 record
+foreach(var kv in logs)
+{
+    foreach(var line in File.ReadLines(kv.Value))
+    {
+        var t=line.Trim();
+        if(t.StartsWith("FAIL ",StringComparison.Ordinal)||t.StartsWith("GEOMETRY_TOPOLOGY_FAIL ",StringComparison.Ordinal))
+        {
+            var key=t.Split(' ')[1].TrimEnd(':');
+            bool mapped=rows.Values.Any(r=>r["selector"]?.GetValue<string>()==key);
+            if(mapped&&rows.Values.First(r=>r["selector"]?.GetValue<string>()==key)["dimensions"]!["function"]!["status"]!.GetValue<string>()!="fail")Finding("fail-swallowed",$"{kv.Key}/{key}: FAIL 行被签非 fail");
+        }
     }
 }
 
-// ---- 3) synthetic extractor failure modes (isolated derived logs)
-void Synth(string name,Action<List<string>> build)
-{
-    var lines=new List<string>();build(lines);
-    var p=Path.Combine(tmpDir,name+".log");File.WriteAllLines(p,lines);
-    var b=BuilderParse(p);var c=CorrectParse(p);
-    File.WriteAllText(Path.Combine(tmpDir,name+".result.json"),new JsonObject{
-        ["builder"]=new JsonObject(b.Select(kv=>new KeyValuePair<string,JsonNode?>(kv.Key,new JsonObject{{"pass",kv.Value.pass},{"fail",kv.Value.fail},{"v",kv.Value.v},{"u",kv.Value.u},{"d",kv.Value.d}}))),
-        ["correct"]=new JsonObject(c.Select(kv=>new KeyValuePair<string,JsonNode?>(kv.Key,new JsonObject{{"passLines",kv.Value.passLines},{"failLines",kv.Value.failLines},{"phases",kv.Value.phases.Count}}))),
-    }.ToJsonString());
-    Console.WriteLine("SYNTH "+name+" -> "+File.ReadAllText(Path.Combine(tmpDir,name+".result.json")));
-}
-Synth("first-key-pass-lost",l=>{l.Add("MASS_BOUND k1 property=x status=Verified");l.Add("GEOMETRY_TOPOLOGY_PASS k1");});
-Synth("stale-pass-inheritance",l=>{l.Add("MASS_BOUND k1 property=x status=Verified");l.Add("GEOMETRY_TOPOLOGY_PASS k1");l.Add("MASS_BOUND k2 property=x status=Unresolved");});
-Synth("fail-after-green-dropped",l=>{l.Add("MASS_BOUND k1 property=x status=Verified");l.Add("GEOMETRY_TOPOLOGY_PASS k1");l.Add("MASS_BOUND k2 property=x status=Verified");l.Add("GEOMETRY_TOPOLOGY_PASS k2");l.Add("FAIL k2 mass: mass mismatch");});
-
-// ---- 4) named non-grid evidence facts (transverse/probes/standard)
-string Read(string rel)=>File.ReadAllText(Path.Combine(pkLog,rel));
-var transverseCase=Read("transverse.log").Split('\n').FirstOrDefault(l=>l.StartsWith("CASE ",StringComparison.Ordinal))?.Trim() ?? "";
-var transverseFails=Read("transverse.log").Split('\n').Where(l=>l.Trim().StartsWith("FAIL ",StringComparison.Ordinal)||l.Trim().StartsWith("GEOMETRY_TOPOLOGY_FAIL ",StringComparison.Ordinal)).Select(l=>l.Trim()).ToList();
-var transverseExit=File.ReadAllText(Path.Combine(pkLog,"transverse.exit")).Trim();
-var standardCase=Read("standard.log").Split('\n').FirstOrDefault(l=>l.StartsWith("CASE ",StringComparison.Ordinal))?.Trim() ?? "";
-var standardExit=File.ReadAllText(Path.Combine(pkLog,"standard.exit")).Trim();
-var probesSelfFails=Read("probes-self.log").Split('\n').Where(l=>l.Trim().StartsWith("FAIL ",StringComparison.Ordinal)).Select(l=>l.Trim()).ToList();
-var probesImportFails=Read("probes-import.log").Split('\n').Where(l=>l.Trim().StartsWith("FAIL ",StringComparison.Ordinal)).Select(l=>l.Trim()).ToList();
-var probesSelfExit=File.ReadAllText(Path.Combine(pkLog,"probes-self.exit")).Trim();
-var probesImportExit=File.ReadAllText(Path.Combine(pkLog,"probes-import.exit")).Trim();
-Console.WriteLine("NAMED transverse "+transverseCase+" exit="+transverseExit+" fails="+transverseFails.Count);
-foreach(var f in transverseFails)Console.WriteLine("  "+f);
-Console.WriteLine("NAMED standard "+standardCase+" exit="+standardExit);
-// rows: exactly one executed transverse scenario (CASE embeds the flags); the
-// builder maps two catalog rows onto it.
-var strictRow=rows["short-edge.transverse-strict-lifecycle"];var witnessRow=rows["short-edge.transverse-witness-lifecycle"];
-if(!transverseCase.Contains("reload-before-cut",StringComparison.Ordinal))Find("named-case-flags","transverse.log CASE 不含 reload-before-cut，与 registry witness 行 flags 不符，需人工核对");
-if(transverseCase.Contains("reload-before-cut",StringComparison.Ordinal)&&!transverseCase.Contains("transverse-local-cut-reload",StringComparison.Ordinal))Find("named-case-flags","transverse.log CASE 标记异常");
-// both FAIL lines are mass gates, none geometry/topology
-if(transverseFails.Any(f=>!f.Contains("mass",StringComparison.OrdinalIgnoreCase)))Find("named-fail-dimension","transverse.log 出现非 mass 的 FAIL 行");
-if(transverseFails.Count!=2)Find("named-fail-count","transverse.log FAIL 行数="+transverseFails.Count+"（预期 2，来自 inertia-handoff 首/末两次 cut）");
-if(strictRow["dimensions"]!["function"]!["status"]!.GetValue<string>()=="fail")Find("named-strict-no-evidence","short-edge.transverse-strict-lifecycle 被签 function=fail，但 f9 目录唯一 transverse 运行 argv= --require-native-cut-witness --require-cutter-chart-witness --reload-before-local-cut --transverse-local-cut（inertia-handoff.txt 记录的复现命令），即 witness 场景；strict 场景（无 reload/witness flags）无执行日志");
-if(witnessRow["dimensions"]!["function"]!["status"]!.GetValue<string>()=="fail")Find("named-witness-dimension","short-edge.transverse-witness-lifecycle 被签 function=fail，但 transverse.log 两条 FAIL 均为 `mass: mass mismatch`（inertia.yz 点值门），几何/拓扑/API/有限边/材料无 FAIL 行；按功能/物性分维应 function=pass(执行范围)+mass=红(点值门)");
-Console.WriteLine($"NAMED exits standard={standardExit} transverse={transverseExit} probes-self={probesSelfExit} probes-import={probesImportExit}");
-
-// ---- 5) short-edge grid dual match re-verification (id-suffix + parameter tuple)
-var matrixNames=File.ReadAllLines(Path.Combine(pkLog,"matrix-96-cases.txt")).Where(l=>l.Trim().Length>0).Select(l=>l.Trim()).ToArray();
-var shortEdge=registry["cases"]!.AsArray().OfType<JsonObject>().Where(c=>c["suite"]!.GetValue<string>()=="short-edge").ToArray();
-var gridOk=0;var gridBad=new List<string>();
-foreach(var n in matrixNames)
-{
-    var id="short-edge."+n.ToLowerInvariant();
-    var item=shortEdge.FirstOrDefault(c=>c["id"]!.GetValue<string>()==id);
-    if(item==null){gridBad.Add(n);continue;}
-    var p=item["parameters"]!.AsObject();
-    var m=System.Text.RegularExpressions.Regex.Match(n,@"^a([0-9.]+)-r([0-9.]+)-t([0-9.eE+-]+)-reverse(True|False)-(.+)$");
-    bool tupleOk=m.Success
-        &&double.Parse(m.Groups[1].Value)==p["angle"]!.GetValue<double>()
-        &&double.Parse(m.Groups[2].Value)==p["radius"]!.GetValue<double>()
-        &&double.Parse(m.Groups[3].Value)==p["tolerance"]!.GetValue<double>()
-        &&(m.Groups[4].Value=="True")==p["reverseSelection"]!.GetValue<bool>()
-        &&string.Equals(m.Groups[5].Value,p["update"]!.GetValue<string>(),StringComparison.OrdinalIgnoreCase);
-    if(tupleOk)gridOk++;else gridBad.Add(n+"(tuple)");
-}
-Console.WriteLine($"GRID dual-match ok={gridOk}/96 bad={gridBad.Count}");
-if(gridBad.Count>0)Find("grid-mismatch",string.Join(",",gridBad));
-
-// ---- 6) measurement schema claims vs sealed operation-summary.json
-var opSummaryPath=Path.Combine("temp_docs","incoming","unified-performance-1654","extracted-native224","docs","unified-native-controlled","operation-summary.json");
-var opSummary=JsonNode.Parse(File.ReadAllText(opSummaryPath))!.AsObject();
-var sampleKeys=opSummary["allSamples"]!.AsArray().OfType<JsonObject>().First().Select(kv=>kv.Key).ToHashSet(StringComparer.Ordinal);
-var opKeys=opSummary["operations"]!.AsArray().OfType<JsonObject>().First().Select(kv=>kv.Key).ToHashSet(StringComparer.Ordinal);
-Console.WriteLine("MEASURE op fields: "+string.Join(",",opKeys));
-Console.WriteLine("MEASURE sample fields: "+string.Join(",",sampleKeys));
-if(!opKeys.Contains("rawExits"))Find("measurement-schema","operation-summary.json operations[] 无 rawExits 字段，builder 的 procExits=mop[\"rawExits\"] 恒为 null；逐进程 exit 事实只存在于 measurement-receipt.json（qualityStates exit2-Unresolved=16/exit0-Verified=4、runnerRawExit=2）");
-if(!opKeys.Contains("performanceQualified"))Find("measurement-schema","operation-summary.json 无 performanceQualified 字段；\"performanceQualified=false\" 应引 measurement-receipt.json 的 runnerPerformanceQualified=false");
-foreach(var op in opSummary["operations"]!.AsArray().OfType<JsonObject>())
-{
-    var qk=op["candidate"]!["qualityStatusCounts"]!.AsObject();
-    int n=qk.Sum(kv=>kv.Value!.GetValue<int>());
-    if(n!=2)Find("measurement-qk","qualityStatusCounts 计数异常 "+op["case"]!.GetValue<string>());
-}
-Find("measurement-label","builder 将 qualityStatusCounts（每 op 候选侧 2 个 rep 样本的状态计数）标注为「（分量级）」，与验证记录的 900/1080 分量总账不同口径，须改标签或引真实分量总账");
-// planar/sample exits from allSamples
-var exitTally=opSummary["allSamples"]!.AsArray().OfType<JsonObject>().GroupBy(s=>(s["rawExit"]!.GetValue<int>(),s["qualityStatus"]!.GetValue<string>())).ToDictionary(g=>g.Key,g=>g.Count());
-Console.WriteLine("MEASURE sample exit/status tally: "+string.Join(", ",exitTally.Select(kv=>$"exit{kv.Key.Item1}/{kv.Key.Item2}={kv.Value}")));
-
-// ---- 7) summary recomputation from committed rows
-int Catalog()=>rows.Count;
-Console.WriteLine("SUMMARY catalog="+Catalog()+" function:pass="+rows.Values.Count(r=>r["dimensions"]!["function"]!["status"]!.GetValue<string>()=="pass")
-    +" function:fail="+rows.Values.Count(r=>r["dimensions"]!["function"]!["status"]!.GetValue<string>()=="fail")
-    +" function:unverified="+rows.Values.Count(r=>r["dimensions"]!["function"]!["status"]!.GetValue<string>()=="unverified"));
-var rowsWithoutEvidenceGreen=rows.Values.Where(r=>new[]{"function","mass","query","performance"}.Any(w=>r["dimensions"]![w]!["status"]!.GetValue<string>()=="pass"&&r["dimensions"]![w]!["lastVerified"]!["evidence"]!.GetValue<string>().Length==0)).Select(r=>r["id"]!.GetValue<string>()).ToList();
-Console.WriteLine("GREEN-WITHOUT-EVIDENCE rows="+rowsWithoutEvidenceGreen.Count);
-
+int errorCount=findings.OfType<JsonObject>().Count(f=>f["verdict"]!.GetValue<string>()=="error");
 var receipt=new JsonObject{
     ["checkedUtc"]=JsonValue.Create(DateTimeOffset.UtcNow.ToString("O")),
-    ["candidate"]=JsonValue.Create("2bece5dfa952da02a3bf01a8d16f2abc0a31a276 (base 5222608e2d074643a1d516c7231ea84cf0933cef)"),
-    ["counts"]=new JsonObject{{"borrowedRows",JsonValue.Create(borrowed)},{"underCreditedPass",JsonValue.Create(underCredited)},{"overCreditedPass",JsonValue.Create(overCredited)},{"phaseMergedRows",JsonValue.Create(phaseMerged)},{"gridDualOk",JsonValue.Create(gridOk)},{"findingsTotal",JsonValue.Create(findings.Count)}},
-    ["namedFacts"]=new JsonObject{
-        ["transverseCaseLine"]=JsonValue.Create(transverseCase),
-        ["transverseExitFile"]=JsonValue.Create(transverseExit),
-        ["transverseFailLines"]=new JsonArray(transverseFails.Select(f=>(JsonNode?)JsonValue.Create(f)).ToArray()),
-        ["standardCaseLine"]=JsonValue.Create(standardCase),
-        ["standardExitFile"]=JsonValue.Create(standardExit),
-        ["probesSelfFailLines"]=new JsonArray(probesSelfFails.Select(f=>(JsonNode?)JsonValue.Create(f)).ToArray()),
-        ["probesSelfExitFile"]=JsonValue.Create(probesSelfExit),
-        ["probesImportFailLines"]=new JsonArray(probesImportFails.Select(f=>(JsonNode?)JsonValue.Create(f)).ToArray()),
-        ["probesImportExitFile"]=JsonValue.Create(probesImportExit),
-    },
-    ["rowAudit"]=rowAudit,
+    ["target"]=JsonValue.Create(target),
+    ["candidate"]=JsonValue.Create("f4632281e4df097998bfcb282508e43186816e43 (base 2bece5dfa952da02a3bf01a8d16f2abc0a31a276)"),
+    ["summary"]=new JsonObject{{"errors",JsonValue.Create(errorCount)},{"notes",JsonValue.Create(findings.Count-errorCount)}},
+    ["recount"]=new JsonObject(recount.Select(kv=>new KeyValuePair<string,JsonNode?>(kv.Key,kv.Value))),
     ["findings"]=findings,
 };
-var receiptPath=Path.Combine(outDir,"overview-data-audit.json");
+var receiptPath=Path.Combine(outDir,"f463-overview-data-audit.json");
 File.WriteAllText(receiptPath,receipt.ToJsonString());
-Console.WriteLine("RECEIPT "+receiptPath+" findings="+findings.Count);
+Console.WriteLine("RECEIPT "+receiptPath+" errors="+errorCount+" notes="+(findings.Count-errorCount));
 return 0;
+string Option(string name,string fallback){var at=Array.IndexOf(args,name);return at<0?fallback:at+1<args.Length?args[at+1]:throw new ArgumentException(name+" requires a value");}
 static string ScriptPath([CallerFilePath]string path="")=>path;

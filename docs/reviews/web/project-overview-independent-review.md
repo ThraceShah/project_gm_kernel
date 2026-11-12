@@ -166,3 +166,100 @@
 | `docs/reviews/web/receipts/overview-browser-audit.json` | 浏览器 17 检查明细 | 见提交后 git 记录 |
 
 浏览器截图（临时派生）：`temp_docs/independent-overview-audit/browser/*.png`。隔离派生测试与合成日志：`temp_docs/independent-overview-audit/`（含 builder 子进程各 temp 输出）。审计脚本退出码仅代表审计结果，与原建模进程退出（134/2/1/0）分列，不补签任何原操作成功。本机仅清理本审查确证的 3 个预览服务 PID（8813/8814/8815），未动其他任务进程。
+
+---
+
+# 窄复验：作者修复 f4632281（B1–B6 逐项，2026-11-12）
+
+- 复验对象：`f4632281e4df097998bfcb282508e43186816e43`（`fix(web): close independent-review blockers B1-B6 on the overview product`，`origin/feat/modeling-delivery-board`，父提交即被审候选 2bece5d）。7 文件 diff：`docs/project-overview-candidate.md`(+11)、`scripts/BuildProjectOverview.cs`(+212/-86)、`web/data/overview-events.json`(tracked `[]`)、`web/data/project-overview.json`、`web/src/App.tsx`、`web/src/components/OverviewPanel.tsx`、`web/src/types/contract.ts`。
+- 方法：独立隔离树 `../gm-overview-f463-verify`（`git worktree add --detach … f4632281`）只读验证；原工作树仅追加本节/脚本/收据（收到时工作树内作者未提交的 4 处修改经 `git hash-object` 与 f463 blob 逐一相同，已保留字节副本于 `temp_docs/f463-incoming/` 后还原至 HEAD，未改作者实现/数据）。本树三个审计脚本改为 `--target` 指向隔离树、收据落本树；判定分 `error`（当前合同下真实错误）与 `note`（文档性/旧合同误报），未以审计 0 洗绿。
+- 复验覆盖：9+3+2+5 行逐行、首/末 key 与无 PASS/PASS 后 FAIL 语义、mass 相态/样本/分量、事件 T0–T8、真实浏览器 19 项与精确 run/case/step 落位（首击、同 run 换 case、同 case 换 step、返回重开、reload）、统计按行复算。PK/全 suite/ABBA/新模型/门户/015/线上均未触；性能 Joint185 事件按指示不纳入本轮。
+
+## 6.1 结论：仍阻断，不能冻结发布
+
+B1/B2/B3 与 B4/B5/B6 的一半已实修并通过独立复验；**残留 3 个阻断根因**（R1 证据虚构、R2 事件身份/时间序、R3 三态误绿、R4 跨 case 步落位——R4 属 B6 残留）：
+
+| 项 | 判定 | 依据 |
+| --- | --- | --- |
+| B1 跨套件借证据（9 行） | **已修** | 9 行全部 unverified 且 note 注明借源；mappingAudit 增 suite/sourceLog/borrowed；`--verify` 增 cross-suite 借绿检查。9 行逐行核对无一签绿 |
+| B2 提取器（首/末 key、无 PASS、PASS 后 FAIL） | **已修** | 相态感知重写；block-unite/basic-unite/block-single-fillet 3 行补签 pass；89/89 selector 行与独立推导（自身 PASS/FAIL 行）一致；FAIL 无论先后均为 fail（合成回归+verify 控制）；统计按行复算 |
+| B3 transverse/探针/标准（2 行） | **已修** | witness=function pass+mass fail（两 cut 1.2044611267910417E-07/1.126468644220207E-07、原 exit 134、注明非当前 modulus）；strict=unverified（无执行日志）；探针 query=unresolved+原回归失败同列；无几何 fail 倒签 |
+| B4 事件入口 | **部分实修，残留 R2** | 已修：事件后全量重算（T1）、目录 463（T2）、旧绿不覆盖新失败（T3）、Windows 跨族拒绝（T4a）、空证据绿拒绝（T5）、坏字段拒绝（T6）、入口 `[]` tracked（T7）。残留 7 项见 R2 |
+| B5 mass 口径 | **部分实修，残留 R3** | 已修：自身 PASS 相态为准+逐相态分列（5 行 Verified 正确、合并计数仅注释）、样本级标签、measurement-receipt 引用。残留：三态推导 Different/空集误绿 |
+| B6 落位/证据 | **部分实修，残留 R4** | 已修：display.stepId、当前步骤读出、证据「私存原件（hash 锚定）」、来源 runner、事件计数像素一致（182=182）。残留：跨 case 步落位复位 0 |
+
+## 6.2 阻断残留（可复现根因）
+
+**R1（新，证据虚构）`interaction.round2-failures` 记录引用不存在的原日志行。**
+f463 在 verificationRecords 新增该记录：「两条原日志 FAIL mass 行保留…键 `<key>-round2` / basic-15903-basic-15902-round2…来源 regular45-final.log / mixed18-final.log」。实测（收据 `f463-overview-data-audit.json`）：
+- 所引 `regular45-final.log`（SHA256 `9cd6ba940cae8ce3b694c47a031e81f1a3986de720b88f6f8824ca6b6adcb7a5`）与 `mixed18-final.log`（`ad0aa117…`）自本独审首轮固定以来**字节未变**，三套件日志 FAIL 行总数=0、`round2`/`round` 字符串=0、声称的两个键=0（大小写不敏感全扫 + 全机 .log/.txt/.json/.md/.csv 检索 + git 全历史 `-S` 检索均无）。
+- 两个键名仅存在于该硬编码记录本身及其派生输出；旧 `function:fail=2` 行实为两条 transverse 行（本报告首轮收据 `overview-data-audit.json` rowAudit 有列），并非「round-2 键行」——作者会话记录中可见其据误读推断（"earlier my data had function:fail=2 (from scenario FAIL markers)… the round-2 FAIL keys"）后补写该记录。
+- 修复要求：删除该记录，或拿出真实出处（原字节+hash）改引并注明其操作/质量维度（mass mismatch 属物性维，不入功能维）；不得把不存在的行挂到封存日志名下。若作者另有未封存的本地运行输出，应如实登记为「本地未封存，来源补录」，而非引用 sealed 日志。
+
+**R2（B4 残留）事件身份/时间序 7 缺口**（收据 `f463-overview-events-audit.json`，T4b–T4g/T8 各附一次隔离实证）：
+1. **T4b 空/未知 host 绕过**：host="" 或 "mystery-box" 的事件可静默改写 q2 Linux 行（mass→unresolved、function→fail 实测生效）——平台检查只做子串匹配，未知族全放行。host 子串不是定义绑定。
+2. **T4c 未验证行平台锁死**：base host='-' 的行对 Linux/Mac 合法事件直接拒收（rowLinux=false→reject），未验证行永远收不到本族证据更新。
+3. **T4d 无参数/precision/源身份**：同平台族、完全不同参数的事件直接翻转行状态（function pass→fail 实测生效）。候选 doc「同 case+参数+平台+维度」仍未实现。
+4. **T4e 同 utc 多维事件被丢**：`lastAppliedUtc` 按 catalogId 计，同刻 function+mass 两个合法事件第二个被当 stale 拒（实测 mass 未生效）。
+5. **T4f 无基线时间比较**：utc=2026-11-01 的旧事件覆盖了 2026-11-12 1654 窗口基线事实（function pass→fail 实测生效）——守卫只比事件之间，不比基线。
+6. **T4g 维度/状态不配对**：`function`+`observed`（性能专属状态）被接受（global statuses 池）。
+7. **T8 currentVersion 任意串**：事件写入 `everything-fine-v99` 原样生效。
+修复要求（最小）：host 需已知平台族否则拒；未验证行首事件可绑定平台族而非拒收；事件须携参数 tuple/precision 摘要与行 `parametersDefinition` 相等否则拒；`lastAppliedUtc` 按 (catalogId,dimension) 计；事件 utc 不得早于行基线证据时间（base cell 需带 utc）；status 按维度白名单；currentVersion ∈ {reverified,not-retested}。
+
+**R3（B5 残留）质量三态误绿**：`qk.ContainsKey("Unresolved")?"unresolved":"verified"` 未修——qk={Different:2}→"verified"（应 different/红）、qk={}→"verified"（缺证据应 unverified）。当前封存数据未触发（{Verified:2}/{Unresolved:2}），但口径恰在用户要求的 Different/缺证据处失真。
+
+**R4（B6 残留）跨 case 步落位复位 0**：真实像素复现 2 处（截图 f463-step-unequal-chamfer.png）：
+- 首击 `cylinder-unequal-chamfer`（op-5）落在 operation-1（index 0）；`pendingStepIndex` 只写不读（App.tsx:54,293-294 无消费点）；`useEffect(…,[selectedCaseId])`（App.tsx:183-186）在 case 变化时硬复位 `setCurrentStepIndex(0)`，随后 manifest 加载亦复位（App.tsx:141），二者均覆盖 onOpenRuns 的设置。返回重开（换 case 后）同样复位 0。
+- 同 case 换 step 机制本身正常：`cylinder-both-rim-chamfer`（op-4）落 operation-4（index 3）实测正确；`rim-fillet`（op-1）"通过"恰与默认 0 重合，不作独立证明（按协调要求不以索引碰巧正确计数）。
+- 修复要求：在 case/manifest 变化 effect 中消费 `pendingStepIndex.current ?? 0` 并清空，而非固定 0；首击、换 case、重开、reload 四路径均需复测。
+
+## 6.3 旧 25 findings 逐项裁定（勿白名单——逐项判定）
+
+| 旧 findings（作者重跑旧脚本所得） | 裁定 | 说明 |
+| --- | --- | --- |
+| cross-suite-borrow ×9 | 旧脚本误报（文档性） | 新合同下 9 行已退未验证并注明借源，旧脚本仅按 selector 出现即告警；已改为仅当行被签绿才 error，9 行全 note |
+| mass-phase-merged ×5、mass-status-mismatch ×5 | 按接受合同为 by-design | 本报告首轮 B5 明确允许「以自身 PASS 相态为准」；f463 实现该规则且逐相态分列在注（5 行 Verified 与最终相态 agreement 一致，独立推导 89/89 相符）。旧脚本按合并态比较属旧合同断言 |
+| builder-flush-loss ×3 | 旧机制证明，非当前错误 | 3 行在 f463 已补签 pass；保留作历史机制证据 |
+| measurement-schema ×2、measurement-label ×1 | 已修 | rawExits 死字段清除、performanceQualified 改引 measurement-receipt.json、样本级标签替换「分量级」；代之以新发现 R3 |
+
+## 6.4 事件窄复验（T0–T8）
+
+| 测试 | 结果 | 事实 |
+| --- | --- | --- |
+| T0 基线再生 | PASS | 与 f463 已提交 overview 逐字节一致（忽略 generatedAt） |
+| T1 row 与 summary 同变 | PASS | 事件翻行后按行重算，failRows=1=summary |
+| T2 目录 463 不缩 | PASS | delivery+未知 id 事件后 463 |
+| T3 新失败/旧绿顺序 | PASS | 后追加旧绿被拒（stale），行=fail 保持 |
+| T4a Windows 跨族 | PASS | 拒收，Mac 行不被改 |
+| T4b 空/未知 host | **FAIL（R2-1）** | 静默生效 |
+| T4c 未验证行本族事件 | **FAIL（R2-2）** | 被拒，无法更新 |
+| T4d 错参数事件 | **FAIL（R2-3）** | 生效 |
+| T4e 同 utc 双维 | **FAIL（R2-4）** | 第二件被丢 |
+| T4f 早于基线的事件 | **FAIL（R2-5）** | 覆盖新基线 |
+| T4g 维度/状态配对 | **FAIL（R2-6）** | function+observed 接受 |
+| T5 空证据绿 | PASS | 拒+verify 旗标 |
+| T6 坏维度/状态/utc | PASS | 拒，行不变 |
+| T7 事件入口交付 | PASS | tracked `[]` |
+| T8 currentVersion | **FAIL（R2-7）** | 任意串直写 |
+
+## 6.5 浏览器实测（19 项，截图 temp_docs/f463-reverify/browser/）
+
+通过 17：默认 overview（累计通过 183 计数）、463 行、查询缺口行+「私存原件（hash 锚定）」标签、无可点假链接、跨套件行未验证+借源注明（不再同屏矛盾）、搜索 9/family 186/只看问题 59、rim-fillet/planar-chamfer 落位、reload、事件副本计数像素一致（counter 182=recomputed 182）、390px 463 行、缺数据失败屏、无 JS 错误。
+失败 2（R4）：`cylinder-unequal-chamfer` 首击落 operation-1（应 operation-5）；换 case 后重开落 operation-1。同 case 换 step（both-rim-chamfer→operation-4 index 3）正确，证明机制仅被 `[selectedCaseId]` 复位破坏。
+
+## 6.6 统计按行复算（事实，非目标）
+
+`function:pass=183 / fail=0 / unverified=280`、`mass:verified=29 / unresolved=51 / fail=1 / unverified=382`、`query:5/2/5/451`、`performance:observed=5`、`current:reverified=5 / not-retested=458`——与 f463 summary 逐键一致（无 summary-drift）。183=188−9（借证据退）+3（首键补）+1（witness 功能维）；mass:fail=1 为 witness 点值门红（非 modulus Different）；两 transverse 行不再占 function fail。
+
+## 6.7 复验收据与脚本（派生，原件未动）
+
+| 产物 | SHA256 |
+| --- | --- |
+| `docs/reviews/web/receipts/f463-overview-data-audit.json`（4 error/14 note） | `5e40e767d734fc63dbde5b5171bf43ddf2ef81c77d77a61e7b5c98a49f163ca0` |
+| `docs/reviews/web/receipts/f463-overview-events-audit.json`（8 PASS/7 FAIL） | `15fcc4111a6daafcb9b6e5a267bc493cd5691ed056d4be34518277a8f14d4e7b` |
+| `docs/reviews/web/receipts/f463-browser-audit.json`（17 PASS/2 FAIL） | `4163ec5659eace38429b82ce50d88446bdc5fd733facb3771bf195e8b7d39a07` |
+| `scripts/AuditProjectOverviewData.cs`（--target） | `598e3ce318dfbf0f443f1cc8fdab2b957904c02cab75de5c8975260e66ba4f80` |
+| `scripts/AuditOverviewEvents.cs`（--target，T0–T8） | `96a0b48d324e41f4b25f7f0a6d4a01122f3a6431c39566da0c56b9bea3758a85` |
+| `scripts/AuditOverviewBrowser.cs`（19 检查） | `8ca9b45c32088126905b7a2fa5f710a5e7c6e59de8d72327187f315147afe212` |
+
+f463 侧固定：`web/data/project-overview.json` SHA256 `d53149daad52d0b6c5d34f7b5b5e1330e866e5915002a0045049e958114d4629`；隔离树=git 对象 `f4632281e4df097998bfcb282508e43186816e43`（`../gm-overview-f463-verify`，detached，只读）。作者重跑旧脚本留下的 4 处未提交文件字节已存 `temp_docs/f463-incoming/`（含其重跑收据），本树恢复至 `2b1bc8dbc413b006e81e0eb28f6d2829f8b2eecd` 后仅追加本节。审计 checker 退出码与原建模退出（134/2/1/0）分列；本轮 3 个预览服务 PID（2352326/2352329/2352331）为本审查确证并已清理。
