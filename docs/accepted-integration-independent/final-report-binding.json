@@ -1,0 +1,171 @@
+{
+  "firstPushedReviewCommit": "7d4b1bdcb1f22e57d4949ac87ac46de71b6f610d",
+  "files": [
+    {
+      "path": "scripts/ReviewAcceptedIntegrationEvidence.cs",
+      "sha256": "c19c44baceea84223b351bb256e48d5404154cd37fd4f0617a46f2ea143499e1",
+      "bytes": 22656
+    },
+    {
+      "path": "scripts/ReviewAcceptedIntegrationMeasurement.cs",
+      "sha256": "719b12a72b5a5107fe444e8ac44d5eea922693122a9dfdeb003b99def779490b",
+      "bytes": 25573
+    },
+    {
+      "path": "scripts/ReviewAcceptedIntegrationControls.cs",
+      "sha256": "e7881ac6b8bf463314bb37da0464a6f9ff838af22656dc85b88aeb656e6da781",
+      "bytes": 25980
+    },
+    {
+      "path": "docs/Accepted_Optimization_Integration_Independent_Review.md",
+      "sha256": "e6d9d3dce2cc9358768cc8a9137fcf04576ef46c312c0cdc1d7821b3f0ed88a7",
+      "bytes": 18075
+    },
+    {
+      "path": "docs/accepted-integration-independent/receipt.json",
+      "sha256": "b2a80a17a42d43e79631ffb8fe0eda8ef74fccf35a410ccad11d5e74e871c033",
+      "bytes": 95894
+    },
+    {
+      "path": "docs/accepted-integration-independent/material-bindings.json",
+      "sha256": "a3f27b05f8724cf0b68e257b8590efef3d32f79228ea4c64f1e178ea4bc2e6ba",
+      "bytes": 116531
+    }
+  ],
+  "independentExecutions": [
+    {
+      "log": "temp_docs/accepted-integration-independent-extract-01.log",
+      "sha256": "2e8c10a4766deb905face2904980b7f32a9ff9936e5937bfd577e7364ff26554",
+      "observedRawExit": 0,
+      "reason": "safe extraction",
+      "scope": "Actual local tool completion, distinct from original producer exits; intermediate failed checker source revisions not individually sealed"
+    },
+    {
+      "log": "temp_docs/independent-accepted-integration-3aff4e2b/quality-01.log",
+      "sha256": "c22cdf6c1e16787a3f75c7ac9b7a8987e148d564b4e298123fedf1920a50f4e8",
+      "observedRawExit": 134,
+      "reason": "checker wrongly required calculation source instead of actual b99c218e execution",
+      "scope": "Actual local tool completion, distinct from original producer exits; intermediate failed checker source revisions not individually sealed"
+    },
+    {
+      "log": "temp_docs/independent-accepted-integration-3aff4e2b/quality-02.log",
+      "sha256": "3a2aa9c0406fe46f43369592a8d38ff844850002714c6ecfd6652ba3db7de3c1",
+      "observedRawExit": 0,
+      "reason": "actual quality execution source retained",
+      "scope": "Actual local tool completion, distinct from original producer exits; intermediate failed checker source revisions not individually sealed"
+    },
+    {
+      "log": "temp_docs/independent-accepted-integration-3aff4e2b/measurement-01.log",
+      "sha256": "5f1234877e7f2179222fa2d639e0867efcd537562f2e7fe1470c714426565f4c",
+      "observedRawExit": 0,
+      "reason": "unique original measurement audit",
+      "scope": "Actual local tool completion, distinct from original producer exits; intermediate failed checker source revisions not individually sealed"
+    },
+    {
+      "log": "temp_docs/independent-accepted-integration-3aff4e2b/bindings-01.log",
+      "sha256": "8cae87331dd85ba75a008b1d9714d17d9bf037d425a69990a78aa253fe13d138",
+      "observedRawExit": 0,
+      "reason": "original material/proof bindings",
+      "scope": "Actual local tool completion, distinct from original producer exits; intermediate failed checker source revisions not individually sealed"
+    },
+    {
+      "log": "temp_docs/independent-accepted-integration-3aff4e2b/controls-01.log",
+      "sha256": "16e289baa11fa74ffcddfcd006d18b571a08b750fcd3ac209d577020a86a9103",
+      "observedRawExit": 1,
+      "reason": "referenced Native test-hook property not propagated",
+      "scope": "Actual local tool completion, distinct from original producer exits; intermediate failed checker source revisions not individually sealed"
+    },
+    {
+      "log": "temp_docs/independent-accepted-integration-3aff4e2b/controls-02.log",
+      "sha256": "b6780d90f7eaadfe2eb4b8f0d05429e92595ada3613835ad4c08f6a659296312",
+      "observedRawExit": 143,
+      "reason": "mistaken duplicate build terminated by its own PGID before execution",
+      "scope": "Actual local tool completion, distinct from original producer exits; intermediate failed checker source revisions not individually sealed"
+    },
+    {
+      "log": "temp_docs/independent-accepted-integration-3aff4e2b/controls-03.log",
+      "sha256": "087bef9b0eb63f5c43d3d97dcc86641ef79f86e0b811ca3f75cdd423330d4058",
+      "observedRawExit": 1,
+      "reason": "same missing referenced test-hook property; fixed with global command property",
+      "scope": "Actual local tool completion, distinct from original producer exits; intermediate failed checker source revisions not individually sealed"
+    },
+    {
+      "log": "temp_docs/independent-accepted-integration-3aff4e2b/controls-04.log",
+      "sha256": "1b171c1c80d50c99b37102dd7cb4dd9e5b0131ec96fec5bd17674a5dff9e179d",
+      "observedRawExit": 134,
+      "reason": "checker compared numeric above-degree zero-fill with analytic interval derivative",
+      "scope": "Actual local tool completion, distinct from original producer exits; intermediate failed checker source revisions not individually sealed"
+    },
+    {
+      "log": "temp_docs/independent-accepted-integration-3aff4e2b/controls-05.log",
+      "sha256": "a2fc67e9b17a6fa3902e688d007e08886b1e1a3ce38bb5c01c029fbfaa6e6923",
+      "observedRawExit": 134,
+      "reason": "same checker failure diagnosed: rational V degree1, derivative2",
+      "scope": "Actual local tool completion, distinct from original producer exits; intermediate failed checker source revisions not individually sealed"
+    },
+    {
+      "log": "temp_docs/independent-accepted-integration-3aff4e2b/controls-06.log",
+      "sha256": "fa649ba71596f7a8c2e3a2180df4d39e438378538615cbee1b5493bd2d9ced40",
+      "observedRawExit": 0,
+      "reason": "correct analytic rational point oracle and combination controls",
+      "scope": "Actual local tool completion, distinct from original producer exits; intermediate failed checker source revisions not individually sealed"
+    },
+    {
+      "log": "temp_docs/independent-accepted-integration-3aff4e2b/aggregate-01.log",
+      "sha256": "b16e6fa0208fe9aa46a5a758cdaac9dbbe486acf4a71f19a7207135fa4dd820a",
+      "observedRawExit": 0,
+      "reason": "original manifests/source/tests and combined receipt",
+      "scope": "Actual local tool completion, distinct from original producer exits; intermediate failed checker source revisions not individually sealed"
+    },
+    {
+      "log": "temp_docs/independent-accepted-integration-3aff4e2b/subdivision-01.log",
+      "sha256": "ce79ea1a15b931082865d7af0293056659f56e979ebeda560583dd67c4cab6b1",
+      "observedRawExit": 134,
+      "reason": "one-direction bowl pruned descendants before Improve, so it did not exercise the intended seed branch",
+      "scope": "Actual local tool completion, distinct from original producer exits; intermediate failed checker source revisions not individually sealed"
+    },
+    {
+      "log": "temp_docs/independent-accepted-integration-3aff4e2b/subdivision-02.log",
+      "sha256": "d979912ef49e4be179f9544b8bd1de2083c2ef145b49200b8b65268742856cb1",
+      "observedRawExit": 0,
+      "reason": "two-direction bowl exercises actual descendants in all four combinations",
+      "scope": "Actual local tool completion, distinct from original producer exits; intermediate failed checker source revisions not individually sealed"
+    }
+  ],
+  "additionalSubdivisionControls": [
+    {
+      "blossom": true,
+      "allSubdivisionSeeds": true,
+      "searches": 15,
+      "upper": 0.9375000000000002,
+      "minimumSquared": 0.87890625,
+      "status": "Success"
+    },
+    {
+      "blossom": true,
+      "allSubdivisionSeeds": false,
+      "searches": 7,
+      "upper": 0.9375000000000002,
+      "minimumSquared": 0.87890625,
+      "status": "Success"
+    },
+    {
+      "blossom": false,
+      "allSubdivisionSeeds": true,
+      "searches": 15,
+      "upper": 0.9375000000000002,
+      "minimumSquared": 0.87890625,
+      "status": "Success"
+    },
+    {
+      "blossom": false,
+      "allSubdivisionSeeds": false,
+      "searches": 7,
+      "upper": 0.9375000000000002,
+      "minimumSquared": 0.87890625,
+      "status": "Success"
+    }
+  ],
+  "environment": "Actual ensure ENV_READY before builds; Linux x64 SDK10.0.302/runtime10.0.10/PK38.0.150; PKToy d820719b6d8510d623972ab9d8efc65edbc312f9",
+  "scope": "One fixed combination review; no fullsuite/family/Mac window rerun, extra fresh modeling producer, AOT, Windows, main, UI or deployment"
+}
