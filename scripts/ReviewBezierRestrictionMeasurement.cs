@@ -55,14 +55,13 @@ if(args.SequenceEqual(new[]{"--bindings"}))
     Require(bindingRows.Count==312&&bindingProofs==204&&bindingMissing==12&&bindingViaManaged==24,"complete mesh/proof binding set");
     var bindingResult=new JsonObject{["scope"]="Actual original mesh source and proof binding audit; source-less reports remain missing; no new modeling or display qualification",["meshes"]=bindingRows,["boundProofs"]=bindingProofs,["missingProofSourceBindings"]=bindingMissing,["pkProductViaManagedProofsWithoutDisplayMesh"]=bindingViaManaged,["proofKinds"]=Counts(bindingKinds)};var bindingDestination="docs/bezier-restriction-independent/material-bindings.json";Require(!File.Exists(bindingDestination),"preserve binding receipt");Directory.CreateDirectory(Path.GetDirectoryName(bindingDestination)!);File.WriteAllText(bindingDestination,bindingResult.ToJsonString(new JsonSerializerOptions{WriteIndented=true}));Console.WriteLine("PASS material bindings: 312 meshes, 204 bound proofs (24 PK-product via managed controls), 12 missing sources retained");return;
 }
-var recheck=args.SequenceEqual(new[]{"--recheck"});Require(recheck||!Directory.Exists(output),"preserve measurement evidence");Directory.CreateDirectory(original);
+Require(args.SequenceEqual(new[]{"--recheck"})&&Directory.Exists(original),"--recheck an existing safe extraction or --bindings");
 Require(Hash(archive)=="f4b86e3473b79ed13ee6732d047172a1fc8af806d9dae93bb6c787a1b3491645","measurement ZIP hash");
 using var zip=ZipFile.OpenRead(archive);var paths=new HashSet<string>();var members=new JsonArray();long expanded=0;
 foreach(var member in zip.Entries)
 {
-    var path=member.FullName;Require(!Path.IsPathRooted(path)&&!path.Contains('\\')&&!path.Split('/').Contains("..")&&paths.Add(path)&&((member.ExternalAttributes>>16)&0xf000)!=0xa000,"safe member");
-    var file=Path.Combine(original,path);Directory.CreateDirectory(Path.GetDirectoryName(file)!);
-    if(!recheck){using var input=member.Open();using var target=new FileStream(file,FileMode.CreateNew,FileAccess.Write);input.CopyTo(target);}
+    var path=member.FullName;Require(!Path.IsPathRooted(path)&&!path.Contains('\\')&&!path.Contains(':')&&!path.Split('/').Any(x=>x is "." or "..")&&paths.Add(path)&&((member.ExternalAttributes>>16)&0xf000)!=0xa000,"safe member");
+    var file=Path.Combine(original,path);Require(Path.GetFullPath(file).StartsWith(Path.GetFullPath(original)+Path.DirectorySeparatorChar,StringComparison.Ordinal),"isolated original member");
     using var source=member.Open();Require(Hash(file)==Convert.ToHexStringLower(SHA256.HashData(source)),"extracted original");expanded+=member.Length;members.Add((JsonNode)new JsonObject{["path"]=path,["length"]=member.Length,["sha256"]=Hash(file)});
 }
 Require(paths.Count==1049&&expanded==137745912,"measurement ZIP dimensions");
@@ -163,7 +162,7 @@ Require(repetitions==60,"all repetitions");var builds=Directory.GetFiles(data,"p
 Require(File.ReadAllText(data+"/prebuild-driver.exit").Trim()=="134"&&File.ReadAllText(data+"/prebuild-fixed-driver.exit").Trim()=="0","failed prebuild guard and fixed driver kept separate");
 var loads=new List<double>();foreach(var file in Directory.GetFiles(data,"observed-*.json")){var observation=Read(file);Require(JsonNode.DeepEquals(observation["loadedIdentity"],Read(window+"/"+(string)observation["processDirectory"]!+"/identity/loaded.json"))&&observation["numericTemperatureCelsius"]==null,"observed identity/no numeric temperature");loads.Add(double.Parse(((string)observation["uptime"]!["stdout"]!).Split("load averages: ")[1].Split(' ',StringSplitOptions.RemoveEmptyEntries)[0],System.Globalization.CultureInfo.InvariantCulture));}Require(loads.Count==20&&loads.Min()==3.57&&loads.Max()==4.26,"actual process loads");
 receipt["workAudit"]=new JsonObject{["repetitions"]=repetitions,["rootWorkLines"]=rootLines,["prebuildRaw0"]=builds.Length,["loadMin"]=loads.Min(),["loadMax"]=loads.Max(),["modulusComponentsRecomputed"]=1080};
-var destination=output+(recheck?"/receipt-verified.json":"/receipt.json");Require(!File.Exists(destination),"preserve measurement receipt");File.WriteAllText(destination,receipt.ToJsonString(new JsonSerializerOptions{WriteIndented=true}));Console.WriteLine($"measurement PASS: 20 processes, source rows={snapshots}, mesh={meshCount}/{meshBytes}, XT={finalXt}, mass={mainReports}+{extraReports}; "+Counts(mainStates).ToJsonString()+" / "+Counts(extraStates).ToJsonString());
+var destination=output+"/receipt-verified.json";var serialized=receipt.ToJsonString(new JsonSerializerOptions{WriteIndented=true});if(File.Exists(destination))Require(File.ReadAllText(destination)==serialized,"existing derived receipt identical");else File.WriteAllText(destination,serialized);Console.WriteLine($"measurement PASS: 20 processes, source rows={snapshots}, mesh={meshCount}/{meshBytes}, XT={finalXt}, mass={mainReports}+{extraReports}; "+Counts(mainStates).ToJsonString()+" / "+Counts(extraStates).ToJsonString());
 
 static JsonNode Read(string path)=>JsonNode.Parse(File.ReadAllText(path))!;
 static string Hash(string file){using var input=File.OpenRead(file);return Convert.ToHexStringLower(SHA256.HashData(input));}

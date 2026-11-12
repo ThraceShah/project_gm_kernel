@@ -12,6 +12,26 @@ using System.Xml.Linq;
 Directory.SetCurrentDirectory(Path.Combine(Path.GetDirectoryName(Source())!,".."));
 const string target="cccaa5e2943f8f2515dd01b02c31492378502040";
 const string output="temp_docs/independent-bezier-restriction-cccaa5e2";
+if(args.SequenceEqual(new[]{"--executions"}))
+{
+    var rows=new JsonArray();foreach(var (file,raw,reason) in new[]{
+        ("temp_docs/restriction-independent-extract-01.log",0,"safe extraction"),
+        (output+"/quality-01.log",0,"original quality audit"),
+        (output+"/measurement-01.log",134,"independent checker wrongly expected computation ab identity instead of actual delivery1065"),
+        (output+"/measurement-02.log",134,"independent checker counted prebuild driver receipts as modeling prebuilds"),
+        (output+"/measurement-03.log",0,"fixed original one-window audit"),
+        (output+"/measurement-04-readonly.log",0,"read-only repeat of existing original evidence audit; derived receipt byte-identical, no producer rerun"),
+        (output+"/bindings-01.log",0,"actual original material bindings"),
+        (output+"/controls-01.log",0,"exact polar, native jets, real PK and observed cache phases"),
+        (output+"/stack-01.log",0,"Linux Debug JIT stack observation"),
+        (output+"/stack-release-01.log",0,"Linux Release FullOpts JIT stack observation"),
+        (output+"/aggregate-01.log",134,"independent checker wrongly expected development computation ab identity instead of actual1065"),
+        (output+"/aggregate-02.log",0,"fixed original aggregate audit"),
+        (output+"/final-binding-01.log",0,"first final binding preserved privately before final source-readonly hardening")})rows.Add((JsonNode)new JsonObject{["log"]=file,["sha256"]=Hash(file),["observedRawExit"]=raw,["exitEvidence"]="Actual terminal tool process completion, not a producer exit reconstructed from this checker",["reason"]=reason});
+    var files=new JsonArray();foreach(var file in new[]{"scripts/ReviewBezierRestrictionControls.cs","scripts/ReviewBezierRestrictionEvidence.cs","scripts/ReviewBezierRestrictionMeasurement.cs","docs/Bezier_Restriction_Independent_Review.md","docs/bezier-restriction-independent/receipt.json","docs/bezier-restriction-independent/material-bindings.json"})files.Add((JsonNode)new JsonObject{["path"]=file,["bytes"]=new FileInfo(file).Length,["sha256"]=Hash(file)});
+    Require(Read(output+"/controls.json")["sealedProducts"]!.AsArray().All(x=>(string?)x!["status"]=="Verified"),"three sealed products");
+    Write("docs/bezier-restriction-independent/final-report-binding.json",new JsonObject{["deliveryCommit"]="271af03cfefedef12eea19337f1b2b3bca9fe96b",["firstPushedReviewCommit"]="d0e5d14e18fee5c4c07dfc604a95af4f949b0727",["decisions"]=new JsonObject{["nativeMathematicsSourceResourcesIntegration"]="accepted within stated contracts",["fixtureAndOriginalQuality"]="accepted as layered evidence; original failure and phase-observation limits retained",["oneWindow"]="accepted as descriptive observations",["completeNumericalAndPerformanceQualification"]="blocked by original missing/Unresolved/producer2",["generalCausalCpuAndOverallPkGoal"]="unproven",["abPlusA908Combination"]="unproven, not present in candidate",["mainUiDeploymentNextOptimization"]="not performed"},["independentExecutions"]=rows,["currentFiles"]=files,["sourceEvidenceScope"]="Final current checker source hashes; first failed uncommitted checker revisions had no separately sealed source snapshot, not retroactively supplied",["environment"]="Actual ensure raw0/ENV_READY before builds, Linux x64 SDK10.0.302/runtime10.0.10 and real PK38.0.150; no AOT/fullsuite/family/ABBA rerun",["parasolidQuery"]="Connected MCP returned found:true for actual APIs; direct portal HTTP PK_SURF_eval succeeded raw0 after default-proxy curl raw35; no binary/address portability claim"});Console.WriteLine("PASS final report binding and separately observed independent raw exits");return;
+}
 if(args.SequenceEqual(new[]{"--receipt"}))
 {
     const string baseline="1065e7c8f818ce10f6d3ee3edfe8f8bc33f3d582",fixture="0cc4363d82879392a92dd06a405923812b34695c",metadata="54cefeec76f7a61f264140e03c3bd13b695347c6",delivery="271af03cfefedef12eea19337f1b2b3bca9fe96b";

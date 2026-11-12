@@ -1,0 +1,141 @@
+{
+  "deliveryCommit": "271af03cfefedef12eea19337f1b2b3bca9fe96b",
+  "firstPushedReviewCommit": "d0e5d14e18fee5c4c07dfc604a95af4f949b0727",
+  "decisions": {
+    "nativeMathematicsSourceResourcesIntegration": "accepted within stated contracts",
+    "fixtureAndOriginalQuality": "accepted as layered evidence; original failure and phase-observation limits retained",
+    "oneWindow": "accepted as descriptive observations",
+    "completeNumericalAndPerformanceQualification": "blocked by original missing/Unresolved/producer2",
+    "generalCausalCpuAndOverallPkGoal": "unproven",
+    "abPlusA908Combination": "unproven, not present in candidate",
+    "mainUiDeploymentNextOptimization": "not performed"
+  },
+  "independentExecutions": [
+    {
+      "log": "temp_docs/restriction-independent-extract-01.log",
+      "sha256": "ce5362b616b20556b5b4953781fe9b6288ea9b7d3f9dc90dc7b9883e0f9daf0e",
+      "observedRawExit": 0,
+      "exitEvidence": "Actual terminal tool process completion, not a producer exit reconstructed from this checker",
+      "reason": "safe extraction"
+    },
+    {
+      "log": "temp_docs/independent-bezier-restriction-cccaa5e2/quality-01.log",
+      "sha256": "65722487b96d2d043c4fa5d4f555c8bba88ecce8393f09cc8a6c7a87647e1a2b",
+      "observedRawExit": 0,
+      "exitEvidence": "Actual terminal tool process completion, not a producer exit reconstructed from this checker",
+      "reason": "original quality audit"
+    },
+    {
+      "log": "temp_docs/independent-bezier-restriction-cccaa5e2/measurement-01.log",
+      "sha256": "b362bc11c2a5e86101134facbd1070678fbcfe8425be5f96daaf68073c80d181",
+      "observedRawExit": 134,
+      "exitEvidence": "Actual terminal tool process completion, not a producer exit reconstructed from this checker",
+      "reason": "independent checker wrongly expected computation ab identity instead of actual delivery1065"
+    },
+    {
+      "log": "temp_docs/independent-bezier-restriction-cccaa5e2/measurement-02.log",
+      "sha256": "325a9a69e3f7d8a6a0d6dc4530aa49767f69c9588d8d4aa59539a26f824c6d2b",
+      "observedRawExit": 134,
+      "exitEvidence": "Actual terminal tool process completion, not a producer exit reconstructed from this checker",
+      "reason": "independent checker counted prebuild driver receipts as modeling prebuilds"
+    },
+    {
+      "log": "temp_docs/independent-bezier-restriction-cccaa5e2/measurement-03.log",
+      "sha256": "9abe19a16cbfeddec1ad82a95541404d1d8c304382b0fe8ab7956c790964ea8a",
+      "observedRawExit": 0,
+      "exitEvidence": "Actual terminal tool process completion, not a producer exit reconstructed from this checker",
+      "reason": "fixed original one-window audit"
+    },
+    {
+      "log": "temp_docs/independent-bezier-restriction-cccaa5e2/measurement-04-readonly.log",
+      "sha256": "9abe19a16cbfeddec1ad82a95541404d1d8c304382b0fe8ab7956c790964ea8a",
+      "observedRawExit": 0,
+      "exitEvidence": "Actual terminal tool process completion, not a producer exit reconstructed from this checker",
+      "reason": "read-only repeat of existing original evidence audit; derived receipt byte-identical, no producer rerun"
+    },
+    {
+      "log": "temp_docs/independent-bezier-restriction-cccaa5e2/bindings-01.log",
+      "sha256": "8cae87331dd85ba75a008b1d9714d17d9bf037d425a69990a78aa253fe13d138",
+      "observedRawExit": 0,
+      "exitEvidence": "Actual terminal tool process completion, not a producer exit reconstructed from this checker",
+      "reason": "actual original material bindings"
+    },
+    {
+      "log": "temp_docs/independent-bezier-restriction-cccaa5e2/controls-01.log",
+      "sha256": "124bb614c8f591a54e40622fb2c154f7ec060e77bffeab31be46357e075e5529",
+      "observedRawExit": 0,
+      "exitEvidence": "Actual terminal tool process completion, not a producer exit reconstructed from this checker",
+      "reason": "exact polar, native jets, real PK and observed cache phases"
+    },
+    {
+      "log": "temp_docs/independent-bezier-restriction-cccaa5e2/stack-01.log",
+      "sha256": "2171d27e4531c5f674597df546a8826d8644c9b3f21648d887b362c797a20914",
+      "observedRawExit": 0,
+      "exitEvidence": "Actual terminal tool process completion, not a producer exit reconstructed from this checker",
+      "reason": "Linux Debug JIT stack observation"
+    },
+    {
+      "log": "temp_docs/independent-bezier-restriction-cccaa5e2/stack-release-01.log",
+      "sha256": "462b7b6c08fb226a5dbe0c0002dfbc57f97079c3d89fd32f61a7fe8f48b33af8",
+      "observedRawExit": 0,
+      "exitEvidence": "Actual terminal tool process completion, not a producer exit reconstructed from this checker",
+      "reason": "Linux Release FullOpts JIT stack observation"
+    },
+    {
+      "log": "temp_docs/independent-bezier-restriction-cccaa5e2/aggregate-01.log",
+      "sha256": "e2a2070512557debc51832fc97370f329765df3c2edff026ee31b197ddc6cf81",
+      "observedRawExit": 134,
+      "exitEvidence": "Actual terminal tool process completion, not a producer exit reconstructed from this checker",
+      "reason": "independent checker wrongly expected development computation ab identity instead of actual1065"
+    },
+    {
+      "log": "temp_docs/independent-bezier-restriction-cccaa5e2/aggregate-02.log",
+      "sha256": "b3d48212efd825ede03f153591ae39e79fe23a164fa7c2c85e12ce37a2802b27",
+      "observedRawExit": 0,
+      "exitEvidence": "Actual terminal tool process completion, not a producer exit reconstructed from this checker",
+      "reason": "fixed original aggregate audit"
+    },
+    {
+      "log": "temp_docs/independent-bezier-restriction-cccaa5e2/final-binding-01.log",
+      "sha256": "45ddc12dd7f7e0dc2cc0cb1a680edbfc5ef92858bf31594050473659a46f81fc",
+      "observedRawExit": 0,
+      "exitEvidence": "Actual terminal tool process completion, not a producer exit reconstructed from this checker",
+      "reason": "first final binding preserved privately before final source-readonly hardening"
+    }
+  ],
+  "currentFiles": [
+    {
+      "path": "scripts/ReviewBezierRestrictionControls.cs",
+      "bytes": 21013,
+      "sha256": "9d08d742c9e9b8c874eb5e98809760232f1fb3088dfb7092a7268886733015e5"
+    },
+    {
+      "path": "scripts/ReviewBezierRestrictionEvidence.cs",
+      "bytes": 22679,
+      "sha256": "9398795c4bdb2afdd3760b99fbb26f309292776f68f0103920f614597a234eeb"
+    },
+    {
+      "path": "scripts/ReviewBezierRestrictionMeasurement.cs",
+      "bytes": 25631,
+      "sha256": "629cac3f722e4d97ac489e5c0d658da9624fd1b68f0b8931f02601f11db8dbf1"
+    },
+    {
+      "path": "docs/Bezier_Restriction_Independent_Review.md",
+      "bytes": 23557,
+      "sha256": "7794df81fb7d404352283539506b133c46dc6b58958d634d95d77abe8e2253c6"
+    },
+    {
+      "path": "docs/bezier-restriction-independent/receipt.json",
+      "bytes": 89738,
+      "sha256": "bd91682ae1fc5873a6992baab9dfbade8ac9b61190fc9eb390bda7aef7c3a27e"
+    },
+    {
+      "path": "docs/bezier-restriction-independent/material-bindings.json",
+      "bytes": 116531,
+      "sha256": "81cc00e7d75270799ac55019970efcf5f81f6537d7c0da27cc9cf8d7f6be0242"
+    }
+  ],
+  "sourceEvidenceScope": "Final current checker source hashes; first failed uncommitted checker revisions had no separately sealed source snapshot, not retroactively supplied",
+  "environment": "Actual ensure raw0/ENV_READY before builds, Linux x64 SDK10.0.302/runtime10.0.10 and real PK38.0.150; no AOT/fullsuite/family/ABBA rerun",
+  "parasolidQuery": "Connected MCP returned found:true for actual APIs; direct portal HTTP PK_SURF_eval succeeded raw0 after default-proxy curl raw35; no binary/address portability claim"
+}
