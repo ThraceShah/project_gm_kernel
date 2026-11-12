@@ -242,3 +242,12 @@ SHA，不重定向 PK 到 GM，也不冒充独立原始构造。`same-byte-parti
 严格几何、finite-source witness 和错误来源负例仍通过，原exit2、mass6U、persistence6U。
 因此原差异不能仅归因两个 primitive creator 的参数化；具体 tag merge/recreate
 策略仍未对齐，精确数量合同保持未决，不按 model key 选保留数量。
+
+`11bd21a1` 后核查到新 Cone 排除消费者的另一侧若落 BSurface/Blend，旧
+RegularSurfaceExtent 的 Success 本身不足以证明正权和完整 consumer 域。已收紧
+该新排除：双方仅 Plane/Cylinder/Cone 完整有限 face 证书可使用，BSurface/Blend
+保持 unknown 继续原路径；没有把其框当证据。`finite-extent-qualification.log/.exit`
+实际15/15、exit0。此前17项另一侧实际是Plane，保留原源码资格；不回写旧源结果。
+公共 BSurface/Blend extent 资格由 Mac 单一 owner 维护，交固定公共 helper 后供
+Boolean/ray 两侧消费，q2 不另写一套相似判断。此约束同样需要审视原有其他排除
+消费者，不能以新消费者收紧就声称所有既有 extent 调用均有完整证明。

@@ -51,8 +51,13 @@ internal static unsafe partial class KernelRuntime
 
     private static bool RegularFiniteConicalPairSeparated(FaceSlot first,FaceSlot second,double tolerance)
     {
-        if(Surfaces[GetSurfaceSlotByTag(Faces[first].SurfTag)].Class!=SurfaceClass.Cone
-            &&Surfaces[GetSurfaceSlotByTag(Faces[second].SurfTag)].Class!=SurfaceClass.Cone)return false;
+        var aKind=Surfaces[GetSurfaceSlotByTag(Faces[first].SurfTag)].Class;
+        var bKind=Surfaces[GetSurfaceSlotByTag(Faces[second].SurfTag)].Class;
+        if(aKind!=SurfaceClass.Cone&&bKind!=SurfaceClass.Cone)return false;
+        // Only these complete face-boundary certificates are available here.
+        // A generic support extent success is not a finite consumer proof.
+        if(aKind is not (SurfaceClass.Plane or SurfaceClass.Cylinder or SurfaceClass.Cone)
+            ||bKind is not (SurfaceClass.Plane or SurfaceClass.Cylinder or SurfaceClass.Cone))return false;
         if(!TryThirdFacePrecision(first,ref tolerance)||!TryThirdFacePrecision(second,ref tolerance)
             ||RegularFiniteFaceExtent(first,out var a)!=AlgorithmStatus.Success
             ||RegularFiniteFaceExtent(second,out var b)!=AlgorithmStatus.Success)return false;
