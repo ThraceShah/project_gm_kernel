@@ -66,14 +66,18 @@ public unsafe class IcurveBSurfaceRuntimeTests : IDisposable
         Assert.Equal(0, KernelRuntime.ICurveDataPool.AliveCount);
     }
 
-    [Fact]
-    public void DeletingRuntimeCurve_PreservesBorrowedSupportSurfaces()
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public void DeletingRuntimeCurve_PreservesBorrowedSupportSurfaces(bool marked)
     {
         var curve = CreateCurve(false, false, false, out var surface0, out var surface1);
+        int mark=0;if(marked)Assert.Equal(0,KernelRuntime.MarkCreate(&mark));
         Assert.Equal(0, KernelRuntime.EntityDelete(1, &curve));
+        Assert.False(KernelRuntime.IsValidTag(curve));
         Assert.True(KernelRuntime.GetSurfaceSlotByTag(surface0) >= 0);
         Assert.True(KernelRuntime.GetSurfaceSlotByTag(surface1) >= 0);
         Assert.Equal(2, KernelRuntime.Surfaces.AliveCount);
+        if(marked){Assert.Equal(0,KernelRuntime.MarkGoto(mark));Assert.True(KernelRuntime.IsValidTag(curve));Assert.Equal(0,KernelRuntime.EntityDelete(1,&curve));}
         Assert.Equal(0, KernelRuntime.ICurveDataPool.AliveCount);
     }
 

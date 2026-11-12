@@ -9,7 +9,7 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
-    internal enum RollingBuildStage:byte{Clone,Offset,Compile,Seed,Project,Forward,Backward,EndSeed,EndProject,Charts,Proof,Bind}
+    internal enum RollingBuildStage:byte{Offset,Compile,Seed,Project,Forward,Backward,EndSeed,EndProject,Charts,Proof,Bind}
     private const BufferCount RollingTracePointLimit=512;
     [ThreadStatic] internal static RollingBuildStage LastRollingBuildStage;
     private static int CreateGeneralRollingBlend(SurfTag first,double r0,SurfTag second,double r1,
@@ -30,12 +30,9 @@ internal static unsafe partial class KernelRuntime
     private static int CreateGeneralRollingBlend(SurfTag first,double r0,SurfTag second,double r1,
         in KernelVector3 start,in KernelVector3 end,PK_SURF_create_blend_o_s* options,SurfTag* result,ReadOnlySpan<AnalyticSurface> outwardTerminationPlanes)
     {
-        LastRollingBuildStage=RollingBuildStage.Clone;
-        Span<GeomTag> source=stackalloc GeomTag[2]{first,second},copies=stackalloc GeomTag[2];
-        var error=TryCloneEntitiesCore(source,copies);if(error!=0)return error;
         LastRollingBuildStage=RollingBuildStage.Offset;
-        error=RollingOffsetSupport(copies[0],r0,0,out var offset0);if(error!=0)return error;
-        error=RollingOffsetSupport(copies[1],r1,0,out var offset1);if(error!=0)return error;
+        var error=RollingOffsetSupport(first,r0,0,out var offset0);if(error!=0)return error;
+        error=RollingOffsetSupport(second,r1,0,out var offset1);if(error!=0)return error;
         var checkpoint=CommandScratch.ThreadArenaOffset;
         try
         {
@@ -110,7 +107,7 @@ internal static unsafe partial class KernelRuntime
             }
             LastRollingBuildStage=RollingBuildStage.Bind;
             CurveTag spine=0;error=BindNestedBlendSpine(offset0,offset1,compiler.View,spineIndex,&spine);if(error!=0)return error;
-            return CompileAndBindNestedBlend(copies[0],copies[1],spine,r0,r1,result);
+            return CompileAndBindNestedBlend(first,second,spine,r0,r1,result);
         }
         finally{CommandScratch.ThreadArenaOffset=checkpoint;}
     }

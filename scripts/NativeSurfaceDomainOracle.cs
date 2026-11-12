@@ -3,6 +3,7 @@
 #:project ../src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj
 #:property UsePskernelSharpUsings=true
 #:property UseParasolidScriptHost=true
+#:property UseParasolidMarkOracle=true
 #:property AllowUnsafeBlocks=true
 #:property AssemblyName=CurvedSheetPartitionOracle
 using static parasolid;
@@ -15,14 +16,14 @@ var sharedFree=args.Contains("--shared-free-sp",StringComparer.Ordinal);var name
 var root=Path.GetFullPath(Path.Combine(Path.GetDirectoryName(Source())!,".."));var output=Path.Combine(root,"temp_docs","native-surface-domain-oracle",name);
 if(Directory.Exists(output))throw new InvalidOperationException("Immutable output");Directory.CreateDirectory(output);
 Console.WriteLine("GM_ASSEMBLY sha256="+Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(typeof(KernelRuntime).Assembly.Location))));
-if(!ParasolidScriptHost.TryStartSession("Native finite surface domain contract",out var host,out var reason))throw new Exception(reason);
+if(!ParasolidScriptHost.TryStartSession("Native finite surface domain contract",out var host,out var reason,configureRollback:args.Contains("--mark",StringComparer.Ordinal)?MarkOracleStorage.Register:null))throw new Exception(reason);
 using(host)unsafe
 {
     PK_SESSION_kernel_version_t version;Check(PK_SESSION_ask_kernel_version(&version),"native version");Console.WriteLine($"PK_VERSION {version.major_revision}.{version.minor_revision}.{version.build_number}");
     var start=new M.PK_SESSION_start_o_s{o_t_version=1};Check(KernelRuntime.SessionStart(&start),"managed start");
     try
     {
-        if(args.Contains("--blend-owner",StringComparer.Ordinal)) { BlendOwnership(sharedFree,args.Contains("--attached-support",StringComparer.Ordinal)); return; }
+        if(args.Contains("--blend-owner",StringComparer.Ordinal)) { BlendOwnership(sharedFree,args.Contains("--attached-support",StringComparer.Ordinal),args.Contains("--mark",StringComparer.Ordinal)); return; }
         var mismatches=0;var ownershipDifferences=0;var runs=0;double* poles=stackalloc double[36];double* uk=stackalloc double[2];double* vk=stackalloc double[2];int* mult=stackalloc int[2]{3,3};
         double* uvPoles=stackalloc double[4];double* uvKnots=stackalloc double[2]{0,1};int* uvMult=stackalloc int[2]{2,2};
         Console.WriteLine("SOURCE_OWNERSHIP_MODE "+(sharedFree?"surface-has-free-SP-owner":"independent-orphan-surface"));
@@ -96,14 +97,16 @@ static unsafe byte[] Transmit(bool own,int body)
     try{using var stream=new MemoryStream();for(var p=&block;p!=null;p=p->next)stream.Write(new ReadOnlySpan<byte>(p->bytes,checked((int)p->n_bytes)));return stream.ToArray();}
     finally{Check(own?KernelRuntime.MemoryBlockFree((M.PK_MEMORY_block_s*)&block):PK_MEMORY_block_f(&block),"transmit release");}
 }
-static unsafe void BlendOwnership(bool sharedFree,bool attachedSupport)
+static unsafe void BlendOwnership(bool sharedFree,bool attachedSupport,bool useMark)
 {
     // Observe adoption and dependency lifetime only. Each implementation's
     // native spine parameter range is queried; this is no shape equivalence test.
+    string? referenceSignature=null;
+    double* poles=stackalloc double[18];double* knots=stackalloc double[2]{-1,1};int* um=stackalloc int[2]{3,3};int* vm=stackalloc int[2]{2,2};
+    double* p=stackalloc double[4]{-.5,-.5,.5,.5};double* k=stackalloc double[2]{0,1};int* m=stackalloc int[2]{2,2};
     foreach(var own in new[]{false,true})
     {
-        double* poles=stackalloc double[18];for(var i=0;i<3;i++)for(var j=0;j<2;j++){var at=3*(2*i+j);poles[at]=i-1;poles[at+1]=2*j-1;poles[at+2]=(i==1?-.3:.3)+.1*(i-1)*(2*j-1);}
-        double* knots=stackalloc double[2]{-1,1};int* um=stackalloc int[2]{3,3};int* vm=stackalloc int[2]{2,2};
+        var signature=new System.Text.StringBuilder();for(var i=0;i<3;i++)for(var j=0;j<2;j++){var at=3*(2*i+j);poles[at]=i-1;poles[at+1]=2*j-1;poles[at+2]=(i==1?-.3:.3)+.1*(i-1)*(2*j-1);}
         var sf=new PK_BSURF_sf_t{u_degree=2,v_degree=1,n_u_vertices=3,n_v_vertices=2,vertex_dim=3,vertex=poles,n_u_knots=2,n_v_knots=2,u_knot=knots,v_knot=knots,u_knot_mult=um,v_knot_mult=vm,form=PK_BSURF_form_arbitrary_c,u_knot_type=PK_knot_non_uniform_c,v_knot_type=PK_knot_non_uniform_c,self_intersecting=PK_self_intersect_false_c,convexity=PK_convexity_unset_c};
         int source,wall,surface;Check(own?KernelRuntime.BSurfCreate((M.PK_BSURF_sf_s*)&sf,&source):PK_BSURF_create(&sf,&source),"Blend support");
         int supportBody=0;
@@ -114,13 +117,18 @@ static unsafe void BlendOwnership(bool sharedFree,bool attachedSupport)
         }
         var plane=new PK_PLANE_sf_t();plane.basis_set.axis=new(0,1,0);plane.basis_set.ref_direction=new(1,0,0);
         Check(own?KernelRuntime.PlaneCreate((M.PK_PLANE_sf_s*)&plane,&wall):PK_PLANE_create(&plane,&wall),"Blend wall");
-        int freeSp=0;
+        int freeSp=0,secondSp=0,freeOffset=0;
         if(sharedFree)
         {
-            double* p=stackalloc double[4]{-.5,-.5,.5,.5};double* k=stackalloc double[2]{0,1};int* m=stackalloc int[2]{2,2};
             var uv=new PK_BCURVE_sf_t{degree=1,n_vertices=2,vertex_dim=2,vertex=p,n_knots=2,knot=k,knot_mult=m,form=PK_BCURVE_form_arbitrary_c,knot_type=PK_knot_non_uniform_c,self_intersecting=PK_self_intersect_false_c};int curve;
             Check(own?KernelRuntime.BCurveCreate((M.PK_BCURVE_sf_s*)&uv,&curve):PK_BCURVE_create(&uv,&curve),"Blend shared-support UV");var sp=new PK_SPCURVE_sf_t(source,curve);
             Check(own?KernelRuntime.SpCurveCreate((M.PK_SPCURVE_sf_s*)&sp,&freeSp):PK_SPCURVE_create(&sp,&freeSp),"Blend shared-support SP");
+            var reused=own?KernelRuntime.SpCurveCreate((M.PK_SPCURVE_sf_s*)&sp,&secondSp):PK_SPCURVE_create(&sp,&secondSp);
+            Console.WriteLine($"SP_BASIS_EXCLUSIVE_OWNER own={own} error={reused}");if(reused!=PK_ERROR_unsuitable_entity)throw new InvalidOperationException("used 2D SP basis accepted");
+            Check(own?KernelRuntime.BCurveCreate((M.PK_BCURVE_sf_s*)&uv,&curve):PK_BCURVE_create(&uv,&curve),"second independent UV basis");sp.curve=curve;
+            Check(own?KernelRuntime.SpCurveCreate((M.PK_SPCURVE_sf_s*)&sp,&secondSp):PK_SPCURVE_create(&sp,&secondSp),"Blend repeated shared-support SP");
+            var displaced=new PK_OFFSET_sf_t{underlying_surface=source,offset_distance=.3};
+            Check(own?KernelRuntime.OffsetCreate((M.PK_OFFSET_sf_s*)&displaced,&freeOffset):PK_OFFSET_create(&displaced,&freeOffset),"Blend shared-support offset");
         }
         var options=new PK_SURF_create_blend_o_t();var a=new PK_VECTOR_t(.5,0,.075);var b=new PK_VECTOR_t(-.5,0,.075);
         Check(own?KernelRuntime.SurfCreateBlend(source,.1,wall,.1,*(M.PK_VECTOR_s*)&a,*(M.PK_VECTOR_s*)&b,(M.PK_SURF_create_blend_o_s*)&options,&surface):PK_SURF_create_blend(source,.1,wall,.1,a,b,&options,&surface),"free Blend");
@@ -128,20 +136,40 @@ static unsafe void BlendOwnership(bool sharedFree,bool attachedSupport)
         if(freeSp!=0)PrintSp("before",own,freeSp,source);
         PK_UVBOX_t box;Check(own?KernelRuntime.SurfAskUvbox(surface,(M.PK_UVBOX_s*)&box):PK_SURF_ask_uvbox(surface,&box),"Blend domain");
         var lower=box.param[0];var width=box.param[2]-lower;box.param[0]=lower+.4*width;box.param[2]=lower+.6*width;box.param[1]=.15;box.param[3]=.85;
+        int mark=0;if(useMark)Check(own?KernelRuntime.MarkCreate(&mark):PK_MARK_create(&mark),"mark before adoption");
         int body;Check(own?KernelRuntime.SurfMakeSheetBody(surface,*(M.PK_UVBOX_s*)&box,&body):PK_SURF_make_sheet_body(surface,box,&body),"Blend sheet");
         Console.WriteLine($"BLEND_ADOPTION own={own} shared_support={sharedFree} root_reused={Support(own,body)==surface} first_input_reused={definition.geom_1==source} second_input_reused={definition.geom_2==wall} supports={source}/{wall} spine={definition.spine}");
+        signature.Append($"{Support(own,body)==surface}/{definition.geom_1==source}/{definition.geom_2==wall};");
         if(!own)CheckBody(body,"native Blend sheet");
         Check(own?KernelRuntime.EntityDelete(1,&body):PK_ENTITY_delete(1,&body),"Blend body delete");
-        if(freeSp!=0)PrintSp("after",own,freeSp,source);
+        if(freeSp!=0)
+        {
+            var support=PrintSp("after",own,freeSp,source);var other=PrintSp("after-second",own,secondSp,source);PK_OFFSET_sf_t displaced;
+            Check(own?KernelRuntime.OffsetAsk(freeOffset,(M.PK_OFFSET_sf_s*)&displaced):PK_OFFSET_ask(freeOffset,&displaced),"surviving offset definition");
+            Console.WriteLine($"BLEND_EXTERNAL_SHARING own={own} sp_pair_share={support==other} offset_shares={support==displaced.underlying_surface}");
+            signature.Append($"{support==source}/{support==other}/{support==displaced.underlying_surface};");
+            var uv=new PK_UV_t();var point=new PK_VECTOR_t();Check(own?KernelRuntime.SurfEval(freeOffset,*(M.PK_UV_s*)&uv,0,0,0,(M.PK_VECTOR_s*)&point):PK_SURF_eval(freeOffset,uv,0,0,PK_LOGICAL_false,&point),"surviving offset evaluation");
+        }
         foreach(var (label,tag) in new[]{("root",surface),("first",source),("second",wall),("spine",definition.spine),("free-sp",freeSp)})
-        { if(tag==0)continue;PK_LOGICAL_t valid=0; if(!own)Check(PK_ENTITY_is(tag,&valid),"Blend dependency lifetime");var alive=own?KernelRuntime.IsValidTag(tag):valid==PK_LOGICAL_true;Console.WriteLine($"BLEND_LIFETIME own={own} kind={label} alive={alive}"); }
+        { if(tag==0)continue;PK_LOGICAL_t valid=0; if(!own)Check(PK_ENTITY_is(tag,&valid),"Blend dependency lifetime");var alive=own?KernelRuntime.IsValidTag(tag):valid==PK_LOGICAL_true;Console.WriteLine($"BLEND_LIFETIME own={own} kind={label} alive={alive}");signature.Append(alive).Append(';'); }
+        if(useMark)
+        {
+            Check(own?KernelRuntime.MarkGoto(mark):PK_MARK_goto(mark),"restore adopted geometry");
+            if(freeSp!=0&&PrintSp("restored",own,freeSp,source)!=source)throw new InvalidOperationException("mark did not restore native dependency identity");
+            PK_BLENDSF_sf_t restored;Check(own?KernelRuntime.BlendSfAsk(surface,(M.PK_BLENDSF_sf_s*)&restored):PK_BLENDSF_ask(surface,&restored),"restored Blend definition");
+            if(restored.geom_1!=source||restored.geom_2!=wall||restored.spine!=definition.spine)throw new InvalidOperationException("restored Blend definitions differ");
+            Console.WriteLine($"BLEND_MARK_RESTORED own={own} native_definition_identities=True");
+        }
+        if(!own)referenceSignature=signature.ToString();else if(signature.ToString()!=referenceSignature)throw new InvalidOperationException("native geometry ownership differs: "+referenceSignature+" vs "+signature);
     }
+    Console.WriteLine("BLEND_OWNER_CONTRACT_MATCH geometry_equivalence=separate-oracle");
 }
-static unsafe void PrintSp(string stage,bool own,int curve,int source)
+static unsafe PK_SURF_t PrintSp(string stage,bool own,int curve,int source)
 {
     PK_SPCURVE_sf_t definition;Check(own?KernelRuntime.SpCurveAsk(curve,(M.PK_SPCURVE_sf_s*)&definition):PK_SPCURVE_ask(curve,&definition),"shared SP definition");
     Console.WriteLine($"BLEND_SHARED_SP stage={stage} own={own} original_source={definition.surf==source}");
     var p=new PK_VECTOR_t();Check(own?KernelRuntime.CurveEval(curve,.5,0,(M.PK_VECTOR_s*)&p):PK_CURVE_eval(curve,.5,0,&p),"surviving shared SP evaluation");
+    return definition.surf;
 }
 static unsafe int Receive(byte[] bytes){fixed(byte* p=bytes){var block=new PK_MEMORY_block_t(null,(ulong)bytes.Length,p);var options=new PK_PART_receive_o_t{transmit_format=PK_transmit_format_text_c};int count;int* parts;Check(PK_PART_receive_b(block,&options,&count,&parts),"native receive");try{if(count!=1)throw new InvalidOperationException("one body");return parts[0];}finally{PK_MEMORY_free(parts);}}}
 static unsafe PK_SURF_t Support(bool own,PK_BODY_t body){int n;int* faces;Check(own?KernelRuntime.BodyAskFaces(body,&n,&faces):PK_BODY_ask_faces(body,&n,&faces),"faces for source identity");try{if(n!=1)throw new InvalidOperationException("one regular sheet face");PK_SURF_t surface;Check(own?KernelRuntime.FaceAskSurf(faces[0],&surface):PK_FACE_ask_surf(faces[0],&surface),"face geometry identity");return surface;}finally{if(own)KernelRuntime.MemoryFree(faces);else PK_MEMORY_free(faces);}}

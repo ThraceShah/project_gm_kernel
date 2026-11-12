@@ -151,6 +151,8 @@ internal static unsafe partial class KernelRuntime
         ref readonly var basis = ref BCurveDataStore[Curves[curveSlot].DataIndex];
         if (basis.VertexDim != (basis.IsRational != 0 ? 3 : 2))
             return ParasolidConstants.PK_ERROR_bad_dimension;
+        if (Curves[curveSlot].GeometricOwnerCount != 0)
+            return ParasolidConstants.PK_ERROR_unsuitable_entity;
         var dependencyError = CheckGeometryDependency(PoolKind.Surface, surfaceSlot);
         if (dependencyError == 0) dependencyError = CheckGeometryDependency(PoolKind.Curve, curveSlot);
         if (dependencyError != 0) return dependencyError;

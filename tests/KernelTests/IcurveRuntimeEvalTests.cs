@@ -238,6 +238,8 @@ public unsafe class IcurveRuntimeEvalTests : IDisposable
         Assert.Equal(0, KernelRuntime.GetSurfaceByTag(sphere).OwnerCount);
         Assert.Equal((byte)1, KernelRuntime.GetSurfaceByTag(sphere).GeometricDeletePending);
         AssertCircleEvaluates(curve);
+        Assert.Equal(0, KernelRuntime.EntityDelete(1, &curve));
+        Assert.False(KernelRuntime.IsValidTag(sphere)); Assert.True(KernelRuntime.IsValidTag(plane));
         Assert.Equal(0, KernelRuntime.MarkGoto(mark));
         Assert.Equal(1, KernelRuntime.GetSurfaceByTag(sphere).OwnerCount);
         Assert.Equal((byte)0, KernelRuntime.GetSurfaceByTag(sphere).GeometricDeletePending);
@@ -313,7 +315,7 @@ public unsafe class IcurveRuntimeEvalTests : IDisposable
         Assert.True(KernelRuntime.IsValidTag(plane)); Assert.True(KernelRuntime.IsValidTag(sphere));
     }
 
-    private static int BindCircle(int plane, int sphere)
+    internal static int BindCircle(int plane, int sphere)
     {
         var input = MinimalCircleInput(plane, sphere, [1,0,0, 0,1,0]);
         Assert.Equal(AlgorithmStatus.Success, KernelRuntime.DecodeIcurve(input, out var data, out _, out _));

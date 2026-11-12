@@ -3046,37 +3046,57 @@ internal static unsafe partial class KernelRuntime
             if (DeferDeletes)
                 deleteEntries += ((PoolKind)handle.Pool == PoolKind.Body ? BodyDeletionEntries(handle.Slot) : 1) + 1;
         }
-        if (DeferDeletes && (deleteEntries > int.MaxValue || !session->TryReserveDeletion((int)deleteEntries)))
-            return ParasolidConstants.PK_ERROR_memory_full;
-        for (var i = 0; i < nEntities; i++)
+        var ownsScratch = session->IsMarkActive != 0 && EnsureCommandScratch();
+        Span<double> workspace = default;
+        try
         {
-            var record = TagRec(entities[i]);
-            if (!SnapshotConstructionDeletion((PoolKind)record.Pool, record.Slot)) return ParasolidConstants.PK_ERROR_memory_full;
+            BufferCount definingCount = 0;
+            if (session->IsMarkActive != 0)
+            {
+                workspace = CommandScratchBorrow(Math.Min(8192, Math.Max(128, NextTagValue)));
+                if (workspace.IsEmpty) return ParasolidConstants.PK_ERROR_memory_full;
+                var error = CollectDeletionGeometry(new ReadOnlySpan<EntityTag>(entities, nEntities), MemoryMarshal.Cast<double, GeomTag>(workspace), out definingCount);
+                if (error != 0) return error;
+                deleteEntries += definingCount;
+            }
+            if (DeferDeletes && (deleteEntries > int.MaxValue || !session->TryReserveDeletion((int)deleteEntries)))
+                return ParasolidConstants.PK_ERROR_memory_full;
+            for (var i = 0; i < nEntities; i++)
+            {
+                var record = TagRec(entities[i]);
+                if (!SnapshotConstructionDeletion((PoolKind)record.Pool, record.Slot)) return ParasolidConstants.PK_ERROR_memory_full;
+            }
+            for (int i = 0; i < nEntities; i++)
+            {
+                var tag = entities[i];
+                var record = firstRecord;
+                if (i != 0 && !session->Tags.TryResolve(tag, CurrentSessionId, out record))
+                    return ParasolidConstants.PK_ERROR_unknown_class;
+                var pool = (PoolKind)record.Pool;
+                var slot = record.Slot;
+                var partition = PoolPartitionOf(pool, slot);
+                if (DeferDeletes && session->Partitions[partition].AtPmark != 0)
+                    session->TryAppendUndo(SessionData.UndoKind.PartitionModified, 0, partition, partition, session->Partitions[partition].AtPmark, 0, null, 0);
+                session->Partitions[partition].AtPmark = 0;
+
+                if (pool == PoolKind.Body)
+                {
+                    DeleteBodyCascade(session, slot, tag);
+                }
+                else
+                {
+                    DeleteEntitySingle(session, pool, slot, tag);
+                }
+            }
+
+            if (definingCount != 0) RetireUnownedDefiningGeometry(MemoryMarshal.Cast<double, GeomTag>(workspace)[..definingCount]);
+            return ParasolidConstants.PK_ERROR_no_errors;
         }
-        for (int i = 0; i < nEntities; i++)
+        finally
         {
-            var tag = entities[i];
-            var record = firstRecord;
-            if (i != 0 && !session->Tags.TryResolve(tag, CurrentSessionId, out record))
-                return ParasolidConstants.PK_ERROR_unknown_class;
-            var pool = (PoolKind)record.Pool;
-            var slot = record.Slot;
-            var partition = PoolPartitionOf(pool, slot);
-            if (DeferDeletes && session->Partitions[partition].AtPmark != 0)
-                session->TryAppendUndo(SessionData.UndoKind.PartitionModified, 0, partition, partition, session->Partitions[partition].AtPmark, 0, null, 0);
-            session->Partitions[partition].AtPmark = 0;
-
-            if (pool == PoolKind.Body)
-            {
-                DeleteBodyCascade(session, slot, tag);
-            }
-            else
-            {
-                DeleteEntitySingle(session, pool, slot, tag);
-            }
+            if (!workspace.IsEmpty) CommandScratchReturn(workspace);
+            if (ownsScratch) ReleaseCommandScratch(session);
         }
-
-        return ParasolidConstants.PK_ERROR_no_errors;
     }
 
     private static long BodyDeletionEntries(BodySlot slot)

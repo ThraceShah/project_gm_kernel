@@ -256,6 +256,7 @@ internal static unsafe partial class KernelRuntime
         loops[0] = new ModelingLoop { FirstCoedge = 0, CoedgeCount = 4 };
         faces[0] = new ModelingFace { Surface = attached, Sense = ParasolidConstants.PK_TOPOL_sense_positive_c, FirstLoop = 0, LoopCount = 1 };
         var finish = BuildModelingBrep(points, edges, coedges, loops, faces, false, out var result);
+        if (finish == 0) finish = UnshareSheetDefiningGeometry(attached);
         if (finish == 0) finish = TryAdoptDependentGeometry(attached);
         if (finish == 0) *body = result; return finish;
     }

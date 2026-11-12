@@ -497,3 +497,38 @@ Blend观察另揭露下一层差异：独立自由Blend首次成面也采用root
 support，掩盖了这个unshare分支。`blend-adoption-v1/v2`、
 `blend-shared-adoption-v3`、`blend-owned-support-v1` 为实际观察，不作为GM该完整
 依赖合同通过的收据；该共同对象图差异仍在实现中。
+
+后续实现直接令rolling构造引用原支撑，复用现有part归属检查；成面后从现有对象图
+取实际boundary defining closure，只有外部自由owner碰到它时才通过同一复制映射
+重绑依赖。因此两个SP与Offset保留共享的同一新support，未改变的2D原生参数曲线
+不复制；原Blend、support、spine身份属于新body。所有重绑的owner数据、依赖计数
+及construction元数据都由既有journal保留。复制给runtime borrower的support继承
+明确释放义务，不把原独立借用输入一起删除。没有新模型、历史路径或坐标分派。
+
+真实PK扩大负例又确认一个2D B-curve不能同时成为第二条SP的参数定义，第二次
+SPCURVE_create返回914 unsuitable_entity；GM原来接受，现在同样先拒绝，输出0，
+原图不变。第二条SP须独立创建其2D native basis，表面仍可共享。原首次重用basis
+失败raw134完整保留，没有把它计作unshare几何失败。
+
+启用真实PK delta rollback后（复用MarkOracleStorage），动态确认mark只保留恢复
+能力，不应让已删body的定义root继续作为有效tag。旧GM在deferred payload释放前
+仍让Blend/support/spine有效。现在先准备删除closure及日志容量，常规拓扑删除后
+只retire已无任何活topology/geometry/fin owner的定义；物理payload仍延后释放，
+共享分支等到所有父节点失效才retire。runtime ICurve借用的独立输入保留；若原body
+留下明确释放义务，则最后借用者删除时失效。mark goto恢复原定义身份和计数，mark
+delete物理回收无重复释放。该逻辑只在retained mark下运行，普通整操作不加全池扫描。
+
+`blend-multiple-unshare-mark-v2.log/.exit` raw0实际两侧914负例、两个SP和Offset共用
+同一复制support、删body后外部曲线/offset求值、原definition tag失效、goto后原身份
+恢复全部一致；`blend-owned-support-contract-v2` raw0验证已有body输入的原part保持。
+这两项及三族独立Fix/Boolean full/strict的 `native-owner-graph-rolling` 实际Native为
+`9ddb29ffedbc9e8315d4d3129f70b0695339bc6959e1c5a65acbbf6197f1f349`；后者raw2，
+mass U不变，误写的depressed-nurbs过滤名没有执行depressed-roof，实际只三族。
+`native-owner-unshare-open-blend` 九种上游sheet后裁剪/分割/重复切割full/strict通过，
+raw0，生产源早于mark改动，不补签为随后所有assembly的验收。
+
+最终owner局部 `native-owner-final-borrowing` 69/69 raw0，含两种mark结算、外部
+SP/Offset共享、借用ICurve的新副本回收及原输入保留、warm成面+删body实际零managed
+heap；此前 `native-owner-final-focused` 131/131覆盖分割/part/lifecycle，另存原源。
+原完整Mark前后对照、错误5048环境执行及被纠正的旧失败日志均保留。当前仍须固定
+新源集中做真实PK、完整集成与原剩余finite-face/分类能力，不据这些局部计数结算整体。
