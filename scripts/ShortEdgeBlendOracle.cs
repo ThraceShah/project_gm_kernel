@@ -1372,10 +1372,11 @@ static unsafe void SavedProbes(int reference,int imported,int fresh,byte[] nativ
 {
     var path=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","docs","reviews","advanced-modeling","short-edge-spine-probes.csv");
     var rows=File.ReadAllLines(path);var nativeReload=Receive(false,nativeBytes);var failures=0;var changedNative=0;var pending=0;
+    var finiteEvidence=new JsonArray();
     var evidence=new List<(PK_VECTOR_t Point,int Row)>();
     var nativeRoundtrip=new List<int>();var gmNative=new List<int>();var gmFresh=new List<int>();var freshNative=new List<int>();
     using var classifications=new StreamWriter(new FileStream(Path.Combine(output,name+"-fixed-classifications.csv"),FileMode.CreateNew));
-    classifications.WriteLine("row,x,y,z,PK_native,PK_roundtrip,GM_actual,PK_GM_fresh,status");
+    classifications.WriteLine("row,x,y,z,PK_native,PK_roundtrip,GM_actual,PK_GM_fresh,PK_native_topology,PK_roundtrip_topology,GM_actual_topology,PK_GM_fresh_topology,PK_native_topology_class,PK_roundtrip_topology_class,GM_actual_topology_class,PK_GM_fresh_topology_class,GM_error,status");
     int* results=stackalloc int[4];int* topols=stackalloc int[4];
     try
     {
@@ -1396,7 +1397,12 @@ static unsafe void SavedProbes(int reference,int imported,int fresh,byte[] nativ
             var status=ParasolidProbeAgreement.Classify(new ReadOnlySpan<int>(results,4));
             if(status==ProbeAgreement.Different)failures++;
             if(status==ProbeAgreement.Unresolved)pending++;
-            classifications.WriteLine(FormattableString.Invariant($"{i},{p.coord[0]:R},{p.coord[1]:R},{p.coord[2]:R},{results[0]},{results[1]},{results[2]},{results[3]},{status}"));
+            int c0=0,c1=0,c2=0,c3=0;
+            if(topols[0]!=0)Check(PK_ENTITY_ask_class(topols[0],&c0),"native probe returned topology");
+            if(topols[1]!=0)Check(PK_ENTITY_ask_class(topols[1],&c1),"roundtrip probe returned topology");
+            if(topols[2]!=0)Check(KernelRuntime.EntityAskClass(topols[2],&c2),"GM probe returned topology");
+            if(topols[3]!=0)Check(PK_ENTITY_ask_class(topols[3],&c3),"fresh probe returned topology");
+            classifications.WriteLine(FormattableString.Invariant($"{i},{p.coord[0]:R},{p.coord[1]:R},{p.coord[2]:R},{results[0]},{results[1]},{results[2]},{results[3]},{topols[0]},{topols[1]},{topols[2]},{topols[3]},{c0},{c1},{c2},{c3},{error},{status}"));
             if(results[0]!=results[1]||results[0]!=results[2]||results[0]!=results[3])
             {
                 Console.WriteLine($"SAVED PROBE DIFF row={i} p=({p.coord[0]:R},{p.coord[1]:R},{p.coord[2]:R}) native/roundtrip/self/fresh={results[0]}/{results[1]}/{results[2]}/{results[3]} agreement={status} error={error} stage={KernelRuntime.LastRegularClassificationStage} entity={KernelRuntime.LastRegularClassificationEntity} sheet={KernelRuntime.LastSheetPartitionStage} curve={KernelRuntime.LastSheetCurve} status={KernelRuntime.LastSheetAlgorithmStatus} uv=({KernelRuntime.LastSheetRayU:R},{KernelRuntime.LastSheetRayV:R})");
@@ -1406,15 +1412,166 @@ static unsafe void SavedProbes(int reference,int imported,int fresh,byte[] nativ
         }
         // Finish every classification before range/projection diagnostics:
         // warming a PK projection cache can change its exact-threshold path.
-        foreach(var item in evidence)
-        {NativeProbeEvidence(reference,item.Point,$"row{item.Row}-native");NativeProbeEvidence(nativeReload,item.Point,$"row{item.Row}-native-roundtrip");NativeProbeEvidence(fresh,item.Point,$"row{item.Row}-self-fresh");}
+        var nativeModel=Receive(true,nativeBytes);
+        try
+        {
+            foreach(var item in evidence)
+            {
+                NativeProbeEvidence(reference,item.Point,$"row{item.Row}-native");NativeProbeEvidence(nativeReload,item.Point,$"row{item.Row}-native-roundtrip");NativeProbeEvidence(fresh,item.Point,$"row{item.Row}-self-fresh");
+                finiteEvidence.Add((JsonNode)new JsonObject{["row"]=item.Row,["x"]=item.Point.coord[0],["y"]=item.Point.coord[1],["z"]=item.Point.coord[2],
+                    ["nativeXtMathematicalBoundary"]=FiniteProbeEvidence(nativeModel,item.Point),["gmActualBoundary"]=FiniteProbeEvidence(imported,item.Point),
+                    ["precisionControls"]=ProbePrecisionControls(reference,nativeReload,imported,fresh,item.Point)});
+            }
+        }
+        finally{Check(KernelRuntime.EntityDelete(1,&nativeModel),"delete native mathematical boundary view");}
+        File.WriteAllText(Path.Combine(output,name+"-finite-boundary.json"),new JsonObject{
+            ["pointSource"]=Path.GetRelativePath(Path.Combine(Path.GetDirectoryName(ScriptPath())!,".."),path),
+            ["pointSha256"]=Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(path))),
+            ["nativeXtSha256"]=Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(nativeBytes)),
+            ["gmXtSha256"]=Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(Transmit(true,imported))),
+            ["classificationContract"]="Raw four-way classifications remain authoritative observations; a finite edge distance witness does not prove an inside/outside region or erase an On disagreement.",
+            ["points"]=finiteEvidence}.ToJsonString(new System.Text.Json.JsonSerializerOptions{WriteIndented=true}));
     }
     finally{Check(PK_ENTITY_delete(1,&nativeReload),"delete saved native roundtrip");}
     Console.WriteLine($"SAVED PROBE SETS native_roundtrip=[{string.Join(',',nativeRoundtrip)}] gm_native=[{string.Join(',',gmNative)}] gm_fresh=[{string.Join(',',gmFresh)}] fresh_native=[{string.Join(',',freshNative)}]");
-    Console.WriteLine($"SAVED PROBES total={rows.Length-1} different={failures} unresolved={pending} native_class_changed={changedNative} finite_distance_bounds=Unresolved");
+    Console.WriteLine($"SAVED PROBES total={rows.Length-1} different={failures} unresolved={pending} native_class_changed={changedNative} finite_boundary_evidence={name}-finite-boundary.json");
     ParasolidProbeAgreement.UnresolvedCount+=pending;
     Require(failures==0,"fixed classification API error or Inside/Outside disagreement");
 }
+
+static unsafe JsonArray ProbePrecisionControls(int reference,int nativeReload,int own,int fresh,PK_VECTOR_t point)
+{
+    PK_VECTOR_t closest=default;var best=double.PositiveInfinity;PK_EDGE_t source=0;int count;PK_EDGE_t* edges;
+    Check(PK_BODY_ask_edges(reference,&count,&edges),"precision control finite edges");
+    try
+    {
+        var options=new PK_TOPOL_range_vector_o_t{opt_level=PK_range_opt_accuracy_c};
+        for(var i=0;i<count;i++)
+        {
+            PK_range_result_t result;PK_range_1_r_t range;
+            if(PK_TOPOL_range_vector(edges[i],point,&options,&result,&range)!=0||result!=PK_range_result_found_c)continue;
+            var distance=Distance(point,range.end.vector);if(distance>0&&distance<best){best=distance;closest=range.end.vector;source=edges[i];}
+        }
+    }
+    finally{Check(PK_MEMORY_free(edges),"precision control edge list");}
+    var controls=new JsonArray();if(source==0)return controls;
+    foreach(var factor in new[]{.5,2.0})
+    {
+        var query=closest;for(var d=0;d<3;d++)query.coord[d]+=factor*(point.coord[d]-closest.coord[d]);
+        Span<int> values=stackalloc int[4];Span<int> errors=stackalloc int[4];Span<int> topology=stackalloc int[4];
+        fixed(int* v=values)fixed(int* e=errors)fixed(int* t=topology)
+        {
+            e[0]=PK_BODY_contains_vector(reference,query,v,t);e[1]=PK_BODY_contains_vector(nativeReload,query,v+1,t+1);
+            e[2]=KernelRuntime.BodyContainsVector(own,*(M.PK_VECTOR_s*)&query,v+2,t+2);e[3]=PK_BODY_contains_vector(fresh,query,v+3,t+3);
+        }
+        var equal=errors.IndexOfAnyExcept(0)<0&&values[0]==values[1]&&values[0]==values[2]&&values[0]==values[3];
+        controls.Add((JsonNode)new JsonObject{["factor"]=factor,["sourceFiniteEdge"]=source,["x"]=query.coord[0],["y"]=query.coord[1],["z"]=query.coord[2],
+            ["PK_native"]=values[0],["PK_roundtrip"]=values[1],["GM_actual"]=values[2],["PK_GM_fresh"]=values[3],
+            ["PK_native_error"]=errors[0],["PK_roundtrip_error"]=errors[1],["GM_actual_error"]=errors[2],["PK_GM_fresh_error"]=errors[3],
+            ["agreement"]=equal?"Verified":"Different",["source"]="read-only native finite-edge range candidate; derived controls do not replace original coordinates"});
+    }
+    return controls;
+}
+
+// Read-only evidence on the original finite edge parameters. Global lower
+// bounds cover all edge intervals; a point enclosure gives an upper witness.
+// This is a distance to the finite edges, not to the union of all finite faces.
+static unsafe JsonObject FiniteProbeEvidence(int body,PK_VECTOR_t query)
+{
+    const int cellBudget=4096;var cells=0;var incomplete=false;var best=double.PositiveInfinity;var lower=0.0;PK_TOPOL_t witness=0;
+    var boundaryUpper=double.PositiveInfinity;PK_TOPOL_t boundaryWitness=0;
+    var failedBounds=new JsonArray();
+    var queue=new PriorityQueue<(PK_CURVE_t Curve,PK_EDGE_t Edge,double First,double Last),double>();
+    var record=KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(body).Slot];var edge=record.FirstEdgeBody;
+    var owns=KernelRuntime.EnsureCommandScratch();
+    double precision;Check(PK_SESSION_ask_precision(&precision),"finite evidence session precision");
+    var threshold=IntervalNumber.Square(new(precision));
+    try
+    {
+        var vertex=record.FirstVertexBody;
+        for(var v=0;v<record.VertexCountBody;v++,vertex=KernelRuntime.Vertices[vertex].NextInBody)
+        {
+            var actual=KernelRuntime.Vertices[vertex];var point=KernelRuntime.Points[KernelRuntime.GetPointSlotByTag(actual.PointTag)].Position;
+            var d=DistanceBox(new(point.X,point.X,point.Y,point.Y,point.Z,point.Z),query);
+            if(d.Upper<boundaryUpper){boundaryUpper=d.Upper;boundaryWitness=actual.Header.Tag;}
+        }
+        var loopCount=0;var face=record.FirstFaceBody;
+        for(var f=0;f<record.FaceCountBody;f++,face=KernelRuntime.Faces[face].NextInBody)loopCount+=KernelRuntime.Faces[face].LoopCount;
+        var points=new KernelVector3[record.VertexCountBody];var vertices=new int[points.Length];
+        var edges=new KernelRuntime.ModelingEdge[record.EdgeCountBody];var sources=new int[edges.Length];
+        var coedges=new KernelRuntime.ModelingCoedge[2*edges.Length];var loops=new KernelRuntime.ModelingLoop[loopCount];
+        var faces=new KernelRuntime.ModelingFace[record.FaceCountBody];var faceSources=new int[faces.Length];var owners=new int[faces.Length];
+        Span<int> input=stackalloc int[1]{body};Span<int> offsets=stackalloc int[2];
+        var read=KernelRuntime.ReadRegularBoundaries(input,points,vertices,edges,sources,coedges,loops,faces,faceSources,owners,offsets,
+            out _,out var ne,out var nc,out var nl,out var nf,classification:true);
+        var planarWitnesses=0;
+        if(read==0)
+        {
+            var view=new KernelRuntime.RegularBoundaryView(edges.AsSpan(0,ne),coedges.AsSpan(0,nc),loops.AsSpan(0,nl),faces.AsSpan(0,nf));
+            for(var f=0;f<nf;f++)
+            {
+                var sf=KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(faces[f].Surface)];if(sf.Class!=SurfaceClass.Plane)continue;
+                var p=new M.PK_PLANE_sf_s();Check(KernelRuntime.PlaneAsk(sf.Header.Tag,&p),"finite plane evidence frame");
+                var n=p.basis_set.axis;var x=p.basis_set.ref_direction;var o=p.basis_set.location;
+                Span<double> y=stackalloc double[3]{n.coord[1]*x.coord[2]-n.coord[2]*x.coord[1],n.coord[2]*x.coord[0]-n.coord[0]*x.coord[2],n.coord[0]*x.coord[1]-n.coord[1]*x.coord[0]};
+                var proposal=query;var uv=new M.PK_UV_s();for(var d=0;d<3;d++){uv.param[0]+=(proposal.coord[d]-o.coord[d])*x.coord[d];uv.param[1]+=(proposal.coord[d]-o.coord[d])*y[d];}
+                if(KernelRuntime.RegularFaceContains(view,f,uv,out var inside)!=0||!inside)continue;
+                var dx=new IntervalNumber(o.coord[0])+new IntervalNumber(x.coord[0])*uv.param[0]+(new IntervalNumber(n.coord[1])*x.coord[2]-new IntervalNumber(n.coord[2])*x.coord[1])*uv.param[1];
+                var dy=new IntervalNumber(o.coord[1])+new IntervalNumber(x.coord[1])*uv.param[0]+(new IntervalNumber(n.coord[2])*x.coord[0]-new IntervalNumber(n.coord[0])*x.coord[2])*uv.param[1];
+                var dz=new IntervalNumber(o.coord[2])+new IntervalNumber(x.coord[2])*uv.param[0]+(new IntervalNumber(n.coord[0])*x.coord[1]-new IntervalNumber(n.coord[1])*x.coord[0])*uv.param[1];
+                var distance=DistanceBox(new(dx.Lower,dx.Upper,dy.Lower,dy.Upper,dz.Lower,dz.Upper),query);planarWitnesses++;
+                if(distance.Upper<boundaryUpper){boundaryUpper=distance.Upper;boundaryWitness=KernelRuntime.Faces[faceSources[f]].Header.Tag;}
+            }
+        }
+        for(var e=0;e<record.EdgeCountBody;e++,edge=KernelRuntime.Edges[edge].NextInBody)
+        {
+            var actual=KernelRuntime.Edges[edge];
+            if(actual.HasParameterRange==0){incomplete=true;failedBounds.Add((JsonNode)new JsonObject{["edge"]=actual.Header.Tag,["reason"]="NoExplicitFiniteParameterRange"});continue;}
+            var status=KernelRuntime.CertifiedIntersectionCurveExtent(actual.CurveTag,actual.ParameterStart,actual.ParameterEnd,out var box);cells++;
+            if(status!=ProjectGmKernel.Native.Computation.AlgorithmStatus.Success){incomplete=true;failedBounds.Add((JsonNode)new JsonObject{["edge"]=actual.Header.Tag,["curve"]=actual.CurveTag,["first"]=actual.ParameterStart,["last"]=actual.ParameterEnd,["reason"]=status.ToString()});continue;}
+            var distance=DistanceBox(box,query);queue.Enqueue((actual.CurveTag,actual.Header.Tag,actual.ParameterStart,actual.ParameterEnd),distance.Lower);
+            double candidate=0;
+            var vector=query;
+            if(KernelRuntime.CurveParameteriseVector(actual.CurveTag,*(M.PK_VECTOR_s*)&vector,&candidate)==0)
+                Witness(actual.CurveTag,actual.Header.Tag,Math.Clamp(candidate,actual.ParameterStart,actual.ParameterEnd));
+        }
+        while(queue.TryPeek(out _,out var bound))
+        {
+            lower=bound;if(best<=threshold.Lower||bound>threshold.Upper||cells+3>cellBudget)break;
+            var cell=queue.Dequeue();var middle=cell.First+(cell.Last-cell.First)*.5;
+            if(!(middle>cell.First&&middle<cell.Last)){incomplete=true;break;}
+            Witness(cell.Curve,cell.Edge,middle);
+            foreach(var half in new[]{(cell.First,middle),(middle,cell.Last)})
+            {
+                var status=KernelRuntime.CertifiedIntersectionCurveExtent(cell.Curve,half.Item1,half.Item2,out var box);cells++;
+                if(status!=ProjectGmKernel.Native.Computation.AlgorithmStatus.Success){incomplete=true;failedBounds.Add((JsonNode)new JsonObject{["edge"]=cell.Edge,["curve"]=cell.Curve,["first"]=half.Item1,["last"]=half.Item2,["reason"]=status.ToString()});continue;}
+                var distance=DistanceBox(box,query);queue.Enqueue((cell.Curve,cell.Edge,half.Item1,half.Item2),distance.Lower);
+            }
+        }
+        if(incomplete||queue.Count==0)lower=0;
+        var near=best<=threshold.Lower;
+        if(best<boundaryUpper){boundaryUpper=best;boundaryWitness=witness;}
+        return new JsonObject{["finiteEdgeSquaredDistanceLower"]=lower,["finiteEdgeSquaredDistanceUpper"]=double.IsFinite(best)?best:null,
+            ["sessionPrecision"]=precision,["witnessEdge"]=witness,["cells"]=cells,["cellBudget"]=cellBudget,["unsupportedInterval"]=incomplete,
+            ["conclusion"]=near?"ProvenWithinSessionPrecisionOfFiniteEdge":lower>threshold.Upper?"ProvenSeparatedFromAllFiniteEdges":"UnresolvedFiniteEdgeDistance",
+            ["boundarySquaredDistanceUpper"]=double.IsFinite(boundaryUpper)?boundaryUpper:null,["boundaryWitnessTopology"]=boundaryWitness,
+            ["boundaryConclusion"]=boundaryUpper<=threshold.Lower?"ProvenWithinSessionPrecisionOfActualFiniteBoundary":"UnresolvedBoundaryDistance",
+            ["finitePlanarWitnesses"]=planarWitnesses,["boundaryReadError"]=read,["unresolvedIntervals"]=failedBounds,["faceGlobalMinimumCertified"]=false,["fourWayAgreementChanged"]=false};
+    }
+    finally{if(owns)KernelRuntime.ReleaseCommandScratch(KernelRuntime.State.Session);}
+
+    void Witness(PK_CURVE_t curve,PK_EDGE_t tag,double parameter)
+    {
+        var status=KernelRuntime.CertifiedIntersectionCurveExtent(curve,parameter,parameter,out var box);cells++;
+        if(status!=ProjectGmKernel.Native.Computation.AlgorithmStatus.Success)return;
+        var distance=DistanceBox(box,query);if(distance.Upper<best){best=distance.Upper;witness=tag;}
+    }
+}
+
+static unsafe IntervalNumber DistanceBox(in IntervalBox3 box,PK_VECTOR_t query)
+    =>IntervalNumber.Square(new IntervalNumber(box.XLo,box.XHi)-query.coord[0])
+        +IntervalNumber.Square(new IntervalNumber(box.YLo,box.YHi)-query.coord[1])
+        +IntervalNumber.Square(new IntervalNumber(box.ZLo,box.ZHi)-query.coord[2]);
 
 static unsafe void NativeProbeEvidence(int body,PK_VECTOR_t query,string label)
 {

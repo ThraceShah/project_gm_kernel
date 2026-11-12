@@ -9,7 +9,7 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
-    private readonly ref struct RegularBoundaryView(ReadOnlySpan<ModelingEdge> edges,ReadOnlySpan<ModelingCoedge> coedges,
+    internal readonly ref struct RegularBoundaryView(ReadOnlySpan<ModelingEdge> edges,ReadOnlySpan<ModelingCoedge> coedges,
         ReadOnlySpan<ModelingLoop> loops,ReadOnlySpan<ModelingFace> faces)
     {
         internal ReadOnlySpan<ModelingEdge> Edges{get;}=edges;
@@ -18,7 +18,7 @@ internal static unsafe partial class KernelRuntime
         internal ReadOnlySpan<ModelingFace> Faces{get;}=faces;
     }
 
-    private static int ReadRegularBoundaries(ReadOnlySpan<BodyTag> bodies,Span<KernelVector3> points,Span<VertexSlot> vertices,
+    internal static int ReadRegularBoundaries(ReadOnlySpan<BodyTag> bodies,Span<KernelVector3> points,Span<VertexSlot> vertices,
         Span<ModelingEdge> edges,Span<EdgeSlot> sourceEdges,Span<ModelingCoedge> coedges,Span<ModelingLoop> loops,
         Span<ModelingFace> faces,Span<FaceSlot> sources,Span<BufferOffset> owners,Span<BufferOffset> offsets,
         out BufferCount np,out BufferCount ne,out BufferCount nc,out BufferCount nl,out BufferCount nf,Span<double> vertexPrecisions=default,bool classification=false)
@@ -79,8 +79,11 @@ internal static unsafe partial class KernelRuntime
         offsets[bodies.Length]=nf;return 0;
     }
 
+    internal static int RegularFaceContains(in RegularBoundaryView view,BufferOffset face,PK_UV_s query,out bool inside)
+        =>RegularFaceContains(view,face,query,out inside,default);
+
     private static int RegularFaceContains(in RegularBoundaryView view,BufferOffset face,PK_UV_s query,out bool inside,
-        ReadOnlySpan<FiniteSectionChart> sectionCharts=default)
+        ReadOnlySpan<FiniteSectionChart> sectionCharts)
     {
         inside=false;var record=view.Faces[face];var winding=0;
         for(var i=0;i<record.LoopCount;i++)

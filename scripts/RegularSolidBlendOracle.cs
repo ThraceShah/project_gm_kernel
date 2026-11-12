@@ -11,6 +11,7 @@ using ProjectGmKernel.Native.Runtime;
 using System.Runtime.CompilerServices;
 using System.Diagnostics;
 using System.Globalization;
+using System.Text.Json.Nodes;
 using M=ProjectGmKernel.Native.Generated;
 
 var benchRepeat=1;var benchOption=args.SingleOrDefault(x=>x.StartsWith("--bench-repeat=",StringComparison.Ordinal));
@@ -105,6 +106,8 @@ using(host)unsafe
                     {
                         try{ValidateBlend(own,ownBlend,nativeBlend,radius);}catch(Exception ex){failures++;Console.WriteLine("FAIL "+name+" geometry: "+ex.Message);}
                         try{CompareFresh(own,reference,name+"-fillet",directory);}catch(Exception ex){failures++;Console.WriteLine("FAIL "+name+" structure: "+ex.Message);}
+                        if(args.Contains("--contact-query-controls",StringComparer.Ordinal))
+                            try{ContactQueries(own,reference,directory,name);}catch(Exception ex){failures++;Console.WriteLine("FAIL finite contact queries: "+ex.Message);}
                     }
                     if(name=="plane-nurbs"&&(!roundingOnly||lifecycleOnly))
                     {
@@ -149,6 +152,54 @@ using(host)unsafe
 }
 Console.WriteLine($"TIME total ms={Stopwatch.GetElapsedTime(oracleStarted).TotalMilliseconds:F3}");
 if(ParasolidMassProperties.UnresolvedCount!=0)Environment.ExitCode=2;
+
+static unsafe void ContactQueries(int source,int reference,string output,string label)
+{
+    var results=new JsonArray();
+    foreach(var scale in new[]{100.0,200.0})
+    {
+        int own,independent;Check(KernelRuntime.EntityCopy(source,&own),"copy query product");Check(PK_ENTITY_copy(reference,&independent),"copy independent query product");
+        var matrix=new M.PK_TRANSF_sf_s();matrix.matrix[0]=matrix.matrix[5]=matrix.matrix[10]=scale;matrix.matrix[15]=1;int transform,nativeTransform;
+        Check(KernelRuntime.TransfCreate(&matrix,&transform),"query scale transform");Check(PK_TRANSF_create((PK_TRANSF_sf_t*)&matrix,&nativeTransform),"independent query scale transform");
+        try
+        {
+            int count;int* replaced;byte* exact;PK_LOGICAL_t* nativeExact;
+            Check(KernelRuntime.BodyTransform(own,transform,0,&count,&replaced,&exact),"scale query product");Free(true,replaced);Free(true,exact);
+            Check(PK_BODY_transform(independent,nativeTransform,0,&count,&replaced,&nativeExact),"scale independent product");Free(false,replaced);Free(false,nativeExact);
+            var actualBytes=Transmit(own);var fresh=Receive(actualBytes);
+            File.WriteAllBytes(Path.Combine(output,$"{label}-query-scale-{scale:R}-gm.x_t"),actualBytes);
+            File.WriteAllBytes(Path.Combine(output,$"{label}-query-scale-{scale:R}-pk.x_t"),TransmitNative(independent));
+            try
+            {
+                CheckBody(independent,"independent scaled query body");CheckBody(fresh,"fresh scaled query body");
+                ParasolidBodyCompare.AssertEquivalent(independent,fresh,"scaled query product");
+                var body=KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(own).Slot];var edge=body.FirstEdgeBody;
+                for(var i=0;i<body.EdgeCountBody;i++,edge=KernelRuntime.Edges[edge].NextInBody)
+                {
+                    var curve=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(KernelRuntime.Edges[edge].CurveTag)];if(curve.Class!=CurveClass.ICurve)continue;
+                    var contact=KernelRuntime.ICurveDataPool[curve.DataIndex];if(contact.IsBlendContact==0)continue;
+                    var sf=KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(contact.Surface1Tag)];var data=KernelRuntime.BlendedEdgeDataPool[sf.DataIndex];
+                    var root=KernelRuntime.GetNestedBlendProgram(data).Surfaces[data.ProgramRoot];var side=root.ReverseSection?contact.BlendContactSide:1-contact.BlendContactSide;
+                    var uv=new M.PK_UV_s();uv.param[0]=(sf.UMin+sf.UMax)*.5;uv.param[1]=side==0?5e-9:1-5e-9;var point=new M.PK_VECTOR_s();
+                    Check(KernelRuntime.SurfEval(sf.Header.Tag,uv,0,0,0,&point),"actual finite face query point");
+                    int ownCode,ownTop,ownClass,nativeCode,nativeTop,nativeClass,referenceCode,referenceTop,referenceClass;
+                    var ownError=KernelRuntime.BodyContainsVector(own,point,&ownCode,&ownTop);var nativeError=PK_BODY_contains_vector(fresh,*(PK_VECTOR_t*)&point,&nativeCode,&nativeTop);
+                    var referenceError=PK_BODY_contains_vector(independent,*(PK_VECTOR_t*)&point,&referenceCode,&referenceTop);
+                    Check(ownError,"GM contact-near face query");Check(nativeError,"PK same-product contact-near face query");Check(referenceError,"PK independent contact-near face query");
+                    Check(KernelRuntime.EntityAskClass(ownTop,&ownClass),"GM query topology class");Check(PK_ENTITY_ask_class(nativeTop,&nativeClass),"PK same-product query topology class");Check(PK_ENTITY_ask_class(referenceTop,&referenceClass),"PK independent query topology class");
+                    results.Add((JsonNode)new JsonObject{["scale"]=scale,["surface"]=sf.Header.Tag,["curve"]=curve.Header.Tag,["x"]=point.coord[0],["y"]=point.coord[1],["z"]=point.coord[2],
+                        ["gmCode"]=ownCode,["gmTopologyClass"]=ownClass,["sameProductPkCode"]=nativeCode,["sameProductPkTopologyClass"]=nativeClass,["independentPkCode"]=referenceCode,["independentPkTopologyClass"]=referenceClass});
+                    Require(ownCode==PK_enclosure_on_c&&nativeCode==ownCode&&referenceCode==ownCode&&ownClass==PK_CLASS_face&&nativeClass==ownClass&&referenceClass==ownClass,"finite contact query face topology agreement");
+                }
+            }
+            finally{Check(PK_ENTITY_delete(1,&fresh),"delete fresh scaled query body");}
+        }
+        finally{Check(KernelRuntime.EntityDelete(1,&own),"delete scaled query body");Check(PK_ENTITY_delete(1,&independent),"delete scaled independent body");Check(KernelRuntime.EntityDelete(1,&transform),"delete query transform");Check(PK_ENTITY_delete(1,&nativeTransform),"delete independent query transform");}
+    }
+    Require(results.Count>0,"finite contact query cases required");
+    File.WriteAllText(Path.Combine(output,label+"-contact-query-controls.json"),results.ToJsonString(new System.Text.Json.JsonSerializerOptions{WriteIndented=true}));
+    Console.WriteLine($"FINITE_CONTACT_QUERY_PASS cases={results.Count} actual finite face topology matches independent and same-product PK");
+}
 
 static unsafe int Roof(bool own,double bulge=.4,bool curvedWall=false,bool concave=false)
 {
@@ -511,6 +562,13 @@ static unsafe int Receive(byte[] bytes)
         var block=new PK_MEMORY_block_t(null,(ulong)bytes.Length,p);var options=new PK_PART_receive_o_t{transmit_format=PK_transmit_format_text_c};int n;int* parts;
         Check(PK_PART_receive_b(block,&options,&n,&parts),"real PK receive");try{Require(n==1,"one received solid");return parts[0];}finally{PK_MEMORY_free(parts);}
     }
+}
+static unsafe byte[] TransmitNative(int body)
+{
+    var options=new PK_PART_transmit_o_t{transmit_format=PK_transmit_format_text_c,transmit_version=371};PK_MEMORY_block_t block;
+    Check(PK_PART_transmit_b(1,&body,&options,&block),"independent query product transmit");
+    try{using var bytes=new MemoryStream();for(var p=&block;p!=null;p=p->next)bytes.Write(new ReadOnlySpan<byte>(p->bytes,checked((int)p->n_bytes)));return bytes.ToArray();}
+    finally{Check(PK_MEMORY_block_f(&block),"free independent query product bytes");}
 }
 
 static unsafe void CheckBody(int body,string name)

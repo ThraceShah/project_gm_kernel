@@ -40,6 +40,8 @@ internal static unsafe partial class KernelRuntime
             for(var v=0;v<np;v++)if(ProfileDistance(points[v],point)<=1e-8)
             {*enclosure=ParasolidConstants.PK_enclosure_on_c;*topology=Vertices[vertices[v]].Header.Tag;return 0;}
             var vector=new PK_VECTOR_s();WriteVector(&vector,point);
+            Span<KernelVector3> edgePoint=stackalloc KernelVector3[2];
+            SurfTag preferredSupport=0;
             LastRegularClassificationStage=RegularClassificationStage.Edges;
             for(var e=0;e<ne;e++)
             {
@@ -47,16 +49,32 @@ internal static unsafe partial class KernelRuntime
                 if(RegularPointAwayFromIntersectionCurve(edges[e].Curve,point))continue;
                 double t=0;error=CurveParameteriseVectorCore(edges[e].Curve,vector,&t);if(error==ParasolidConstants.PK_ERROR_not_on_curve)continue;if(error!=0)return error;
                 LiftPeriodicEdgeParameter(edges[e].Curve,edges[e].Start,edges[e].End,ref t);
-                if(t>=edges[e].Start-1e-10&&t<=edges[e].End+1e-10)
+                if(t>=edges[e].Start&&t<=edges[e].End)
                 {
                     if(RegularPointOutsideRollingCurve(edges[e].Curve,point,t))continue;
+                    // A contact curve inverse tests a UV residual. Membership
+                    // of the finite topological edge also needs spatial distance.
+                    var evaluated=EvaluateCurveCore(in Curves[GetCurveSlotByTag(edges[e].Curve)],t,0,false,edgePoint,out _);
+                    if(evaluated!=AlgorithmStatus.Success)return EvaluationError(evaluated);
+                    if(ProfileDistance(edgePoint[0],point)>1e-8)
+                    {
+                        var curve=Curves[GetCurveSlotByTag(edges[e].Curve)];
+                        if(curve.Class==CurveClass.ICurve&&ICurveDataPool[curve.DataIndex].IsBlendContact!=0)
+                            preferredSupport=ICurveDataPool[curve.DataIndex].Surface1Tag;
+                        continue;
+                    }
                     *enclosure=ParasolidConstants.PK_enclosure_on_c;*topology=Edges[sourceEdges[e]].Header.Tag;return 0;
                 }
             }
             var view=new RegularBoundaryView(edges[..ne],coedges[..nc],loops[..nl],faces[..nf]);
             LastRegularClassificationStage=RegularClassificationStage.Faces;
+            // A spatially rejected contact inverse suggests its own support
+            // as a face candidate. The ordinary inverse and complete finite
+            // winding still have to validate that witness.
+            for(var pass=0;pass<2;pass++)
             for(var i=0;i<nf;i++)
             {
+                if((preferredSupport!=0&&SameSheetSupport(faces[i].Surface,preferredSupport))!=(pass==0))continue;
                 LastRegularClassificationEntity=Faces[sources[i]].Header.Tag;
                 var support=faces[i].Surface;if(RegularPointOutsideSupport(support,point))continue;
                 if(RegularPointAwayFromBSurface(GetSurfaceSlotByTag(support),point))continue;
