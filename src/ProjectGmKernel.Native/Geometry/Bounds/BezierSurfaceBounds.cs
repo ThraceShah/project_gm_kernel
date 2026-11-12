@@ -265,6 +265,27 @@ internal static class BezierSurfaceBounds
         return AlgorithmStatus.Success;
     }
 
+    // The source B-surface certifies polynomial XYZ control vertices. Its
+    // homogeneous weight is identically one; extraction rounding in the
+    // unused fourth channel is not a varying rational denominator.
+    internal static AlgorithmStatus BoundPolynomialRectangularSecond(in BezierSurfacePatch patch,in SurfaceParameterBox box,Span<IntervalNumber> output)
+    {
+        if(output.Length<27)return AlgorithmStatus.WorkspaceTooSmall;
+        var size=Math.Min(MaxScalars,4*(patch.UDegree+1)*(patch.VDegree+1));
+        Span<IntervalNumber> restricted=stackalloc IntervalNumber[size],hull=stackalloc IntervalNumber[4];
+        var status=Restrict(patch,box,restricted);if(status!=AlgorithmStatus.Success)return status;
+        for(var axis=0;axis<3;axis++)
+        {
+            var value=restricted[axis];for(var i=1;i<(patch.UDegree+1)*(patch.VDegree+1);i++)value=IntervalNumber.Hull(value,restricted[4*i+axis]);output[axis]=value;
+        }
+        for(var u=0;u<=2;u++)for(var v=0;v<=2;v++)
+        {
+            if(u+v==0)continue;HomogeneousJetHull(patch,box,u,v,hull);
+            for(var axis=0;axis<3;axis++){var value=hull[axis];if(!value.Finite)return AlgorithmStatus.NumericalFailure;output[3*(3*u+v)+axis]=value;}
+        }
+        return output[0].Finite&&output[1].Finite&&output[2].Finite?AlgorithmStatus.Success:AlgorithmStatus.NumericalFailure;
+    }
+
     private static void HomogeneousJetHull(in BezierSurfacePatch patch,in SurfaceParameterBox box,DerivativeOrder uOrder,DerivativeOrder vOrder,Span<IntervalNumber> hull)
     {
         if(uOrder>patch.UDegree||vOrder>patch.VDegree){hull.Clear();return;}
