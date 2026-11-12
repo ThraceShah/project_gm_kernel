@@ -47,12 +47,16 @@ if(args.Length==1&&args[0]=="receipt")
     summary["binaries"]=evidence["binaries"]!.DeepClone();
     summary["fixedSourceDiffSha256"]=Hash(Path.Combine(output,"fixed-source.diff"));
     var runs=new JsonArray();
-    foreach(var stem in new[]{"unpack","evidence-attempt1","evidence-attempt2","evidence-final","evidence-sealed","math-attempt1","math-attempt2","math-attempt3","math-final","products-attempt1"})
+    foreach(var stem in new[]{"unpack","evidence-attempt1","evidence-attempt2","evidence-final","evidence-sealed","evidence-complete","math-attempt1","math-attempt2","math-attempt3","math-final","products-attempt1","products-final","measurement-unpack","measurement-attempt1","measurement-attempt2","measurement-final","measurement-complete","measurement-sealed","measurement-accepted"})
     {var log=Path.Combine(output,stem+".log");var exit=Path.Combine(output,stem+".exit");runs.Add((JsonNode)new JsonObject{["stem"]="temp_docs/independent-1654/"+stem,["rawExit"]=File.Exists(exit)?File.ReadAllText(exit).Trim():null,["logSha256"]=File.Exists(log)?Hash(log):null});}
     summary["independentRuns"]=runs;summary["initialUnloggedUnpackAttempt"]=new JsonObject{["rawExit"]=134,["cause"]="review script JSON reflection disabled after extraction; extracted original bytes subsequently matched sealed ZIP members"};
     summary["mathScope"]="34 exact original Bezier nets / 8262 rational jets; 80 synthetic and 16 actual producer block matrices; 54 exact rolling moment/full-tail or half-angle cases; n3/n7/n63 and n67 rejection";
     summary["productComparisonSha256"]=Hash(Path.Combine(output,"product-comparisons.json"));
+    var scripts=new JsonObject();foreach(var script in new[]{"ReviewUnifiedPerformanceEvidence.cs","ReviewUnifiedPerformanceMath.cs","ReviewUnifiedPerformanceProducts.cs","ReviewUnifiedPerformanceMeasurement.cs"})scripts["scripts/"+script]=Hash(Path.Combine(root,"scripts",script));summary["reviewScripts"]=scripts;
     summary["noMacAssembliesExecuted"]=true;summary["formalMeasurement"]=File.Exists(Path.Combine(output,"measurement-summary.json"))?JsonNode.Parse(File.ReadAllText(Path.Combine(output,"measurement-summary.json"))):null;
+    // External/generated PDB document names are labels, not project paths.
+    // Keep original names in the private evidence; public documents use basenames.
+    NormalizeDocumentLabels(summary);
     var destination=Path.Combine(root,"docs/reviews/advanced-modeling/unified-performance-1654-independent-review.receipt.json");Directory.CreateDirectory(Path.GetDirectoryName(destination)!);File.WriteAllText(destination,summary.ToJsonString(new JsonSerializerOptions{WriteIndented=true}));Console.WriteLine("RECEIPT saved relative review receipt");return;
 }
 Require(args.Length==1&&args[0]=="evidence","usage: unpack | evidence");
@@ -115,12 +119,24 @@ foreach(var run in receipt.RootElement.GetProperty("qualityRuns").EnumerateArray
         foreach(var check in checks)
         {
             if(check.TryGetProperty("captureIdentity",out var ci))Require(ci.GetProperty("kernelDllSha256").GetString()==(string?)identity["kernelDllSha256"],"per-check loaded identity");
-            if(check.TryGetProperty("evidence",out var evidence)&&evidence.ValueKind==JsonValueKind.String)Require(File.Exists(Path.Combine(Path.GetDirectoryName(capture)!,evidence.GetString()!)),"same-call evidence exists");
+            if(check.TryGetProperty("evidence",out var evidence)&&evidence.ValueKind==JsonValueKind.String)
+            {
+                var path=Path.Combine(Path.GetDirectoryName(capture)!,evidence.GetString()!);Require(File.Exists(path),"same-call evidence exists");
+                using var observation=JsonDocument.Parse(File.ReadAllText(path));var e=observation.RootElement;
+                if(check.GetProperty("id").GetString()!.StartsWith("quality-compare-",StringComparison.Ordinal))
+                {
+                    Require(e.GetProperty("status").GetString()=="Verified"&&e.GetProperty("nativeError").GetInt32()==0,"actual compare verdict");var mask=e.GetProperty("mask");
+                    Require(mask.GetProperty("max_diffs").GetInt32()==1024&&!mask.GetProperty("all_tests").GetBoolean()&&!mask.GetProperty("acc_dev_tests").GetBoolean()&&mask.GetProperty("tol_dev_tests").GetBoolean(),"strict comparison mask");
+                }
+                if(check.GetProperty("id").GetString()!.StartsWith("quality-mass-",StringComparison.Ordinal))Require(e.GetProperty("properties").GetArrayLength()==15,"15 component modulus evidence retained");
+            }
         }
         var manifestPath=Path.Combine(Path.GetDirectoryName(capture)!,"source.sha256");var sourceCount=0;
         if(File.Exists(manifestPath))foreach(var line in File.ReadLines(manifestPath))
         {var relative=line[66..];Require(Convert.ToHexStringLower(SHA256.HashData(GitBytes("1654dbf2:"+relative)))==line[..64],"run source manifest "+relative);sourceCount++;}
-        qualitySummary.Add((JsonNode)new JsonObject{["directory"]=dir,["checks"]=counts,["sourceManifestEntries"]=sourceCount,["captureSha256"]=Hash(capture)});
+        var exitPath=dir.Contains('/')?Path.Combine(Path.GetDirectoryName(capture)!,"process.exit"):Path.Combine(original,"temp_docs/unified-performance",dir.Replace("-capture","")+".exit");
+        var rawExit=File.ReadAllText(exitPath).Trim();Require(rawExit==(dir=="active-rigid-small-capture"?"0":"2"),"final original modeling raw exit");
+        qualitySummary.Add((JsonNode)new JsonObject{["directory"]=dir,["checks"]=counts,["rawExit"]=rawExit,["sourceManifestEntries"]=sourceCount,["captureSha256"]=Hash(capture)});
     }
     captures.Add((JsonNode)new JsonObject{["directory"]=dir,["sha256"]=Hash(capture),["data"]=JsonNode.Parse(doc.RootElement.GetRawText())});
 }
@@ -159,6 +175,16 @@ Save("summary.json",new JsonObject{["zipSha256"]=Hash(zipPath),["finalQuality"]=
 Console.WriteLine("PASS sealed bytes, static PE/PDB/source checks and original result inventory (no assembly execution)");
 
 void Save(string name,JsonNode value)=>File.WriteAllText(Path.Combine(output,name),value.ToJsonString(new JsonSerializerOptions{WriteIndented=true}));
+void NormalizeDocumentLabels(JsonNode node)
+{
+    if(node is JsonObject obj)foreach(var pair in obj.ToArray())
+    {
+        if(pair.Value is JsonArray labels&&pair.Key is "unmapped" or "unmappedOrGenerated")
+        {for(var i=0;i<labels.Count;i++){var name=labels[i]!.GetValue<string>();if(Path.IsPathRooted(name))labels[i]=Path.GetFileName(name);}}
+        else if(pair.Value!=null)NormalizeDocumentLabels(pair.Value);
+    }
+    else if(node is JsonArray array)foreach(var item in array)if(item!=null)NormalizeDocumentLabels(item);
+}
 byte[] GitBytes(string spec)
 {
     if(sourceCache.TryGetValue(spec,out var saved))return saved;

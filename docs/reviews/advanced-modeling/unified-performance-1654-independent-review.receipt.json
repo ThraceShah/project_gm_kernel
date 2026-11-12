@@ -1,0 +1,1957 @@
+{
+  "zipSha256": "d57ba2306dd083274fc4016720e454fb8f3f564afc639324c2465897f0877e26",
+  "finalQuality": [
+    {
+      "directory": "active-quality/00-curved-candidate",
+      "checks": {
+        "pass": 14,
+        "missing": 13
+      },
+      "rawExit": "2",
+      "sourceManifestEntries": 520,
+      "captureSha256": "78a96e49c3143046c77e13955cfbe5935654d0aa52757501acc3f0aa649b0774"
+    },
+    {
+      "directory": "active-quality/01-solidblend-candidate",
+      "checks": {
+        "pass": 16,
+        "missing": 13
+      },
+      "rawExit": "2",
+      "sourceManifestEntries": 520,
+      "captureSha256": "1291fac85f929c5d02a89732478ed6584a83366ce3e9f1904067a9444f9ee439"
+    },
+    {
+      "directory": "active-quality/02-shortedge-candidate",
+      "checks": {
+        "pass": 35,
+        "missing": 17
+      },
+      "rawExit": "2",
+      "sourceManifestEntries": 520,
+      "captureSha256": "6a6afa35c45567dff5358c9df015cc02983c476c3663b9a6ff09f168bd3bdd69"
+    },
+    {
+      "directory": "active-rigid-small-capture",
+      "checks": {
+        "pass": 51,
+        "missing": 1
+      },
+      "rawExit": "0",
+      "sourceManifestEntries": 0,
+      "captureSha256": "a6366f43c3841fb5db1a4ced6792822aaf6301ff85a73e2fe61c00ca37e4d329"
+    },
+    {
+      "directory": "active-mirror8-capture",
+      "checks": {
+        "pass": 29,
+        "missing": 23
+      },
+      "rawExit": "2",
+      "sourceManifestEntries": 0,
+      "captureSha256": "d4af60b9042dbfd8cf4c44dac9f6f051e78f3b283b6f24960d6d7f640f33a64b"
+    },
+    {
+      "directory": "active-shortedge-lifecycle-capture",
+      "checks": {
+        "pass": 133,
+        "missing": 77
+      },
+      "rawExit": "2",
+      "sourceManifestEntries": 0,
+      "captureSha256": "e94a544815543ddbee1139587e1bf6e9b4a9dae3b6c0c7e637541fb8fd89eb37"
+    },
+    {
+      "directory": "active-nurbs-lifecycle-capture",
+      "checks": {
+        "pass": 16,
+        "missing": 13
+      },
+      "rawExit": "2",
+      "sourceManifestEntries": 0,
+      "captureSha256": "c7a38f0e16083dad76de963a376176371076698c734cb88a00dcbbb9aaae4477"
+    },
+    {
+      "directory": "active-curved-reload-capture",
+      "checks": {
+        "pass": 17,
+        "missing": 26
+      },
+      "rawExit": "2",
+      "sourceManifestEntries": 0,
+      "captureSha256": "078d0bb2ddb13d0f3045e34d570ee2ac82765b5d30d32d465f1b3dd2a985ee53"
+    }
+  ],
+  "baselineComparisons": [
+    {
+      "comparison": "unified-failure-ready",
+      "records": [
+        {
+          "side": "baseline",
+          "nativeSha256": "5786feb775060ef31476f3cff2fc0ce826e59b7b73910e62ec25e2073fe04c88",
+          "nativeMvid": "be7e12fc-5eb7-45e5-9a6f-d58abeb1dce1",
+          "testSha256": "4bd3f5f0f2b2de724d777507f1f3b7636a942dae97e67bd5db51d66fa49c3ce8",
+          "testPdbSha256": "a367e6f898e36af60e63c6a99bb2f8d59f1df0c8b02fb4e6becf04428e23bd6d",
+          "nativePdbSha256": "e42a7123abab6f87d23d8e5a576e02e7a3a18e2b1899b56137209be46ddc6ea8",
+          "rawTestExit": 1
+        },
+        {
+          "side": "candidate",
+          "nativeSha256": "e36067211c4424fe56c4a1d859471e36d419d8413a949507e20061570534f2f9",
+          "nativeMvid": "b781f0f5-bf94-436d-b911-5c3e6665b492",
+          "testSha256": "4bd3f5f0f2b2de724d777507f1f3b7636a942dae97e67bd5db51d66fa49c3ce8",
+          "testPdbSha256": "a367e6f898e36af60e63c6a99bb2f8d59f1df0c8b02fb4e6becf04428e23bd6d",
+          "nativePdbSha256": "5d07222403a1b1c805f6e6fd08f3e186d97a940603fc22dded7921a32d0896a7",
+          "rawTestExit": 1
+        }
+      ]
+    },
+    {
+      "comparison": "unified-stack-ready",
+      "records": [
+        {
+          "side": "baseline",
+          "nativeSha256": "5786feb775060ef31476f3cff2fc0ce826e59b7b73910e62ec25e2073fe04c88",
+          "nativeMvid": "be7e12fc-5eb7-45e5-9a6f-d58abeb1dce1",
+          "testSha256": "54dd51e067305f5e0f249ab8c09fdd9cecf41723427128683eeea1ab8ce238e5",
+          "testPdbSha256": "5511e99cd546483dc11a8d6bbdc9f32896cd462feea45e04101957017d2b4f5c",
+          "nativePdbSha256": "e42a7123abab6f87d23d8e5a576e02e7a3a18e2b1899b56137209be46ddc6ea8",
+          "rawTestExit": 1
+        },
+        {
+          "side": "candidate",
+          "nativeSha256": "2d2dd9c382c23794f97aef1304817be5a2ae2e9389ac7d74d63cb11d8c33ae40",
+          "nativeMvid": "50df1313-c112-48ae-9fcd-ac8f6b10f40b",
+          "testSha256": "54dd51e067305f5e0f249ab8c09fdd9cecf41723427128683eeea1ab8ce238e5",
+          "testPdbSha256": "5511e99cd546483dc11a8d6bbdc9f32896cd462feea45e04101957017d2b4f5c",
+          "nativePdbSha256": "1df843b84e1452a560d33c53eb4f42050e89c022958bd0a6c490353e8cbe6341",
+          "rawTestExit": 1
+        }
+      ]
+    }
+  ],
+  "suiteSixFilesUnchanged": true,
+  "suiteRawExit": "1",
+  "binaries": [
+    {
+      "dll": "temp_docs/unified-performance/active-quality/00-curved-candidate/identity/kernel.dll",
+      "pdb": "temp_docs/unified-performance/active-quality/00-curved-candidate/identity/kernel.pdb",
+      "mvid": "7b78b001-a705-4e34-9e8f-ec9c439fe3ed",
+      "codeViewGuid": "0ddac7a1-9f62-46c3-b418-d7f0dcbf0537",
+      "trackedDocuments": 334,
+      "unmapped": [
+        "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.GlobalUsings.g.cs",
+        "src/ProjectGmKernel.Native/obj/Release/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+        "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.AssemblyInfo.cs"
+      ]
+    },
+    {
+      "dll": "temp_docs/unified-performance/active-quality/01-solidblend-candidate/identity/kernel.dll",
+      "pdb": "temp_docs/unified-performance/active-quality/01-solidblend-candidate/identity/kernel.pdb",
+      "mvid": "7b78b001-a705-4e34-9e8f-ec9c439fe3ed",
+      "codeViewGuid": "0ddac7a1-9f62-46c3-b418-d7f0dcbf0537",
+      "trackedDocuments": 334,
+      "unmapped": [
+        "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.GlobalUsings.g.cs",
+        "src/ProjectGmKernel.Native/obj/Release/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+        "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.AssemblyInfo.cs"
+      ]
+    },
+    {
+      "dll": "temp_docs/unified-performance/active-quality/02-shortedge-candidate/identity/kernel.dll",
+      "pdb": "temp_docs/unified-performance/active-quality/02-shortedge-candidate/identity/kernel.pdb",
+      "mvid": "7b78b001-a705-4e34-9e8f-ec9c439fe3ed",
+      "codeViewGuid": "0ddac7a1-9f62-46c3-b418-d7f0dcbf0537",
+      "trackedDocuments": 334,
+      "unmapped": [
+        "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.GlobalUsings.g.cs",
+        "src/ProjectGmKernel.Native/obj/Release/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+        "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.AssemblyInfo.cs"
+      ]
+    },
+    {
+      "dll": "temp_docs/unified-performance/active-rigid-small-capture/identity/kernel.dll",
+      "pdb": "temp_docs/unified-performance/active-rigid-small-capture/identity/kernel.pdb",
+      "mvid": "7b78b001-a705-4e34-9e8f-ec9c439fe3ed",
+      "codeViewGuid": "0ddac7a1-9f62-46c3-b418-d7f0dcbf0537",
+      "trackedDocuments": 334,
+      "unmapped": [
+        "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.GlobalUsings.g.cs",
+        "src/ProjectGmKernel.Native/obj/Release/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+        "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.AssemblyInfo.cs"
+      ]
+    },
+    {
+      "dll": "temp_docs/unified-performance/active-mirror8-capture/identity/kernel.dll",
+      "pdb": "temp_docs/unified-performance/active-mirror8-capture/identity/kernel.pdb",
+      "mvid": "7b78b001-a705-4e34-9e8f-ec9c439fe3ed",
+      "codeViewGuid": "0ddac7a1-9f62-46c3-b418-d7f0dcbf0537",
+      "trackedDocuments": 334,
+      "unmapped": [
+        "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.GlobalUsings.g.cs",
+        "src/ProjectGmKernel.Native/obj/Release/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+        "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.AssemblyInfo.cs"
+      ]
+    },
+    {
+      "dll": "temp_docs/unified-performance/active-shortedge-lifecycle-capture/identity/kernel.dll",
+      "pdb": "temp_docs/unified-performance/active-shortedge-lifecycle-capture/identity/kernel.pdb",
+      "mvid": "7b78b001-a705-4e34-9e8f-ec9c439fe3ed",
+      "codeViewGuid": "0ddac7a1-9f62-46c3-b418-d7f0dcbf0537",
+      "trackedDocuments": 334,
+      "unmapped": [
+        "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.GlobalUsings.g.cs",
+        "src/ProjectGmKernel.Native/obj/Release/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+        "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.AssemblyInfo.cs"
+      ]
+    },
+    {
+      "dll": "temp_docs/unified-performance/active-nurbs-lifecycle-capture/identity/kernel.dll",
+      "pdb": "temp_docs/unified-performance/active-nurbs-lifecycle-capture/identity/kernel.pdb",
+      "mvid": "7b78b001-a705-4e34-9e8f-ec9c439fe3ed",
+      "codeViewGuid": "0ddac7a1-9f62-46c3-b418-d7f0dcbf0537",
+      "trackedDocuments": 334,
+      "unmapped": [
+        "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.GlobalUsings.g.cs",
+        "src/ProjectGmKernel.Native/obj/Release/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+        "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.AssemblyInfo.cs"
+      ]
+    },
+    {
+      "dll": "temp_docs/unified-performance/active-curved-reload-capture/identity/kernel.dll",
+      "pdb": "temp_docs/unified-performance/active-curved-reload-capture/identity/kernel.pdb",
+      "mvid": "7b78b001-a705-4e34-9e8f-ec9c439fe3ed",
+      "codeViewGuid": "0ddac7a1-9f62-46c3-b418-d7f0dcbf0537",
+      "trackedDocuments": 334,
+      "unmapped": [
+        "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.GlobalUsings.g.cs",
+        "src/ProjectGmKernel.Native/obj/Release/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+        "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.AssemblyInfo.cs"
+      ]
+    },
+    {
+      "dll": "temp_docs/unified-performance/unified-bundle-active-full-ProjectGmKernel.Native.dll",
+      "pdb": "temp_docs/unified-performance/unified-bundle-active-full-ProjectGmKernel.Native.pdb",
+      "mvid": "eef8225b-e9cf-4448-9a6e-a5d0da430674",
+      "codeViewGuid": "f9861f0f-5c10-487c-a8ed-45d4f128d8ee",
+      "trackedDocuments": 334,
+      "unmapped": [
+        "src/ProjectGmKernel.Native/obj/Release/testhooks/ProjectGmKernel.Native.GlobalUsings.g.cs",
+        "src/ProjectGmKernel.Native/obj/Release/testhooks/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+        "src/ProjectGmKernel.Native/obj/Release/testhooks/ProjectGmKernel.Native.AssemblyInfo.cs"
+      ]
+    },
+    {
+      "dll": "temp_docs/unified-performance/unified-bundle-active-full-KernelTests.dll",
+      "pdb": "temp_docs/unified-performance/unified-bundle-active-full-KernelTests.pdb",
+      "mvid": "98ce53b8-663a-47ca-bb24-5d547ba34bff",
+      "codeViewGuid": "4afe951e-6a9a-449c-ba09-c0142c30b948",
+      "trackedDocuments": 164,
+      "unmapped": [
+        "Microsoft.NET.Test.Sdk.Program.cs",
+        "tests/KernelTests/obj/Release/net10.0/KernelTests.GlobalUsings.g.cs",
+        "tests/KernelTests/obj/Release/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+        "tests/KernelTests/obj/Release/net10.0/KernelTests.AssemblyInfo.cs"
+      ]
+    }
+  ],
+  "fixedSourceDiffSha256": "692d0613f6df46550e7ddcd3da8725d16c37c05f09398670c54a6e913717bd01",
+  "independentRuns": [
+    {
+      "stem": "temp_docs/independent-1654/unpack",
+      "rawExit": "0",
+      "logSha256": "f65348544ace93dba8849a1db0a4749701608deeac41327bd342ddceef481ca7"
+    },
+    {
+      "stem": "temp_docs/independent-1654/evidence-attempt1",
+      "rawExit": "134",
+      "logSha256": "13fdc147db37fec7865326f7bd61eb0511d8b1846825bd7fcf31a0dc7583cb50"
+    },
+    {
+      "stem": "temp_docs/independent-1654/evidence-attempt2",
+      "rawExit": "0",
+      "logSha256": "305f3a60a8f766e140766b9eca8eba8fb8999faf412b35e11642a0388d1dd897"
+    },
+    {
+      "stem": "temp_docs/independent-1654/evidence-final",
+      "rawExit": "0",
+      "logSha256": "517f01f4e01f862b94b491204431244f8bafb3042bf0f4415c9f592c787b1c5f"
+    },
+    {
+      "stem": "temp_docs/independent-1654/evidence-sealed",
+      "rawExit": "0",
+      "logSha256": "2bf164ce4a33ed6ceab989f1e33bbbbf0d2f32a1227c9748e9b3c9cafd8bf9f0"
+    },
+    {
+      "stem": "temp_docs/independent-1654/evidence-complete",
+      "rawExit": "0",
+      "logSha256": "2bf164ce4a33ed6ceab989f1e33bbbbf0d2f32a1227c9748e9b3c9cafd8bf9f0"
+    },
+    {
+      "stem": "temp_docs/independent-1654/math-attempt1",
+      "rawExit": "1",
+      "logSha256": "faa744ac05c272caed91b214f8412d9475e43e797fff8e8153279747116c303c"
+    },
+    {
+      "stem": "temp_docs/independent-1654/math-attempt2",
+      "rawExit": "134",
+      "logSha256": "2c20cd43e42759d953de1bd8df326f8cd5d9344e3dd602e557860b16aa43e397"
+    },
+    {
+      "stem": "temp_docs/independent-1654/math-attempt3",
+      "rawExit": "0",
+      "logSha256": "b1092e279f484a932c3b08f43745c909c130469bfb936d5e623c638d55391365"
+    },
+    {
+      "stem": "temp_docs/independent-1654/math-final",
+      "rawExit": "0",
+      "logSha256": "fce2a06704d5394ff126c26f6ac7d50624b4bfbc82a2cb13a2220093471c39ac"
+    },
+    {
+      "stem": "temp_docs/independent-1654/products-attempt1",
+      "rawExit": "0",
+      "logSha256": "8497bb58d7bd4c82605bb088bd9c0f1fc09c1b552bb6886d753a660fd21e2aff"
+    },
+    {
+      "stem": "temp_docs/independent-1654/products-final",
+      "rawExit": "0",
+      "logSha256": "7a184188034cc3222bf5fee2d1e3d65f0a13a1b801abd3fb5148dd44e7b8fd4c"
+    },
+    {
+      "stem": "temp_docs/independent-1654/measurement-unpack",
+      "rawExit": "0",
+      "logSha256": "8c8ceea11a9376bb5c354d4c4f9855b759a632617a3d3c7782e71c37a05bd11f"
+    },
+    {
+      "stem": "temp_docs/independent-1654/measurement-attempt1",
+      "rawExit": "134",
+      "logSha256": "7272efce74daf114c625a9527975b0c3ac0dfd4902ca1bfa00e67ff9b6b778fd"
+    },
+    {
+      "stem": "temp_docs/independent-1654/measurement-attempt2",
+      "rawExit": "134",
+      "logSha256": "1a5b498ac285fdfd400cb1b2b3e25484e129803fd1765851b7d6b00ecace01e5"
+    },
+    {
+      "stem": "temp_docs/independent-1654/measurement-final",
+      "rawExit": "134",
+      "logSha256": "9004735fb1e7a00a12e1558be43929d1badc2c7ede773cdbd425dabcbbf2d672"
+    },
+    {
+      "stem": "temp_docs/independent-1654/measurement-complete",
+      "rawExit": "0",
+      "logSha256": "16a438460a0bf59c7171aa173b295a25bd668eec9cb27306b33d9f186d92dec6"
+    },
+    {
+      "stem": "temp_docs/independent-1654/measurement-sealed",
+      "rawExit": "0",
+      "logSha256": "185757272e475ab38c8124784bebade2059dae1e42a62981dc7b78f6356297dc"
+    },
+    {
+      "stem": "temp_docs/independent-1654/measurement-accepted",
+      "rawExit": "0",
+      "logSha256": "185757272e475ab38c8124784bebade2059dae1e42a62981dc7b78f6356297dc"
+    }
+  ],
+  "initialUnloggedUnpackAttempt": {
+    "rawExit": 134,
+    "cause": "review script JSON reflection disabled after extraction; extracted original bytes subsequently matched sealed ZIP members"
+  },
+  "mathScope": "34 exact original Bezier nets / 8262 rational jets; 80 synthetic and 16 actual producer block matrices; 54 exact rolling moment/full-tail or half-angle cases; n3/n7/n63 and n67 rejection",
+  "productComparisonSha256": "b9c1faa861fb685a135a608cd2f7be11ca0c6acc3a8e68284abcfcdb2b56f34a",
+  "reviewScripts": {
+    "scripts/ReviewUnifiedPerformanceEvidence.cs": "0e2e5d3910a4dadb18a3bdcaebfbee8344655373fc3622d5112387ca5981fda4",
+    "scripts/ReviewUnifiedPerformanceMath.cs": "d5700c231dec457e47d3fd586c14b22cb837f03e7a3cb65c9277e539d6cb5498",
+    "scripts/ReviewUnifiedPerformanceProducts.cs": "1d24b7cefb490f9c8f28f9228b526870c4967ed92b95dcafad978a52b1931e08",
+    "scripts/ReviewUnifiedPerformanceMeasurement.cs": "12a30e178fdab2fb6e1ee3b066d4635d6b6e032ab7f78ae0bc1c720cf2df338f"
+  },
+  "noMacAssembliesExecuted": true,
+  "formalMeasurement": {
+    "zipSha256": "91ce2f8602db1d119d7e0262f6af07f588f131af9967faa5051634e5ba36f3ab",
+    "reportSha256": "20c74e922acc8a0a08d4c6c5a38263e69b6b8dcf57b59c520913f1c82e9d414e",
+    "startedUtc": "2026-11-11T23:40:41.3046610\u002B00:00",
+    "finishedUtc": "2026-11-11T23:42:45.0173950\u002B00:00",
+    "rawZero": 4,
+    "rawUnresolved2": 16,
+    "runnerRawExit": 2,
+    "apiMeasurements": 120,
+    "meshFiles": 312,
+    "meshBytes": 35389380,
+    "xtFinalFileSet": 64,
+    "massPropertyStates": {
+      "Unresolved": 684,
+      "Verified": 396
+    },
+    "primary900MassPropertyStates": {
+      "Unresolved": 588,
+      "Verified": 312
+    },
+    "loadMin": 3.82,
+    "loadMax": 4.35,
+    "numericTemperatureAvailable": false,
+    "operations": [
+      {
+        "case": "sphere",
+        "baseline": {
+          "coldGmMs": [
+            23.2402,
+            21.6947
+          ],
+          "coldPkMs": [
+            12.0482,
+            0.5582
+          ],
+          "warmGmMs": [
+            0.0773,
+            0.0705,
+            0.0712,
+            0.1099
+          ],
+          "warmPkMs": [
+            0.2942,
+            0.2632,
+            0.2581,
+            0.3424
+          ],
+          "warmGmMedian": 0.07425,
+          "warmGmMin": 0.0705,
+          "warmGmMax": 0.1099,
+          "warmPairedRatioMedian": 0.27185960591133007,
+          "ratioOfWarmMedians": 0.2664155005382131
+        },
+        "candidate": {
+          "coldGmMs": [
+            23.0944,
+            22.7148
+          ],
+          "coldPkMs": [
+            0.452,
+            0.4478
+          ],
+          "warmGmMs": [
+            0.0825,
+            0.1102,
+            0.0826,
+            0.0804
+          ],
+          "warmPkMs": [
+            0.2867,
+            0.2626,
+            0.2777,
+            0.2515
+          ],
+          "warmGmMedian": 0.08255000000000001,
+          "warmGmMin": 0.0804,
+          "warmGmMax": 0.1102,
+          "warmPairedRatioMedian": 0.30856259633413063,
+          "ratioOfWarmMedians": 0.3055709790856932
+        },
+        "changePercent": 11.178451178451198
+      },
+      {
+        "case": "planar",
+        "baseline": {
+          "coldGmMs": [
+            45.0345,
+            44.5928
+          ],
+          "coldPkMs": [
+            1.719,
+            0.9588
+          ],
+          "warmGmMs": [
+            0.604,
+            0.6,
+            0.5539,
+            0.543
+          ],
+          "warmPkMs": [
+            0.844,
+            0.7892,
+            0.7429,
+            0.7079
+          ],
+          "warmGmMedian": 0.57695,
+          "warmGmMin": 0.543,
+          "warmGmMax": 0.604,
+          "warmPairedRatioMedian": 0.7529275792590195,
+          "ratioOfWarmMedians": 0.7531492722407153
+        },
+        "candidate": {
+          "coldGmMs": [
+            50.8558,
+            44.3787
+          ],
+          "coldPkMs": [
+            1.4388,
+            0.9537
+          ],
+          "warmGmMs": [
+            0.5999,
+            0.6036,
+            0.5435,
+            0.5477
+          ],
+          "warmPkMs": [
+            0.8605,
+            1.1341,
+            0.7421,
+            0.6922
+          ],
+          "warmGmMedian": 0.5738,
+          "warmGmMin": 0.5435,
+          "warmGmMax": 0.6036,
+          "warmPairedRatioMedian": 0.7147669494229396,
+          "ratioOfWarmMedians": 0.7160863596655435
+        },
+        "changePercent": -0.5459745211890077
+      },
+      {
+        "case": "curved",
+        "baseline": {
+          "coldGmMs": [
+            689.039,
+            696.082
+          ],
+          "coldPkMs": [
+            4.0279,
+            2.1606
+          ],
+          "warmGmMs": [
+            128.937,
+            123.5045,
+            135.4283,
+            143.5257
+          ],
+          "warmPkMs": [
+            1.9725,
+            1.9543,
+            1.946,
+            1.9552
+          ],
+          "warmGmMedian": 132.18265000000002,
+          "warmGmMin": 123.5045,
+          "warmGmMax": 143.5257,
+          "warmPairedRatioMedian": 67.48023292392702,
+          "ratioOfWarmMedians": 67.62125591507866
+        },
+        "candidate": {
+          "coldGmMs": [
+            737.5996,
+            748.6796
+          ],
+          "coldPkMs": [
+            3.2393,
+            2.129
+          ],
+          "warmGmMs": [
+            77.3999,
+            74.8134,
+            95.2172,
+            92.4118
+          ],
+          "warmPkMs": [
+            1.9747,
+            2.9672,
+            3.0617,
+            2.0499
+          ],
+          "warmGmMedian": 84.90585,
+          "warmGmMin": 74.8134,
+          "warmGmMax": 95.2172,
+          "warmPairedRatioMedian": 35.14761556252489,
+          "ratioOfWarmMedians": 33.84658468039306
+        },
+        "changePercent": -35.766267358083695
+      },
+      {
+        "case": "solidblend",
+        "baseline": {
+          "coldGmMs": [
+            1312.588,
+            1231.654
+          ],
+          "coldPkMs": [
+            17.2155,
+            2.0285
+          ],
+          "warmGmMs": [
+            750.4246,
+            628.218,
+            705.5369,
+            677.5687
+          ],
+          "warmPkMs": [
+            1.5877,
+            1.6008,
+            2.3312,
+            1.5267
+          ],
+          "warmGmMedian": 691.5527999999999,
+          "warmGmMin": 628.218,
+          "warmGmMax": 750.4246,
+          "warmPairedRatioMedian": 418.12631616496725,
+          "ratioOfWarmMedians": 433.77939469970204
+        },
+        "candidate": {
+          "coldGmMs": [
+            1219.245,
+            1263.6695
+          ],
+          "coldPkMs": [
+            2.9807,
+            2.014
+          ],
+          "warmGmMs": [
+            631.4847,
+            558.0697,
+            630.0437,
+            573.9443
+          ],
+          "warmPkMs": [
+            2.6094,
+            1.5265,
+            1.4845,
+            1.5414
+          ],
+          "warmGmMedian": 601.9939999999999,
+          "warmGmMin": 558.0697,
+          "warmGmMax": 631.4847,
+          "warmPairedRatioMedian": 368.9701756427078,
+          "ratioOfWarmMedians": 392.4469506828775
+        },
+        "changePercent": -12.950392218786478
+      },
+      {
+        "case": "shortedge",
+        "baseline": {
+          "coldGmMs": [
+            1845.5345,
+            1815.8666
+          ],
+          "coldPkMs": [
+            4.2157,
+            2.0612
+          ],
+          "warmGmMs": [
+            765.0042,
+            598.5436,
+            685.7137,
+            654.302
+          ],
+          "warmPkMs": [
+            2.201,
+            2.2329,
+            1.4064,
+            1.5108
+          ],
+          "warmGmMedian": 670.00785,
+          "warmGmMin": 598.5436,
+          "warmGmMax": 765.0042,
+          "warmPairedRatioMedian": 390.3271648372217,
+          "ratioOfWarmMedians": 361.015060078668
+        },
+        "candidate": {
+          "coldGmMs": [
+            1489.5655,
+            1596.1725
+          ],
+          "coldPkMs": [
+            2.1363,
+            3.1036
+          ],
+          "warmGmMs": [
+            795.0665,
+            554.0257,
+            730.5027,
+            524.127
+          ],
+          "warmPkMs": [
+            1.6807,
+            2.2362,
+            1.6245,
+            1.6125
+          ],
+          "warmGmMedian": 642.2642000000001,
+          "warmGmMin": 524.127,
+          "warmGmMax": 795.0665,
+          "warmPairedRatioMedian": 387.35924284395196,
+          "ratioOfWarmMedians": 388.6386300375167
+        },
+        "changePercent": -4.140794768300083
+      }
+    ],
+    "processes": [
+      {
+        "directory": "00-sphere-baseline",
+        "commit": "84c558c10135c117bf8be6629a157e6d230f1b2d",
+        "rawExit": 2,
+        "qualityStatus": "Unresolved",
+        "gmMs": [
+          23.2402,
+          0.0773,
+          0.0705
+        ],
+        "pkMs": [
+          12.0482,
+          0.2942,
+          0.2632
+        ],
+        "native": {
+          "sha256": "3118bcfc9b900e5c8a0d5fadef749c7690cea34c889838aee74c1ea800cda42e",
+          "pdbSha256": "e88233a04d9033305cb589bd8c5f852575ee1382016524a7132350a93aad9833",
+          "mvid": "0c4259df-01d7-4515-b42d-e450f0010e8f",
+          "codeViewGuid": "ada582d7-89ef-4271-b87a-ccd22609687b",
+          "matched": 333,
+          "unmappedOrGenerated": [
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.GlobalUsings.g.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.AssemblyInfo.cs"
+          ]
+        },
+        "oracle": {
+          "sha256": "50e13d0ac3e1538e8868525227f85787a8e560f206ddeb9654a2739c9ad29209",
+          "pdbSha256": "c89022df919ab55f3dfc957589663d6ccb12aa3d5d281adfa14a3eeac78cc8a1",
+          "mvid": "ecf68866-8863-4cd7-8ce2-60a694ac25b7",
+          "codeViewGuid": "ef298bed-5786-4c66-a9db-e17edbce70c5",
+          "matched": 6,
+          "unmappedOrGenerated": [
+            "Using.cs",
+            "AnalyticBooleanOracle.cs.GlobalUsings.g.cs",
+            ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "AnalyticBooleanOracle.cs.AssemblyInfo.cs"
+          ]
+        }
+      },
+      {
+        "directory": "01-sphere-candidate",
+        "commit": "d014f76e41746a08b32e963d24b6a8b02fcaac67",
+        "rawExit": 2,
+        "qualityStatus": "Unresolved",
+        "gmMs": [
+          23.0944,
+          0.0825,
+          0.1102
+        ],
+        "pkMs": [
+          0.452,
+          0.2867,
+          0.2626
+        ],
+        "native": {
+          "sha256": "7176e85cc67b5afc38fd5cefb079f26b4a1dab289fc1b624a4efb2cf365659a8",
+          "pdbSha256": "97312312d2875073366c52985a62e1c251de2f435296ced60f2cd2a2f773e403",
+          "mvid": "9cdf9668-5571-464f-a941-76e3202db08f",
+          "codeViewGuid": "33a5c9b6-2c8a-4591-8cc6-f0f924ad3111",
+          "matched": 334,
+          "unmappedOrGenerated": [
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.GlobalUsings.g.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.AssemblyInfo.cs"
+          ]
+        },
+        "oracle": {
+          "sha256": "bd3f5d7b64b7588ff186f7b6c8307a464af70f8b3fd9168110d64422efc205d4",
+          "pdbSha256": "ffd4ed87875df4b2cc4b60b0de4da5c670dec4a843a22ca44a76932ff9b234c4",
+          "mvid": "97c8fdff-d825-4af0-aa20-f55435926bab",
+          "codeViewGuid": "720c3f3e-5e01-4d4a-bd33-1910e25f30e5",
+          "matched": 6,
+          "unmappedOrGenerated": [
+            "Using.cs",
+            "AnalyticBooleanOracle.cs.GlobalUsings.g.cs",
+            ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "AnalyticBooleanOracle.cs.AssemblyInfo.cs"
+          ]
+        }
+      },
+      {
+        "directory": "02-sphere-candidate",
+        "commit": "d014f76e41746a08b32e963d24b6a8b02fcaac67",
+        "rawExit": 2,
+        "qualityStatus": "Unresolved",
+        "gmMs": [
+          22.7148,
+          0.0826,
+          0.0804
+        ],
+        "pkMs": [
+          0.4478,
+          0.2777,
+          0.2515
+        ],
+        "native": {
+          "sha256": "7176e85cc67b5afc38fd5cefb079f26b4a1dab289fc1b624a4efb2cf365659a8",
+          "pdbSha256": "97312312d2875073366c52985a62e1c251de2f435296ced60f2cd2a2f773e403",
+          "mvid": "9cdf9668-5571-464f-a941-76e3202db08f",
+          "codeViewGuid": "33a5c9b6-2c8a-4591-8cc6-f0f924ad3111",
+          "matched": 334,
+          "unmappedOrGenerated": [
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.GlobalUsings.g.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.AssemblyInfo.cs"
+          ]
+        },
+        "oracle": {
+          "sha256": "bd3f5d7b64b7588ff186f7b6c8307a464af70f8b3fd9168110d64422efc205d4",
+          "pdbSha256": "ffd4ed87875df4b2cc4b60b0de4da5c670dec4a843a22ca44a76932ff9b234c4",
+          "mvid": "97c8fdff-d825-4af0-aa20-f55435926bab",
+          "codeViewGuid": "720c3f3e-5e01-4d4a-bd33-1910e25f30e5",
+          "matched": 6,
+          "unmappedOrGenerated": [
+            "Using.cs",
+            "AnalyticBooleanOracle.cs.GlobalUsings.g.cs",
+            ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "AnalyticBooleanOracle.cs.AssemblyInfo.cs"
+          ]
+        }
+      },
+      {
+        "directory": "03-sphere-baseline",
+        "commit": "84c558c10135c117bf8be6629a157e6d230f1b2d",
+        "rawExit": 2,
+        "qualityStatus": "Unresolved",
+        "gmMs": [
+          21.6947,
+          0.0712,
+          0.1099
+        ],
+        "pkMs": [
+          0.5582,
+          0.2581,
+          0.3424
+        ],
+        "native": {
+          "sha256": "3118bcfc9b900e5c8a0d5fadef749c7690cea34c889838aee74c1ea800cda42e",
+          "pdbSha256": "e88233a04d9033305cb589bd8c5f852575ee1382016524a7132350a93aad9833",
+          "mvid": "0c4259df-01d7-4515-b42d-e450f0010e8f",
+          "codeViewGuid": "ada582d7-89ef-4271-b87a-ccd22609687b",
+          "matched": 333,
+          "unmappedOrGenerated": [
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.GlobalUsings.g.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.AssemblyInfo.cs"
+          ]
+        },
+        "oracle": {
+          "sha256": "50e13d0ac3e1538e8868525227f85787a8e560f206ddeb9654a2739c9ad29209",
+          "pdbSha256": "c89022df919ab55f3dfc957589663d6ccb12aa3d5d281adfa14a3eeac78cc8a1",
+          "mvid": "ecf68866-8863-4cd7-8ce2-60a694ac25b7",
+          "codeViewGuid": "ef298bed-5786-4c66-a9db-e17edbce70c5",
+          "matched": 6,
+          "unmappedOrGenerated": [
+            "Using.cs",
+            "AnalyticBooleanOracle.cs.GlobalUsings.g.cs",
+            ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "AnalyticBooleanOracle.cs.AssemblyInfo.cs"
+          ]
+        }
+      },
+      {
+        "directory": "04-planar-baseline",
+        "commit": "84c558c10135c117bf8be6629a157e6d230f1b2d",
+        "rawExit": 0,
+        "qualityStatus": "Verified",
+        "gmMs": [
+          45.0345,
+          0.604,
+          0.6
+        ],
+        "pkMs": [
+          1.719,
+          0.844,
+          0.7892
+        ],
+        "native": {
+          "sha256": "3118bcfc9b900e5c8a0d5fadef749c7690cea34c889838aee74c1ea800cda42e",
+          "pdbSha256": "e88233a04d9033305cb589bd8c5f852575ee1382016524a7132350a93aad9833",
+          "mvid": "0c4259df-01d7-4515-b42d-e450f0010e8f",
+          "codeViewGuid": "ada582d7-89ef-4271-b87a-ccd22609687b",
+          "matched": 333,
+          "unmappedOrGenerated": [
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.GlobalUsings.g.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.AssemblyInfo.cs"
+          ]
+        },
+        "oracle": {
+          "sha256": "7e1bb1d7a100cb593fc1885bf38655c55de6f42210022e11f487ce867bc9d5d1",
+          "pdbSha256": "79595f931642ebb6182162a2f00b8a6f30a26ea36f0329121beadf1ae798a66c",
+          "mvid": "6cdcd55b-2cc6-4cb6-993c-31b517c58d56",
+          "codeViewGuid": "d4756de9-d226-4d45-81f1-9f5b48bdab4d",
+          "matched": 6,
+          "unmappedOrGenerated": [
+            "Using.cs",
+            "BooleanOperationOracle.cs.GlobalUsings.g.cs",
+            ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "BooleanOperationOracle.cs.AssemblyInfo.cs"
+          ]
+        }
+      },
+      {
+        "directory": "05-planar-candidate",
+        "commit": "d014f76e41746a08b32e963d24b6a8b02fcaac67",
+        "rawExit": 0,
+        "qualityStatus": "Verified",
+        "gmMs": [
+          50.8558,
+          0.5999,
+          0.6036
+        ],
+        "pkMs": [
+          1.4388,
+          0.8605,
+          1.1341
+        ],
+        "native": {
+          "sha256": "7176e85cc67b5afc38fd5cefb079f26b4a1dab289fc1b624a4efb2cf365659a8",
+          "pdbSha256": "97312312d2875073366c52985a62e1c251de2f435296ced60f2cd2a2f773e403",
+          "mvid": "9cdf9668-5571-464f-a941-76e3202db08f",
+          "codeViewGuid": "33a5c9b6-2c8a-4591-8cc6-f0f924ad3111",
+          "matched": 334,
+          "unmappedOrGenerated": [
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.GlobalUsings.g.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.AssemblyInfo.cs"
+          ]
+        },
+        "oracle": {
+          "sha256": "13aad024c5ab590615c7bcc57878065173e4298c2202a3c73cad669b65b7dda1",
+          "pdbSha256": "20bdc6ced62a69c86bdbad61125fd862a8faaec799fa001411883dd72442ddbb",
+          "mvid": "3fa101b2-9000-4c3e-ac44-1f85ab28657f",
+          "codeViewGuid": "80193860-69ef-46e6-b2de-2e2bae799d9f",
+          "matched": 6,
+          "unmappedOrGenerated": [
+            "Using.cs",
+            "BooleanOperationOracle.cs.GlobalUsings.g.cs",
+            ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "BooleanOperationOracle.cs.AssemblyInfo.cs"
+          ]
+        }
+      },
+      {
+        "directory": "06-planar-candidate",
+        "commit": "d014f76e41746a08b32e963d24b6a8b02fcaac67",
+        "rawExit": 0,
+        "qualityStatus": "Verified",
+        "gmMs": [
+          44.3787,
+          0.5435,
+          0.5477
+        ],
+        "pkMs": [
+          0.9537,
+          0.7421,
+          0.6922
+        ],
+        "native": {
+          "sha256": "7176e85cc67b5afc38fd5cefb079f26b4a1dab289fc1b624a4efb2cf365659a8",
+          "pdbSha256": "97312312d2875073366c52985a62e1c251de2f435296ced60f2cd2a2f773e403",
+          "mvid": "9cdf9668-5571-464f-a941-76e3202db08f",
+          "codeViewGuid": "33a5c9b6-2c8a-4591-8cc6-f0f924ad3111",
+          "matched": 334,
+          "unmappedOrGenerated": [
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.GlobalUsings.g.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.AssemblyInfo.cs"
+          ]
+        },
+        "oracle": {
+          "sha256": "13aad024c5ab590615c7bcc57878065173e4298c2202a3c73cad669b65b7dda1",
+          "pdbSha256": "20bdc6ced62a69c86bdbad61125fd862a8faaec799fa001411883dd72442ddbb",
+          "mvid": "3fa101b2-9000-4c3e-ac44-1f85ab28657f",
+          "codeViewGuid": "80193860-69ef-46e6-b2de-2e2bae799d9f",
+          "matched": 6,
+          "unmappedOrGenerated": [
+            "Using.cs",
+            "BooleanOperationOracle.cs.GlobalUsings.g.cs",
+            ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "BooleanOperationOracle.cs.AssemblyInfo.cs"
+          ]
+        }
+      },
+      {
+        "directory": "07-planar-baseline",
+        "commit": "84c558c10135c117bf8be6629a157e6d230f1b2d",
+        "rawExit": 0,
+        "qualityStatus": "Verified",
+        "gmMs": [
+          44.5928,
+          0.5539,
+          0.543
+        ],
+        "pkMs": [
+          0.9588,
+          0.7429,
+          0.7079
+        ],
+        "native": {
+          "sha256": "3118bcfc9b900e5c8a0d5fadef749c7690cea34c889838aee74c1ea800cda42e",
+          "pdbSha256": "e88233a04d9033305cb589bd8c5f852575ee1382016524a7132350a93aad9833",
+          "mvid": "0c4259df-01d7-4515-b42d-e450f0010e8f",
+          "codeViewGuid": "ada582d7-89ef-4271-b87a-ccd22609687b",
+          "matched": 333,
+          "unmappedOrGenerated": [
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.GlobalUsings.g.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.AssemblyInfo.cs"
+          ]
+        },
+        "oracle": {
+          "sha256": "7e1bb1d7a100cb593fc1885bf38655c55de6f42210022e11f487ce867bc9d5d1",
+          "pdbSha256": "79595f931642ebb6182162a2f00b8a6f30a26ea36f0329121beadf1ae798a66c",
+          "mvid": "6cdcd55b-2cc6-4cb6-993c-31b517c58d56",
+          "codeViewGuid": "d4756de9-d226-4d45-81f1-9f5b48bdab4d",
+          "matched": 6,
+          "unmappedOrGenerated": [
+            "Using.cs",
+            "BooleanOperationOracle.cs.GlobalUsings.g.cs",
+            ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "BooleanOperationOracle.cs.AssemblyInfo.cs"
+          ]
+        }
+      },
+      {
+        "directory": "08-curved-baseline",
+        "commit": "84c558c10135c117bf8be6629a157e6d230f1b2d",
+        "rawExit": 2,
+        "qualityStatus": "Unresolved",
+        "gmMs": [
+          689.039,
+          128.937,
+          123.5045
+        ],
+        "pkMs": [
+          4.0279,
+          1.9725,
+          1.9543
+        ],
+        "native": {
+          "sha256": "3118bcfc9b900e5c8a0d5fadef749c7690cea34c889838aee74c1ea800cda42e",
+          "pdbSha256": "e88233a04d9033305cb589bd8c5f852575ee1382016524a7132350a93aad9833",
+          "mvid": "0c4259df-01d7-4515-b42d-e450f0010e8f",
+          "codeViewGuid": "ada582d7-89ef-4271-b87a-ccd22609687b",
+          "matched": 333,
+          "unmappedOrGenerated": [
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.GlobalUsings.g.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.AssemblyInfo.cs"
+          ]
+        },
+        "oracle": {
+          "sha256": "a1849faad280c8b749b5ab825d5ad6d9a58e399db7e282d110e55a78e9266f6f",
+          "pdbSha256": "30daf83cd1c73e116c54dd2a78f9fd9b169f8438beb18b6f059d0ccfdea4f08e",
+          "mvid": "ca4a9312-fe73-4b7b-8868-c2eca21f8d48",
+          "codeViewGuid": "ecb3d9ec-673e-43f2-8bde-ae4e66684a12",
+          "matched": 6,
+          "unmappedOrGenerated": [
+            "Using.cs",
+            "RegularCurvedBooleanOracle.cs.GlobalUsings.g.cs",
+            ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "RegularCurvedBooleanOracle.cs.AssemblyInfo.cs"
+          ]
+        }
+      },
+      {
+        "directory": "09-curved-candidate",
+        "commit": "d014f76e41746a08b32e963d24b6a8b02fcaac67",
+        "rawExit": 2,
+        "qualityStatus": "Unresolved",
+        "gmMs": [
+          737.5996,
+          77.3999,
+          74.8134
+        ],
+        "pkMs": [
+          3.2393,
+          1.9747,
+          2.9672
+        ],
+        "native": {
+          "sha256": "7176e85cc67b5afc38fd5cefb079f26b4a1dab289fc1b624a4efb2cf365659a8",
+          "pdbSha256": "97312312d2875073366c52985a62e1c251de2f435296ced60f2cd2a2f773e403",
+          "mvid": "9cdf9668-5571-464f-a941-76e3202db08f",
+          "codeViewGuid": "33a5c9b6-2c8a-4591-8cc6-f0f924ad3111",
+          "matched": 334,
+          "unmappedOrGenerated": [
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.GlobalUsings.g.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.AssemblyInfo.cs"
+          ]
+        },
+        "oracle": {
+          "sha256": "f8cd842cdd8918a4c442d01d35c90a48a170fb1fa8e6694e27aab4b768d7e097",
+          "pdbSha256": "b12fe7450ae2d9d0cb30773ced3b9051b6e985d4244b7b318491a3f50766e5f0",
+          "mvid": "878b06dc-2ba2-4335-ac69-b6e0aa84a2be",
+          "codeViewGuid": "5142d304-556a-4982-af6c-5c64a86025a2",
+          "matched": 6,
+          "unmappedOrGenerated": [
+            "Using.cs",
+            "RegularCurvedBooleanOracle.cs.GlobalUsings.g.cs",
+            ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "RegularCurvedBooleanOracle.cs.AssemblyInfo.cs"
+          ]
+        }
+      },
+      {
+        "directory": "10-curved-candidate",
+        "commit": "d014f76e41746a08b32e963d24b6a8b02fcaac67",
+        "rawExit": 2,
+        "qualityStatus": "Unresolved",
+        "gmMs": [
+          748.6796,
+          95.2172,
+          92.4118
+        ],
+        "pkMs": [
+          2.129,
+          3.0617,
+          2.0499
+        ],
+        "native": {
+          "sha256": "7176e85cc67b5afc38fd5cefb079f26b4a1dab289fc1b624a4efb2cf365659a8",
+          "pdbSha256": "97312312d2875073366c52985a62e1c251de2f435296ced60f2cd2a2f773e403",
+          "mvid": "9cdf9668-5571-464f-a941-76e3202db08f",
+          "codeViewGuid": "33a5c9b6-2c8a-4591-8cc6-f0f924ad3111",
+          "matched": 334,
+          "unmappedOrGenerated": [
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.GlobalUsings.g.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.AssemblyInfo.cs"
+          ]
+        },
+        "oracle": {
+          "sha256": "f8cd842cdd8918a4c442d01d35c90a48a170fb1fa8e6694e27aab4b768d7e097",
+          "pdbSha256": "b12fe7450ae2d9d0cb30773ced3b9051b6e985d4244b7b318491a3f50766e5f0",
+          "mvid": "878b06dc-2ba2-4335-ac69-b6e0aa84a2be",
+          "codeViewGuid": "5142d304-556a-4982-af6c-5c64a86025a2",
+          "matched": 6,
+          "unmappedOrGenerated": [
+            "Using.cs",
+            "RegularCurvedBooleanOracle.cs.GlobalUsings.g.cs",
+            ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "RegularCurvedBooleanOracle.cs.AssemblyInfo.cs"
+          ]
+        }
+      },
+      {
+        "directory": "11-curved-baseline",
+        "commit": "84c558c10135c117bf8be6629a157e6d230f1b2d",
+        "rawExit": 2,
+        "qualityStatus": "Unresolved",
+        "gmMs": [
+          696.082,
+          135.4283,
+          143.5257
+        ],
+        "pkMs": [
+          2.1606,
+          1.946,
+          1.9552
+        ],
+        "native": {
+          "sha256": "3118bcfc9b900e5c8a0d5fadef749c7690cea34c889838aee74c1ea800cda42e",
+          "pdbSha256": "e88233a04d9033305cb589bd8c5f852575ee1382016524a7132350a93aad9833",
+          "mvid": "0c4259df-01d7-4515-b42d-e450f0010e8f",
+          "codeViewGuid": "ada582d7-89ef-4271-b87a-ccd22609687b",
+          "matched": 333,
+          "unmappedOrGenerated": [
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.GlobalUsings.g.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.AssemblyInfo.cs"
+          ]
+        },
+        "oracle": {
+          "sha256": "a1849faad280c8b749b5ab825d5ad6d9a58e399db7e282d110e55a78e9266f6f",
+          "pdbSha256": "30daf83cd1c73e116c54dd2a78f9fd9b169f8438beb18b6f059d0ccfdea4f08e",
+          "mvid": "ca4a9312-fe73-4b7b-8868-c2eca21f8d48",
+          "codeViewGuid": "ecb3d9ec-673e-43f2-8bde-ae4e66684a12",
+          "matched": 6,
+          "unmappedOrGenerated": [
+            "Using.cs",
+            "RegularCurvedBooleanOracle.cs.GlobalUsings.g.cs",
+            ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "RegularCurvedBooleanOracle.cs.AssemblyInfo.cs"
+          ]
+        }
+      },
+      {
+        "directory": "12-solidblend-baseline",
+        "commit": "84c558c10135c117bf8be6629a157e6d230f1b2d",
+        "rawExit": 2,
+        "qualityStatus": "Unresolved",
+        "gmMs": [
+          1312.588,
+          750.4246,
+          628.218
+        ],
+        "pkMs": [
+          17.2155,
+          1.5877,
+          1.6008
+        ],
+        "native": {
+          "sha256": "3118bcfc9b900e5c8a0d5fadef749c7690cea34c889838aee74c1ea800cda42e",
+          "pdbSha256": "e88233a04d9033305cb589bd8c5f852575ee1382016524a7132350a93aad9833",
+          "mvid": "0c4259df-01d7-4515-b42d-e450f0010e8f",
+          "codeViewGuid": "ada582d7-89ef-4271-b87a-ccd22609687b",
+          "matched": 333,
+          "unmappedOrGenerated": [
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.GlobalUsings.g.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.AssemblyInfo.cs"
+          ]
+        },
+        "oracle": {
+          "sha256": "2bda05ab1971256c408c0a7f11eb410ecce1cbb7c9c90b6c720f0615f5f3112f",
+          "pdbSha256": "b7cd74086d355921602c1bce6acb799a0e29285bbadb67163a825f016a066f86",
+          "mvid": "a4e26135-af33-4265-aa8f-c4c67272ac2f",
+          "codeViewGuid": "8ba51d1f-72b1-4e20-afa3-47823a41371b",
+          "matched": 6,
+          "unmappedOrGenerated": [
+            "Using.cs",
+            "RegularSolidBlendOracle.cs.GlobalUsings.g.cs",
+            ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "RegularSolidBlendOracle.cs.AssemblyInfo.cs"
+          ]
+        }
+      },
+      {
+        "directory": "13-solidblend-candidate",
+        "commit": "d014f76e41746a08b32e963d24b6a8b02fcaac67",
+        "rawExit": 2,
+        "qualityStatus": "Unresolved",
+        "gmMs": [
+          1219.245,
+          631.4847,
+          558.0697
+        ],
+        "pkMs": [
+          2.9807,
+          2.6094,
+          1.5265
+        ],
+        "native": {
+          "sha256": "7176e85cc67b5afc38fd5cefb079f26b4a1dab289fc1b624a4efb2cf365659a8",
+          "pdbSha256": "97312312d2875073366c52985a62e1c251de2f435296ced60f2cd2a2f773e403",
+          "mvid": "9cdf9668-5571-464f-a941-76e3202db08f",
+          "codeViewGuid": "33a5c9b6-2c8a-4591-8cc6-f0f924ad3111",
+          "matched": 334,
+          "unmappedOrGenerated": [
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.GlobalUsings.g.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.AssemblyInfo.cs"
+          ]
+        },
+        "oracle": {
+          "sha256": "a1f85f373be7265ddb41cb7d2bf915546fbc8905391796deb790e7d01a8c5e61",
+          "pdbSha256": "6d41ff318e3d039c024a38f8f0abb02573db8898d420feeace0ba9e42015e232",
+          "mvid": "4e225dff-c9e4-4df6-8480-5685ddb3bb50",
+          "codeViewGuid": "56c3aaf8-39b3-4602-8bb7-96c6a6e9555d",
+          "matched": 6,
+          "unmappedOrGenerated": [
+            "Using.cs",
+            "RegularSolidBlendOracle.cs.GlobalUsings.g.cs",
+            ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "RegularSolidBlendOracle.cs.AssemblyInfo.cs"
+          ]
+        }
+      },
+      {
+        "directory": "14-solidblend-candidate",
+        "commit": "d014f76e41746a08b32e963d24b6a8b02fcaac67",
+        "rawExit": 2,
+        "qualityStatus": "Unresolved",
+        "gmMs": [
+          1263.6695,
+          630.0437,
+          573.9443
+        ],
+        "pkMs": [
+          2.014,
+          1.4845,
+          1.5414
+        ],
+        "native": {
+          "sha256": "7176e85cc67b5afc38fd5cefb079f26b4a1dab289fc1b624a4efb2cf365659a8",
+          "pdbSha256": "97312312d2875073366c52985a62e1c251de2f435296ced60f2cd2a2f773e403",
+          "mvid": "9cdf9668-5571-464f-a941-76e3202db08f",
+          "codeViewGuid": "33a5c9b6-2c8a-4591-8cc6-f0f924ad3111",
+          "matched": 334,
+          "unmappedOrGenerated": [
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.GlobalUsings.g.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.AssemblyInfo.cs"
+          ]
+        },
+        "oracle": {
+          "sha256": "a1f85f373be7265ddb41cb7d2bf915546fbc8905391796deb790e7d01a8c5e61",
+          "pdbSha256": "6d41ff318e3d039c024a38f8f0abb02573db8898d420feeace0ba9e42015e232",
+          "mvid": "4e225dff-c9e4-4df6-8480-5685ddb3bb50",
+          "codeViewGuid": "56c3aaf8-39b3-4602-8bb7-96c6a6e9555d",
+          "matched": 6,
+          "unmappedOrGenerated": [
+            "Using.cs",
+            "RegularSolidBlendOracle.cs.GlobalUsings.g.cs",
+            ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "RegularSolidBlendOracle.cs.AssemblyInfo.cs"
+          ]
+        }
+      },
+      {
+        "directory": "15-solidblend-baseline",
+        "commit": "84c558c10135c117bf8be6629a157e6d230f1b2d",
+        "rawExit": 2,
+        "qualityStatus": "Unresolved",
+        "gmMs": [
+          1231.654,
+          705.5369,
+          677.5687
+        ],
+        "pkMs": [
+          2.0285,
+          2.3312,
+          1.5267
+        ],
+        "native": {
+          "sha256": "3118bcfc9b900e5c8a0d5fadef749c7690cea34c889838aee74c1ea800cda42e",
+          "pdbSha256": "e88233a04d9033305cb589bd8c5f852575ee1382016524a7132350a93aad9833",
+          "mvid": "0c4259df-01d7-4515-b42d-e450f0010e8f",
+          "codeViewGuid": "ada582d7-89ef-4271-b87a-ccd22609687b",
+          "matched": 333,
+          "unmappedOrGenerated": [
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.GlobalUsings.g.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.AssemblyInfo.cs"
+          ]
+        },
+        "oracle": {
+          "sha256": "2bda05ab1971256c408c0a7f11eb410ecce1cbb7c9c90b6c720f0615f5f3112f",
+          "pdbSha256": "b7cd74086d355921602c1bce6acb799a0e29285bbadb67163a825f016a066f86",
+          "mvid": "a4e26135-af33-4265-aa8f-c4c67272ac2f",
+          "codeViewGuid": "8ba51d1f-72b1-4e20-afa3-47823a41371b",
+          "matched": 6,
+          "unmappedOrGenerated": [
+            "Using.cs",
+            "RegularSolidBlendOracle.cs.GlobalUsings.g.cs",
+            ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "RegularSolidBlendOracle.cs.AssemblyInfo.cs"
+          ]
+        }
+      },
+      {
+        "directory": "16-shortedge-baseline",
+        "commit": "84c558c10135c117bf8be6629a157e6d230f1b2d",
+        "rawExit": 2,
+        "qualityStatus": "Unresolved",
+        "gmMs": [
+          1845.5345,
+          765.0042,
+          598.5436
+        ],
+        "pkMs": [
+          4.2157,
+          2.201,
+          2.2329
+        ],
+        "native": {
+          "sha256": "3118bcfc9b900e5c8a0d5fadef749c7690cea34c889838aee74c1ea800cda42e",
+          "pdbSha256": "e88233a04d9033305cb589bd8c5f852575ee1382016524a7132350a93aad9833",
+          "mvid": "0c4259df-01d7-4515-b42d-e450f0010e8f",
+          "codeViewGuid": "ada582d7-89ef-4271-b87a-ccd22609687b",
+          "matched": 333,
+          "unmappedOrGenerated": [
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.GlobalUsings.g.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.AssemblyInfo.cs"
+          ]
+        },
+        "oracle": {
+          "sha256": "b21d1bb985cf195e6fb94475fac3de24c90eb80fd4d14f64cce841f78a5cc424",
+          "pdbSha256": "f0ab7892c5b47d556beccb451080a5947025fc5153db10b65b3420a452ec22a4",
+          "mvid": "e2cb45e7-a31f-4220-a055-69fcb7904644",
+          "codeViewGuid": "ed823a61-fddf-4251-9b6d-4262db8eae76",
+          "matched": 6,
+          "unmappedOrGenerated": [
+            "Using.cs",
+            "ShortEdgeBlendOracle.cs.GlobalUsings.g.cs",
+            ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "ShortEdgeBlendOracle.cs.AssemblyInfo.cs"
+          ]
+        }
+      },
+      {
+        "directory": "17-shortedge-candidate",
+        "commit": "d014f76e41746a08b32e963d24b6a8b02fcaac67",
+        "rawExit": 2,
+        "qualityStatus": "Unresolved",
+        "gmMs": [
+          1489.5655,
+          795.0665,
+          554.0257
+        ],
+        "pkMs": [
+          2.1363,
+          1.6807,
+          2.2362
+        ],
+        "native": {
+          "sha256": "7176e85cc67b5afc38fd5cefb079f26b4a1dab289fc1b624a4efb2cf365659a8",
+          "pdbSha256": "97312312d2875073366c52985a62e1c251de2f435296ced60f2cd2a2f773e403",
+          "mvid": "9cdf9668-5571-464f-a941-76e3202db08f",
+          "codeViewGuid": "33a5c9b6-2c8a-4591-8cc6-f0f924ad3111",
+          "matched": 334,
+          "unmappedOrGenerated": [
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.GlobalUsings.g.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.AssemblyInfo.cs"
+          ]
+        },
+        "oracle": {
+          "sha256": "084ba148e653e9b06966e72fed86b505b3112c92d5558d09b091fcdec2be583f",
+          "pdbSha256": "41589f3d442bb23892c2ee89c54747a776c4256207a02523e55aaaf5012de008",
+          "mvid": "1694eb12-9a0d-4a9c-b1e6-27eca284f072",
+          "codeViewGuid": "7e4a2d60-c4d7-4a42-a1f1-0bf89c9aedf5",
+          "matched": 6,
+          "unmappedOrGenerated": [
+            "Using.cs",
+            "ShortEdgeBlendOracle.cs.GlobalUsings.g.cs",
+            ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "ShortEdgeBlendOracle.cs.AssemblyInfo.cs"
+          ]
+        }
+      },
+      {
+        "directory": "18-shortedge-candidate",
+        "commit": "d014f76e41746a08b32e963d24b6a8b02fcaac67",
+        "rawExit": 2,
+        "qualityStatus": "Unresolved",
+        "gmMs": [
+          1596.1725,
+          730.5027,
+          524.127
+        ],
+        "pkMs": [
+          3.1036,
+          1.6245,
+          1.6125
+        ],
+        "native": {
+          "sha256": "7176e85cc67b5afc38fd5cefb079f26b4a1dab289fc1b624a4efb2cf365659a8",
+          "pdbSha256": "97312312d2875073366c52985a62e1c251de2f435296ced60f2cd2a2f773e403",
+          "mvid": "9cdf9668-5571-464f-a941-76e3202db08f",
+          "codeViewGuid": "33a5c9b6-2c8a-4591-8cc6-f0f924ad3111",
+          "matched": 334,
+          "unmappedOrGenerated": [
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.GlobalUsings.g.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.AssemblyInfo.cs"
+          ]
+        },
+        "oracle": {
+          "sha256": "084ba148e653e9b06966e72fed86b505b3112c92d5558d09b091fcdec2be583f",
+          "pdbSha256": "41589f3d442bb23892c2ee89c54747a776c4256207a02523e55aaaf5012de008",
+          "mvid": "1694eb12-9a0d-4a9c-b1e6-27eca284f072",
+          "codeViewGuid": "7e4a2d60-c4d7-4a42-a1f1-0bf89c9aedf5",
+          "matched": 6,
+          "unmappedOrGenerated": [
+            "Using.cs",
+            "ShortEdgeBlendOracle.cs.GlobalUsings.g.cs",
+            ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "ShortEdgeBlendOracle.cs.AssemblyInfo.cs"
+          ]
+        }
+      },
+      {
+        "directory": "19-shortedge-baseline",
+        "commit": "84c558c10135c117bf8be6629a157e6d230f1b2d",
+        "rawExit": 2,
+        "qualityStatus": "Unresolved",
+        "gmMs": [
+          1815.8666,
+          685.7137,
+          654.302
+        ],
+        "pkMs": [
+          2.0612,
+          1.4064,
+          1.5108
+        ],
+        "native": {
+          "sha256": "3118bcfc9b900e5c8a0d5fadef749c7690cea34c889838aee74c1ea800cda42e",
+          "pdbSha256": "e88233a04d9033305cb589bd8c5f852575ee1382016524a7132350a93aad9833",
+          "mvid": "0c4259df-01d7-4515-b42d-e450f0010e8f",
+          "codeViewGuid": "ada582d7-89ef-4271-b87a-ccd22609687b",
+          "matched": 333,
+          "unmappedOrGenerated": [
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.GlobalUsings.g.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/.NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "src/ProjectGmKernel.Native/obj/Release/net10.0/ProjectGmKernel.Native.AssemblyInfo.cs"
+          ]
+        },
+        "oracle": {
+          "sha256": "b21d1bb985cf195e6fb94475fac3de24c90eb80fd4d14f64cce841f78a5cc424",
+          "pdbSha256": "f0ab7892c5b47d556beccb451080a5947025fc5153db10b65b3420a452ec22a4",
+          "mvid": "e2cb45e7-a31f-4220-a055-69fcb7904644",
+          "codeViewGuid": "ed823a61-fddf-4251-9b6d-4262db8eae76",
+          "matched": 6,
+          "unmappedOrGenerated": [
+            "Using.cs",
+            "ShortEdgeBlendOracle.cs.GlobalUsings.g.cs",
+            ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+            "ShortEdgeBlendOracle.cs.AssemblyInfo.cs"
+          ]
+        }
+      }
+    ],
+    "artifactRoles": [
+      {
+        "directory": "00-sphere-baseline",
+        "path": "temp_docs/unified-native-controlled/window/00-sphere-baseline/products/equal-overlap-15902-0-reference.x_t",
+        "sha256": "83ef0af850c509ea041e0fcf2cf3bc0a0a56b60a5d13c9b10800a6bf890a9407",
+        "role": "PK reference product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "00-sphere-baseline",
+        "path": "temp_docs/unified-native-controlled/window/00-sphere-baseline/products/equal-overlap-15902-0-managed.x_t",
+        "sha256": "7043b4bfa23bded3c2605483a359e9a736d59261fed5fd3a5f4449ca229a702b",
+        "role": "GM product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "01-sphere-candidate",
+        "path": "temp_docs/unified-native-controlled/window/01-sphere-candidate/products/equal-overlap-15902-0-reference.x_t",
+        "sha256": "83ef0af850c509ea041e0fcf2cf3bc0a0a56b60a5d13c9b10800a6bf890a9407",
+        "role": "PK reference product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "01-sphere-candidate",
+        "path": "temp_docs/unified-native-controlled/window/01-sphere-candidate/products/equal-overlap-15902-0-managed.x_t",
+        "sha256": "7043b4bfa23bded3c2605483a359e9a736d59261fed5fd3a5f4449ca229a702b",
+        "role": "GM product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "02-sphere-candidate",
+        "path": "temp_docs/unified-native-controlled/window/02-sphere-candidate/products/equal-overlap-15902-0-reference.x_t",
+        "sha256": "83ef0af850c509ea041e0fcf2cf3bc0a0a56b60a5d13c9b10800a6bf890a9407",
+        "role": "PK reference product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "02-sphere-candidate",
+        "path": "temp_docs/unified-native-controlled/window/02-sphere-candidate/products/equal-overlap-15902-0-managed.x_t",
+        "sha256": "7043b4bfa23bded3c2605483a359e9a736d59261fed5fd3a5f4449ca229a702b",
+        "role": "GM product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "03-sphere-baseline",
+        "path": "temp_docs/unified-native-controlled/window/03-sphere-baseline/products/equal-overlap-15902-0-reference.x_t",
+        "sha256": "83ef0af850c509ea041e0fcf2cf3bc0a0a56b60a5d13c9b10800a6bf890a9407",
+        "role": "PK reference product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "03-sphere-baseline",
+        "path": "temp_docs/unified-native-controlled/window/03-sphere-baseline/products/equal-overlap-15902-0-managed.x_t",
+        "sha256": "7043b4bfa23bded3c2605483a359e9a736d59261fed5fd3a5f4449ca229a702b",
+        "role": "GM product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "04-planar-baseline",
+        "path": "temp_docs/unified-native-controlled/window/04-planar-baseline/products/overlap-two-axes-15902-0-reference.x_t",
+        "sha256": "8e6510827c62a076a52f849dadb5c6c382dab66d83ce5c17f8afab8a84a558b6",
+        "role": "PK reference product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "04-planar-baseline",
+        "path": "temp_docs/unified-native-controlled/window/04-planar-baseline/products/overlap-two-axes-15902-0-managed.x_t",
+        "sha256": "2f9e15f719acf50a6dfd740c7722ef8db11d631ec964a2fbd36eeb56f22cf1ac",
+        "role": "GM product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "05-planar-candidate",
+        "path": "temp_docs/unified-native-controlled/window/05-planar-candidate/products/overlap-two-axes-15902-0-reference.x_t",
+        "sha256": "8e6510827c62a076a52f849dadb5c6c382dab66d83ce5c17f8afab8a84a558b6",
+        "role": "PK reference product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "05-planar-candidate",
+        "path": "temp_docs/unified-native-controlled/window/05-planar-candidate/products/overlap-two-axes-15902-0-managed.x_t",
+        "sha256": "2f9e15f719acf50a6dfd740c7722ef8db11d631ec964a2fbd36eeb56f22cf1ac",
+        "role": "GM product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "06-planar-candidate",
+        "path": "temp_docs/unified-native-controlled/window/06-planar-candidate/products/overlap-two-axes-15902-0-reference.x_t",
+        "sha256": "8e6510827c62a076a52f849dadb5c6c382dab66d83ce5c17f8afab8a84a558b6",
+        "role": "PK reference product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "06-planar-candidate",
+        "path": "temp_docs/unified-native-controlled/window/06-planar-candidate/products/overlap-two-axes-15902-0-managed.x_t",
+        "sha256": "2f9e15f719acf50a6dfd740c7722ef8db11d631ec964a2fbd36eeb56f22cf1ac",
+        "role": "GM product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "07-planar-baseline",
+        "path": "temp_docs/unified-native-controlled/window/07-planar-baseline/products/overlap-two-axes-15902-0-reference.x_t",
+        "sha256": "8e6510827c62a076a52f849dadb5c6c382dab66d83ce5c17f8afab8a84a558b6",
+        "role": "PK reference product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "07-planar-baseline",
+        "path": "temp_docs/unified-native-controlled/window/07-planar-baseline/products/overlap-two-axes-15902-0-managed.x_t",
+        "sha256": "2f9e15f719acf50a6dfd740c7722ef8db11d631ec964a2fbd36eeb56f22cf1ac",
+        "role": "GM product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "08-curved-baseline",
+        "path": "temp_docs/unified-native-controlled/window/08-curved-baseline/products/block-15902-gm-target-before.x_t",
+        "sha256": "7126d7ecbf2faef432d83ba3dbf5fa4a5b44305c2dafde3f1d568550e264d6f9",
+        "role": "GM input before operation",
+        "retention": "shared/overwritten input file; no invented repetition identity"
+      },
+      {
+        "directory": "08-curved-baseline",
+        "path": "temp_docs/unified-native-controlled/window/08-curved-baseline/products/block-15902-pk-target-before.x_t",
+        "sha256": "e5a88f05567aef4bb6cd372b7b2a28252e7006cf43d4d05fd0d93e5606ca00b1",
+        "role": "PK input before operation",
+        "retention": "shared/overwritten input file; no invented repetition identity"
+      },
+      {
+        "directory": "08-curved-baseline",
+        "path": "temp_docs/unified-native-controlled/window/08-curved-baseline/products/block-15902-0-native.x_t",
+        "sha256": "dcca213ad214d4f1471c274f3d552ec20a2699f582fa85605d8d85bcfbbd733a",
+        "role": "PK reference product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "08-curved-baseline",
+        "path": "temp_docs/unified-native-controlled/window/08-curved-baseline/products/block-15902-pk-tool1-before.x_t",
+        "sha256": "c530dd2aa4026a6add64b5f22d5784dc95e0b4baf4bb43b1262cdeaa9a35fd24",
+        "role": "PK input before operation",
+        "retention": "shared/overwritten input file; no invented repetition identity"
+      },
+      {
+        "directory": "08-curved-baseline",
+        "path": "temp_docs/unified-native-controlled/window/08-curved-baseline/products/block-15902-gm-tool1-before.x_t",
+        "sha256": "f2105af378e1820dbc06dce8baf47b5f4d252b2df5f68224a75baac097d91009",
+        "role": "GM input before operation",
+        "retention": "shared/overwritten input file; no invented repetition identity"
+      },
+      {
+        "directory": "08-curved-baseline",
+        "path": "temp_docs/unified-native-controlled/window/08-curved-baseline/products/block-15902-0.x_t",
+        "sha256": "06bf15b755ce844303bd634076d79702fae93663cfd008b23b4e1da38983b86d",
+        "role": "GM product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "09-curved-candidate",
+        "path": "temp_docs/unified-native-controlled/window/09-curved-candidate/products/block-15902-gm-target-before.x_t",
+        "sha256": "7126d7ecbf2faef432d83ba3dbf5fa4a5b44305c2dafde3f1d568550e264d6f9",
+        "role": "GM input before operation",
+        "retention": "shared/overwritten input file; no invented repetition identity"
+      },
+      {
+        "directory": "09-curved-candidate",
+        "path": "temp_docs/unified-native-controlled/window/09-curved-candidate/products/block-15902-pk-target-before.x_t",
+        "sha256": "e5a88f05567aef4bb6cd372b7b2a28252e7006cf43d4d05fd0d93e5606ca00b1",
+        "role": "PK input before operation",
+        "retention": "shared/overwritten input file; no invented repetition identity"
+      },
+      {
+        "directory": "09-curved-candidate",
+        "path": "temp_docs/unified-native-controlled/window/09-curved-candidate/products/block-15902-0-native.x_t",
+        "sha256": "dcca213ad214d4f1471c274f3d552ec20a2699f582fa85605d8d85bcfbbd733a",
+        "role": "PK reference product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "09-curved-candidate",
+        "path": "temp_docs/unified-native-controlled/window/09-curved-candidate/products/block-15902-pk-tool1-before.x_t",
+        "sha256": "c530dd2aa4026a6add64b5f22d5784dc95e0b4baf4bb43b1262cdeaa9a35fd24",
+        "role": "PK input before operation",
+        "retention": "shared/overwritten input file; no invented repetition identity"
+      },
+      {
+        "directory": "09-curved-candidate",
+        "path": "temp_docs/unified-native-controlled/window/09-curved-candidate/products/block-15902-gm-tool1-before.x_t",
+        "sha256": "f2105af378e1820dbc06dce8baf47b5f4d252b2df5f68224a75baac097d91009",
+        "role": "GM input before operation",
+        "retention": "shared/overwritten input file; no invented repetition identity"
+      },
+      {
+        "directory": "09-curved-candidate",
+        "path": "temp_docs/unified-native-controlled/window/09-curved-candidate/products/block-15902-0.x_t",
+        "sha256": "06bf15b755ce844303bd634076d79702fae93663cfd008b23b4e1da38983b86d",
+        "role": "GM product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "10-curved-candidate",
+        "path": "temp_docs/unified-native-controlled/window/10-curved-candidate/products/block-15902-gm-target-before.x_t",
+        "sha256": "7126d7ecbf2faef432d83ba3dbf5fa4a5b44305c2dafde3f1d568550e264d6f9",
+        "role": "GM input before operation",
+        "retention": "shared/overwritten input file; no invented repetition identity"
+      },
+      {
+        "directory": "10-curved-candidate",
+        "path": "temp_docs/unified-native-controlled/window/10-curved-candidate/products/block-15902-pk-target-before.x_t",
+        "sha256": "e5a88f05567aef4bb6cd372b7b2a28252e7006cf43d4d05fd0d93e5606ca00b1",
+        "role": "PK input before operation",
+        "retention": "shared/overwritten input file; no invented repetition identity"
+      },
+      {
+        "directory": "10-curved-candidate",
+        "path": "temp_docs/unified-native-controlled/window/10-curved-candidate/products/block-15902-0-native.x_t",
+        "sha256": "dcca213ad214d4f1471c274f3d552ec20a2699f582fa85605d8d85bcfbbd733a",
+        "role": "PK reference product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "10-curved-candidate",
+        "path": "temp_docs/unified-native-controlled/window/10-curved-candidate/products/block-15902-pk-tool1-before.x_t",
+        "sha256": "c530dd2aa4026a6add64b5f22d5784dc95e0b4baf4bb43b1262cdeaa9a35fd24",
+        "role": "PK input before operation",
+        "retention": "shared/overwritten input file; no invented repetition identity"
+      },
+      {
+        "directory": "10-curved-candidate",
+        "path": "temp_docs/unified-native-controlled/window/10-curved-candidate/products/block-15902-gm-tool1-before.x_t",
+        "sha256": "f2105af378e1820dbc06dce8baf47b5f4d252b2df5f68224a75baac097d91009",
+        "role": "GM input before operation",
+        "retention": "shared/overwritten input file; no invented repetition identity"
+      },
+      {
+        "directory": "10-curved-candidate",
+        "path": "temp_docs/unified-native-controlled/window/10-curved-candidate/products/block-15902-0.x_t",
+        "sha256": "06bf15b755ce844303bd634076d79702fae93663cfd008b23b4e1da38983b86d",
+        "role": "GM product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "11-curved-baseline",
+        "path": "temp_docs/unified-native-controlled/window/11-curved-baseline/products/block-15902-gm-target-before.x_t",
+        "sha256": "7126d7ecbf2faef432d83ba3dbf5fa4a5b44305c2dafde3f1d568550e264d6f9",
+        "role": "GM input before operation",
+        "retention": "shared/overwritten input file; no invented repetition identity"
+      },
+      {
+        "directory": "11-curved-baseline",
+        "path": "temp_docs/unified-native-controlled/window/11-curved-baseline/products/block-15902-pk-target-before.x_t",
+        "sha256": "e5a88f05567aef4bb6cd372b7b2a28252e7006cf43d4d05fd0d93e5606ca00b1",
+        "role": "PK input before operation",
+        "retention": "shared/overwritten input file; no invented repetition identity"
+      },
+      {
+        "directory": "11-curved-baseline",
+        "path": "temp_docs/unified-native-controlled/window/11-curved-baseline/products/block-15902-0-native.x_t",
+        "sha256": "dcca213ad214d4f1471c274f3d552ec20a2699f582fa85605d8d85bcfbbd733a",
+        "role": "PK reference product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "11-curved-baseline",
+        "path": "temp_docs/unified-native-controlled/window/11-curved-baseline/products/block-15902-pk-tool1-before.x_t",
+        "sha256": "c530dd2aa4026a6add64b5f22d5784dc95e0b4baf4bb43b1262cdeaa9a35fd24",
+        "role": "PK input before operation",
+        "retention": "shared/overwritten input file; no invented repetition identity"
+      },
+      {
+        "directory": "11-curved-baseline",
+        "path": "temp_docs/unified-native-controlled/window/11-curved-baseline/products/block-15902-gm-tool1-before.x_t",
+        "sha256": "f2105af378e1820dbc06dce8baf47b5f4d252b2df5f68224a75baac097d91009",
+        "role": "GM input before operation",
+        "retention": "shared/overwritten input file; no invented repetition identity"
+      },
+      {
+        "directory": "11-curved-baseline",
+        "path": "temp_docs/unified-native-controlled/window/11-curved-baseline/products/block-15902-0.x_t",
+        "sha256": "06bf15b755ce844303bd634076d79702fae93663cfd008b23b4e1da38983b86d",
+        "role": "GM product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "12-solidblend-baseline",
+        "path": "temp_docs/unified-native-controlled/window/12-solidblend-baseline/products/plane-nurbs-fillet.x_t",
+        "sha256": "c3bf85af219f8a80477cec7c5245ad0128f8cecaf3832ead278f5c898a5deb73",
+        "role": "GM product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "13-solidblend-candidate",
+        "path": "temp_docs/unified-native-controlled/window/13-solidblend-candidate/products/plane-nurbs-fillet.x_t",
+        "sha256": "c3bf85af219f8a80477cec7c5245ad0128f8cecaf3832ead278f5c898a5deb73",
+        "role": "GM product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "14-solidblend-candidate",
+        "path": "temp_docs/unified-native-controlled/window/14-solidblend-candidate/products/plane-nurbs-fillet.x_t",
+        "sha256": "c3bf85af219f8a80477cec7c5245ad0128f8cecaf3832ead278f5c898a5deb73",
+        "role": "GM product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "15-solidblend-baseline",
+        "path": "temp_docs/unified-native-controlled/window/15-solidblend-baseline/products/plane-nurbs-fillet.x_t",
+        "sha256": "c3bf85af219f8a80477cec7c5245ad0128f8cecaf3832ead278f5c898a5deb73",
+        "role": "GM product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "16-shortedge-baseline",
+        "path": "temp_docs/unified-native-controlled/window/16-shortedge-baseline/products/a1-r0.5-t1E-07-reverseFalse-default-input-fresh.x_t",
+        "sha256": "4f1bbeecd440662f01321103c93a529973fce0b69c77dc97f22533a58e20093a",
+        "role": "GM received fresh input",
+        "retention": "shared/overwritten input file; no invented repetition identity"
+      },
+      {
+        "directory": "16-shortedge-baseline",
+        "path": "temp_docs/unified-native-controlled/window/16-shortedge-baseline/products/a1-r0.5-t1E-07-reverseFalse-default-native.x_t",
+        "sha256": "b1b0028feca8fd51e0b4b5615d4c34ad81adbee43648dd6c5e320ef9af464655",
+        "role": "PK reference product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "16-shortedge-baseline",
+        "path": "temp_docs/unified-native-controlled/window/16-shortedge-baseline/products/a1-r0.5-t1E-07-reverseFalse-default-input.x_t",
+        "sha256": "262963ce0b899972272970ace0eff5da8b9161dbf007bd01f20a9d3037a8d1a2",
+        "role": "PK input seed",
+        "retention": "shared/overwritten input file; no invented repetition identity"
+      },
+      {
+        "directory": "16-shortedge-baseline",
+        "path": "temp_docs/unified-native-controlled/window/16-shortedge-baseline/products/a1-r0.5-t1E-07-reverseFalse-default-native-fresh.x_t",
+        "sha256": "f40cb59d40da89562198984850ed47910d6dac25f51c76342c9fd865bc3b5da3",
+        "role": "PK output retransmitted by GM",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "16-shortedge-baseline",
+        "path": "temp_docs/unified-native-controlled/window/16-shortedge-baseline/products/a1-r0.5-t1E-07-reverseFalse-default-self.x_t",
+        "sha256": "37ac232e62340c29f4f6ba94807775b7d39ba3a64d445c75791499c1a811b0ba",
+        "role": "GM product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "17-shortedge-candidate",
+        "path": "temp_docs/unified-native-controlled/window/17-shortedge-candidate/products/a1-r0.5-t1E-07-reverseFalse-default-input-fresh.x_t",
+        "sha256": "4f1bbeecd440662f01321103c93a529973fce0b69c77dc97f22533a58e20093a",
+        "role": "GM received fresh input",
+        "retention": "shared/overwritten input file; no invented repetition identity"
+      },
+      {
+        "directory": "17-shortedge-candidate",
+        "path": "temp_docs/unified-native-controlled/window/17-shortedge-candidate/products/a1-r0.5-t1E-07-reverseFalse-default-native.x_t",
+        "sha256": "b1b0028feca8fd51e0b4b5615d4c34ad81adbee43648dd6c5e320ef9af464655",
+        "role": "PK reference product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "17-shortedge-candidate",
+        "path": "temp_docs/unified-native-controlled/window/17-shortedge-candidate/products/a1-r0.5-t1E-07-reverseFalse-default-input.x_t",
+        "sha256": "262963ce0b899972272970ace0eff5da8b9161dbf007bd01f20a9d3037a8d1a2",
+        "role": "PK input seed",
+        "retention": "shared/overwritten input file; no invented repetition identity"
+      },
+      {
+        "directory": "17-shortedge-candidate",
+        "path": "temp_docs/unified-native-controlled/window/17-shortedge-candidate/products/a1-r0.5-t1E-07-reverseFalse-default-native-fresh.x_t",
+        "sha256": "f40cb59d40da89562198984850ed47910d6dac25f51c76342c9fd865bc3b5da3",
+        "role": "PK output retransmitted by GM",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "17-shortedge-candidate",
+        "path": "temp_docs/unified-native-controlled/window/17-shortedge-candidate/products/a1-r0.5-t1E-07-reverseFalse-default-self.x_t",
+        "sha256": "37ac232e62340c29f4f6ba94807775b7d39ba3a64d445c75791499c1a811b0ba",
+        "role": "GM product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "18-shortedge-candidate",
+        "path": "temp_docs/unified-native-controlled/window/18-shortedge-candidate/products/a1-r0.5-t1E-07-reverseFalse-default-input-fresh.x_t",
+        "sha256": "4f1bbeecd440662f01321103c93a529973fce0b69c77dc97f22533a58e20093a",
+        "role": "GM received fresh input",
+        "retention": "shared/overwritten input file; no invented repetition identity"
+      },
+      {
+        "directory": "18-shortedge-candidate",
+        "path": "temp_docs/unified-native-controlled/window/18-shortedge-candidate/products/a1-r0.5-t1E-07-reverseFalse-default-native.x_t",
+        "sha256": "b1b0028feca8fd51e0b4b5615d4c34ad81adbee43648dd6c5e320ef9af464655",
+        "role": "PK reference product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "18-shortedge-candidate",
+        "path": "temp_docs/unified-native-controlled/window/18-shortedge-candidate/products/a1-r0.5-t1E-07-reverseFalse-default-input.x_t",
+        "sha256": "262963ce0b899972272970ace0eff5da8b9161dbf007bd01f20a9d3037a8d1a2",
+        "role": "PK input seed",
+        "retention": "shared/overwritten input file; no invented repetition identity"
+      },
+      {
+        "directory": "18-shortedge-candidate",
+        "path": "temp_docs/unified-native-controlled/window/18-shortedge-candidate/products/a1-r0.5-t1E-07-reverseFalse-default-native-fresh.x_t",
+        "sha256": "f40cb59d40da89562198984850ed47910d6dac25f51c76342c9fd865bc3b5da3",
+        "role": "PK output retransmitted by GM",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "18-shortedge-candidate",
+        "path": "temp_docs/unified-native-controlled/window/18-shortedge-candidate/products/a1-r0.5-t1E-07-reverseFalse-default-self.x_t",
+        "sha256": "37ac232e62340c29f4f6ba94807775b7d39ba3a64d445c75791499c1a811b0ba",
+        "role": "GM product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "19-shortedge-baseline",
+        "path": "temp_docs/unified-native-controlled/window/19-shortedge-baseline/products/a1-r0.5-t1E-07-reverseFalse-default-input-fresh.x_t",
+        "sha256": "4f1bbeecd440662f01321103c93a529973fce0b69c77dc97f22533a58e20093a",
+        "role": "GM received fresh input",
+        "retention": "shared/overwritten input file; no invented repetition identity"
+      },
+      {
+        "directory": "19-shortedge-baseline",
+        "path": "temp_docs/unified-native-controlled/window/19-shortedge-baseline/products/a1-r0.5-t1E-07-reverseFalse-default-native.x_t",
+        "sha256": "b1b0028feca8fd51e0b4b5615d4c34ad81adbee43648dd6c5e320ef9af464655",
+        "role": "PK reference product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "19-shortedge-baseline",
+        "path": "temp_docs/unified-native-controlled/window/19-shortedge-baseline/products/a1-r0.5-t1E-07-reverseFalse-default-input.x_t",
+        "sha256": "262963ce0b899972272970ace0eff5da8b9161dbf007bd01f20a9d3037a8d1a2",
+        "role": "PK input seed",
+        "retention": "shared/overwritten input file; no invented repetition identity"
+      },
+      {
+        "directory": "19-shortedge-baseline",
+        "path": "temp_docs/unified-native-controlled/window/19-shortedge-baseline/products/a1-r0.5-t1E-07-reverseFalse-default-native-fresh.x_t",
+        "sha256": "f40cb59d40da89562198984850ed47910d6dac25f51c76342c9fd865bc3b5da3",
+        "role": "PK output retransmitted by GM",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      },
+      {
+        "directory": "19-shortedge-baseline",
+        "path": "temp_docs/unified-native-controlled/window/19-shortedge-baseline/products/a1-r0.5-t1E-07-reverseFalse-default-self.x_t",
+        "sha256": "37ac232e62340c29f4f6ba94807775b7d39ba3a64d445c75791499c1a811b0ba",
+        "role": "GM product",
+        "retention": "last output filename after rep2; byte identity alone does not identify a repetition"
+      }
+    ]
+  }
+}

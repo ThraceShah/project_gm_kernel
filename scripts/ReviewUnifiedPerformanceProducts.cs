@@ -20,6 +20,8 @@ unsafe
     Require(ParasolidScriptHost.TryStartSession("1654 independent sealed Mac products",out var host,out var message),message);
     using(host)
     {
+        PK_SESSION_kernel_version_t version;Check(PK_SESSION_ask_kernel_version(&version),"actual loaded PK version");
+        Console.WriteLine($"PK_VERSION {version.major_revision}.{version.minor_revision}.{version.build_number}");
         var comparisons=new JsonArray();ParasolidBodyCompare.Observer=o=>comparisons.Add((JsonNode)o);
         foreach(var pair in pairs)
         {
