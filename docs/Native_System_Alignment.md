@@ -855,3 +855,13 @@ tracking owner/class 与有限来源正例/错误来源负例通过，raw 2 仅�
   该结果不替尚未运行的后继源取得跨平台资格。
 
 这些是 owner 实际运行，尚非独立接受或完整最终交付。
+
+公共几何与 XT writer 的新执行均要求新的 `--output-name`，父子进程使用同一
+执行名称和 Release runtime policy，各自输出真实 Native assembly SHA。
+原固定目录、原报告及原 XT 不覆盖；旧无名称调用直接拒绝，不维护兼容路径。
+`native-imprint-source-geometry-v1.log/.exit` raw 0 已实际完成公共合同及七类
+ellipse/TRCurve/SPCurve/BSurface/swept/spun/offset 的 attach、GM transmit、
+真实 PK receive/compare 与参数求值。完整产物分别在
+`temp_docs/geometry-public-api/native-imprint-source-geometry-v1/` 和
+`temp_docs/xt-geometry-writer-oracle/native-imprint-source-geometry-v1/`。
+wire 比较器本身不证明有限曲线连续等价；此运行不继承为其他未测 attach 类别资格。

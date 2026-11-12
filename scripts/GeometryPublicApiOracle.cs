@@ -14,6 +14,7 @@ global using ManagedGeometryTag = System.Int32;
 
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Text;
 using ProjectGmKernel.Native;
 using ProjectGmKernel.Native.Runtime;
@@ -21,8 +22,13 @@ using M = ProjectGmKernel.Native.Generated;
 using static parasolid;
 
 var scriptDirectory = Path.GetDirectoryName(ScriptPath())!;
+var outputName=args.Single(x=>x.StartsWith("--output-name=",StringComparison.Ordinal))["--output-name=".Length..];
+Require(outputName.Length>0&&outputName.All(c=>char.IsAsciiLetterOrDigit(c)||c is '-' or '_'),"one new output name");
+var outputDirectory=Path.GetFullPath(Path.Combine(scriptDirectory,"..","temp_docs","geometry-public-api",outputName));
+Require(!Directory.Exists(outputDirectory),"immutable execution evidence");Directory.CreateDirectory(outputDirectory);
 var report = new StringBuilder();
 void Log(string line) { Console.WriteLine(line); report.AppendLine(line); }
+Log("GM_ASSEMBLY sha256="+Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(typeof(KernelRuntime).Assembly.Location))));
 try
 {
     if (!ParasolidScriptHost.TryStartSession("Public geometry API oracle", out var host, out var message))
@@ -42,9 +48,9 @@ try
         var start = new ProcessStartInfo("dotnet") { RedirectStandardOutput = true, RedirectStandardError = true };
         start.ArgumentList.Add("run");
         start.ArgumentList.Add(Path.Combine(scriptDirectory, "XtGeometryWriterOracle.cs"));
-        start.ArgumentList.Add("-p:BuildProjectReferences=false");
-        start.ArgumentList.Add("-p:UseSharedCompilation=false");
-        start.Environment["MSBUILDDISABLENODEREUSE"] = "1";
+        start.ArgumentList.Add("-c");start.ArgumentList.Add("Release");start.ArgumentList.Add("--");
+        start.ArgumentList.Add("--output-name="+outputName);
+        NativeRuntimePolicy.Prepare(start);
         using var process = Process.Start(start) ?? throw new InvalidOperationException("Could not start the geometry body oracle.");
         var output = process.StandardOutput.ReadToEndAsync();
         var error = process.StandardError.ReadToEndAsync();
@@ -58,9 +64,7 @@ try
 catch (Exception ex) { Log("FAIL: " + ex); Environment.ExitCode = 1; }
 finally
 {
-    var directory = Path.GetFullPath(Path.Combine(scriptDirectory, "..", "temp_docs", "geometry-public-api"));
-    Directory.CreateDirectory(directory);
-    File.WriteAllText(Path.Combine(directory, "oracle-latest.txt"), report.ToString());
+    File.WriteAllText(Path.Combine(outputDirectory, "oracle.txt"), report.ToString());
 }
 
 static string ScriptPath([CallerFilePath] string path = "") => path;

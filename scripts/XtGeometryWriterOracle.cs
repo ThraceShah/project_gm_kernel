@@ -12,13 +12,20 @@
 // against the Parasolid reference body with PK_DEBUG_BODY_compare. The
 // attached geometry is additionally evaluated in both kernels at the same
 // parameter to pin the transmitted definition.
-// Output: temp_docs/xt-geometry-writer-oracle/<fixture>.x_t
+// Output: temp_docs/xt-geometry-writer-oracle/<execution>/<fixture>.x_t
 
 using ProjectGmKernel.Native.Runtime;
 using System.Runtime.CompilerServices;
 using M = ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Generated;
 using static parasolid;
+
+var outputName=args.Single(x=>x.StartsWith("--output-name=",StringComparison.Ordinal))["--output-name=".Length..];
+if(outputName.Length==0||!outputName.All(c=>char.IsAsciiLetterOrDigit(c)||c is '-' or '_'))throw new ArgumentException("One new output name");
+Evidence.Directory=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","xt-geometry-writer-oracle",outputName);
+if(Directory.Exists(Evidence.Directory))throw new InvalidOperationException("Existing execution evidence is immutable");
+Directory.CreateDirectory(Evidence.Directory);
+Console.WriteLine("GM_ASSEMBLY sha256="+Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(typeof(KernelRuntime).Assembly.Location))));
 
 unsafe
 {
@@ -722,9 +729,7 @@ static unsafe void AttachOracleSurface(PK_FACE_t face, PK_SURF_t surface)
 
 static unsafe int TransmitReceiveAndCompare(string name, int ourBody, PK_BODY_t oracleBody)
 {
-    var outputDir = Path.Combine(Path.GetDirectoryName(ScriptPath())!, "..", "temp_docs", "xt-geometry-writer-oracle");
-    Directory.CreateDirectory(outputDir);
-    var path = Path.Combine(outputDir, $"{name}.x_t");
+    var path = Path.Combine(Evidence.Directory, $"{name}.x_t");
     var options = new M.PK_PART_transmit_o_s
     {
         o_t_version = 4,
@@ -1210,4 +1215,9 @@ static void AssertTrue(bool condition, string label)
 static void Check(int error, string label)
 {
     if (error != 0) throw new InvalidOperationException($"{label}: error={error}");
+}
+
+static class Evidence
+{
+    internal static string Directory=string.Empty;
 }
