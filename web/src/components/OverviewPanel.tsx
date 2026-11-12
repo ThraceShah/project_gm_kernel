@@ -12,10 +12,13 @@ interface OverviewPanelProps {
 
 const STATUS_LABEL: Record<string, string> = {
   pass: '通过', fail: '失败', unresolved: '未决', unverified: '未验证', na: '不适用',
+  verified: '已验证', different: '不同',
 };
 const STATUS_CLASS: Record<string, string> = {
   pass: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  verified: 'bg-emerald-50 text-emerald-700 border-emerald-200',
   fail: 'bg-rose-50 text-rose-700 border-rose-200',
+  different: 'bg-rose-50 text-rose-700 border-rose-200',
   unresolved: 'bg-amber-50 text-amber-700 border-amber-200',
   unverified: 'bg-slate-50 text-slate-500 border-slate-200',
   na: 'bg-slate-50 text-slate-400 border-slate-200',
@@ -64,12 +67,12 @@ export const OverviewPanel: React.FC<OverviewPanelProps> = ({ overview, onOpenRu
           <button data-testid="open-run-history" onClick={() => onOpenRuns()} className="text-xs px-3 py-1.5 rounded border border-slate-300 hover:bg-slate-100">交付记录 / 历史运行 ↗</button>
         </div>
         <div className="flex flex-wrap gap-1.5 mt-2">
-          <span className="px-2 py-1 rounded bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-700">功能通过 {String(summary['function:pass'] ?? 0)}</span>
+          <span title="多版本累计证据（各行历史分列），非当前版本全量复验" className="px-2 py-1 rounded bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-700">累计证据·功能通过 {String(summary['function:pass'] ?? 0)}</span>
           <span className="px-2 py-1 rounded bg-slate-50 border border-slate-200 text-[11px] text-slate-500">功能未验证 {String(summary['function:unverified'] ?? 0)}</span>
           <span className="px-2 py-1 rounded bg-amber-50 border border-amber-200 text-[11px] text-amber-700">物性未决 {String(summary['mass:unresolved'] ?? 0)}</span>
           <span className="px-2 py-1 rounded bg-rose-50 border border-rose-200 text-[11px] text-rose-700">查询失败 {String(summary['boundary:fail'] ?? 0)}+边界</span>
           <span className="px-2 py-1 rounded bg-sky-50 border border-sky-200 text-[11px] text-sky-700">性能观测 {String(summary['performance:observed'] ?? 0)}</span>
-          <span className="px-2 py-1 rounded bg-indigo-50 border border-indigo-200 text-[11px] text-indigo-700">当前版本已复验 5 op</span>
+          <span title="当前指定统一版本 1654 实际复验的操作数（与累计通过不同）" className="px-2 py-1 rounded bg-indigo-50 border border-indigo-200 text-[11px] text-indigo-700">当前版本已复验 {String(summary['performance:observed'] ?? 0)} op</span>
         </div>
         <div className="text-[10px] text-slate-400 mt-1">{String(summary['denominatorNote'] ?? '')}</div>
       </div>
@@ -108,11 +111,22 @@ export const OverviewPanel: React.FC<OverviewPanelProps> = ({ overview, onOpenRu
                         <div key={dim} className="flex items-start gap-2">
                           <span className="w-64"><StatusChip cell={cell} label={dim === 'function' ? '几何拓扑/操作功能' : dim === 'mass' ? '物性数值' : dim === 'query' ? '查询/分类' : '性能观测'} /></span>
                           <span className="flex-1 text-slate-600">{cell.note}
-                            {cell.lastVerified.evidence ? <span className="block text-[10px] text-slate-400 break-all">最后验证：{cell.lastVerified.commit.slice(0, 7)} / {cell.lastVerified.tree} / {cell.lastVerified.host} / exit {cell.lastVerified.exit} · {cell.lastVerified.evidence}</span> : null}
+                            {cell.lastVerified.evidence ? <span className="block text-[10px] text-slate-400 break-all">最后验证：{cell.lastVerified.commit.slice(0, 7)} / {cell.lastVerified.tree} / {cell.lastVerified.host} / exit {cell.lastVerified.exit} · 证据 {cell.lastVerified.evidence}</span> : null}
                           </span>
                         </div>
                       );
                     })}
+                    <div className="flex items-center gap-2">
+                      <span className="w-64 text-slate-500">在线产物</span>
+                      {c.display ? (
+                        <button data-testid={`catalog-model-${c.id}`} className="text-sky-700 underline" onClick={(e) => { e.stopPropagation(); onOpenRuns(c.display!.runId, c.display!.caseId); }}>
+                          查看模型 / 操作步骤 / 证据 ↗
+                        </button>
+                      ) : (
+                        <span className="text-slate-400">无在线模型（原始证据见来源/归档索引；已归档/未采集不造 404）</span>
+                      )}
+                      {c.display && <span className="text-[10px] text-slate-400">{c.display.note} · run {c.display.runId} / case {c.display.caseId}</span>}
+                    </div>
                     <div>
                       <div className="font-semibold text-slate-600 mb-0.5">历史验证（各版本分别标注，不互相顶替）</div>
                       {(c.history ?? []).map((h, i) => (
