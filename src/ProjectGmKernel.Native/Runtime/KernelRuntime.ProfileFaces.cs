@@ -398,8 +398,11 @@ internal static unsafe partial class KernelRuntime
         if (curve.Class == CurveClass.Line && edge.StartVertex >= 0 && edge.EndVertex >= 0)
         {
             ref readonly var line = ref LineDataPool[curve.DataIndex];
-            var p = Points[GetPointSlotByTag(Vertices[edge.StartVertex].PointTag)].Position;
-            var q = Points[GetPointSlotByTag(Vertices[edge.EndVertex].PointTag)].Position;
+            var first = GetPointSlotByTag(Vertices[edge.StartVertex].PointTag);
+            var last = GetPointSlotByTag(Vertices[edge.EndVertex].PointTag);
+            if (first < 0 || last < 0) return false;
+            var p = Points[first].Position;
+            var q = Points[last].Position;
             a = (p.X-line.LocationX)*line.AxisX+(p.Y-line.LocationY)*line.AxisY+(p.Z-line.LocationZ)*line.AxisZ;
             b = (q.X-line.LocationX)*line.AxisX+(q.Y-line.LocationY)*line.AxisY+(q.Z-line.LocationZ)*line.AxisZ;
             if (curve.Sense == ParasolidConstants.PK_TOPOL_sense_negative_c) (a, b) = (b, a);

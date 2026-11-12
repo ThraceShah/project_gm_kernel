@@ -504,7 +504,16 @@ internal static unsafe partial class KernelRuntime
             || stored.UKnotMultBlock <= 0 || stored.VKnotMultBlock <= 0
             || stored.UExpandedKnotBlock <= 0 || stored.VExpandedKnotBlock <= 0)
         {
-            FreeBSurfaceData(dataIndex);
+            // Handle registration can fail after allocation. Until every
+            // handle is published, these raw buffers still own their release.
+            session->Blocks.Free(uExpandedBlock);
+            session->Blocks.Free(vExpandedBlock);
+            session->Blocks.Free(vertexBlock);
+            session->Blocks.Free(uKnotBlock);
+            session->Blocks.Free(vKnotBlock);
+            session->Blocks.Free(uKnotMultBlock);
+            session->Blocks.Free(vKnotMultBlock);
+            BSurfaceDataStore.Free(dataIndex);
             return ParasolidConstants.PK_ERROR_memory_full;
         }
 

@@ -594,3 +594,38 @@ bound实体统一由共同依赖图释放，unbound materializer继续明确清�
 91/91 raw0覆盖三价corner真实拒绝/多深度allocation rollback、闭合continuation、
 共享/借用/复制/mark生命周期；rolling生成视图的前一轮41项通过及三项同释放错误
 单列。整体仍在修正后的集中回归及真实PK验证中。
+
+7d474完整回归另存raw exit1，runner实际aborted、1013 passed/1 failed、3.5207分钟。
+rolling网络和三价失败回滚已经通过；唯一报告失败为回读allocation budget0多留
+136字节，随后缺失顶点几何负例在新body包围预检中触发访问错误。这两者均按
+实际发生处理，没有继续使用未完成suite签全部通过。包围预检现在确认point/curve
+定义就绪，有限边区间计算也在解引用前确认顶点point，缺失定义继续原missing_geom
+合同；17个原负例通过，未用不完整几何签no-clash。
+
+跟踪实际分配与释放指针后，136字节准确分解为BSurfCreate在句柄登记失败后留下
+的80/48/8字节缓冲区。分配成功不等于已取得稳定handle；旧错误分支只通过handle
+释放，遗失未登记的原指针。现该发布前失败分支释放七个原始缓冲区，再释放metadata，
+已登记的handle由同一次Free注销。BCurve已有对应正确原指针清理，按事实复用合同，
+未改HandleOf语义或让allocator擅自接管调用者指针。推测的typed-pool destructor
+试验无效，已完整撤回；分配跟踪及callback已清除。原allocation IL guard未放宽，
+曾直接加入字符串诊断的构建被它拒绝（raw exit1），不计成建模执行。
+`native-buffer-registration-and-readiness.log/.exit` 72/72 raw0，涵盖全部原25个回读
+allocation位置、共享/回滚与缺失几何；随后仍需完整集中回归。
+
+同平台bounded GDB对7d474真实默认短边两个产品调用accuracy=1，实际观察API→
+MAS_bodies→solid_occurrences/solid_occurrence_thread→MAS_regions→regions_internal
+→MAS_faces；另一实际栈为faces_internal→mas_faces→boundary_curve_method→
+MAS__b_curves→integrate_under_b_curve→MAS__over_cylinder→MAS__integrate_vector_dot_dx。
+这是本次命中的实际分支，不能把未命中的一般曲面积分方法解释为不存在。
+debugger raw exit0，inferior exit2（mass U），两输入及模数保存在
+`temp_docs/native-acceptance-contract/mass-bound-native-gdb-7d474/`；原两侧仍都是PK积分。
+官方FD31.1明确accuracy是工作量指标，31.4.1要求保留模数。此执行未降低物理norm
+目标、未增默认积分工作量，也不把区间重叠视作1e-7等价证明。
+
+Mac使用独立固定7d474 worktree，仅由本owner远程命令执行，没有新的编码worker。
+私有依赖ENV_READY后非login SSH的dotnet PATH首次127单列；明确使用既有SDK路径，
+实际SDK10.0.400、PK38.0.150、同五项JIT策略，54/54完整ring torus复制删源/镜像尺度/
+回读材料查询及fresh full/strict通过（`7d474-mac-closed-solid.log/.exit` raw0）。
+Mac实际Native SHA
+`c523d16ecdde2d5c5a79672f0c194e8a19a061e8bfa2b2b31aae03b39c7fd2e3`；
+它是这个固定源和能力的跨平台收据，不补签后续buffer/readiness修正或整体性能。

@@ -24,8 +24,9 @@ internal static unsafe partial class KernelRuntime
             var fin=Loops[loop].FirstFin;
             for(var f=0;f<Loops[loop].FinCount;f++,fin=Fins[fin].NextInLoop)
             {
-                var edge=Edges[Fins[fin].Edge];if(!TryProfileEdgeRange(edge,out var lo,out var hi))return AlgorithmStatus.Unsupported;
+                var edge=Edges[Fins[fin].Edge];
                 var carrier=GetCurveSlotByTag(edge.CurveTag);if(carrier<0)return AlgorithmStatus.Unsupported;
+                if(!TryProfileEdgeRange(edge,out var lo,out var hi))return AlgorithmStatus.Unsupported;
                 if(Curves[carrier].Class==CurveClass.ICurve)
                 {
                     var owns=EnsureCommandScratch();AlgorithmStatus status;IntervalBox3 trim;
@@ -115,6 +116,12 @@ internal static unsafe partial class KernelRuntime
         extent=default;var slot=TagRec(body).Slot;var record=Bodies[slot];
         if(Xt.IsOpaque(slot)||record.BodyType!=Generated.ParasolidConstants.PK_BODY_type_solid_c
             ||record.FaceCountBody<=0||record.RegionCount<2||Regions[record.FirstRegion].IsSolid!=0)return false;
+        var vertex=record.FirstVertexBody;
+        for(var i=0;i<record.VertexCountBody;i++,vertex=Vertices[vertex].NextInBody)
+            if(GetPointSlotByTag(Vertices[vertex].PointTag)<0)return false;
+        var edge=record.FirstEdgeBody;
+        for(var i=0;i<record.EdgeCountBody;i++,edge=Edges[edge].NextInBody)
+            if(GetCurveSlotByTag(Edges[edge].CurveTag)<0)return false;
         var face=record.FirstFaceBody;var first=true;
         for(var i=0;i<record.FaceCountBody;i++,face=Faces[face].NextInBody)
         {

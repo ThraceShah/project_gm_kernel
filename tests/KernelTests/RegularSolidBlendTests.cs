@@ -168,7 +168,7 @@ public unsafe class RegularSolidBlendTests:IDisposable
             KernelRuntime.InjectAllocationFailure(budget);int error,received;
             try{error=XtBrepImportTests.Receive(text,out received);}finally{KernelRuntime.InjectAllocationFailure(-1);}
             if(error==0)Assert.Equal(0,KernelRuntime.EntityDelete(1,&received));else Assert.Equal(0,received);
-            Assert.Equal(blocks,KernelRuntime.BlocksLiveBytes);Assert.Equal(curves,KernelRuntime.Curves.AliveCount);Assert.Equal(surfaces,KernelRuntime.Surfaces.AliveCount);
+            Assert.True(blocks==KernelRuntime.BlocksLiveBytes,$"budget={budget} error={error} bytes={blocks}/{KernelRuntime.BlocksLiveBytes} curves={curves}/{KernelRuntime.Curves.AliveCount} surfaces={surfaces}/{KernelRuntime.Surfaces.AliveCount}");Assert.Equal(curves,KernelRuntime.Curves.AliveCount);Assert.Equal(surfaces,KernelRuntime.Surfaces.AliveCount);
         }
     }
 
