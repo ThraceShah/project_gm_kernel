@@ -1,0 +1,2508 @@
+{
+  "scope": "Actual original mesh source and proof binding audit; source-less reports remain missing; no new modeling or display qualification",
+  "meshes": [
+    {
+      "path": "temp_docs/localjet-controlled/window/00-sphere-baseline/meshes/pk-2-before.json",
+      "sha256": "96b9dea91dd21f8d6ce51aff55d0f37da46cd9d4adaa1c78e5db6249c2a89cb9",
+      "sourceKernel": "PK",
+      "liveTag": 373,
+      "snapshotNativeTag": 373,
+      "sourceXtSha256": "3c481a12ed7f24d5ad92ac71402b7cee608d2fb85206ade711db3f60901c991e"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/00-sphere-baseline/meshes/pk-0-after-0.json",
+      "sha256": "bac00b3767c8db2bad605fd4d8dd50c6cd9e67d0337c8eef0331743af4fa4c45",
+      "sourceKernel": "PK",
+      "liveTag": 112,
+      "snapshotNativeTag": 112,
+      "sourceXtSha256": "8b9e68e11ac3b51f562810e4b88060db4fbd69bf4ce1d5f737f0c84cae2ed4b6"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/00-sphere-baseline/meshes/pk-0-tool-0.json",
+      "sha256": "91fda981f47cfb0176b3db742a359b116b6d43912b5e4f168f0e4dce14e8ace5",
+      "sourceKernel": "PK",
+      "liveTag": 119,
+      "snapshotNativeTag": 119,
+      "sourceXtSha256": "0b1902515130d95f322cdb06b8e79c9c18e4039ee3997baa2548c98e0560314d"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/00-sphere-baseline/meshes/gm-2-after-0.json",
+      "sha256": "bb294266b05a72c6848870c41ea1b6863c75cc00e24e4d2623773262704f777a",
+      "sourceKernel": "GM",
+      "liveTag": 90,
+      "snapshotNativeTag": 326,
+      "sourceXtSha256": "74273dc5050463932965285bc3f51bad83aa89fc70aa77d95b04a71992cdf1fe"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/00-sphere-baseline/meshes/gm-0-before.json",
+      "sha256": "75816fd4f4ad4a2bdba7d37630d7bd697b2ef221edde6df32d0b07dd88003ee6",
+      "sourceKernel": "GM",
+      "liveTag": 2,
+      "snapshotNativeTag": 51,
+      "sourceXtSha256": "0aa118c8483133914b35c2b41b0bcad75300d1d5110adc5b0ccb809a7d122e62"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/00-sphere-baseline/meshes/pk-2-after-0.json",
+      "sha256": "859c5c8a38506a37897613820d525f58c40505d565cc3cbb40889a084832cff9",
+      "sourceKernel": "PK",
+      "liveTag": 373,
+      "snapshotNativeTag": 373,
+      "sourceXtSha256": "8b9e68e11ac3b51f562810e4b88060db4fbd69bf4ce1d5f737f0c84cae2ed4b6"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/00-sphere-baseline/meshes/gm-0-after-0.json",
+      "sha256": "faa7733eafe85ef92709d154f7bc7cb988f56f7c574e106483d6967f940dba30",
+      "sourceKernel": "GM",
+      "liveTag": 2,
+      "snapshotNativeTag": 65,
+      "sourceXtSha256": "74273dc5050463932965285bc3f51bad83aa89fc70aa77d95b04a71992cdf1fe"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/00-sphere-baseline/meshes/gm-1-after-0.json",
+      "sha256": "d97457221c52bf71212ab6711e1ca9d49fb58468feac29c29573d70fc9efd8a8",
+      "sourceKernel": "GM",
+      "liveTag": 46,
+      "snapshotNativeTag": 197,
+      "sourceXtSha256": "74273dc5050463932965285bc3f51bad83aa89fc70aa77d95b04a71992cdf1fe"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/00-sphere-baseline/meshes/pk-2-tool-0.json",
+      "sha256": "fc952c770364ca4f936b8faca87dbbbaede0dfdcac9119ee2735f320c202df02",
+      "sourceKernel": "PK",
+      "liveTag": 380,
+      "snapshotNativeTag": 380,
+      "sourceXtSha256": "0b1902515130d95f322cdb06b8e79c9c18e4039ee3997baa2548c98e0560314d"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/00-sphere-baseline/meshes/gm-1-before.json",
+      "sha256": "67af7a237a30be6544b947f6f6cf580af2ff960f5f5f10c638cdcb1dd72c1c99",
+      "sourceKernel": "GM",
+      "liveTag": 46,
+      "snapshotNativeTag": 183,
+      "sourceXtSha256": "0aa118c8483133914b35c2b41b0bcad75300d1d5110adc5b0ccb809a7d122e62"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/00-sphere-baseline/meshes/pk-0-before.json",
+      "sha256": "8405bf16a324b2152ab7d35afb814382212da1878ade5ca96096d07970b27b03",
+      "sourceKernel": "PK",
+      "liveTag": 112,
+      "snapshotNativeTag": 112,
+      "sourceXtSha256": "3c481a12ed7f24d5ad92ac71402b7cee608d2fb85206ade711db3f60901c991e"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/00-sphere-baseline/meshes/gm-2-tool-0.json",
+      "sha256": "45f24329d9aee68b23584b919a009ac6bd272367dcfbdf816af779490728f228",
+      "sourceKernel": "GM",
+      "liveTag": 97,
+      "snapshotNativeTag": 319,
+      "sourceXtSha256": "7fe729c63ae0cb6729e9c7b2b88346d71459aa580b380961cd2a02fff199f1b4"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/00-sphere-baseline/meshes/gm-2-before.json",
+      "sha256": "2596ca61d78f53485c738eeb005154bee362f892ed2a0acb809676aca6934f49",
+      "sourceKernel": "GM",
+      "liveTag": 90,
+      "snapshotNativeTag": 312,
+      "sourceXtSha256": "0aa118c8483133914b35c2b41b0bcad75300d1d5110adc5b0ccb809a7d122e62"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/00-sphere-baseline/meshes/gm-0-tool-0.json",
+      "sha256": "d10817afa080b4e9a72ecd6171b317e90763f667f58ea8582e30078bd4114857",
+      "sourceKernel": "GM",
+      "liveTag": 9,
+      "snapshotNativeTag": 58,
+      "sourceXtSha256": "7fe729c63ae0cb6729e9c7b2b88346d71459aa580b380961cd2a02fff199f1b4"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/00-sphere-baseline/meshes/pk-1-after-0.json",
+      "sha256": "55c6bff7f65919e520cce15f2dda9f9dfe05650f7bbe2657c4b8ec5325f945e3",
+      "sourceKernel": "PK",
+      "liveTag": 244,
+      "snapshotNativeTag": 244,
+      "sourceXtSha256": "8b9e68e11ac3b51f562810e4b88060db4fbd69bf4ce1d5f737f0c84cae2ed4b6"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/00-sphere-baseline/meshes/gm-1-tool-0.json",
+      "sha256": "7e8bc519924bf1943edd24450669eb89783a87b4318bece0fdceec38a7dc9ecd",
+      "sourceKernel": "GM",
+      "liveTag": 53,
+      "snapshotNativeTag": 190,
+      "sourceXtSha256": "7fe729c63ae0cb6729e9c7b2b88346d71459aa580b380961cd2a02fff199f1b4"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/00-sphere-baseline/meshes/pk-1-tool-0.json",
+      "sha256": "862633edc5c1585884fb4822735cfff4965c64e13439f2a1a8b04322a0094a28",
+      "sourceKernel": "PK",
+      "liveTag": 251,
+      "snapshotNativeTag": 251,
+      "sourceXtSha256": "0b1902515130d95f322cdb06b8e79c9c18e4039ee3997baa2548c98e0560314d"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/00-sphere-baseline/meshes/pk-1-before.json",
+      "sha256": "39c6c1b79b88a153d686d302754e951833e5e2764c99b06d7c0efe105cafa0dd",
+      "sourceKernel": "PK",
+      "liveTag": 244,
+      "snapshotNativeTag": 244,
+      "sourceXtSha256": "3c481a12ed7f24d5ad92ac71402b7cee608d2fb85206ade711db3f60901c991e"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/01-sphere-candidate/meshes/pk-2-before.json",
+      "sha256": "21ed4dd6d2a6cf0a1027326ff957114f6d37e506613ec09857cbcb9929398eeb",
+      "sourceKernel": "PK",
+      "liveTag": 373,
+      "snapshotNativeTag": 373,
+      "sourceXtSha256": "3c481a12ed7f24d5ad92ac71402b7cee608d2fb85206ade711db3f60901c991e"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/01-sphere-candidate/meshes/pk-0-after-0.json",
+      "sha256": "e27e23ec658d0d0a522a70b9cddc797cccf1076fb58b28e64a9c10a887d9792a",
+      "sourceKernel": "PK",
+      "liveTag": 112,
+      "snapshotNativeTag": 112,
+      "sourceXtSha256": "8b9e68e11ac3b51f562810e4b88060db4fbd69bf4ce1d5f737f0c84cae2ed4b6"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/01-sphere-candidate/meshes/pk-0-tool-0.json",
+      "sha256": "986b7bdb7b47d921117393e4574808ed2e450f43a1a0e5d1bdf75646f9cd9875",
+      "sourceKernel": "PK",
+      "liveTag": 119,
+      "snapshotNativeTag": 119,
+      "sourceXtSha256": "0b1902515130d95f322cdb06b8e79c9c18e4039ee3997baa2548c98e0560314d"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/01-sphere-candidate/meshes/gm-2-after-0.json",
+      "sha256": "48e9da7091a5a3b2bb4fb74ffff715ba54da9786c0c1806b086928b430368a89",
+      "sourceKernel": "GM",
+      "liveTag": 90,
+      "snapshotNativeTag": 326,
+      "sourceXtSha256": "74273dc5050463932965285bc3f51bad83aa89fc70aa77d95b04a71992cdf1fe"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/01-sphere-candidate/meshes/gm-0-before.json",
+      "sha256": "812a56e38d2870bae4f1dc128522e7e9a08b58491d5dd3afc6606eaebd24d556",
+      "sourceKernel": "GM",
+      "liveTag": 2,
+      "snapshotNativeTag": 51,
+      "sourceXtSha256": "0aa118c8483133914b35c2b41b0bcad75300d1d5110adc5b0ccb809a7d122e62"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/01-sphere-candidate/meshes/pk-2-after-0.json",
+      "sha256": "3ae426d7575853e9e867fbbb44910dc19243d0e29cc3a9ae87822d4a9593da16",
+      "sourceKernel": "PK",
+      "liveTag": 373,
+      "snapshotNativeTag": 373,
+      "sourceXtSha256": "8b9e68e11ac3b51f562810e4b88060db4fbd69bf4ce1d5f737f0c84cae2ed4b6"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/01-sphere-candidate/meshes/gm-0-after-0.json",
+      "sha256": "6cf615e64e0900ad2031d7a5235c1bd76cd4f8747a24d7f46c1cf5aca3d7b726",
+      "sourceKernel": "GM",
+      "liveTag": 2,
+      "snapshotNativeTag": 65,
+      "sourceXtSha256": "74273dc5050463932965285bc3f51bad83aa89fc70aa77d95b04a71992cdf1fe"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/01-sphere-candidate/meshes/gm-1-after-0.json",
+      "sha256": "c62002a85ed3c129254f00345e5c5b7fda5f0044e5d7362af5dae5523e0ae26f",
+      "sourceKernel": "GM",
+      "liveTag": 46,
+      "snapshotNativeTag": 197,
+      "sourceXtSha256": "74273dc5050463932965285bc3f51bad83aa89fc70aa77d95b04a71992cdf1fe"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/01-sphere-candidate/meshes/pk-2-tool-0.json",
+      "sha256": "2e536fb229691ffa06764d53effc0486eaa6d6f1d814e6b3bcabe44e369b1d05",
+      "sourceKernel": "PK",
+      "liveTag": 380,
+      "snapshotNativeTag": 380,
+      "sourceXtSha256": "0b1902515130d95f322cdb06b8e79c9c18e4039ee3997baa2548c98e0560314d"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/01-sphere-candidate/meshes/gm-1-before.json",
+      "sha256": "88fcd38b01154549525fd0b703f374cbd9cc4d24c9cc354d13eeaafcc5c2540b",
+      "sourceKernel": "GM",
+      "liveTag": 46,
+      "snapshotNativeTag": 183,
+      "sourceXtSha256": "0aa118c8483133914b35c2b41b0bcad75300d1d5110adc5b0ccb809a7d122e62"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/01-sphere-candidate/meshes/pk-0-before.json",
+      "sha256": "9ead7c5eac9bc66b3a0dcb2a37b16acdb7e93ab574652e116082d0f6f7a6e843",
+      "sourceKernel": "PK",
+      "liveTag": 112,
+      "snapshotNativeTag": 112,
+      "sourceXtSha256": "3c481a12ed7f24d5ad92ac71402b7cee608d2fb85206ade711db3f60901c991e"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/01-sphere-candidate/meshes/gm-2-tool-0.json",
+      "sha256": "e30c4255a9374c4e2e3c789cc8f95fc3b2947302c49189eda241c8ae7d08d6a4",
+      "sourceKernel": "GM",
+      "liveTag": 97,
+      "snapshotNativeTag": 319,
+      "sourceXtSha256": "7fe729c63ae0cb6729e9c7b2b88346d71459aa580b380961cd2a02fff199f1b4"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/01-sphere-candidate/meshes/gm-2-before.json",
+      "sha256": "830f0a7c7409bd2998e873342318945c70366c0249af10adb76126ac1cb85155",
+      "sourceKernel": "GM",
+      "liveTag": 90,
+      "snapshotNativeTag": 312,
+      "sourceXtSha256": "0aa118c8483133914b35c2b41b0bcad75300d1d5110adc5b0ccb809a7d122e62"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/01-sphere-candidate/meshes/gm-0-tool-0.json",
+      "sha256": "5f958dbf1779bda22c7ed9b97290ce446f1a7d4ac3c9416da9dba63354322df7",
+      "sourceKernel": "GM",
+      "liveTag": 9,
+      "snapshotNativeTag": 58,
+      "sourceXtSha256": "7fe729c63ae0cb6729e9c7b2b88346d71459aa580b380961cd2a02fff199f1b4"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/01-sphere-candidate/meshes/pk-1-after-0.json",
+      "sha256": "aee6b40a3c911964d1705d24c4729b3eecf67bad8ac1e2999ca786434169f4e4",
+      "sourceKernel": "PK",
+      "liveTag": 244,
+      "snapshotNativeTag": 244,
+      "sourceXtSha256": "8b9e68e11ac3b51f562810e4b88060db4fbd69bf4ce1d5f737f0c84cae2ed4b6"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/01-sphere-candidate/meshes/gm-1-tool-0.json",
+      "sha256": "d702f4b9f8a6da9a510e753da1ef216abde2b71322e2253086ce90e2a1a747c7",
+      "sourceKernel": "GM",
+      "liveTag": 53,
+      "snapshotNativeTag": 190,
+      "sourceXtSha256": "7fe729c63ae0cb6729e9c7b2b88346d71459aa580b380961cd2a02fff199f1b4"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/01-sphere-candidate/meshes/pk-1-tool-0.json",
+      "sha256": "dbe646dc31f6fabf28e4a6c9b36a1a1da4e270ee10a364d3ad226c1ce67664e6",
+      "sourceKernel": "PK",
+      "liveTag": 251,
+      "snapshotNativeTag": 251,
+      "sourceXtSha256": "0b1902515130d95f322cdb06b8e79c9c18e4039ee3997baa2548c98e0560314d"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/01-sphere-candidate/meshes/pk-1-before.json",
+      "sha256": "21c0f6a9f26bac45668761a9d5c32adfd881221999218e080174aacae02d51f3",
+      "sourceKernel": "PK",
+      "liveTag": 244,
+      "snapshotNativeTag": 244,
+      "sourceXtSha256": "3c481a12ed7f24d5ad92ac71402b7cee608d2fb85206ade711db3f60901c991e"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/02-sphere-candidate/meshes/pk-2-before.json",
+      "sha256": "21ed4dd6d2a6cf0a1027326ff957114f6d37e506613ec09857cbcb9929398eeb",
+      "sourceKernel": "PK",
+      "liveTag": 373,
+      "snapshotNativeTag": 373,
+      "sourceXtSha256": "3c481a12ed7f24d5ad92ac71402b7cee608d2fb85206ade711db3f60901c991e"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/02-sphere-candidate/meshes/pk-0-after-0.json",
+      "sha256": "e27e23ec658d0d0a522a70b9cddc797cccf1076fb58b28e64a9c10a887d9792a",
+      "sourceKernel": "PK",
+      "liveTag": 112,
+      "snapshotNativeTag": 112,
+      "sourceXtSha256": "8b9e68e11ac3b51f562810e4b88060db4fbd69bf4ce1d5f737f0c84cae2ed4b6"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/02-sphere-candidate/meshes/pk-0-tool-0.json",
+      "sha256": "986b7bdb7b47d921117393e4574808ed2e450f43a1a0e5d1bdf75646f9cd9875",
+      "sourceKernel": "PK",
+      "liveTag": 119,
+      "snapshotNativeTag": 119,
+      "sourceXtSha256": "0b1902515130d95f322cdb06b8e79c9c18e4039ee3997baa2548c98e0560314d"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/02-sphere-candidate/meshes/gm-2-after-0.json",
+      "sha256": "48e9da7091a5a3b2bb4fb74ffff715ba54da9786c0c1806b086928b430368a89",
+      "sourceKernel": "GM",
+      "liveTag": 90,
+      "snapshotNativeTag": 326,
+      "sourceXtSha256": "74273dc5050463932965285bc3f51bad83aa89fc70aa77d95b04a71992cdf1fe"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/02-sphere-candidate/meshes/gm-0-before.json",
+      "sha256": "812a56e38d2870bae4f1dc128522e7e9a08b58491d5dd3afc6606eaebd24d556",
+      "sourceKernel": "GM",
+      "liveTag": 2,
+      "snapshotNativeTag": 51,
+      "sourceXtSha256": "0aa118c8483133914b35c2b41b0bcad75300d1d5110adc5b0ccb809a7d122e62"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/02-sphere-candidate/meshes/pk-2-after-0.json",
+      "sha256": "3ae426d7575853e9e867fbbb44910dc19243d0e29cc3a9ae87822d4a9593da16",
+      "sourceKernel": "PK",
+      "liveTag": 373,
+      "snapshotNativeTag": 373,
+      "sourceXtSha256": "8b9e68e11ac3b51f562810e4b88060db4fbd69bf4ce1d5f737f0c84cae2ed4b6"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/02-sphere-candidate/meshes/gm-0-after-0.json",
+      "sha256": "6cf615e64e0900ad2031d7a5235c1bd76cd4f8747a24d7f46c1cf5aca3d7b726",
+      "sourceKernel": "GM",
+      "liveTag": 2,
+      "snapshotNativeTag": 65,
+      "sourceXtSha256": "74273dc5050463932965285bc3f51bad83aa89fc70aa77d95b04a71992cdf1fe"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/02-sphere-candidate/meshes/gm-1-after-0.json",
+      "sha256": "c62002a85ed3c129254f00345e5c5b7fda5f0044e5d7362af5dae5523e0ae26f",
+      "sourceKernel": "GM",
+      "liveTag": 46,
+      "snapshotNativeTag": 197,
+      "sourceXtSha256": "74273dc5050463932965285bc3f51bad83aa89fc70aa77d95b04a71992cdf1fe"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/02-sphere-candidate/meshes/pk-2-tool-0.json",
+      "sha256": "2e536fb229691ffa06764d53effc0486eaa6d6f1d814e6b3bcabe44e369b1d05",
+      "sourceKernel": "PK",
+      "liveTag": 380,
+      "snapshotNativeTag": 380,
+      "sourceXtSha256": "0b1902515130d95f322cdb06b8e79c9c18e4039ee3997baa2548c98e0560314d"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/02-sphere-candidate/meshes/gm-1-before.json",
+      "sha256": "88fcd38b01154549525fd0b703f374cbd9cc4d24c9cc354d13eeaafcc5c2540b",
+      "sourceKernel": "GM",
+      "liveTag": 46,
+      "snapshotNativeTag": 183,
+      "sourceXtSha256": "0aa118c8483133914b35c2b41b0bcad75300d1d5110adc5b0ccb809a7d122e62"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/02-sphere-candidate/meshes/pk-0-before.json",
+      "sha256": "9ead7c5eac9bc66b3a0dcb2a37b16acdb7e93ab574652e116082d0f6f7a6e843",
+      "sourceKernel": "PK",
+      "liveTag": 112,
+      "snapshotNativeTag": 112,
+      "sourceXtSha256": "3c481a12ed7f24d5ad92ac71402b7cee608d2fb85206ade711db3f60901c991e"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/02-sphere-candidate/meshes/gm-2-tool-0.json",
+      "sha256": "e30c4255a9374c4e2e3c789cc8f95fc3b2947302c49189eda241c8ae7d08d6a4",
+      "sourceKernel": "GM",
+      "liveTag": 97,
+      "snapshotNativeTag": 319,
+      "sourceXtSha256": "7fe729c63ae0cb6729e9c7b2b88346d71459aa580b380961cd2a02fff199f1b4"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/02-sphere-candidate/meshes/gm-2-before.json",
+      "sha256": "830f0a7c7409bd2998e873342318945c70366c0249af10adb76126ac1cb85155",
+      "sourceKernel": "GM",
+      "liveTag": 90,
+      "snapshotNativeTag": 312,
+      "sourceXtSha256": "0aa118c8483133914b35c2b41b0bcad75300d1d5110adc5b0ccb809a7d122e62"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/02-sphere-candidate/meshes/gm-0-tool-0.json",
+      "sha256": "5f958dbf1779bda22c7ed9b97290ce446f1a7d4ac3c9416da9dba63354322df7",
+      "sourceKernel": "GM",
+      "liveTag": 9,
+      "snapshotNativeTag": 58,
+      "sourceXtSha256": "7fe729c63ae0cb6729e9c7b2b88346d71459aa580b380961cd2a02fff199f1b4"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/02-sphere-candidate/meshes/pk-1-after-0.json",
+      "sha256": "aee6b40a3c911964d1705d24c4729b3eecf67bad8ac1e2999ca786434169f4e4",
+      "sourceKernel": "PK",
+      "liveTag": 244,
+      "snapshotNativeTag": 244,
+      "sourceXtSha256": "8b9e68e11ac3b51f562810e4b88060db4fbd69bf4ce1d5f737f0c84cae2ed4b6"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/02-sphere-candidate/meshes/gm-1-tool-0.json",
+      "sha256": "d702f4b9f8a6da9a510e753da1ef216abde2b71322e2253086ce90e2a1a747c7",
+      "sourceKernel": "GM",
+      "liveTag": 53,
+      "snapshotNativeTag": 190,
+      "sourceXtSha256": "7fe729c63ae0cb6729e9c7b2b88346d71459aa580b380961cd2a02fff199f1b4"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/02-sphere-candidate/meshes/pk-1-tool-0.json",
+      "sha256": "dbe646dc31f6fabf28e4a6c9b36a1a1da4e270ee10a364d3ad226c1ce67664e6",
+      "sourceKernel": "PK",
+      "liveTag": 251,
+      "snapshotNativeTag": 251,
+      "sourceXtSha256": "0b1902515130d95f322cdb06b8e79c9c18e4039ee3997baa2548c98e0560314d"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/02-sphere-candidate/meshes/pk-1-before.json",
+      "sha256": "21c0f6a9f26bac45668761a9d5c32adfd881221999218e080174aacae02d51f3",
+      "sourceKernel": "PK",
+      "liveTag": 244,
+      "snapshotNativeTag": 244,
+      "sourceXtSha256": "3c481a12ed7f24d5ad92ac71402b7cee608d2fb85206ade711db3f60901c991e"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/03-sphere-baseline/meshes/pk-2-before.json",
+      "sha256": "96b9dea91dd21f8d6ce51aff55d0f37da46cd9d4adaa1c78e5db6249c2a89cb9",
+      "sourceKernel": "PK",
+      "liveTag": 373,
+      "snapshotNativeTag": 373,
+      "sourceXtSha256": "3c481a12ed7f24d5ad92ac71402b7cee608d2fb85206ade711db3f60901c991e"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/03-sphere-baseline/meshes/pk-0-after-0.json",
+      "sha256": "bac00b3767c8db2bad605fd4d8dd50c6cd9e67d0337c8eef0331743af4fa4c45",
+      "sourceKernel": "PK",
+      "liveTag": 112,
+      "snapshotNativeTag": 112,
+      "sourceXtSha256": "8b9e68e11ac3b51f562810e4b88060db4fbd69bf4ce1d5f737f0c84cae2ed4b6"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/03-sphere-baseline/meshes/pk-0-tool-0.json",
+      "sha256": "91fda981f47cfb0176b3db742a359b116b6d43912b5e4f168f0e4dce14e8ace5",
+      "sourceKernel": "PK",
+      "liveTag": 119,
+      "snapshotNativeTag": 119,
+      "sourceXtSha256": "0b1902515130d95f322cdb06b8e79c9c18e4039ee3997baa2548c98e0560314d"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/03-sphere-baseline/meshes/gm-2-after-0.json",
+      "sha256": "bb294266b05a72c6848870c41ea1b6863c75cc00e24e4d2623773262704f777a",
+      "sourceKernel": "GM",
+      "liveTag": 90,
+      "snapshotNativeTag": 326,
+      "sourceXtSha256": "74273dc5050463932965285bc3f51bad83aa89fc70aa77d95b04a71992cdf1fe"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/03-sphere-baseline/meshes/gm-0-before.json",
+      "sha256": "75816fd4f4ad4a2bdba7d37630d7bd697b2ef221edde6df32d0b07dd88003ee6",
+      "sourceKernel": "GM",
+      "liveTag": 2,
+      "snapshotNativeTag": 51,
+      "sourceXtSha256": "0aa118c8483133914b35c2b41b0bcad75300d1d5110adc5b0ccb809a7d122e62"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/03-sphere-baseline/meshes/pk-2-after-0.json",
+      "sha256": "859c5c8a38506a37897613820d525f58c40505d565cc3cbb40889a084832cff9",
+      "sourceKernel": "PK",
+      "liveTag": 373,
+      "snapshotNativeTag": 373,
+      "sourceXtSha256": "8b9e68e11ac3b51f562810e4b88060db4fbd69bf4ce1d5f737f0c84cae2ed4b6"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/03-sphere-baseline/meshes/gm-0-after-0.json",
+      "sha256": "faa7733eafe85ef92709d154f7bc7cb988f56f7c574e106483d6967f940dba30",
+      "sourceKernel": "GM",
+      "liveTag": 2,
+      "snapshotNativeTag": 65,
+      "sourceXtSha256": "74273dc5050463932965285bc3f51bad83aa89fc70aa77d95b04a71992cdf1fe"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/03-sphere-baseline/meshes/gm-1-after-0.json",
+      "sha256": "d97457221c52bf71212ab6711e1ca9d49fb58468feac29c29573d70fc9efd8a8",
+      "sourceKernel": "GM",
+      "liveTag": 46,
+      "snapshotNativeTag": 197,
+      "sourceXtSha256": "74273dc5050463932965285bc3f51bad83aa89fc70aa77d95b04a71992cdf1fe"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/03-sphere-baseline/meshes/pk-2-tool-0.json",
+      "sha256": "fc952c770364ca4f936b8faca87dbbbaede0dfdcac9119ee2735f320c202df02",
+      "sourceKernel": "PK",
+      "liveTag": 380,
+      "snapshotNativeTag": 380,
+      "sourceXtSha256": "0b1902515130d95f322cdb06b8e79c9c18e4039ee3997baa2548c98e0560314d"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/03-sphere-baseline/meshes/gm-1-before.json",
+      "sha256": "67af7a237a30be6544b947f6f6cf580af2ff960f5f5f10c638cdcb1dd72c1c99",
+      "sourceKernel": "GM",
+      "liveTag": 46,
+      "snapshotNativeTag": 183,
+      "sourceXtSha256": "0aa118c8483133914b35c2b41b0bcad75300d1d5110adc5b0ccb809a7d122e62"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/03-sphere-baseline/meshes/pk-0-before.json",
+      "sha256": "8405bf16a324b2152ab7d35afb814382212da1878ade5ca96096d07970b27b03",
+      "sourceKernel": "PK",
+      "liveTag": 112,
+      "snapshotNativeTag": 112,
+      "sourceXtSha256": "3c481a12ed7f24d5ad92ac71402b7cee608d2fb85206ade711db3f60901c991e"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/03-sphere-baseline/meshes/gm-2-tool-0.json",
+      "sha256": "45f24329d9aee68b23584b919a009ac6bd272367dcfbdf816af779490728f228",
+      "sourceKernel": "GM",
+      "liveTag": 97,
+      "snapshotNativeTag": 319,
+      "sourceXtSha256": "7fe729c63ae0cb6729e9c7b2b88346d71459aa580b380961cd2a02fff199f1b4"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/03-sphere-baseline/meshes/gm-2-before.json",
+      "sha256": "2596ca61d78f53485c738eeb005154bee362f892ed2a0acb809676aca6934f49",
+      "sourceKernel": "GM",
+      "liveTag": 90,
+      "snapshotNativeTag": 312,
+      "sourceXtSha256": "0aa118c8483133914b35c2b41b0bcad75300d1d5110adc5b0ccb809a7d122e62"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/03-sphere-baseline/meshes/gm-0-tool-0.json",
+      "sha256": "d10817afa080b4e9a72ecd6171b317e90763f667f58ea8582e30078bd4114857",
+      "sourceKernel": "GM",
+      "liveTag": 9,
+      "snapshotNativeTag": 58,
+      "sourceXtSha256": "7fe729c63ae0cb6729e9c7b2b88346d71459aa580b380961cd2a02fff199f1b4"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/03-sphere-baseline/meshes/pk-1-after-0.json",
+      "sha256": "55c6bff7f65919e520cce15f2dda9f9dfe05650f7bbe2657c4b8ec5325f945e3",
+      "sourceKernel": "PK",
+      "liveTag": 244,
+      "snapshotNativeTag": 244,
+      "sourceXtSha256": "8b9e68e11ac3b51f562810e4b88060db4fbd69bf4ce1d5f737f0c84cae2ed4b6"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/03-sphere-baseline/meshes/gm-1-tool-0.json",
+      "sha256": "7e8bc519924bf1943edd24450669eb89783a87b4318bece0fdceec38a7dc9ecd",
+      "sourceKernel": "GM",
+      "liveTag": 53,
+      "snapshotNativeTag": 190,
+      "sourceXtSha256": "7fe729c63ae0cb6729e9c7b2b88346d71459aa580b380961cd2a02fff199f1b4"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/03-sphere-baseline/meshes/pk-1-tool-0.json",
+      "sha256": "862633edc5c1585884fb4822735cfff4965c64e13439f2a1a8b04322a0094a28",
+      "sourceKernel": "PK",
+      "liveTag": 251,
+      "snapshotNativeTag": 251,
+      "sourceXtSha256": "0b1902515130d95f322cdb06b8e79c9c18e4039ee3997baa2548c98e0560314d"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/03-sphere-baseline/meshes/pk-1-before.json",
+      "sha256": "39c6c1b79b88a153d686d302754e951833e5e2764c99b06d7c0efe105cafa0dd",
+      "sourceKernel": "PK",
+      "liveTag": 244,
+      "snapshotNativeTag": 244,
+      "sourceXtSha256": "3c481a12ed7f24d5ad92ac71402b7cee608d2fb85206ade711db3f60901c991e"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/04-planar-baseline/meshes/pk-2-before.json",
+      "sha256": "7abe7223cab3873fc15c7f7188917c8d21bee8cf9e31755a53a13c19d10c2a3c",
+      "sourceKernel": "PK",
+      "liveTag": 3065,
+      "snapshotNativeTag": 3065,
+      "sourceXtSha256": "e4a4e6f1d5ef0c84cb1315c6849bf74886db58f3203d8354f4a9a825acbd45c4"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/04-planar-baseline/meshes/pk-0-after-0.json",
+      "sha256": "1b186163911df6ebbaeae60f6b3fdf89bee71f5c4cbc3c8d8671a89c48d9cdf2",
+      "sourceKernel": "PK",
+      "liveTag": 600,
+      "snapshotNativeTag": 600,
+      "sourceXtSha256": "5f090c4a5b470df6ee5e31453592a4d14d6bf1a80affa584402b7d6783b5eb0e"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/04-planar-baseline/meshes/pk-0-tool-0.json",
+      "sha256": "d15764367fa832a820f4f98064f782c9a61ea885e3a002ab1238ca745dfb8630",
+      "sourceKernel": "PK",
+      "liveTag": 687,
+      "snapshotNativeTag": 687,
+      "sourceXtSha256": "1d30a3c8f70163da2c8e697654c45d1f67782517aeb3aac4853138d8a4e48eeb"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/04-planar-baseline/meshes/gm-2-after-0.json",
+      "sha256": "22d0a53eb2aec5e3c13d3f97e13ef34d1da11d0522ec2c3f3eb7f21eb846860d",
+      "sourceKernel": "GM",
+      "liveTag": 625,
+      "snapshotNativeTag": 2690,
+      "sourceXtSha256": "928a02497f97ee76b5f245307189b3ddeda3643aba19144a8faf26a6ddacebd9"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/04-planar-baseline/meshes/gm-0-before.json",
+      "sha256": "eb1b1cfb51c6768c249db5deb307016b3d23e76145d5acb6442c1f981393bcdb",
+      "sourceKernel": "GM",
+      "liveTag": 27,
+      "snapshotNativeTag": 51,
+      "sourceXtSha256": "5cf64514358bbc59dc2a02acc6e7f608132f2d13be3ce5ca537285592df0d99b"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/04-planar-baseline/meshes/pk-2-after-0.json",
+      "sha256": "f0c6c83302b222968b0e5ff0846b7a8c117a19ffb02b74eb777941a205a53313",
+      "sourceKernel": "PK",
+      "liveTag": 3065,
+      "snapshotNativeTag": 3065,
+      "sourceXtSha256": "5f090c4a5b470df6ee5e31453592a4d14d6bf1a80affa584402b7d6783b5eb0e"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/04-planar-baseline/meshes/gm-0-after-0.json",
+      "sha256": "bce03583fded0af9f7b56fb868a40e126fb5cf76132a8b98061d2bc0c7d5eb7b",
+      "sourceKernel": "GM",
+      "liveTag": 27,
+      "snapshotNativeTag": 225,
+      "sourceXtSha256": "928a02497f97ee76b5f245307189b3ddeda3643aba19144a8faf26a6ddacebd9"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/04-planar-baseline/meshes/gm-1-after-0.json",
+      "sha256": "dc4940b33a13369dd6f45c3a886022fffb9e77c5cb5a7c59254f80fb2889a026",
+      "sourceKernel": "GM",
+      "liveTag": 326,
+      "snapshotNativeTag": 1459,
+      "sourceXtSha256": "928a02497f97ee76b5f245307189b3ddeda3643aba19144a8faf26a6ddacebd9"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/04-planar-baseline/meshes/pk-2-tool-0.json",
+      "sha256": "c2c4f40fa9dd4c8a501109d6524f9b6f465cb810f0dd6965efdf7bb12ee596fc",
+      "sourceKernel": "PK",
+      "liveTag": 3152,
+      "snapshotNativeTag": 3152,
+      "sourceXtSha256": "1d30a3c8f70163da2c8e697654c45d1f67782517aeb3aac4853138d8a4e48eeb"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/04-planar-baseline/meshes/gm-1-before.json",
+      "sha256": "a8f791fb9a73c5c595eaa02609cc3094def4fec77ebbd4e915c1cf38eba778e2",
+      "sourceKernel": "GM",
+      "liveTag": 326,
+      "snapshotNativeTag": 1285,
+      "sourceXtSha256": "5cf64514358bbc59dc2a02acc6e7f608132f2d13be3ce5ca537285592df0d99b"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/04-planar-baseline/meshes/pk-0-before.json",
+      "sha256": "e7c7ae61245cf8d71565284e0af3f92a3c8ec79714d842ba50d6a640dd56dd67",
+      "sourceKernel": "PK",
+      "liveTag": 600,
+      "snapshotNativeTag": 600,
+      "sourceXtSha256": "e4a4e6f1d5ef0c84cb1315c6849bf74886db58f3203d8354f4a9a825acbd45c4"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/04-planar-baseline/meshes/gm-2-tool-0.json",
+      "sha256": "29a0f44bcd002c1db8b3b64a4d3b1d1b22638750c6155dcdc39405ee8a5789f0",
+      "sourceKernel": "GM",
+      "liveTag": 712,
+      "snapshotNativeTag": 2603,
+      "sourceXtSha256": "39a827f98fc49fe8a752ddf96eea895feb4f068a739a3937632d27905e349e4a"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/04-planar-baseline/meshes/gm-2-before.json",
+      "sha256": "cf51e00c89474bd3642418c687afb871c0165532a0c25326133cd3cb9ffd430a",
+      "sourceKernel": "GM",
+      "liveTag": 625,
+      "snapshotNativeTag": 2516,
+      "sourceXtSha256": "5cf64514358bbc59dc2a02acc6e7f608132f2d13be3ce5ca537285592df0d99b"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/04-planar-baseline/meshes/gm-0-tool-0.json",
+      "sha256": "21fb21f63a19cd316469eac33c2fe08d14fb6c887951d4a806d161e2be97ad2d",
+      "sourceKernel": "GM",
+      "liveTag": 114,
+      "snapshotNativeTag": 138,
+      "sourceXtSha256": "39a827f98fc49fe8a752ddf96eea895feb4f068a739a3937632d27905e349e4a"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/04-planar-baseline/meshes/pk-1-after-0.json",
+      "sha256": "98ef8bd9a7c8099fd16ad9602ac33576d5b6e64e3dd9d8de88026c5638fa1c0d",
+      "sourceKernel": "PK",
+      "liveTag": 1834,
+      "snapshotNativeTag": 1834,
+      "sourceXtSha256": "5f090c4a5b470df6ee5e31453592a4d14d6bf1a80affa584402b7d6783b5eb0e"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/04-planar-baseline/meshes/gm-1-tool-0.json",
+      "sha256": "d8e52b569736cfaf6f6e7f7106f8d2bf8edf49b93c9213468c08766fc37e1479",
+      "sourceKernel": "GM",
+      "liveTag": 413,
+      "snapshotNativeTag": 1372,
+      "sourceXtSha256": "39a827f98fc49fe8a752ddf96eea895feb4f068a739a3937632d27905e349e4a"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/04-planar-baseline/meshes/pk-1-tool-0.json",
+      "sha256": "a066d1a7e59c48c8e77340f6f8daaea671d6ca93e4028b69660c52eb2f681e11",
+      "sourceKernel": "PK",
+      "liveTag": 1921,
+      "snapshotNativeTag": 1921,
+      "sourceXtSha256": "1d30a3c8f70163da2c8e697654c45d1f67782517aeb3aac4853138d8a4e48eeb"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/04-planar-baseline/meshes/pk-1-before.json",
+      "sha256": "d311b3f088ef737473e998083b01fc4597075d6fee9d00b6c6c88de99024b616",
+      "sourceKernel": "PK",
+      "liveTag": 1834,
+      "snapshotNativeTag": 1834,
+      "sourceXtSha256": "e4a4e6f1d5ef0c84cb1315c6849bf74886db58f3203d8354f4a9a825acbd45c4"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/05-planar-candidate/meshes/pk-2-before.json",
+      "sha256": "21f21cb3d7527846cd9ec271c1dc30f76d31d870a85345fddf0d67b24d38eee6",
+      "sourceKernel": "PK",
+      "liveTag": 3065,
+      "snapshotNativeTag": 3065,
+      "sourceXtSha256": "e4a4e6f1d5ef0c84cb1315c6849bf74886db58f3203d8354f4a9a825acbd45c4"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/05-planar-candidate/meshes/pk-0-after-0.json",
+      "sha256": "1146d14f9df6b852655d34e2dec2c2e576340a0b0ca948f68e4d3bf87f0d69c9",
+      "sourceKernel": "PK",
+      "liveTag": 600,
+      "snapshotNativeTag": 600,
+      "sourceXtSha256": "5f090c4a5b470df6ee5e31453592a4d14d6bf1a80affa584402b7d6783b5eb0e"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/05-planar-candidate/meshes/pk-0-tool-0.json",
+      "sha256": "5398b728ba436e8edaa42b945907d4489d9d453bad079b83453a9366c4567129",
+      "sourceKernel": "PK",
+      "liveTag": 687,
+      "snapshotNativeTag": 687,
+      "sourceXtSha256": "1d30a3c8f70163da2c8e697654c45d1f67782517aeb3aac4853138d8a4e48eeb"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/05-planar-candidate/meshes/gm-2-after-0.json",
+      "sha256": "d18dcaa263763b649eb1e22c69ba7ea9d8477885bb2be5b1b8146747a61aa84d",
+      "sourceKernel": "GM",
+      "liveTag": 625,
+      "snapshotNativeTag": 2690,
+      "sourceXtSha256": "928a02497f97ee76b5f245307189b3ddeda3643aba19144a8faf26a6ddacebd9"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/05-planar-candidate/meshes/gm-0-before.json",
+      "sha256": "89fd9031e98a605c8f93d99efa85f9824e508097ec7f65ef3aed9099f0fea00f",
+      "sourceKernel": "GM",
+      "liveTag": 27,
+      "snapshotNativeTag": 51,
+      "sourceXtSha256": "5cf64514358bbc59dc2a02acc6e7f608132f2d13be3ce5ca537285592df0d99b"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/05-planar-candidate/meshes/pk-2-after-0.json",
+      "sha256": "09e09bae9d942779b99e1f25c6f2e451724316e96ecef54dd0aa0d2b26729168",
+      "sourceKernel": "PK",
+      "liveTag": 3065,
+      "snapshotNativeTag": 3065,
+      "sourceXtSha256": "5f090c4a5b470df6ee5e31453592a4d14d6bf1a80affa584402b7d6783b5eb0e"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/05-planar-candidate/meshes/gm-0-after-0.json",
+      "sha256": "4f4ef38b795382bba2f9c3a4e7eaeed8ace9ca94d0c0e544319cbf234e1e8613",
+      "sourceKernel": "GM",
+      "liveTag": 27,
+      "snapshotNativeTag": 225,
+      "sourceXtSha256": "928a02497f97ee76b5f245307189b3ddeda3643aba19144a8faf26a6ddacebd9"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/05-planar-candidate/meshes/gm-1-after-0.json",
+      "sha256": "22f2b15ef76d2d4d05371748675d65615b0dced364131ac04559c918877e4f19",
+      "sourceKernel": "GM",
+      "liveTag": 326,
+      "snapshotNativeTag": 1459,
+      "sourceXtSha256": "928a02497f97ee76b5f245307189b3ddeda3643aba19144a8faf26a6ddacebd9"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/05-planar-candidate/meshes/pk-2-tool-0.json",
+      "sha256": "79a03774a276dc4c88f7dde90ab00e90908d507c57e6ec4bc1062d6e6b5f6ff3",
+      "sourceKernel": "PK",
+      "liveTag": 3152,
+      "snapshotNativeTag": 3152,
+      "sourceXtSha256": "1d30a3c8f70163da2c8e697654c45d1f67782517aeb3aac4853138d8a4e48eeb"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/05-planar-candidate/meshes/gm-1-before.json",
+      "sha256": "b5c9a2690bc2148636f2038bb82572123e2a9fe25088b5186273741648389733",
+      "sourceKernel": "GM",
+      "liveTag": 326,
+      "snapshotNativeTag": 1285,
+      "sourceXtSha256": "5cf64514358bbc59dc2a02acc6e7f608132f2d13be3ce5ca537285592df0d99b"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/05-planar-candidate/meshes/pk-0-before.json",
+      "sha256": "95915104c499e0ddc121131c4147f15b85c0e412566c97ffad64d1cfb3bfa226",
+      "sourceKernel": "PK",
+      "liveTag": 600,
+      "snapshotNativeTag": 600,
+      "sourceXtSha256": "e4a4e6f1d5ef0c84cb1315c6849bf74886db58f3203d8354f4a9a825acbd45c4"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/05-planar-candidate/meshes/gm-2-tool-0.json",
+      "sha256": "997ad1a8fdb5d41cb29e7f576f5e6ba8f29afa9936a0eed65d29a7318a956fdc",
+      "sourceKernel": "GM",
+      "liveTag": 712,
+      "snapshotNativeTag": 2603,
+      "sourceXtSha256": "39a827f98fc49fe8a752ddf96eea895feb4f068a739a3937632d27905e349e4a"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/05-planar-candidate/meshes/gm-2-before.json",
+      "sha256": "6bbc5a2a25ebc0b74a1f207055561fc74cadecadc7359667fb23867ba953f8f1",
+      "sourceKernel": "GM",
+      "liveTag": 625,
+      "snapshotNativeTag": 2516,
+      "sourceXtSha256": "5cf64514358bbc59dc2a02acc6e7f608132f2d13be3ce5ca537285592df0d99b"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/05-planar-candidate/meshes/gm-0-tool-0.json",
+      "sha256": "dbc0cb72fad4a0fb1d80d79568d2f7d3aea806275a38af9dba426b837150425f",
+      "sourceKernel": "GM",
+      "liveTag": 114,
+      "snapshotNativeTag": 138,
+      "sourceXtSha256": "39a827f98fc49fe8a752ddf96eea895feb4f068a739a3937632d27905e349e4a"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/05-planar-candidate/meshes/pk-1-after-0.json",
+      "sha256": "be6f935bd1f6921aea9b86d0b2fdb1c73b0b8ee8e95151f059dfd8112659ad25",
+      "sourceKernel": "PK",
+      "liveTag": 1834,
+      "snapshotNativeTag": 1834,
+      "sourceXtSha256": "5f090c4a5b470df6ee5e31453592a4d14d6bf1a80affa584402b7d6783b5eb0e"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/05-planar-candidate/meshes/gm-1-tool-0.json",
+      "sha256": "45e7dc09f5d6487a3d3d07eea5f4ec90ef9cabcf2cf946116478cb3205c83af5",
+      "sourceKernel": "GM",
+      "liveTag": 413,
+      "snapshotNativeTag": 1372,
+      "sourceXtSha256": "39a827f98fc49fe8a752ddf96eea895feb4f068a739a3937632d27905e349e4a"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/05-planar-candidate/meshes/pk-1-tool-0.json",
+      "sha256": "00f27b1f8ac24599a691ddba36d26fd2fc0f6878b63add4416de3f2c2bae20d2",
+      "sourceKernel": "PK",
+      "liveTag": 1921,
+      "snapshotNativeTag": 1921,
+      "sourceXtSha256": "1d30a3c8f70163da2c8e697654c45d1f67782517aeb3aac4853138d8a4e48eeb"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/05-planar-candidate/meshes/pk-1-before.json",
+      "sha256": "a02d673f50a06b57bfc7348b692c88458fa92a83d784198dd6a169690642ea9c",
+      "sourceKernel": "PK",
+      "liveTag": 1834,
+      "snapshotNativeTag": 1834,
+      "sourceXtSha256": "e4a4e6f1d5ef0c84cb1315c6849bf74886db58f3203d8354f4a9a825acbd45c4"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/06-planar-candidate/meshes/pk-2-before.json",
+      "sha256": "21f21cb3d7527846cd9ec271c1dc30f76d31d870a85345fddf0d67b24d38eee6",
+      "sourceKernel": "PK",
+      "liveTag": 3065,
+      "snapshotNativeTag": 3065,
+      "sourceXtSha256": "e4a4e6f1d5ef0c84cb1315c6849bf74886db58f3203d8354f4a9a825acbd45c4"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/06-planar-candidate/meshes/pk-0-after-0.json",
+      "sha256": "1146d14f9df6b852655d34e2dec2c2e576340a0b0ca948f68e4d3bf87f0d69c9",
+      "sourceKernel": "PK",
+      "liveTag": 600,
+      "snapshotNativeTag": 600,
+      "sourceXtSha256": "5f090c4a5b470df6ee5e31453592a4d14d6bf1a80affa584402b7d6783b5eb0e"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/06-planar-candidate/meshes/pk-0-tool-0.json",
+      "sha256": "5398b728ba436e8edaa42b945907d4489d9d453bad079b83453a9366c4567129",
+      "sourceKernel": "PK",
+      "liveTag": 687,
+      "snapshotNativeTag": 687,
+      "sourceXtSha256": "1d30a3c8f70163da2c8e697654c45d1f67782517aeb3aac4853138d8a4e48eeb"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/06-planar-candidate/meshes/gm-2-after-0.json",
+      "sha256": "d18dcaa263763b649eb1e22c69ba7ea9d8477885bb2be5b1b8146747a61aa84d",
+      "sourceKernel": "GM",
+      "liveTag": 625,
+      "snapshotNativeTag": 2690,
+      "sourceXtSha256": "928a02497f97ee76b5f245307189b3ddeda3643aba19144a8faf26a6ddacebd9"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/06-planar-candidate/meshes/gm-0-before.json",
+      "sha256": "89fd9031e98a605c8f93d99efa85f9824e508097ec7f65ef3aed9099f0fea00f",
+      "sourceKernel": "GM",
+      "liveTag": 27,
+      "snapshotNativeTag": 51,
+      "sourceXtSha256": "5cf64514358bbc59dc2a02acc6e7f608132f2d13be3ce5ca537285592df0d99b"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/06-planar-candidate/meshes/pk-2-after-0.json",
+      "sha256": "09e09bae9d942779b99e1f25c6f2e451724316e96ecef54dd0aa0d2b26729168",
+      "sourceKernel": "PK",
+      "liveTag": 3065,
+      "snapshotNativeTag": 3065,
+      "sourceXtSha256": "5f090c4a5b470df6ee5e31453592a4d14d6bf1a80affa584402b7d6783b5eb0e"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/06-planar-candidate/meshes/gm-0-after-0.json",
+      "sha256": "4f4ef38b795382bba2f9c3a4e7eaeed8ace9ca94d0c0e544319cbf234e1e8613",
+      "sourceKernel": "GM",
+      "liveTag": 27,
+      "snapshotNativeTag": 225,
+      "sourceXtSha256": "928a02497f97ee76b5f245307189b3ddeda3643aba19144a8faf26a6ddacebd9"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/06-planar-candidate/meshes/gm-1-after-0.json",
+      "sha256": "22f2b15ef76d2d4d05371748675d65615b0dced364131ac04559c918877e4f19",
+      "sourceKernel": "GM",
+      "liveTag": 326,
+      "snapshotNativeTag": 1459,
+      "sourceXtSha256": "928a02497f97ee76b5f245307189b3ddeda3643aba19144a8faf26a6ddacebd9"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/06-planar-candidate/meshes/pk-2-tool-0.json",
+      "sha256": "79a03774a276dc4c88f7dde90ab00e90908d507c57e6ec4bc1062d6e6b5f6ff3",
+      "sourceKernel": "PK",
+      "liveTag": 3152,
+      "snapshotNativeTag": 3152,
+      "sourceXtSha256": "1d30a3c8f70163da2c8e697654c45d1f67782517aeb3aac4853138d8a4e48eeb"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/06-planar-candidate/meshes/gm-1-before.json",
+      "sha256": "b5c9a2690bc2148636f2038bb82572123e2a9fe25088b5186273741648389733",
+      "sourceKernel": "GM",
+      "liveTag": 326,
+      "snapshotNativeTag": 1285,
+      "sourceXtSha256": "5cf64514358bbc59dc2a02acc6e7f608132f2d13be3ce5ca537285592df0d99b"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/06-planar-candidate/meshes/pk-0-before.json",
+      "sha256": "95915104c499e0ddc121131c4147f15b85c0e412566c97ffad64d1cfb3bfa226",
+      "sourceKernel": "PK",
+      "liveTag": 600,
+      "snapshotNativeTag": 600,
+      "sourceXtSha256": "e4a4e6f1d5ef0c84cb1315c6849bf74886db58f3203d8354f4a9a825acbd45c4"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/06-planar-candidate/meshes/gm-2-tool-0.json",
+      "sha256": "997ad1a8fdb5d41cb29e7f576f5e6ba8f29afa9936a0eed65d29a7318a956fdc",
+      "sourceKernel": "GM",
+      "liveTag": 712,
+      "snapshotNativeTag": 2603,
+      "sourceXtSha256": "39a827f98fc49fe8a752ddf96eea895feb4f068a739a3937632d27905e349e4a"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/06-planar-candidate/meshes/gm-2-before.json",
+      "sha256": "6bbc5a2a25ebc0b74a1f207055561fc74cadecadc7359667fb23867ba953f8f1",
+      "sourceKernel": "GM",
+      "liveTag": 625,
+      "snapshotNativeTag": 2516,
+      "sourceXtSha256": "5cf64514358bbc59dc2a02acc6e7f608132f2d13be3ce5ca537285592df0d99b"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/06-planar-candidate/meshes/gm-0-tool-0.json",
+      "sha256": "dbc0cb72fad4a0fb1d80d79568d2f7d3aea806275a38af9dba426b837150425f",
+      "sourceKernel": "GM",
+      "liveTag": 114,
+      "snapshotNativeTag": 138,
+      "sourceXtSha256": "39a827f98fc49fe8a752ddf96eea895feb4f068a739a3937632d27905e349e4a"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/06-planar-candidate/meshes/pk-1-after-0.json",
+      "sha256": "be6f935bd1f6921aea9b86d0b2fdb1c73b0b8ee8e95151f059dfd8112659ad25",
+      "sourceKernel": "PK",
+      "liveTag": 1834,
+      "snapshotNativeTag": 1834,
+      "sourceXtSha256": "5f090c4a5b470df6ee5e31453592a4d14d6bf1a80affa584402b7d6783b5eb0e"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/06-planar-candidate/meshes/gm-1-tool-0.json",
+      "sha256": "45e7dc09f5d6487a3d3d07eea5f4ec90ef9cabcf2cf946116478cb3205c83af5",
+      "sourceKernel": "GM",
+      "liveTag": 413,
+      "snapshotNativeTag": 1372,
+      "sourceXtSha256": "39a827f98fc49fe8a752ddf96eea895feb4f068a739a3937632d27905e349e4a"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/06-planar-candidate/meshes/pk-1-tool-0.json",
+      "sha256": "00f27b1f8ac24599a691ddba36d26fd2fc0f6878b63add4416de3f2c2bae20d2",
+      "sourceKernel": "PK",
+      "liveTag": 1921,
+      "snapshotNativeTag": 1921,
+      "sourceXtSha256": "1d30a3c8f70163da2c8e697654c45d1f67782517aeb3aac4853138d8a4e48eeb"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/06-planar-candidate/meshes/pk-1-before.json",
+      "sha256": "a02d673f50a06b57bfc7348b692c88458fa92a83d784198dd6a169690642ea9c",
+      "sourceKernel": "PK",
+      "liveTag": 1834,
+      "snapshotNativeTag": 1834,
+      "sourceXtSha256": "e4a4e6f1d5ef0c84cb1315c6849bf74886db58f3203d8354f4a9a825acbd45c4"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/07-planar-baseline/meshes/pk-2-before.json",
+      "sha256": "7abe7223cab3873fc15c7f7188917c8d21bee8cf9e31755a53a13c19d10c2a3c",
+      "sourceKernel": "PK",
+      "liveTag": 3065,
+      "snapshotNativeTag": 3065,
+      "sourceXtSha256": "e4a4e6f1d5ef0c84cb1315c6849bf74886db58f3203d8354f4a9a825acbd45c4"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/07-planar-baseline/meshes/pk-0-after-0.json",
+      "sha256": "1b186163911df6ebbaeae60f6b3fdf89bee71f5c4cbc3c8d8671a89c48d9cdf2",
+      "sourceKernel": "PK",
+      "liveTag": 600,
+      "snapshotNativeTag": 600,
+      "sourceXtSha256": "5f090c4a5b470df6ee5e31453592a4d14d6bf1a80affa584402b7d6783b5eb0e"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/07-planar-baseline/meshes/pk-0-tool-0.json",
+      "sha256": "d15764367fa832a820f4f98064f782c9a61ea885e3a002ab1238ca745dfb8630",
+      "sourceKernel": "PK",
+      "liveTag": 687,
+      "snapshotNativeTag": 687,
+      "sourceXtSha256": "1d30a3c8f70163da2c8e697654c45d1f67782517aeb3aac4853138d8a4e48eeb"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/07-planar-baseline/meshes/gm-2-after-0.json",
+      "sha256": "22d0a53eb2aec5e3c13d3f97e13ef34d1da11d0522ec2c3f3eb7f21eb846860d",
+      "sourceKernel": "GM",
+      "liveTag": 625,
+      "snapshotNativeTag": 2690,
+      "sourceXtSha256": "928a02497f97ee76b5f245307189b3ddeda3643aba19144a8faf26a6ddacebd9"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/07-planar-baseline/meshes/gm-0-before.json",
+      "sha256": "eb1b1cfb51c6768c249db5deb307016b3d23e76145d5acb6442c1f981393bcdb",
+      "sourceKernel": "GM",
+      "liveTag": 27,
+      "snapshotNativeTag": 51,
+      "sourceXtSha256": "5cf64514358bbc59dc2a02acc6e7f608132f2d13be3ce5ca537285592df0d99b"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/07-planar-baseline/meshes/pk-2-after-0.json",
+      "sha256": "f0c6c83302b222968b0e5ff0846b7a8c117a19ffb02b74eb777941a205a53313",
+      "sourceKernel": "PK",
+      "liveTag": 3065,
+      "snapshotNativeTag": 3065,
+      "sourceXtSha256": "5f090c4a5b470df6ee5e31453592a4d14d6bf1a80affa584402b7d6783b5eb0e"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/07-planar-baseline/meshes/gm-0-after-0.json",
+      "sha256": "bce03583fded0af9f7b56fb868a40e126fb5cf76132a8b98061d2bc0c7d5eb7b",
+      "sourceKernel": "GM",
+      "liveTag": 27,
+      "snapshotNativeTag": 225,
+      "sourceXtSha256": "928a02497f97ee76b5f245307189b3ddeda3643aba19144a8faf26a6ddacebd9"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/07-planar-baseline/meshes/gm-1-after-0.json",
+      "sha256": "dc4940b33a13369dd6f45c3a886022fffb9e77c5cb5a7c59254f80fb2889a026",
+      "sourceKernel": "GM",
+      "liveTag": 326,
+      "snapshotNativeTag": 1459,
+      "sourceXtSha256": "928a02497f97ee76b5f245307189b3ddeda3643aba19144a8faf26a6ddacebd9"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/07-planar-baseline/meshes/pk-2-tool-0.json",
+      "sha256": "c2c4f40fa9dd4c8a501109d6524f9b6f465cb810f0dd6965efdf7bb12ee596fc",
+      "sourceKernel": "PK",
+      "liveTag": 3152,
+      "snapshotNativeTag": 3152,
+      "sourceXtSha256": "1d30a3c8f70163da2c8e697654c45d1f67782517aeb3aac4853138d8a4e48eeb"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/07-planar-baseline/meshes/gm-1-before.json",
+      "sha256": "a8f791fb9a73c5c595eaa02609cc3094def4fec77ebbd4e915c1cf38eba778e2",
+      "sourceKernel": "GM",
+      "liveTag": 326,
+      "snapshotNativeTag": 1285,
+      "sourceXtSha256": "5cf64514358bbc59dc2a02acc6e7f608132f2d13be3ce5ca537285592df0d99b"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/07-planar-baseline/meshes/pk-0-before.json",
+      "sha256": "e7c7ae61245cf8d71565284e0af3f92a3c8ec79714d842ba50d6a640dd56dd67",
+      "sourceKernel": "PK",
+      "liveTag": 600,
+      "snapshotNativeTag": 600,
+      "sourceXtSha256": "e4a4e6f1d5ef0c84cb1315c6849bf74886db58f3203d8354f4a9a825acbd45c4"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/07-planar-baseline/meshes/gm-2-tool-0.json",
+      "sha256": "29a0f44bcd002c1db8b3b64a4d3b1d1b22638750c6155dcdc39405ee8a5789f0",
+      "sourceKernel": "GM",
+      "liveTag": 712,
+      "snapshotNativeTag": 2603,
+      "sourceXtSha256": "39a827f98fc49fe8a752ddf96eea895feb4f068a739a3937632d27905e349e4a"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/07-planar-baseline/meshes/gm-2-before.json",
+      "sha256": "cf51e00c89474bd3642418c687afb871c0165532a0c25326133cd3cb9ffd430a",
+      "sourceKernel": "GM",
+      "liveTag": 625,
+      "snapshotNativeTag": 2516,
+      "sourceXtSha256": "5cf64514358bbc59dc2a02acc6e7f608132f2d13be3ce5ca537285592df0d99b"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/07-planar-baseline/meshes/gm-0-tool-0.json",
+      "sha256": "21fb21f63a19cd316469eac33c2fe08d14fb6c887951d4a806d161e2be97ad2d",
+      "sourceKernel": "GM",
+      "liveTag": 114,
+      "snapshotNativeTag": 138,
+      "sourceXtSha256": "39a827f98fc49fe8a752ddf96eea895feb4f068a739a3937632d27905e349e4a"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/07-planar-baseline/meshes/pk-1-after-0.json",
+      "sha256": "98ef8bd9a7c8099fd16ad9602ac33576d5b6e64e3dd9d8de88026c5638fa1c0d",
+      "sourceKernel": "PK",
+      "liveTag": 1834,
+      "snapshotNativeTag": 1834,
+      "sourceXtSha256": "5f090c4a5b470df6ee5e31453592a4d14d6bf1a80affa584402b7d6783b5eb0e"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/07-planar-baseline/meshes/gm-1-tool-0.json",
+      "sha256": "d8e52b569736cfaf6f6e7f7106f8d2bf8edf49b93c9213468c08766fc37e1479",
+      "sourceKernel": "GM",
+      "liveTag": 413,
+      "snapshotNativeTag": 1372,
+      "sourceXtSha256": "39a827f98fc49fe8a752ddf96eea895feb4f068a739a3937632d27905e349e4a"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/07-planar-baseline/meshes/pk-1-tool-0.json",
+      "sha256": "a066d1a7e59c48c8e77340f6f8daaea671d6ca93e4028b69660c52eb2f681e11",
+      "sourceKernel": "PK",
+      "liveTag": 1921,
+      "snapshotNativeTag": 1921,
+      "sourceXtSha256": "1d30a3c8f70163da2c8e697654c45d1f67782517aeb3aac4853138d8a4e48eeb"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/07-planar-baseline/meshes/pk-1-before.json",
+      "sha256": "d311b3f088ef737473e998083b01fc4597075d6fee9d00b6c6c88de99024b616",
+      "sourceKernel": "PK",
+      "liveTag": 1834,
+      "snapshotNativeTag": 1834,
+      "sourceXtSha256": "e4a4e6f1d5ef0c84cb1315c6849bf74886db58f3203d8354f4a9a825acbd45c4"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/08-curved-baseline/meshes/pk-2-before.json",
+      "sha256": "7b6139952f898995a5fca10cfa9724416ab6052119ce38ef9af59edd5c4f28f7",
+      "sourceKernel": "PK",
+      "liveTag": 3522,
+      "snapshotNativeTag": 3522,
+      "sourceXtSha256": "e5a88f05567aef4bb6cd372b7b2a28252e7006cf43d4d05fd0d93e5606ca00b1"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/08-curved-baseline/meshes/pk-0-after-0.json",
+      "sha256": "b631ff55d661691cd3c22bbea5f1a625e547478392206db9c1480dccdb289600",
+      "sourceKernel": "PK",
+      "liveTag": 698,
+      "snapshotNativeTag": 698,
+      "sourceXtSha256": "27ff529db5104ea6e0f33c3c2cf7820dd32458608644081a3fe1a0009f73b434"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/08-curved-baseline/meshes/pk-0-tool-0.json",
+      "sha256": "5a4446b64594be455106942a61144e70a791664a8cae5cba00aa70e8f70c03da",
+      "sourceKernel": "PK",
+      "liveTag": 903,
+      "snapshotNativeTag": 903,
+      "sourceXtSha256": "c530dd2aa4026a6add64b5f22d5784dc95e0b4baf4bb43b1262cdeaa9a35fd24"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/08-curved-baseline/meshes/gm-2-after-0.json",
+      "sha256": "3174e60f05e3180d494f059c7ebac7d10eddb0490f3f7ba8b6b445d613bcf8d9",
+      "sourceKernel": "GM",
+      "liveTag": 1104,
+      "snapshotNativeTag": 3061,
+      "sourceXtSha256": "e2175c978745f265fb8f61b5db92a18c81fe9f6a0541bc51b059bada0150eaff"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/08-curved-baseline/meshes/gm-0-before.json",
+      "sha256": "54d9f70e9620c25d9155083f57f14065470a1944662f8cf2009143b008873a7c",
+      "sourceKernel": "GM",
+      "liveTag": 12,
+      "snapshotNativeTag": 51,
+      "sourceXtSha256": "dba0b7da20272ea3c98c5f9ee0ccc38909120fef1c072fcb553387260b747702"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/08-curved-baseline/meshes/pk-2-after-0.json",
+      "sha256": "5cfdf17d039a56fb4bcab51e9ade90e348fb8a27bbd9bcdf7e1814c683b36ad8",
+      "sourceKernel": "PK",
+      "liveTag": 3522,
+      "snapshotNativeTag": 3522,
+      "sourceXtSha256": "27ff529db5104ea6e0f33c3c2cf7820dd32458608644081a3fe1a0009f73b434"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/08-curved-baseline/meshes/gm-0-after-0.json",
+      "sha256": "a0e49200c743a1f669bdefceb31d227b956fe5af3ce793e90adb29a4f3eba976",
+      "sourceKernel": "GM",
+      "liveTag": 12,
+      "snapshotNativeTag": 237,
+      "sourceXtSha256": "e2175c978745f265fb8f61b5db92a18c81fe9f6a0541bc51b059bada0150eaff"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/08-curved-baseline/meshes/gm-1-after-0.json",
+      "sha256": "95ea5ce8fab96ceef573d9619fed342b105a3b98243e436da7d808204c95a50a",
+      "sourceKernel": "GM",
+      "liveTag": 558,
+      "snapshotNativeTag": 1649,
+      "sourceXtSha256": "e2175c978745f265fb8f61b5db92a18c81fe9f6a0541bc51b059bada0150eaff"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/08-curved-baseline/meshes/pk-2-tool-0.json",
+      "sha256": "44f5e907b41eb47461428fab7b25548d0440e40a65b0ea4dd08c5289dc78eaad",
+      "sourceKernel": "PK",
+      "liveTag": 3727,
+      "snapshotNativeTag": 3727,
+      "sourceXtSha256": "c530dd2aa4026a6add64b5f22d5784dc95e0b4baf4bb43b1262cdeaa9a35fd24"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/08-curved-baseline/meshes/gm-1-before.json",
+      "sha256": "94ac1eeaedd57f1520d7186e8d3c3c49600eeaf66d016e5623cd4e9f72293240",
+      "sourceKernel": "GM",
+      "liveTag": 558,
+      "snapshotNativeTag": 1463,
+      "sourceXtSha256": "dba0b7da20272ea3c98c5f9ee0ccc38909120fef1c072fcb553387260b747702"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/08-curved-baseline/meshes/pk-0-before.json",
+      "sha256": "83f1fae586a580180c49680dee4d1884d132e00efb92c10d123d939bfc6b4717",
+      "sourceKernel": "PK",
+      "liveTag": 698,
+      "snapshotNativeTag": 698,
+      "sourceXtSha256": "e5a88f05567aef4bb6cd372b7b2a28252e7006cf43d4d05fd0d93e5606ca00b1"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/08-curved-baseline/meshes/gm-2-tool-0.json",
+      "sha256": "62b7bc36436867d4ba5251eff9d31c36cd9560f42368ffd81b90a340d8cc0450",
+      "sourceKernel": "GM",
+      "liveTag": 1416,
+      "snapshotNativeTag": 2974,
+      "sourceXtSha256": "5f80b813fdda48ea227e084043e6debd388f4da09b9ef30927d2dd93daef526a"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/08-curved-baseline/meshes/gm-2-before.json",
+      "sha256": "6d2d430b279d53bdbaa64667ac2c8df0107f3f462667d8b3b2bd2c5b31f3d6ab",
+      "sourceKernel": "GM",
+      "liveTag": 1104,
+      "snapshotNativeTag": 2875,
+      "sourceXtSha256": "dba0b7da20272ea3c98c5f9ee0ccc38909120fef1c072fcb553387260b747702"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/08-curved-baseline/meshes/gm-0-tool-0.json",
+      "sha256": "1e6186c1549750925f24fed1d7205f636d4e595528a53e67d6da8ff2d91a8ccb",
+      "sourceKernel": "GM",
+      "liveTag": 324,
+      "snapshotNativeTag": 150,
+      "sourceXtSha256": "5f80b813fdda48ea227e084043e6debd388f4da09b9ef30927d2dd93daef526a"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/08-curved-baseline/meshes/pk-1-after-0.json",
+      "sha256": "6adbba0108791d93e2741a85f42b2775949e4b73529e328ba58be57655c49004",
+      "sourceKernel": "PK",
+      "liveTag": 2110,
+      "snapshotNativeTag": 2110,
+      "sourceXtSha256": "27ff529db5104ea6e0f33c3c2cf7820dd32458608644081a3fe1a0009f73b434"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/08-curved-baseline/meshes/gm-1-tool-0.json",
+      "sha256": "a1ab78a54b9324e7c335bace0ff29877d3326a9df4c154b2b882e42a84d510a1",
+      "sourceKernel": "GM",
+      "liveTag": 870,
+      "snapshotNativeTag": 1562,
+      "sourceXtSha256": "5f80b813fdda48ea227e084043e6debd388f4da09b9ef30927d2dd93daef526a"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/08-curved-baseline/meshes/pk-1-tool-0.json",
+      "sha256": "2b38cb765a0bb0ce75aa8a25d2ee04752b94ca16f09a9b94919199b65bfef2c2",
+      "sourceKernel": "PK",
+      "liveTag": 2315,
+      "snapshotNativeTag": 2315,
+      "sourceXtSha256": "c530dd2aa4026a6add64b5f22d5784dc95e0b4baf4bb43b1262cdeaa9a35fd24"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/08-curved-baseline/meshes/pk-1-before.json",
+      "sha256": "aa7d9c6eaf796871224f3c48708d2bf89c4a22a00bd276a56dab161935b37b61",
+      "sourceKernel": "PK",
+      "liveTag": 2110,
+      "snapshotNativeTag": 2110,
+      "sourceXtSha256": "e5a88f05567aef4bb6cd372b7b2a28252e7006cf43d4d05fd0d93e5606ca00b1"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/09-curved-candidate/meshes/pk-2-before.json",
+      "sha256": "c0086d45fc7be9460452dedfb00c6eb96748aca23c25d49deb5c3e0ad1a96af5",
+      "sourceKernel": "PK",
+      "liveTag": 3522,
+      "snapshotNativeTag": 3522,
+      "sourceXtSha256": "e5a88f05567aef4bb6cd372b7b2a28252e7006cf43d4d05fd0d93e5606ca00b1"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/09-curved-candidate/meshes/pk-0-after-0.json",
+      "sha256": "e53632cc3648fa285b32aa34589b8df7b2fb075f80db21a3df97c0a015f92c6b",
+      "sourceKernel": "PK",
+      "liveTag": 698,
+      "snapshotNativeTag": 698,
+      "sourceXtSha256": "27ff529db5104ea6e0f33c3c2cf7820dd32458608644081a3fe1a0009f73b434"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/09-curved-candidate/meshes/pk-0-tool-0.json",
+      "sha256": "4d69ffaf094bad6e252e74aa461dfe3b1816728d657019a17062a54abf122d93",
+      "sourceKernel": "PK",
+      "liveTag": 903,
+      "snapshotNativeTag": 903,
+      "sourceXtSha256": "c530dd2aa4026a6add64b5f22d5784dc95e0b4baf4bb43b1262cdeaa9a35fd24"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/09-curved-candidate/meshes/gm-2-after-0.json",
+      "sha256": "38a9ec1d30893db3170526604362fc1cd99d5a5401a3fe500eb4ab2542c30b11",
+      "sourceKernel": "GM",
+      "liveTag": 1104,
+      "snapshotNativeTag": 3061,
+      "sourceXtSha256": "e2175c978745f265fb8f61b5db92a18c81fe9f6a0541bc51b059bada0150eaff"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/09-curved-candidate/meshes/gm-0-before.json",
+      "sha256": "e81f0de433e003a4f604a7736ff8adda755b7c59dd32c8337713a515d028de39",
+      "sourceKernel": "GM",
+      "liveTag": 12,
+      "snapshotNativeTag": 51,
+      "sourceXtSha256": "dba0b7da20272ea3c98c5f9ee0ccc38909120fef1c072fcb553387260b747702"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/09-curved-candidate/meshes/pk-2-after-0.json",
+      "sha256": "31375920cdcdf29bc398aeb2a3fca216f2cba29523d9e39c33c21e87e4b26906",
+      "sourceKernel": "PK",
+      "liveTag": 3522,
+      "snapshotNativeTag": 3522,
+      "sourceXtSha256": "27ff529db5104ea6e0f33c3c2cf7820dd32458608644081a3fe1a0009f73b434"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/09-curved-candidate/meshes/gm-0-after-0.json",
+      "sha256": "6211093b78b85255d4617b06f620b5d277b5b1064969afe9d8fe266dc6ff3df6",
+      "sourceKernel": "GM",
+      "liveTag": 12,
+      "snapshotNativeTag": 237,
+      "sourceXtSha256": "e2175c978745f265fb8f61b5db92a18c81fe9f6a0541bc51b059bada0150eaff"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/09-curved-candidate/meshes/gm-1-after-0.json",
+      "sha256": "d230563fbed9c81fa477c05789de4f69724411f6b7623a37e1fb787cbcdecae4",
+      "sourceKernel": "GM",
+      "liveTag": 558,
+      "snapshotNativeTag": 1649,
+      "sourceXtSha256": "e2175c978745f265fb8f61b5db92a18c81fe9f6a0541bc51b059bada0150eaff"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/09-curved-candidate/meshes/pk-2-tool-0.json",
+      "sha256": "fc677acbe17fcfab58ba838a795f3a6148df74415153332057e76dd0f64dfbce",
+      "sourceKernel": "PK",
+      "liveTag": 3727,
+      "snapshotNativeTag": 3727,
+      "sourceXtSha256": "c530dd2aa4026a6add64b5f22d5784dc95e0b4baf4bb43b1262cdeaa9a35fd24"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/09-curved-candidate/meshes/gm-1-before.json",
+      "sha256": "3ab0275cdf045ff3c020794a8d83fe0bad1a826804a0a432dcf96b4897ed427e",
+      "sourceKernel": "GM",
+      "liveTag": 558,
+      "snapshotNativeTag": 1463,
+      "sourceXtSha256": "dba0b7da20272ea3c98c5f9ee0ccc38909120fef1c072fcb553387260b747702"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/09-curved-candidate/meshes/pk-0-before.json",
+      "sha256": "d7ed56bbb6aa863299c0a781daf2069c7a4276f34bf5c34eafb0fbfacf64e510",
+      "sourceKernel": "PK",
+      "liveTag": 698,
+      "snapshotNativeTag": 698,
+      "sourceXtSha256": "e5a88f05567aef4bb6cd372b7b2a28252e7006cf43d4d05fd0d93e5606ca00b1"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/09-curved-candidate/meshes/gm-2-tool-0.json",
+      "sha256": "6437d7c7bd3ff7cdbba3d52f1aa07f379ef97f7ccf544095a189fcd87d802226",
+      "sourceKernel": "GM",
+      "liveTag": 1416,
+      "snapshotNativeTag": 2974,
+      "sourceXtSha256": "5f80b813fdda48ea227e084043e6debd388f4da09b9ef30927d2dd93daef526a"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/09-curved-candidate/meshes/gm-2-before.json",
+      "sha256": "63a65f341b8ccdb4ce00664eff212e95b55951c29160d5e4de0401d1ea34be35",
+      "sourceKernel": "GM",
+      "liveTag": 1104,
+      "snapshotNativeTag": 2875,
+      "sourceXtSha256": "dba0b7da20272ea3c98c5f9ee0ccc38909120fef1c072fcb553387260b747702"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/09-curved-candidate/meshes/gm-0-tool-0.json",
+      "sha256": "de107ed74bf1b2d0e962b085426d5030d62ddfc2b813d7f2329ed3471307364f",
+      "sourceKernel": "GM",
+      "liveTag": 324,
+      "snapshotNativeTag": 150,
+      "sourceXtSha256": "5f80b813fdda48ea227e084043e6debd388f4da09b9ef30927d2dd93daef526a"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/09-curved-candidate/meshes/pk-1-after-0.json",
+      "sha256": "8d5be1c861a7750b96ab66a431df777695efbc5738831b4bf06e1f881d23aeb5",
+      "sourceKernel": "PK",
+      "liveTag": 2110,
+      "snapshotNativeTag": 2110,
+      "sourceXtSha256": "27ff529db5104ea6e0f33c3c2cf7820dd32458608644081a3fe1a0009f73b434"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/09-curved-candidate/meshes/gm-1-tool-0.json",
+      "sha256": "4bccc32040bb9ed9df28f4fa533ca107250b2a8a1de525f362f1b994aac94355",
+      "sourceKernel": "GM",
+      "liveTag": 870,
+      "snapshotNativeTag": 1562,
+      "sourceXtSha256": "5f80b813fdda48ea227e084043e6debd388f4da09b9ef30927d2dd93daef526a"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/09-curved-candidate/meshes/pk-1-tool-0.json",
+      "sha256": "a345cfcd409d601d98a942d81ec211c52c7906a1a36a504a1ccdafc369fccf16",
+      "sourceKernel": "PK",
+      "liveTag": 2315,
+      "snapshotNativeTag": 2315,
+      "sourceXtSha256": "c530dd2aa4026a6add64b5f22d5784dc95e0b4baf4bb43b1262cdeaa9a35fd24"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/09-curved-candidate/meshes/pk-1-before.json",
+      "sha256": "6b77ff57943a4cc64a519fdd219f3a4a28dd2e865915af60bd2533bf7d7c5348",
+      "sourceKernel": "PK",
+      "liveTag": 2110,
+      "snapshotNativeTag": 2110,
+      "sourceXtSha256": "e5a88f05567aef4bb6cd372b7b2a28252e7006cf43d4d05fd0d93e5606ca00b1"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/10-curved-candidate/meshes/pk-2-before.json",
+      "sha256": "c0086d45fc7be9460452dedfb00c6eb96748aca23c25d49deb5c3e0ad1a96af5",
+      "sourceKernel": "PK",
+      "liveTag": 3522,
+      "snapshotNativeTag": 3522,
+      "sourceXtSha256": "e5a88f05567aef4bb6cd372b7b2a28252e7006cf43d4d05fd0d93e5606ca00b1"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/10-curved-candidate/meshes/pk-0-after-0.json",
+      "sha256": "e53632cc3648fa285b32aa34589b8df7b2fb075f80db21a3df97c0a015f92c6b",
+      "sourceKernel": "PK",
+      "liveTag": 698,
+      "snapshotNativeTag": 698,
+      "sourceXtSha256": "27ff529db5104ea6e0f33c3c2cf7820dd32458608644081a3fe1a0009f73b434"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/10-curved-candidate/meshes/pk-0-tool-0.json",
+      "sha256": "4d69ffaf094bad6e252e74aa461dfe3b1816728d657019a17062a54abf122d93",
+      "sourceKernel": "PK",
+      "liveTag": 903,
+      "snapshotNativeTag": 903,
+      "sourceXtSha256": "c530dd2aa4026a6add64b5f22d5784dc95e0b4baf4bb43b1262cdeaa9a35fd24"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/10-curved-candidate/meshes/gm-2-after-0.json",
+      "sha256": "38a9ec1d30893db3170526604362fc1cd99d5a5401a3fe500eb4ab2542c30b11",
+      "sourceKernel": "GM",
+      "liveTag": 1104,
+      "snapshotNativeTag": 3061,
+      "sourceXtSha256": "e2175c978745f265fb8f61b5db92a18c81fe9f6a0541bc51b059bada0150eaff"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/10-curved-candidate/meshes/gm-0-before.json",
+      "sha256": "e81f0de433e003a4f604a7736ff8adda755b7c59dd32c8337713a515d028de39",
+      "sourceKernel": "GM",
+      "liveTag": 12,
+      "snapshotNativeTag": 51,
+      "sourceXtSha256": "dba0b7da20272ea3c98c5f9ee0ccc38909120fef1c072fcb553387260b747702"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/10-curved-candidate/meshes/pk-2-after-0.json",
+      "sha256": "31375920cdcdf29bc398aeb2a3fca216f2cba29523d9e39c33c21e87e4b26906",
+      "sourceKernel": "PK",
+      "liveTag": 3522,
+      "snapshotNativeTag": 3522,
+      "sourceXtSha256": "27ff529db5104ea6e0f33c3c2cf7820dd32458608644081a3fe1a0009f73b434"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/10-curved-candidate/meshes/gm-0-after-0.json",
+      "sha256": "6211093b78b85255d4617b06f620b5d277b5b1064969afe9d8fe266dc6ff3df6",
+      "sourceKernel": "GM",
+      "liveTag": 12,
+      "snapshotNativeTag": 237,
+      "sourceXtSha256": "e2175c978745f265fb8f61b5db92a18c81fe9f6a0541bc51b059bada0150eaff"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/10-curved-candidate/meshes/gm-1-after-0.json",
+      "sha256": "d230563fbed9c81fa477c05789de4f69724411f6b7623a37e1fb787cbcdecae4",
+      "sourceKernel": "GM",
+      "liveTag": 558,
+      "snapshotNativeTag": 1649,
+      "sourceXtSha256": "e2175c978745f265fb8f61b5db92a18c81fe9f6a0541bc51b059bada0150eaff"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/10-curved-candidate/meshes/pk-2-tool-0.json",
+      "sha256": "fc677acbe17fcfab58ba838a795f3a6148df74415153332057e76dd0f64dfbce",
+      "sourceKernel": "PK",
+      "liveTag": 3727,
+      "snapshotNativeTag": 3727,
+      "sourceXtSha256": "c530dd2aa4026a6add64b5f22d5784dc95e0b4baf4bb43b1262cdeaa9a35fd24"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/10-curved-candidate/meshes/gm-1-before.json",
+      "sha256": "3ab0275cdf045ff3c020794a8d83fe0bad1a826804a0a432dcf96b4897ed427e",
+      "sourceKernel": "GM",
+      "liveTag": 558,
+      "snapshotNativeTag": 1463,
+      "sourceXtSha256": "dba0b7da20272ea3c98c5f9ee0ccc38909120fef1c072fcb553387260b747702"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/10-curved-candidate/meshes/pk-0-before.json",
+      "sha256": "d7ed56bbb6aa863299c0a781daf2069c7a4276f34bf5c34eafb0fbfacf64e510",
+      "sourceKernel": "PK",
+      "liveTag": 698,
+      "snapshotNativeTag": 698,
+      "sourceXtSha256": "e5a88f05567aef4bb6cd372b7b2a28252e7006cf43d4d05fd0d93e5606ca00b1"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/10-curved-candidate/meshes/gm-2-tool-0.json",
+      "sha256": "6437d7c7bd3ff7cdbba3d52f1aa07f379ef97f7ccf544095a189fcd87d802226",
+      "sourceKernel": "GM",
+      "liveTag": 1416,
+      "snapshotNativeTag": 2974,
+      "sourceXtSha256": "5f80b813fdda48ea227e084043e6debd388f4da09b9ef30927d2dd93daef526a"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/10-curved-candidate/meshes/gm-2-before.json",
+      "sha256": "63a65f341b8ccdb4ce00664eff212e95b55951c29160d5e4de0401d1ea34be35",
+      "sourceKernel": "GM",
+      "liveTag": 1104,
+      "snapshotNativeTag": 2875,
+      "sourceXtSha256": "dba0b7da20272ea3c98c5f9ee0ccc38909120fef1c072fcb553387260b747702"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/10-curved-candidate/meshes/gm-0-tool-0.json",
+      "sha256": "de107ed74bf1b2d0e962b085426d5030d62ddfc2b813d7f2329ed3471307364f",
+      "sourceKernel": "GM",
+      "liveTag": 324,
+      "snapshotNativeTag": 150,
+      "sourceXtSha256": "5f80b813fdda48ea227e084043e6debd388f4da09b9ef30927d2dd93daef526a"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/10-curved-candidate/meshes/pk-1-after-0.json",
+      "sha256": "8d5be1c861a7750b96ab66a431df777695efbc5738831b4bf06e1f881d23aeb5",
+      "sourceKernel": "PK",
+      "liveTag": 2110,
+      "snapshotNativeTag": 2110,
+      "sourceXtSha256": "27ff529db5104ea6e0f33c3c2cf7820dd32458608644081a3fe1a0009f73b434"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/10-curved-candidate/meshes/gm-1-tool-0.json",
+      "sha256": "4bccc32040bb9ed9df28f4fa533ca107250b2a8a1de525f362f1b994aac94355",
+      "sourceKernel": "GM",
+      "liveTag": 870,
+      "snapshotNativeTag": 1562,
+      "sourceXtSha256": "5f80b813fdda48ea227e084043e6debd388f4da09b9ef30927d2dd93daef526a"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/10-curved-candidate/meshes/pk-1-tool-0.json",
+      "sha256": "a345cfcd409d601d98a942d81ec211c52c7906a1a36a504a1ccdafc369fccf16",
+      "sourceKernel": "PK",
+      "liveTag": 2315,
+      "snapshotNativeTag": 2315,
+      "sourceXtSha256": "c530dd2aa4026a6add64b5f22d5784dc95e0b4baf4bb43b1262cdeaa9a35fd24"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/10-curved-candidate/meshes/pk-1-before.json",
+      "sha256": "6b77ff57943a4cc64a519fdd219f3a4a28dd2e865915af60bd2533bf7d7c5348",
+      "sourceKernel": "PK",
+      "liveTag": 2110,
+      "snapshotNativeTag": 2110,
+      "sourceXtSha256": "e5a88f05567aef4bb6cd372b7b2a28252e7006cf43d4d05fd0d93e5606ca00b1"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/11-curved-baseline/meshes/pk-2-before.json",
+      "sha256": "7b6139952f898995a5fca10cfa9724416ab6052119ce38ef9af59edd5c4f28f7",
+      "sourceKernel": "PK",
+      "liveTag": 3522,
+      "snapshotNativeTag": 3522,
+      "sourceXtSha256": "e5a88f05567aef4bb6cd372b7b2a28252e7006cf43d4d05fd0d93e5606ca00b1"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/11-curved-baseline/meshes/pk-0-after-0.json",
+      "sha256": "b631ff55d661691cd3c22bbea5f1a625e547478392206db9c1480dccdb289600",
+      "sourceKernel": "PK",
+      "liveTag": 698,
+      "snapshotNativeTag": 698,
+      "sourceXtSha256": "27ff529db5104ea6e0f33c3c2cf7820dd32458608644081a3fe1a0009f73b434"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/11-curved-baseline/meshes/pk-0-tool-0.json",
+      "sha256": "5a4446b64594be455106942a61144e70a791664a8cae5cba00aa70e8f70c03da",
+      "sourceKernel": "PK",
+      "liveTag": 903,
+      "snapshotNativeTag": 903,
+      "sourceXtSha256": "c530dd2aa4026a6add64b5f22d5784dc95e0b4baf4bb43b1262cdeaa9a35fd24"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/11-curved-baseline/meshes/gm-2-after-0.json",
+      "sha256": "3174e60f05e3180d494f059c7ebac7d10eddb0490f3f7ba8b6b445d613bcf8d9",
+      "sourceKernel": "GM",
+      "liveTag": 1104,
+      "snapshotNativeTag": 3061,
+      "sourceXtSha256": "e2175c978745f265fb8f61b5db92a18c81fe9f6a0541bc51b059bada0150eaff"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/11-curved-baseline/meshes/gm-0-before.json",
+      "sha256": "54d9f70e9620c25d9155083f57f14065470a1944662f8cf2009143b008873a7c",
+      "sourceKernel": "GM",
+      "liveTag": 12,
+      "snapshotNativeTag": 51,
+      "sourceXtSha256": "dba0b7da20272ea3c98c5f9ee0ccc38909120fef1c072fcb553387260b747702"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/11-curved-baseline/meshes/pk-2-after-0.json",
+      "sha256": "5cfdf17d039a56fb4bcab51e9ade90e348fb8a27bbd9bcdf7e1814c683b36ad8",
+      "sourceKernel": "PK",
+      "liveTag": 3522,
+      "snapshotNativeTag": 3522,
+      "sourceXtSha256": "27ff529db5104ea6e0f33c3c2cf7820dd32458608644081a3fe1a0009f73b434"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/11-curved-baseline/meshes/gm-0-after-0.json",
+      "sha256": "a0e49200c743a1f669bdefceb31d227b956fe5af3ce793e90adb29a4f3eba976",
+      "sourceKernel": "GM",
+      "liveTag": 12,
+      "snapshotNativeTag": 237,
+      "sourceXtSha256": "e2175c978745f265fb8f61b5db92a18c81fe9f6a0541bc51b059bada0150eaff"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/11-curved-baseline/meshes/gm-1-after-0.json",
+      "sha256": "95ea5ce8fab96ceef573d9619fed342b105a3b98243e436da7d808204c95a50a",
+      "sourceKernel": "GM",
+      "liveTag": 558,
+      "snapshotNativeTag": 1649,
+      "sourceXtSha256": "e2175c978745f265fb8f61b5db92a18c81fe9f6a0541bc51b059bada0150eaff"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/11-curved-baseline/meshes/pk-2-tool-0.json",
+      "sha256": "44f5e907b41eb47461428fab7b25548d0440e40a65b0ea4dd08c5289dc78eaad",
+      "sourceKernel": "PK",
+      "liveTag": 3727,
+      "snapshotNativeTag": 3727,
+      "sourceXtSha256": "c530dd2aa4026a6add64b5f22d5784dc95e0b4baf4bb43b1262cdeaa9a35fd24"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/11-curved-baseline/meshes/gm-1-before.json",
+      "sha256": "94ac1eeaedd57f1520d7186e8d3c3c49600eeaf66d016e5623cd4e9f72293240",
+      "sourceKernel": "GM",
+      "liveTag": 558,
+      "snapshotNativeTag": 1463,
+      "sourceXtSha256": "dba0b7da20272ea3c98c5f9ee0ccc38909120fef1c072fcb553387260b747702"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/11-curved-baseline/meshes/pk-0-before.json",
+      "sha256": "83f1fae586a580180c49680dee4d1884d132e00efb92c10d123d939bfc6b4717",
+      "sourceKernel": "PK",
+      "liveTag": 698,
+      "snapshotNativeTag": 698,
+      "sourceXtSha256": "e5a88f05567aef4bb6cd372b7b2a28252e7006cf43d4d05fd0d93e5606ca00b1"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/11-curved-baseline/meshes/gm-2-tool-0.json",
+      "sha256": "62b7bc36436867d4ba5251eff9d31c36cd9560f42368ffd81b90a340d8cc0450",
+      "sourceKernel": "GM",
+      "liveTag": 1416,
+      "snapshotNativeTag": 2974,
+      "sourceXtSha256": "5f80b813fdda48ea227e084043e6debd388f4da09b9ef30927d2dd93daef526a"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/11-curved-baseline/meshes/gm-2-before.json",
+      "sha256": "6d2d430b279d53bdbaa64667ac2c8df0107f3f462667d8b3b2bd2c5b31f3d6ab",
+      "sourceKernel": "GM",
+      "liveTag": 1104,
+      "snapshotNativeTag": 2875,
+      "sourceXtSha256": "dba0b7da20272ea3c98c5f9ee0ccc38909120fef1c072fcb553387260b747702"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/11-curved-baseline/meshes/gm-0-tool-0.json",
+      "sha256": "1e6186c1549750925f24fed1d7205f636d4e595528a53e67d6da8ff2d91a8ccb",
+      "sourceKernel": "GM",
+      "liveTag": 324,
+      "snapshotNativeTag": 150,
+      "sourceXtSha256": "5f80b813fdda48ea227e084043e6debd388f4da09b9ef30927d2dd93daef526a"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/11-curved-baseline/meshes/pk-1-after-0.json",
+      "sha256": "6adbba0108791d93e2741a85f42b2775949e4b73529e328ba58be57655c49004",
+      "sourceKernel": "PK",
+      "liveTag": 2110,
+      "snapshotNativeTag": 2110,
+      "sourceXtSha256": "27ff529db5104ea6e0f33c3c2cf7820dd32458608644081a3fe1a0009f73b434"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/11-curved-baseline/meshes/gm-1-tool-0.json",
+      "sha256": "a1ab78a54b9324e7c335bace0ff29877d3326a9df4c154b2b882e42a84d510a1",
+      "sourceKernel": "GM",
+      "liveTag": 870,
+      "snapshotNativeTag": 1562,
+      "sourceXtSha256": "5f80b813fdda48ea227e084043e6debd388f4da09b9ef30927d2dd93daef526a"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/11-curved-baseline/meshes/pk-1-tool-0.json",
+      "sha256": "2b38cb765a0bb0ce75aa8a25d2ee04752b94ca16f09a9b94919199b65bfef2c2",
+      "sourceKernel": "PK",
+      "liveTag": 2315,
+      "snapshotNativeTag": 2315,
+      "sourceXtSha256": "c530dd2aa4026a6add64b5f22d5784dc95e0b4baf4bb43b1262cdeaa9a35fd24"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/11-curved-baseline/meshes/pk-1-before.json",
+      "sha256": "aa7d9c6eaf796871224f3c48708d2bf89c4a22a00bd276a56dab161935b37b61",
+      "sourceKernel": "PK",
+      "liveTag": 2110,
+      "snapshotNativeTag": 2110,
+      "sourceXtSha256": "e5a88f05567aef4bb6cd372b7b2a28252e7006cf43d4d05fd0d93e5606ca00b1"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/12-solidblend-baseline/meshes/pk-2-before.json",
+      "sha256": "bfdc03311128601479cb2f851a5b07a1d8f5a19f27ddbfefa0f49a6584e7c609",
+      "sourceKernel": "PK",
+      "liveTag": 1803,
+      "snapshotNativeTag": 1803,
+      "sourceXtSha256": "78e8c6abd7c2fed9836d9a0f05cb8443f8bae8797f7e1722bd07b43a5686a49f"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/12-solidblend-baseline/meshes/pk-0-after-0.json",
+      "sha256": "4249bef899830691e0977caf70a9a7e19bd7d7d978d6e648d73971421207a867",
+      "sourceKernel": "PK",
+      "liveTag": 51,
+      "snapshotNativeTag": 51,
+      "sourceXtSha256": "1f37d48acee672430a170bb650e27ac3f288da96d8fb837d9bc328a605722146"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/12-solidblend-baseline/meshes/gm-2-after-0.json",
+      "sha256": "674f80e3e511d5ee3a5943e8b102f9841ddb996d7f49ce17b4a3ea8b2c73eff7",
+      "sourceKernel": "GM",
+      "liveTag": 473,
+      "snapshotNativeTag": 2175,
+      "sourceXtSha256": "a0124e947773a09ab592c7dda92a0147c34b50f8e3e06cd5519541cf753f1b42"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/12-solidblend-baseline/meshes/gm-0-before.json",
+      "sha256": "702022fa2b160c3f2d248a078bece9ef1c9d12f341cbaa391f642274d84e1637",
+      "sourceKernel": "GM",
+      "liveTag": 27,
+      "snapshotNativeTag": 336,
+      "sourceXtSha256": "4045d6ddfa7b589597afbde6bc67dff8a667d601577ed0c99f8778a15f037dc8"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/12-solidblend-baseline/meshes/pk-2-after-0.json",
+      "sha256": "d6d317a8804ca2fb7cc42eac88ab32bd1dfb1dc1b586c07c902a3e985cc6e76b",
+      "sourceKernel": "PK",
+      "liveTag": 1803,
+      "snapshotNativeTag": 1803,
+      "sourceXtSha256": "02f8ea7e7e83db43d2c0b8fc0983d17f443d7deed2db7d11122c146e3a930b46"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/12-solidblend-baseline/meshes/gm-0-after-0.json",
+      "sha256": "72fd9b1d5bed5756ff145eac0e3e501f6feb54d59104925feb047afc4f44c040",
+      "sourceKernel": "GM",
+      "liveTag": 27,
+      "snapshotNativeTag": 423,
+      "sourceXtSha256": "a0124e947773a09ab592c7dda92a0147c34b50f8e3e06cd5519541cf753f1b42"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/12-solidblend-baseline/meshes/gm-1-after-0.json",
+      "sha256": "343596beb16ee12c0717f637a8af7fc9876f7326869be41ea8c765b128482534",
+      "sourceKernel": "GM",
+      "liveTag": 250,
+      "snapshotNativeTag": 1299,
+      "sourceXtSha256": "a0124e947773a09ab592c7dda92a0147c34b50f8e3e06cd5519541cf753f1b42"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/12-solidblend-baseline/meshes/gm-1-before.json",
+      "sha256": "0ae905ee9f8f5706709020a161691ff4fd3f7f9c2910a151f25cc1674150e495",
+      "sourceKernel": "GM",
+      "liveTag": 250,
+      "snapshotNativeTag": 1212,
+      "sourceXtSha256": "4045d6ddfa7b589597afbde6bc67dff8a667d601577ed0c99f8778a15f037dc8"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/12-solidblend-baseline/meshes/pk-0-before.json",
+      "sha256": "ed5236b3757472408c7a276e53dc1387fa3c4485e79c5d14884cec42b975140c",
+      "sourceKernel": "PK",
+      "liveTag": 51,
+      "snapshotNativeTag": 51,
+      "sourceXtSha256": "b8d68482be02624d762960c7b27117240821d08e084f9e3ea93e4d46ad1ece9b"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/12-solidblend-baseline/meshes/gm-2-before.json",
+      "sha256": "7f12f4f0e6d559130c5d34dee92c12fb05be3f7d69019e3cfa499733ed143dd8",
+      "sourceKernel": "GM",
+      "liveTag": 473,
+      "snapshotNativeTag": 2088,
+      "sourceXtSha256": "4045d6ddfa7b589597afbde6bc67dff8a667d601577ed0c99f8778a15f037dc8"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/12-solidblend-baseline/meshes/pk-1-after-0.json",
+      "sha256": "0611893e826244a3a1a04e165720f8e7f91861a2926f8e1127c44c9238ef8e78",
+      "sourceKernel": "PK",
+      "liveTag": 927,
+      "snapshotNativeTag": 927,
+      "sourceXtSha256": "02f8ea7e7e83db43d2c0b8fc0983d17f443d7deed2db7d11122c146e3a930b46"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/12-solidblend-baseline/meshes/pk-1-before.json",
+      "sha256": "114f0f20b9bfc8b57ab5f6684691d3fdec3c16a0bd5e579a03d43cf36417a011",
+      "sourceKernel": "PK",
+      "liveTag": 927,
+      "snapshotNativeTag": 927,
+      "sourceXtSha256": "78e8c6abd7c2fed9836d9a0f05cb8443f8bae8797f7e1722bd07b43a5686a49f"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/13-solidblend-candidate/meshes/pk-2-before.json",
+      "sha256": "de3bd7b1cf6c23a66866242dd0a1f62ef810160d9fa36de58e3222531c0cbe78",
+      "sourceKernel": "PK",
+      "liveTag": 1803,
+      "snapshotNativeTag": 1803,
+      "sourceXtSha256": "78e8c6abd7c2fed9836d9a0f05cb8443f8bae8797f7e1722bd07b43a5686a49f"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/13-solidblend-candidate/meshes/pk-0-after-0.json",
+      "sha256": "f28ba046f5a2e294bf4963413ef6c50c19182cedbb10cc99a7f38d4b9de86231",
+      "sourceKernel": "PK",
+      "liveTag": 51,
+      "snapshotNativeTag": 51,
+      "sourceXtSha256": "1f37d48acee672430a170bb650e27ac3f288da96d8fb837d9bc328a605722146"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/13-solidblend-candidate/meshes/gm-2-after-0.json",
+      "sha256": "a5d4ad7020be82236fdd77d47a534853e460872430b52853b5c9a8829ffa8337",
+      "sourceKernel": "GM",
+      "liveTag": 473,
+      "snapshotNativeTag": 2175,
+      "sourceXtSha256": "a0124e947773a09ab592c7dda92a0147c34b50f8e3e06cd5519541cf753f1b42"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/13-solidblend-candidate/meshes/gm-0-before.json",
+      "sha256": "b73a9dd10462ed4f47c239eea606c349e0debd687aec9db2e3d6a66ee93d3671",
+      "sourceKernel": "GM",
+      "liveTag": 27,
+      "snapshotNativeTag": 336,
+      "sourceXtSha256": "4045d6ddfa7b589597afbde6bc67dff8a667d601577ed0c99f8778a15f037dc8"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/13-solidblend-candidate/meshes/pk-2-after-0.json",
+      "sha256": "0bfc93bab0cc913e97b1023c2f11d9ff9057c573fe937b917b233c7eac4aabb6",
+      "sourceKernel": "PK",
+      "liveTag": 1803,
+      "snapshotNativeTag": 1803,
+      "sourceXtSha256": "02f8ea7e7e83db43d2c0b8fc0983d17f443d7deed2db7d11122c146e3a930b46"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/13-solidblend-candidate/meshes/gm-0-after-0.json",
+      "sha256": "8a43bf5ef655acaa284b1d30e2ad40243a12ecd403744729274dab0d073078da",
+      "sourceKernel": "GM",
+      "liveTag": 27,
+      "snapshotNativeTag": 423,
+      "sourceXtSha256": "a0124e947773a09ab592c7dda92a0147c34b50f8e3e06cd5519541cf753f1b42"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/13-solidblend-candidate/meshes/gm-1-after-0.json",
+      "sha256": "e92b43f0e233ce788dc9eae59214ac1999394a88f2796988dd40b335b2609190",
+      "sourceKernel": "GM",
+      "liveTag": 250,
+      "snapshotNativeTag": 1299,
+      "sourceXtSha256": "a0124e947773a09ab592c7dda92a0147c34b50f8e3e06cd5519541cf753f1b42"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/13-solidblend-candidate/meshes/gm-1-before.json",
+      "sha256": "8598402108eaf1a9708af07e4fb81afdec5722347becda73955494d4a9848187",
+      "sourceKernel": "GM",
+      "liveTag": 250,
+      "snapshotNativeTag": 1212,
+      "sourceXtSha256": "4045d6ddfa7b589597afbde6bc67dff8a667d601577ed0c99f8778a15f037dc8"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/13-solidblend-candidate/meshes/pk-0-before.json",
+      "sha256": "2acd8a07a81f28315e5e5f55f43d53ec68b94b4db7568a4b4819eac9cc20cc51",
+      "sourceKernel": "PK",
+      "liveTag": 51,
+      "snapshotNativeTag": 51,
+      "sourceXtSha256": "b8d68482be02624d762960c7b27117240821d08e084f9e3ea93e4d46ad1ece9b"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/13-solidblend-candidate/meshes/gm-2-before.json",
+      "sha256": "6c3a460f0eab7312c5819a60ae555a8a5df7fc34ba88e71aed352c3435bb9d26",
+      "sourceKernel": "GM",
+      "liveTag": 473,
+      "snapshotNativeTag": 2088,
+      "sourceXtSha256": "4045d6ddfa7b589597afbde6bc67dff8a667d601577ed0c99f8778a15f037dc8"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/13-solidblend-candidate/meshes/pk-1-after-0.json",
+      "sha256": "59df322a331c938af794596af6b1180c5909cbdfe81a5a56a4222ef7bff347d8",
+      "sourceKernel": "PK",
+      "liveTag": 927,
+      "snapshotNativeTag": 927,
+      "sourceXtSha256": "02f8ea7e7e83db43d2c0b8fc0983d17f443d7deed2db7d11122c146e3a930b46"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/13-solidblend-candidate/meshes/pk-1-before.json",
+      "sha256": "ebf0cd03b798573fb341421bcf65467bf5688716d53eedceafbe0c110aecb8da",
+      "sourceKernel": "PK",
+      "liveTag": 927,
+      "snapshotNativeTag": 927,
+      "sourceXtSha256": "78e8c6abd7c2fed9836d9a0f05cb8443f8bae8797f7e1722bd07b43a5686a49f"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/14-solidblend-candidate/meshes/pk-2-before.json",
+      "sha256": "de3bd7b1cf6c23a66866242dd0a1f62ef810160d9fa36de58e3222531c0cbe78",
+      "sourceKernel": "PK",
+      "liveTag": 1803,
+      "snapshotNativeTag": 1803,
+      "sourceXtSha256": "78e8c6abd7c2fed9836d9a0f05cb8443f8bae8797f7e1722bd07b43a5686a49f"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/14-solidblend-candidate/meshes/pk-0-after-0.json",
+      "sha256": "f28ba046f5a2e294bf4963413ef6c50c19182cedbb10cc99a7f38d4b9de86231",
+      "sourceKernel": "PK",
+      "liveTag": 51,
+      "snapshotNativeTag": 51,
+      "sourceXtSha256": "1f37d48acee672430a170bb650e27ac3f288da96d8fb837d9bc328a605722146"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/14-solidblend-candidate/meshes/gm-2-after-0.json",
+      "sha256": "a5d4ad7020be82236fdd77d47a534853e460872430b52853b5c9a8829ffa8337",
+      "sourceKernel": "GM",
+      "liveTag": 473,
+      "snapshotNativeTag": 2175,
+      "sourceXtSha256": "a0124e947773a09ab592c7dda92a0147c34b50f8e3e06cd5519541cf753f1b42"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/14-solidblend-candidate/meshes/gm-0-before.json",
+      "sha256": "b73a9dd10462ed4f47c239eea606c349e0debd687aec9db2e3d6a66ee93d3671",
+      "sourceKernel": "GM",
+      "liveTag": 27,
+      "snapshotNativeTag": 336,
+      "sourceXtSha256": "4045d6ddfa7b589597afbde6bc67dff8a667d601577ed0c99f8778a15f037dc8"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/14-solidblend-candidate/meshes/pk-2-after-0.json",
+      "sha256": "0bfc93bab0cc913e97b1023c2f11d9ff9057c573fe937b917b233c7eac4aabb6",
+      "sourceKernel": "PK",
+      "liveTag": 1803,
+      "snapshotNativeTag": 1803,
+      "sourceXtSha256": "02f8ea7e7e83db43d2c0b8fc0983d17f443d7deed2db7d11122c146e3a930b46"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/14-solidblend-candidate/meshes/gm-0-after-0.json",
+      "sha256": "8a43bf5ef655acaa284b1d30e2ad40243a12ecd403744729274dab0d073078da",
+      "sourceKernel": "GM",
+      "liveTag": 27,
+      "snapshotNativeTag": 423,
+      "sourceXtSha256": "a0124e947773a09ab592c7dda92a0147c34b50f8e3e06cd5519541cf753f1b42"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/14-solidblend-candidate/meshes/gm-1-after-0.json",
+      "sha256": "e92b43f0e233ce788dc9eae59214ac1999394a88f2796988dd40b335b2609190",
+      "sourceKernel": "GM",
+      "liveTag": 250,
+      "snapshotNativeTag": 1299,
+      "sourceXtSha256": "a0124e947773a09ab592c7dda92a0147c34b50f8e3e06cd5519541cf753f1b42"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/14-solidblend-candidate/meshes/gm-1-before.json",
+      "sha256": "8598402108eaf1a9708af07e4fb81afdec5722347becda73955494d4a9848187",
+      "sourceKernel": "GM",
+      "liveTag": 250,
+      "snapshotNativeTag": 1212,
+      "sourceXtSha256": "4045d6ddfa7b589597afbde6bc67dff8a667d601577ed0c99f8778a15f037dc8"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/14-solidblend-candidate/meshes/pk-0-before.json",
+      "sha256": "2acd8a07a81f28315e5e5f55f43d53ec68b94b4db7568a4b4819eac9cc20cc51",
+      "sourceKernel": "PK",
+      "liveTag": 51,
+      "snapshotNativeTag": 51,
+      "sourceXtSha256": "b8d68482be02624d762960c7b27117240821d08e084f9e3ea93e4d46ad1ece9b"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/14-solidblend-candidate/meshes/gm-2-before.json",
+      "sha256": "6c3a460f0eab7312c5819a60ae555a8a5df7fc34ba88e71aed352c3435bb9d26",
+      "sourceKernel": "GM",
+      "liveTag": 473,
+      "snapshotNativeTag": 2088,
+      "sourceXtSha256": "4045d6ddfa7b589597afbde6bc67dff8a667d601577ed0c99f8778a15f037dc8"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/14-solidblend-candidate/meshes/pk-1-after-0.json",
+      "sha256": "59df322a331c938af794596af6b1180c5909cbdfe81a5a56a4222ef7bff347d8",
+      "sourceKernel": "PK",
+      "liveTag": 927,
+      "snapshotNativeTag": 927,
+      "sourceXtSha256": "02f8ea7e7e83db43d2c0b8fc0983d17f443d7deed2db7d11122c146e3a930b46"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/14-solidblend-candidate/meshes/pk-1-before.json",
+      "sha256": "ebf0cd03b798573fb341421bcf65467bf5688716d53eedceafbe0c110aecb8da",
+      "sourceKernel": "PK",
+      "liveTag": 927,
+      "snapshotNativeTag": 927,
+      "sourceXtSha256": "78e8c6abd7c2fed9836d9a0f05cb8443f8bae8797f7e1722bd07b43a5686a49f"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/15-solidblend-baseline/meshes/pk-2-before.json",
+      "sha256": "bfdc03311128601479cb2f851a5b07a1d8f5a19f27ddbfefa0f49a6584e7c609",
+      "sourceKernel": "PK",
+      "liveTag": 1803,
+      "snapshotNativeTag": 1803,
+      "sourceXtSha256": "78e8c6abd7c2fed9836d9a0f05cb8443f8bae8797f7e1722bd07b43a5686a49f"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/15-solidblend-baseline/meshes/pk-0-after-0.json",
+      "sha256": "4249bef899830691e0977caf70a9a7e19bd7d7d978d6e648d73971421207a867",
+      "sourceKernel": "PK",
+      "liveTag": 51,
+      "snapshotNativeTag": 51,
+      "sourceXtSha256": "1f37d48acee672430a170bb650e27ac3f288da96d8fb837d9bc328a605722146"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/15-solidblend-baseline/meshes/gm-2-after-0.json",
+      "sha256": "674f80e3e511d5ee3a5943e8b102f9841ddb996d7f49ce17b4a3ea8b2c73eff7",
+      "sourceKernel": "GM",
+      "liveTag": 473,
+      "snapshotNativeTag": 2175,
+      "sourceXtSha256": "a0124e947773a09ab592c7dda92a0147c34b50f8e3e06cd5519541cf753f1b42"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/15-solidblend-baseline/meshes/gm-0-before.json",
+      "sha256": "702022fa2b160c3f2d248a078bece9ef1c9d12f341cbaa391f642274d84e1637",
+      "sourceKernel": "GM",
+      "liveTag": 27,
+      "snapshotNativeTag": 336,
+      "sourceXtSha256": "4045d6ddfa7b589597afbde6bc67dff8a667d601577ed0c99f8778a15f037dc8"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/15-solidblend-baseline/meshes/pk-2-after-0.json",
+      "sha256": "d6d317a8804ca2fb7cc42eac88ab32bd1dfb1dc1b586c07c902a3e985cc6e76b",
+      "sourceKernel": "PK",
+      "liveTag": 1803,
+      "snapshotNativeTag": 1803,
+      "sourceXtSha256": "02f8ea7e7e83db43d2c0b8fc0983d17f443d7deed2db7d11122c146e3a930b46"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/15-solidblend-baseline/meshes/gm-0-after-0.json",
+      "sha256": "72fd9b1d5bed5756ff145eac0e3e501f6feb54d59104925feb047afc4f44c040",
+      "sourceKernel": "GM",
+      "liveTag": 27,
+      "snapshotNativeTag": 423,
+      "sourceXtSha256": "a0124e947773a09ab592c7dda92a0147c34b50f8e3e06cd5519541cf753f1b42"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/15-solidblend-baseline/meshes/gm-1-after-0.json",
+      "sha256": "343596beb16ee12c0717f637a8af7fc9876f7326869be41ea8c765b128482534",
+      "sourceKernel": "GM",
+      "liveTag": 250,
+      "snapshotNativeTag": 1299,
+      "sourceXtSha256": "a0124e947773a09ab592c7dda92a0147c34b50f8e3e06cd5519541cf753f1b42"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/15-solidblend-baseline/meshes/gm-1-before.json",
+      "sha256": "0ae905ee9f8f5706709020a161691ff4fd3f7f9c2910a151f25cc1674150e495",
+      "sourceKernel": "GM",
+      "liveTag": 250,
+      "snapshotNativeTag": 1212,
+      "sourceXtSha256": "4045d6ddfa7b589597afbde6bc67dff8a667d601577ed0c99f8778a15f037dc8"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/15-solidblend-baseline/meshes/pk-0-before.json",
+      "sha256": "ed5236b3757472408c7a276e53dc1387fa3c4485e79c5d14884cec42b975140c",
+      "sourceKernel": "PK",
+      "liveTag": 51,
+      "snapshotNativeTag": 51,
+      "sourceXtSha256": "b8d68482be02624d762960c7b27117240821d08e084f9e3ea93e4d46ad1ece9b"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/15-solidblend-baseline/meshes/gm-2-before.json",
+      "sha256": "7f12f4f0e6d559130c5d34dee92c12fb05be3f7d69019e3cfa499733ed143dd8",
+      "sourceKernel": "GM",
+      "liveTag": 473,
+      "snapshotNativeTag": 2088,
+      "sourceXtSha256": "4045d6ddfa7b589597afbde6bc67dff8a667d601577ed0c99f8778a15f037dc8"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/15-solidblend-baseline/meshes/pk-1-after-0.json",
+      "sha256": "0611893e826244a3a1a04e165720f8e7f91861a2926f8e1127c44c9238ef8e78",
+      "sourceKernel": "PK",
+      "liveTag": 927,
+      "snapshotNativeTag": 927,
+      "sourceXtSha256": "02f8ea7e7e83db43d2c0b8fc0983d17f443d7deed2db7d11122c146e3a930b46"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/15-solidblend-baseline/meshes/pk-1-before.json",
+      "sha256": "114f0f20b9bfc8b57ab5f6684691d3fdec3c16a0bd5e579a03d43cf36417a011",
+      "sourceKernel": "PK",
+      "liveTag": 927,
+      "snapshotNativeTag": 927,
+      "sourceXtSha256": "78e8c6abd7c2fed9836d9a0f05cb8443f8bae8797f7e1722bd07b43a5686a49f"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/16-shortedge-baseline/meshes/pk-2-before.json",
+      "sha256": "e593fa16ed3b5bb39d0f5251f60b0bd77810d7d231b8f94df944d6e8fc934f48",
+      "sourceKernel": "PK",
+      "liveTag": 3005,
+      "snapshotNativeTag": 3005,
+      "sourceXtSha256": "47db3f857a08a27abeada7bc659a88e9d0c5c9e0705ef80cf9dc9da7a0ce2567"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/16-shortedge-baseline/meshes/pk-0-after-0.json",
+      "sha256": "1fc546add09c5489ff49868d84435f49ca04333f6b86ff698772191e4f971895",
+      "sourceKernel": "PK",
+      "liveTag": 51,
+      "snapshotNativeTag": 51,
+      "sourceXtSha256": "bd75b7926956c1506e00c172816a0bfc1bb07db1660d74da65aaf1734f219ef1"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/16-shortedge-baseline/meshes/gm-2-after-0.json",
+      "sha256": "ed44ba8bbb069850d9dfdb8b1cee52d17a814b5b7b73265bdabef0460e1adb1e",
+      "sourceKernel": "GM",
+      "liveTag": 1007,
+      "snapshotNativeTag": 3820,
+      "sourceXtSha256": "fe0d7014202dc03e1f2afa839d679557d5bd1fffe5d4adc334ac9a7ebb501ed7"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/16-shortedge-baseline/meshes/gm-0-before.json",
+      "sha256": "f3e2613197fe41c33d78ab51a3b0ee7874ed1635124538ff93b08c2c7e7680c1",
+      "sourceKernel": "GM",
+      "liveTag": 37,
+      "snapshotNativeTag": 742,
+      "sourceXtSha256": "bf0317e74efd9286c1d5f9789315720090b40c854853efa761505287d721af71"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/16-shortedge-baseline/meshes/pk-2-after-0.json",
+      "sha256": "e9a1e4710b9ed4a8427bcb5e14114d39262b74fbd7707b27c984ebd9d650eb75",
+      "sourceKernel": "PK",
+      "liveTag": 3005,
+      "snapshotNativeTag": 3005,
+      "sourceXtSha256": "bd75b7926956c1506e00c172816a0bfc1bb07db1660d74da65aaf1734f219ef1"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/16-shortedge-baseline/meshes/gm-0-after-0.json",
+      "sha256": "5e2f737d89a33669fa05ba49f35e12ac6d44ed673db6c7583194c872c198fe5d",
+      "sourceKernel": "GM",
+      "liveTag": 37,
+      "snapshotNativeTag": 866,
+      "sourceXtSha256": "fe0d7014202dc03e1f2afa839d679557d5bd1fffe5d4adc334ac9a7ebb501ed7"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/16-shortedge-baseline/meshes/gm-1-after-0.json",
+      "sha256": "44888fd906de294091ae5222a072ab357958874248610a90f0db81fb35b0b279",
+      "sourceKernel": "GM",
+      "liveTag": 522,
+      "snapshotNativeTag": 2343,
+      "sourceXtSha256": "fe0d7014202dc03e1f2afa839d679557d5bd1fffe5d4adc334ac9a7ebb501ed7"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/16-shortedge-baseline/meshes/gm-1-before.json",
+      "sha256": "6e1c345a9a7284bc9542ab7c1ad4135faa7f1787938a399616f6d231294b0b18",
+      "sourceKernel": "GM",
+      "liveTag": 522,
+      "snapshotNativeTag": 2219,
+      "sourceXtSha256": "bf0317e74efd9286c1d5f9789315720090b40c854853efa761505287d721af71"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/16-shortedge-baseline/meshes/pk-0-before.json",
+      "sha256": "cec0e0fa170326f86199eddcc1acc795e61df6ca4686f0aec49e135aba9ef7e1",
+      "sourceKernel": "PK",
+      "liveTag": 51,
+      "snapshotNativeTag": 51,
+      "sourceXtSha256": "47db3f857a08a27abeada7bc659a88e9d0c5c9e0705ef80cf9dc9da7a0ce2567"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/16-shortedge-baseline/meshes/gm-2-before.json",
+      "sha256": "6900a791915abd5c591a01d2e9696b0619f3e87c78877fc204a042fb67c44055",
+      "sourceKernel": "GM",
+      "liveTag": 1007,
+      "snapshotNativeTag": 3696,
+      "sourceXtSha256": "bf0317e74efd9286c1d5f9789315720090b40c854853efa761505287d721af71"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/16-shortedge-baseline/meshes/pk-1-after-0.json",
+      "sha256": "fbc758c4167f94f0adba22f0ca348bd2c1a5324ff0f4d6f12364bb545ca52578",
+      "sourceKernel": "PK",
+      "liveTag": 1528,
+      "snapshotNativeTag": 1528,
+      "sourceXtSha256": "bd75b7926956c1506e00c172816a0bfc1bb07db1660d74da65aaf1734f219ef1"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/16-shortedge-baseline/meshes/pk-1-before.json",
+      "sha256": "439cce9f19a58e8158bcc0cd2e89f8b1e72740afec8facfaf851d97a2abb2ce5",
+      "sourceKernel": "PK",
+      "liveTag": 1528,
+      "snapshotNativeTag": 1528,
+      "sourceXtSha256": "47db3f857a08a27abeada7bc659a88e9d0c5c9e0705ef80cf9dc9da7a0ce2567"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/17-shortedge-candidate/meshes/pk-2-before.json",
+      "sha256": "b2f0702a188be4d1c2e24339018ff2ecf0279d34c67585313be255c6e02f6b39",
+      "sourceKernel": "PK",
+      "liveTag": 3005,
+      "snapshotNativeTag": 3005,
+      "sourceXtSha256": "47db3f857a08a27abeada7bc659a88e9d0c5c9e0705ef80cf9dc9da7a0ce2567"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/17-shortedge-candidate/meshes/pk-0-after-0.json",
+      "sha256": "4e68f9a37507a3a88670defb391df548855e4cdf845e2f5b7ba06a9d6049f80e",
+      "sourceKernel": "PK",
+      "liveTag": 51,
+      "snapshotNativeTag": 51,
+      "sourceXtSha256": "bd75b7926956c1506e00c172816a0bfc1bb07db1660d74da65aaf1734f219ef1"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/17-shortedge-candidate/meshes/gm-2-after-0.json",
+      "sha256": "a72422325e76e0fa0f66aa5b36e3a04bab0e5a48c593e01cdb54c4df9f4b4153",
+      "sourceKernel": "GM",
+      "liveTag": 1007,
+      "snapshotNativeTag": 3820,
+      "sourceXtSha256": "fe0d7014202dc03e1f2afa839d679557d5bd1fffe5d4adc334ac9a7ebb501ed7"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/17-shortedge-candidate/meshes/gm-0-before.json",
+      "sha256": "24c5559fa3cc3401d0d8511976ba0f1021362780874ef32a0bde38dc8969d679",
+      "sourceKernel": "GM",
+      "liveTag": 37,
+      "snapshotNativeTag": 742,
+      "sourceXtSha256": "bf0317e74efd9286c1d5f9789315720090b40c854853efa761505287d721af71"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/17-shortedge-candidate/meshes/pk-2-after-0.json",
+      "sha256": "28cc43a4e35f6d2f2f5b20fb61c36e57b364b6b0af660beb9b8f32d264268a2a",
+      "sourceKernel": "PK",
+      "liveTag": 3005,
+      "snapshotNativeTag": 3005,
+      "sourceXtSha256": "bd75b7926956c1506e00c172816a0bfc1bb07db1660d74da65aaf1734f219ef1"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/17-shortedge-candidate/meshes/gm-0-after-0.json",
+      "sha256": "745363f7a67fec779b3386cf34e8b6f10da132a78679326a5f2d87e5286d694e",
+      "sourceKernel": "GM",
+      "liveTag": 37,
+      "snapshotNativeTag": 866,
+      "sourceXtSha256": "fe0d7014202dc03e1f2afa839d679557d5bd1fffe5d4adc334ac9a7ebb501ed7"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/17-shortedge-candidate/meshes/gm-1-after-0.json",
+      "sha256": "60f6192e3a3681e5dacfba36b2df5f2c49bd8e4e1bb508cc71c75c9d6338ea02",
+      "sourceKernel": "GM",
+      "liveTag": 522,
+      "snapshotNativeTag": 2343,
+      "sourceXtSha256": "fe0d7014202dc03e1f2afa839d679557d5bd1fffe5d4adc334ac9a7ebb501ed7"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/17-shortedge-candidate/meshes/gm-1-before.json",
+      "sha256": "8906a7f65c762f21f91f9c0af48cf10f09b2e5c629e869a2ccfc9b0ff812f846",
+      "sourceKernel": "GM",
+      "liveTag": 522,
+      "snapshotNativeTag": 2219,
+      "sourceXtSha256": "bf0317e74efd9286c1d5f9789315720090b40c854853efa761505287d721af71"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/17-shortedge-candidate/meshes/pk-0-before.json",
+      "sha256": "8a68824305939010e9ff24f026020d826df8594faa15b44e7582a824730dd1de",
+      "sourceKernel": "PK",
+      "liveTag": 51,
+      "snapshotNativeTag": 51,
+      "sourceXtSha256": "47db3f857a08a27abeada7bc659a88e9d0c5c9e0705ef80cf9dc9da7a0ce2567"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/17-shortedge-candidate/meshes/gm-2-before.json",
+      "sha256": "845256d69de38dc49887e2e1e8fbcaf3e2a065cf6fb71e144d94c561a7a28afb",
+      "sourceKernel": "GM",
+      "liveTag": 1007,
+      "snapshotNativeTag": 3696,
+      "sourceXtSha256": "bf0317e74efd9286c1d5f9789315720090b40c854853efa761505287d721af71"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/17-shortedge-candidate/meshes/pk-1-after-0.json",
+      "sha256": "b4ef2d63d29d18a6a4a39d6dd2ea755c6c6e96ea41567eb977a5e9ecd2060ac7",
+      "sourceKernel": "PK",
+      "liveTag": 1528,
+      "snapshotNativeTag": 1528,
+      "sourceXtSha256": "bd75b7926956c1506e00c172816a0bfc1bb07db1660d74da65aaf1734f219ef1"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/17-shortedge-candidate/meshes/pk-1-before.json",
+      "sha256": "6ded013d1bb8d21f29ee52f257b9a487ad531d872a67a4f6c587d19ee993a32a",
+      "sourceKernel": "PK",
+      "liveTag": 1528,
+      "snapshotNativeTag": 1528,
+      "sourceXtSha256": "47db3f857a08a27abeada7bc659a88e9d0c5c9e0705ef80cf9dc9da7a0ce2567"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/18-shortedge-candidate/meshes/pk-2-before.json",
+      "sha256": "b2f0702a188be4d1c2e24339018ff2ecf0279d34c67585313be255c6e02f6b39",
+      "sourceKernel": "PK",
+      "liveTag": 3005,
+      "snapshotNativeTag": 3005,
+      "sourceXtSha256": "47db3f857a08a27abeada7bc659a88e9d0c5c9e0705ef80cf9dc9da7a0ce2567"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/18-shortedge-candidate/meshes/pk-0-after-0.json",
+      "sha256": "4e68f9a37507a3a88670defb391df548855e4cdf845e2f5b7ba06a9d6049f80e",
+      "sourceKernel": "PK",
+      "liveTag": 51,
+      "snapshotNativeTag": 51,
+      "sourceXtSha256": "bd75b7926956c1506e00c172816a0bfc1bb07db1660d74da65aaf1734f219ef1"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/18-shortedge-candidate/meshes/gm-2-after-0.json",
+      "sha256": "a72422325e76e0fa0f66aa5b36e3a04bab0e5a48c593e01cdb54c4df9f4b4153",
+      "sourceKernel": "GM",
+      "liveTag": 1007,
+      "snapshotNativeTag": 3820,
+      "sourceXtSha256": "fe0d7014202dc03e1f2afa839d679557d5bd1fffe5d4adc334ac9a7ebb501ed7"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/18-shortedge-candidate/meshes/gm-0-before.json",
+      "sha256": "24c5559fa3cc3401d0d8511976ba0f1021362780874ef32a0bde38dc8969d679",
+      "sourceKernel": "GM",
+      "liveTag": 37,
+      "snapshotNativeTag": 742,
+      "sourceXtSha256": "bf0317e74efd9286c1d5f9789315720090b40c854853efa761505287d721af71"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/18-shortedge-candidate/meshes/pk-2-after-0.json",
+      "sha256": "28cc43a4e35f6d2f2f5b20fb61c36e57b364b6b0af660beb9b8f32d264268a2a",
+      "sourceKernel": "PK",
+      "liveTag": 3005,
+      "snapshotNativeTag": 3005,
+      "sourceXtSha256": "bd75b7926956c1506e00c172816a0bfc1bb07db1660d74da65aaf1734f219ef1"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/18-shortedge-candidate/meshes/gm-0-after-0.json",
+      "sha256": "745363f7a67fec779b3386cf34e8b6f10da132a78679326a5f2d87e5286d694e",
+      "sourceKernel": "GM",
+      "liveTag": 37,
+      "snapshotNativeTag": 866,
+      "sourceXtSha256": "fe0d7014202dc03e1f2afa839d679557d5bd1fffe5d4adc334ac9a7ebb501ed7"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/18-shortedge-candidate/meshes/gm-1-after-0.json",
+      "sha256": "60f6192e3a3681e5dacfba36b2df5f2c49bd8e4e1bb508cc71c75c9d6338ea02",
+      "sourceKernel": "GM",
+      "liveTag": 522,
+      "snapshotNativeTag": 2343,
+      "sourceXtSha256": "fe0d7014202dc03e1f2afa839d679557d5bd1fffe5d4adc334ac9a7ebb501ed7"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/18-shortedge-candidate/meshes/gm-1-before.json",
+      "sha256": "8906a7f65c762f21f91f9c0af48cf10f09b2e5c629e869a2ccfc9b0ff812f846",
+      "sourceKernel": "GM",
+      "liveTag": 522,
+      "snapshotNativeTag": 2219,
+      "sourceXtSha256": "bf0317e74efd9286c1d5f9789315720090b40c854853efa761505287d721af71"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/18-shortedge-candidate/meshes/pk-0-before.json",
+      "sha256": "8a68824305939010e9ff24f026020d826df8594faa15b44e7582a824730dd1de",
+      "sourceKernel": "PK",
+      "liveTag": 51,
+      "snapshotNativeTag": 51,
+      "sourceXtSha256": "47db3f857a08a27abeada7bc659a88e9d0c5c9e0705ef80cf9dc9da7a0ce2567"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/18-shortedge-candidate/meshes/gm-2-before.json",
+      "sha256": "845256d69de38dc49887e2e1e8fbcaf3e2a065cf6fb71e144d94c561a7a28afb",
+      "sourceKernel": "GM",
+      "liveTag": 1007,
+      "snapshotNativeTag": 3696,
+      "sourceXtSha256": "bf0317e74efd9286c1d5f9789315720090b40c854853efa761505287d721af71"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/18-shortedge-candidate/meshes/pk-1-after-0.json",
+      "sha256": "b4ef2d63d29d18a6a4a39d6dd2ea755c6c6e96ea41567eb977a5e9ecd2060ac7",
+      "sourceKernel": "PK",
+      "liveTag": 1528,
+      "snapshotNativeTag": 1528,
+      "sourceXtSha256": "bd75b7926956c1506e00c172816a0bfc1bb07db1660d74da65aaf1734f219ef1"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/18-shortedge-candidate/meshes/pk-1-before.json",
+      "sha256": "6ded013d1bb8d21f29ee52f257b9a487ad531d872a67a4f6c587d19ee993a32a",
+      "sourceKernel": "PK",
+      "liveTag": 1528,
+      "snapshotNativeTag": 1528,
+      "sourceXtSha256": "47db3f857a08a27abeada7bc659a88e9d0c5c9e0705ef80cf9dc9da7a0ce2567"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/19-shortedge-baseline/meshes/pk-2-before.json",
+      "sha256": "e593fa16ed3b5bb39d0f5251f60b0bd77810d7d231b8f94df944d6e8fc934f48",
+      "sourceKernel": "PK",
+      "liveTag": 3005,
+      "snapshotNativeTag": 3005,
+      "sourceXtSha256": "47db3f857a08a27abeada7bc659a88e9d0c5c9e0705ef80cf9dc9da7a0ce2567"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/19-shortedge-baseline/meshes/pk-0-after-0.json",
+      "sha256": "1fc546add09c5489ff49868d84435f49ca04333f6b86ff698772191e4f971895",
+      "sourceKernel": "PK",
+      "liveTag": 51,
+      "snapshotNativeTag": 51,
+      "sourceXtSha256": "bd75b7926956c1506e00c172816a0bfc1bb07db1660d74da65aaf1734f219ef1"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/19-shortedge-baseline/meshes/gm-2-after-0.json",
+      "sha256": "ed44ba8bbb069850d9dfdb8b1cee52d17a814b5b7b73265bdabef0460e1adb1e",
+      "sourceKernel": "GM",
+      "liveTag": 1007,
+      "snapshotNativeTag": 3820,
+      "sourceXtSha256": "fe0d7014202dc03e1f2afa839d679557d5bd1fffe5d4adc334ac9a7ebb501ed7"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/19-shortedge-baseline/meshes/gm-0-before.json",
+      "sha256": "f3e2613197fe41c33d78ab51a3b0ee7874ed1635124538ff93b08c2c7e7680c1",
+      "sourceKernel": "GM",
+      "liveTag": 37,
+      "snapshotNativeTag": 742,
+      "sourceXtSha256": "bf0317e74efd9286c1d5f9789315720090b40c854853efa761505287d721af71"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/19-shortedge-baseline/meshes/pk-2-after-0.json",
+      "sha256": "e9a1e4710b9ed4a8427bcb5e14114d39262b74fbd7707b27c984ebd9d650eb75",
+      "sourceKernel": "PK",
+      "liveTag": 3005,
+      "snapshotNativeTag": 3005,
+      "sourceXtSha256": "bd75b7926956c1506e00c172816a0bfc1bb07db1660d74da65aaf1734f219ef1"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/19-shortedge-baseline/meshes/gm-0-after-0.json",
+      "sha256": "5e2f737d89a33669fa05ba49f35e12ac6d44ed673db6c7583194c872c198fe5d",
+      "sourceKernel": "GM",
+      "liveTag": 37,
+      "snapshotNativeTag": 866,
+      "sourceXtSha256": "fe0d7014202dc03e1f2afa839d679557d5bd1fffe5d4adc334ac9a7ebb501ed7"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/19-shortedge-baseline/meshes/gm-1-after-0.json",
+      "sha256": "44888fd906de294091ae5222a072ab357958874248610a90f0db81fb35b0b279",
+      "sourceKernel": "GM",
+      "liveTag": 522,
+      "snapshotNativeTag": 2343,
+      "sourceXtSha256": "fe0d7014202dc03e1f2afa839d679557d5bd1fffe5d4adc334ac9a7ebb501ed7"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/19-shortedge-baseline/meshes/gm-1-before.json",
+      "sha256": "6e1c345a9a7284bc9542ab7c1ad4135faa7f1787938a399616f6d231294b0b18",
+      "sourceKernel": "GM",
+      "liveTag": 522,
+      "snapshotNativeTag": 2219,
+      "sourceXtSha256": "bf0317e74efd9286c1d5f9789315720090b40c854853efa761505287d721af71"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/19-shortedge-baseline/meshes/pk-0-before.json",
+      "sha256": "cec0e0fa170326f86199eddcc1acc795e61df6ca4686f0aec49e135aba9ef7e1",
+      "sourceKernel": "PK",
+      "liveTag": 51,
+      "snapshotNativeTag": 51,
+      "sourceXtSha256": "47db3f857a08a27abeada7bc659a88e9d0c5c9e0705ef80cf9dc9da7a0ce2567"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/19-shortedge-baseline/meshes/gm-2-before.json",
+      "sha256": "6900a791915abd5c591a01d2e9696b0619f3e87c78877fc204a042fb67c44055",
+      "sourceKernel": "GM",
+      "liveTag": 1007,
+      "snapshotNativeTag": 3696,
+      "sourceXtSha256": "bf0317e74efd9286c1d5f9789315720090b40c854853efa761505287d721af71"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/19-shortedge-baseline/meshes/pk-1-after-0.json",
+      "sha256": "fbc758c4167f94f0adba22f0ca348bd2c1a5324ff0f4d6f12364bb545ca52578",
+      "sourceKernel": "PK",
+      "liveTag": 1528,
+      "snapshotNativeTag": 1528,
+      "sourceXtSha256": "bd75b7926956c1506e00c172816a0bfc1bb07db1660d74da65aaf1734f219ef1"
+    },
+    {
+      "path": "temp_docs/localjet-controlled/window/19-shortedge-baseline/meshes/pk-1-before.json",
+      "sha256": "439cce9f19a58e8158bcc0cd2e89f8b1e72740afec8facfaf851d97a2abb2ce5",
+      "sourceKernel": "PK",
+      "liveTag": 1528,
+      "snapshotNativeTag": 1528,
+      "sourceXtSha256": "47db3f857a08a27abeada7bc659a88e9d0c5c9e0705ef80cf9dc9da7a0ce2567"
+    }
+  ],
+  "boundProofs": 204,
+  "missingProofSourceBindings": 12,
+  "pkProductViaManagedProofsWithoutDisplayMesh": 24,
+  "proofKinds": {
+    "GM-fresh-vs-native": 144,
+    "same-instance-snapshot-pair": 60
+  }
+}
