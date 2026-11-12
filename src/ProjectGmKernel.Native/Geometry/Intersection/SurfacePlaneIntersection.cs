@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Geometry.Bounds;
@@ -12,6 +13,22 @@ namespace ProjectGmKernel.Native.Geometry.Intersection;
 // complete boundary and transverse-section isolation decide its connectivity.
 internal static class SurfacePlaneIntersection
 {
+    [InlineArray(2)] private struct SectionPoints{private OperationIntersectionPoint value;}
+    [InlineArray(2)] private struct SectionIsolations{private ScalarRootIsolation value;}
+    private struct SectionRoots
+    {
+        internal bool Ready,Certified;
+        internal BufferOffset Axis;
+        internal double At,First,Last;
+        internal BufferCount Count;
+        internal SectionPoints Points;
+        internal SectionIsolations Isolations;
+        internal IntervalNumber Unresolved,Left,Right,Derivative;
+    }
+#if KERNEL_TEST_HOOKS
+    internal static bool ReuseSectionRoots=true;
+    [ThreadStatic] internal static long TestSectionReuses;
+#endif
     [ThreadStatic] internal static SurfaceParameterBox LastUnresolvedBox;
     [ThreadStatic] internal static BufferCount LastUnresolvedDepth;
     [ThreadStatic] internal static BufferOffset LastUnresolvedFreeAxis;
@@ -33,6 +50,9 @@ internal static class SurfacePlaneIntersection
     {
         if(!AnalyticLevelSet.Supported(plane))return AlgorithmStatus.Unsupported;
         LastUnresolvedBudget=false;LastBoundaryFailure=BoundaryFailure.None;
+        // This workspace cannot escape this pure Find call. All entries
+        // share its actual patch, equation, tolerance and root budget.
+        Span<SectionRoots> sections=stackalloc SectionRoots[64];sections.Clear();BufferOffset nextSection=0;
         Span<SurfaceParameterBox> pending=stackalloc SurfaceParameterBox[128];
         Span<BufferCount> depths=stackalloc BufferCount[128];pending[0]=patch.Domain;depths[0]=0;var count=1;var visited=0;
         Span<IntervalNumber> bounds=stackalloc IntervalNumber[9];
@@ -87,7 +107,7 @@ internal static class SurfacePlaneIntersection
                     status=BoundaryNode(patch,plane,axis,at,upper,boundary,ref n,tolerance);if(status!=AlgorithmStatus.Success)goto Retry;
                     continue;
                 }
-                var nr=0;status=SurfaceIsoPlaneRoots.Find(iso,plane,lower,upper,roots,ref nr,tolerance,strictSeparation,certifiedRoots?isolations:default);if(status!=AlgorithmStatus.Success){LastBoundaryFailure=BoundaryFailure.Roots;goto Retry;}
+                var nr=0;status=FindSection(iso,plane,axis,at,lower,upper,roots,ref nr,tolerance,strictSeparation,certifiedRoots?isolations:default,sections,ref nextSection);if(status!=AlgorithmStatus.Success){LastBoundaryFailure=BoundaryFailure.Roots;goto Retry;}
                 for(var r=0;r<nr;r++)
                 {status=BoundaryNode(patch,plane,axis,at,roots[r].First,boundary,ref n,tolerance,certifiedRoots?isolations[r]:default);if(status!=AlgorithmStatus.Success){LastBoundaryFailure=BoundaryFailure.Node;goto Retry;}}
             }
@@ -107,7 +127,7 @@ internal static class SurfacePlaneIntersection
                 }
                 var lower=free==0?cell.V0:cell.U0;var upper=free==0?cell.V1:cell.U1;
                 var iso=new SurfaceIntersectionPatch(patch,free==0,at,lower,upper);var nr=0;
-                status=SurfaceIsoPlaneRoots.Find(iso,plane,lower,upper,roots,ref nr,tolerance,strictSeparation,certifiedRoots?isolations:default);if(status!=AlgorithmStatus.Success||nr>1){LastBoundaryFailure=BoundaryFailure.Transverse;goto Retry;}
+                status=FindSection(iso,plane,free,at,lower,upper,roots,ref nr,tolerance,strictSeparation,certifiedRoots?isolations:default,sections,ref nextSection);if(status!=AlgorithmStatus.Success||nr>1){LastBoundaryFailure=BoundaryFailure.Transverse;goto Retry;}
                 if(nr==0)continue;
                 status=AddSegment(patch,cell,boundary[i],boundary[i+1],nodes,ref nodeCount,segments,ref segmentCount);if(status!=AlgorithmStatus.Success)return status;
             }
@@ -130,6 +150,41 @@ internal static class SurfacePlaneIntersection
             pending[count]=split==0?new(middle,cell.U1,cell.V0,cell.V1):new(cell.U0,cell.U1,middle,cell.V1);depths[count++]=depth+1;
         }
         return deferIsolatedPoints?AlgorithmStatus.Success:ValidateGraph(nodes[..nodeCount],segments[..segmentCount]);
+    }
+
+    private static AlgorithmStatus FindSection(in SurfaceIntersectionPatch iso,in AnalyticSurface plane,BufferOffset axis,double at,double first,double last,Span<OperationIntersectionPoint> output,ref BufferCount count,double tolerance,bool strictSeparation,Span<ScalarRootIsolation> isolation,Span<SectionRoots> sections,ref BufferOffset next)
+    {
+        var reuse=count==0;
+#if KERNEL_TEST_HOOKS
+        reuse&=ReuseSectionRoots;
+#endif
+        if(reuse)for(var i=0;i<sections.Length;i++)
+        {
+            ref var entry=ref sections[i];
+            if(!entry.Ready||entry.Axis!=axis||entry.Certified!=!isolation.IsEmpty
+                ||BitConverter.DoubleToInt64Bits(entry.At)!=BitConverter.DoubleToInt64Bits(at)
+                ||BitConverter.DoubleToInt64Bits(entry.First)!=BitConverter.DoubleToInt64Bits(first)
+                ||BitConverter.DoubleToInt64Bits(entry.Last)!=BitConverter.DoubleToInt64Bits(last))continue;
+            if(output.Length<entry.Count||!isolation.IsEmpty&&isolation.Length<entry.Count)break;
+            ((ReadOnlySpan<OperationIntersectionPoint>)entry.Points)[..entry.Count].CopyTo(output);
+            if(!isolation.IsEmpty)((ReadOnlySpan<ScalarRootIsolation>)entry.Isolations)[..entry.Count].CopyTo(isolation);
+            count=entry.Count;SurfaceIsoPlaneRoots.LastFailure=SurfaceIsoPlaneRoots.IsolationFailure.None;
+            SurfaceIsoPlaneRoots.LastRequestedInterval=new(first,last);SurfaceIsoPlaneRoots.LastUnresolvedInterval=entry.Unresolved;
+            SurfaceIsoPlaneRoots.LastLeft=entry.Left;SurfaceIsoPlaneRoots.LastRight=entry.Right;SurfaceIsoPlaneRoots.LastDerivative=entry.Derivative;
+#if KERNEL_TEST_HOOKS
+            TestSectionReuses++;
+#endif
+            return AlgorithmStatus.Success;
+        }
+        var status=SurfaceIsoPlaneRoots.Find(iso,plane,first,last,output,ref count,tolerance,strictSeparation,isolation);
+        if(reuse&&status==AlgorithmStatus.Success&&count<=2)
+        {
+            ref var entry=ref sections[next];next=(next+1)%sections.Length;
+            entry.Ready=true;entry.Axis=axis;entry.At=at;entry.First=first;entry.Last=last;entry.Certified=!isolation.IsEmpty;entry.Count=count;
+            output[..count].CopyTo(entry.Points);if(!isolation.IsEmpty)isolation[..count].CopyTo(entry.Isolations);
+            entry.Unresolved=SurfaceIsoPlaneRoots.LastUnresolvedInterval;entry.Left=SurfaceIsoPlaneRoots.LastLeft;entry.Right=SurfaceIsoPlaneRoots.LastRight;entry.Derivative=SurfaceIsoPlaneRoots.LastDerivative;
+        }
+        return status;
     }
 
     internal static AlgorithmStatus ValidateGraph(ReadOnlySpan<SurfaceIntersectionNode> nodes,ReadOnlySpan<SurfaceIntersectionSegment> segments)
