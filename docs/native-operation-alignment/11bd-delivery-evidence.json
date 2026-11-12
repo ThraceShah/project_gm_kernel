@@ -1,0 +1,26 @@
+{
+  "scope": "Fixed integrated development checkpoint; no final acceptance or performance qualification",
+  "sourceCommit": "11bd21a14a234b3cbf0991b5ff8b6f03752fc3a8",
+  "executions": [
+    { "name": "independent-local-17", "log": "temp_docs/native-system-alignment/integrated-local-finite.log", "exit": "temp_docs/native-system-alignment/integrated-local-finite.exit", "rawExit": 2, "geometryTopology": "17 upstream, 17 lifecycle and 17 downstream pass", "mass": "4 unresolved", "performance": "unqualified" },
+    { "name": "independent-rolling-6", "log": "temp_docs/native-system-alignment/integrated-regular-rolling-v2.log", "exit": "temp_docs/native-system-alignment/integrated-regular-rolling-v2.exit", "rawExit": 2, "geometryTopology": "6 independent Fix and subsequent Boolean pass; plane/NURBS lifecycle included", "mass": "unresolved preserved in raw reports", "performance": "unqualified" },
+    { "name": "independent-short-edge-lifecycle", "log": "temp_docs/native-system-alignment/integrated-short-edge-v3.log", "exit": "temp_docs/native-system-alignment/integrated-short-edge-v3.exit", "rawExit": 2, "geometryTopology": "upstream, copy/delete, mirror-scale, two cuts and editable reload pass", "mass": "8 unresolved", "performance": "unqualified" },
+    { "name": "native-precision-reattach-lifecycle", "log": "temp_docs/native-system-alignment/integrated-precision-reattach.log", "exit": "temp_docs/native-system-alignment/integrated-precision-reattach.exit", "rawExit": 0, "geometryTopology": "three scales, twelve full-check/strict checkpoints", "mass": "not executed: sheets", "performance": "unqualified" },
+    { "name": "same-byte-partial-domain-tracking", "log": "temp_docs/native-system-alignment/same-byte-partial.log", "exit": "temp_docs/native-system-alignment/same-byte-partial.exit", "rawExit": 2, "geometryTopology": "6 full-check/strict, finite-source witnesses and wrong-source negatives pass", "persistence": "6 unresolved exact tag counts", "mass": "6 unresolved", "performance": "unqualified" }
+  ],
+  "directories": [
+    "temp_docs/native-system-alignment",
+    "temp_docs/local-operation-oracle/native-alignment-integrated-finite",
+    "temp_docs/regular-solid-blend-oracle/native-alignment-integrated-rolling",
+    "temp_docs/short-edge-blend-oracle/native-alignment-integrated-default-v3",
+    "temp_docs/curved-sheet-partition-oracle/native-alignment-reattach-integrated",
+    "temp_docs/regular-curved-boolean-oracle/native-alignment-same-byte-partial",
+    "temp_docs/regular-curved-boolean-oracle/native-alignment-3ce2fa5c",
+    "temp_docs/curved-sheet-partition-oracle/native-alignment-3ce2fa5c",
+    "temp_docs/native-spcurve-oracle/finite-native-uv-v5",
+    "temp_docs/native-spcurve-oracle/integrated-3aff-native-uv",
+    "temp_docs/native-spcurve-oracle/native-alignment-sp-lifecycle"
+  ],
+  "historicalExecutionScope": "Other raw files are preserved artifacts, not automatically accepted executions of this checkpoint; later SP lifecycle and extent qualification use a different assembly",
+  "remaining": ["Exact partial-domain tag persistence", "Original 510 boundary disagreements", "Physical mass certification unresolved", "Public shared extent eligibility integration", "Final source complete suite and independent Native/math acceptance", "Unimplemented high-valence, arbitrary multiparty contact and variable-radius categories"]
+}

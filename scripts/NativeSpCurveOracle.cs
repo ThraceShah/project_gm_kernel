@@ -23,15 +23,23 @@ using(host)unsafe
         PK_SESSION_kernel_version_t version;Check(PK_SESSION_ask_kernel_version(&version),"PK version");Console.WriteLine($"PK_VERSION {version.major_revision}.{version.minor_revision}.{version.build_number}");
         Console.WriteLine("GM_ASSEMBLY sha256="+Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(typeof(KernelRuntime).Assembly.Location))));var passed=0;
         PK_VECTOR_t* aJet=stackalloc PK_VECTOR_t[2];PK_VECTOR_t* bJet=stackalloc PK_VECTOR_t[2];
-        foreach(var rationalUv in new[]{false,true})foreach(var rationalSurface in new[]{false,true})foreach(var reverse in new[]{false,true})
+        foreach(var scale in new[]{.125,1.7,8.0})foreach(var rationalUv in new[]{false,true})foreach(var rationalSurface in new[]{false,true})foreach(var reverse in new[]{false,true})
         {
-            var label=$"uv-{rationalUv}-surface-{rationalSurface}-reverse-{reverse}";
+            var label=$"uv-{rationalUv}-surface-{rationalSurface}-reverse-{reverse}-scale-{scale.ToString("R",System.Globalization.CultureInfo.InvariantCulture)}";
             var reference=NativeWire(rationalUv,rationalSurface,reverse);var input=Transmit(false,reference);File.WriteAllBytes(Path.Combine(directory,label+"-native-input.x_t"),input);
             var managed=Receive(true,input);Require(KernelRuntime.TryResolveBodySlot(managed,out var slot)&&!KernelRuntime.Xt.IsOpaque(slot),"editable native SP wire input");
+            int copy;Check(KernelRuntime.EntityCopy(managed,&copy),"copy editable native SP source");Check(KernelRuntime.EntityDelete(1,&managed),"delete managed SP source");managed=copy;
+            Check(PK_ENTITY_copy(reference,&copy),"copy independent SP source");Check(PK_ENTITY_delete(1,&reference),"delete independent SP source");reference=copy;
+            Transform(true,managed,scale);Transform(false,reference,scale);
+            var transformedManaged=Transmit(true,managed);var transformedNative=Transmit(false,reference);
+            File.WriteAllBytes(Path.Combine(directory,label+"-gm-before-reload.x_t"),transformedManaged);File.WriteAllBytes(Path.Combine(directory,label+"-pk-before-reload.x_t"),transformedNative);
+            Check(KernelRuntime.EntityDelete(1,&managed),"delete managed transformed source");Check(PK_ENTITY_delete(1,&reference),"delete native transformed source");
+            managed=Receive(true,transformedManaged);reference=Receive(false,transformedNative);
+            Require(KernelRuntime.TryResolveBodySlot(managed,out slot)&&!KernelRuntime.Xt.IsOpaque(slot),"editable transformed SP reload");
             var ownCurve=WireCurve(true,managed,out var lower,out var upper);var referenceCurve=WireCurve(false,reference,out var nativeLower,out var nativeUpper);
             Require(Math.Abs(lower-nativeLower)<1e-9&&Math.Abs(upper-nativeUpper)<1e-9,"same finite native endpoint parameters");
             const double station=.375;var u=rationalUv?station/(2-station):station;var z=rationalSurface?4*u*station/(1+2*u+station):u*station;
-            var plane=new PK_PLANE_sf_t();plane.basis_set.location=new(0,0,z);plane.basis_set.axis=new(0,0,1);plane.basis_set.ref_direction=new(1,0,0);int ownPlane,nativePlane;
+            var plane=new PK_PLANE_sf_t();plane.basis_set.location=new(0,0,z*scale+.125);plane.basis_set.axis=new(0,0,1);plane.basis_set.ref_direction=new(1,0,0);int ownPlane,nativePlane;
             Check(KernelRuntime.PlaneCreate((M.PK_PLANE_sf_s*)&plane,&ownPlane),"own query plane");Check(PK_PLANE_create(&plane,&nativePlane),"native query plane");
             foreach(var negative in new[]{false,true})
             {
@@ -49,12 +57,23 @@ using(host)unsafe
                 var t=first+(lastParameter-first)*sample/16;Check(PK_CURVE_eval(referenceCurve,t,1,aJet),"reference native SP derivative");Check(PK_CURVE_eval(freshCurve,t,1,bJet),"fresh native SP derivative");
                 for(var derivative=0;derivative<2;derivative++)for(var d=0;d<3;d++)Require(Math.Abs(aJet[derivative].coord[d]-bJet[derivative].coord[d])<1e-10,"finite SP native gauge D0/D1");
             }
-            Console.WriteLine($"FINITE_SP_SOURCE_WIRE_PASS case={label} author=real-PK-input samples=17 continuum_proof=False sha256={Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(input))}");
+            Console.WriteLine($"FINITE_SP_SOURCE_WIRE_PASS case={label} author=real-PK-input lifecycle=copy-delete-mirror-scale-reload-query samples=17 continuum_proof=False sha256={Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(input))}");
             Check(KernelRuntime.EntityDelete(1,&managed),"delete imported SP source");Check(KernelRuntime.EntityDelete(1,&ownPlane),"delete own plane");Check(PK_ENTITY_delete(1,&reference),"delete native source");Check(PK_ENTITY_delete(1,&fresh),"delete native fresh source");Check(PK_ENTITY_delete(1,&nativePlane),"delete native plane");
         }
         Console.WriteLine($"PASS finite native SP queries={passed}");
     }
     finally{Check(KernelRuntime.SessionStop(),"managed stop");}
+}
+
+static unsafe void Transform(bool own,int body,double scale)
+{
+    M.PK_TRANSF_sf_s form=default;form.matrix[0]=-scale;form.matrix[5]=form.matrix[10]=scale;form.matrix[15]=1;form.matrix[3]=.25;form.matrix[7]=-.375;form.matrix[11]=.125;
+    int transform;Check(own?KernelRuntime.TransfCreate(&form,&transform):PK_TRANSF_create((PK_TRANSF_sf_t*)&form,&transform),"SP mirror scale transform");
+    int count;int* replacements;PK_LOGICAL_t* exact;
+    Check(own?KernelRuntime.BodyTransform(body,transform,0,&count,&replacements,(byte**)&exact):PK_BODY_transform(body,transform,0,&count,&replacements,&exact),"transform native SP wire");
+    if(replacements!=null)Check(own?KernelRuntime.MemoryFree(replacements):PK_MEMORY_free(replacements),"release transformed SP replacements");
+    if(exact!=null)Check(own?KernelRuntime.MemoryFree(exact):PK_MEMORY_free(exact),"release transformed SP exactness");
+    Check(own?KernelRuntime.EntityDelete(1,&transform):PK_ENTITY_delete(1,&transform),"delete SP transform");
 }
 
 static unsafe int NativeWire(bool rationalUv,bool rationalSurface,bool reverse)

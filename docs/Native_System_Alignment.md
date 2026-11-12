@@ -251,3 +251,32 @@ RegularSurfaceExtent 的 Success 本身不足以证明正权和完整 consumer �
 公共 BSurface/Blend extent 资格由 Mac 单一 owner 维护，交固定公共 helper 后供
 Boolean/ray 两侧消费，q2 不另写一套相似判断。此约束同样需要审视原有其他排除
 消费者，不能以新消费者收紧就声称所有既有 extent 调用均有完整证明。
+
+原生 SP 新能力的生命周期又在 `d5e00ae8` 生产源执行三尺度 × 八参数族：
+`sp-full-lifecycle.log/.exit` 原exit0，48次正负请求、24条 wire full check/strict，
+以及各自 copy/delete、mirror-scale、editable reload 后再查询、相同native t的D0/D1
+均通过。真实库38.0.150，实际 Native SHA 为
+`beafac9f20db64127c2a3d1b542f98c0d24627ae8926ab827b5d681e40f1abb3`。
+未加算法预算、未生成拟合 carrier；这些点检查仍不冒称连续全域等价证明。
+
+## 固定交付检查点
+
+实际已封存 `temp_docs/native-system-delivery/checkpoint-11bd.zip`，33,594,597B，
+SHA256 `e8fb684e5fb78d2ff64cba1f16ab5c5467122087b44cec4b1188cc79646cebda`。
+这是完整可运行集成源码 `11bd21a14a234b3cbf0991b5ff8b6f03752fc3a8` 的开发检查点包，
+不是最终完整接受。包内 source.zip、实际托管 Native/XT DLL/PDB、原始日志/退出和
+真实XT均列逐文件哈希；无厂商 runtime、credential 或大段反编译代码。
+
+Native 为 `022129f481f39011c75548d72e21efbd32e85af0552bd1e4b954678eb5422031`，
+五项具名生产执行打印的实际加载 Native hash 都与包相同；PE/PDB GUID 与固定源码
+的340个Native、13个XT文档校验匹配，各另3项generated/external未绑定如实列出。
+XT是同一实际oracle缓存目录的companion，未增加运行时XT loader observer，不能
+把此文件来源升级成独立运行时加载观察。旧阶段及后来源的原始文件只作归档，不自动
+继承此生产hash；后续extent资格/SP生命周期明确是不同assembly。
+
+打包输入见 `native-operation-alignment/11bd-delivery-evidence.json`，封存器为
+`scripts/SealNativeSystemDelivery.cs`。实际zip完整性检查无错误；第一次sealer原exit0，
+随后将JsonArray写入改为显式JsonNode以避免新工具的AOT分析警告，旧包保持原字节。
+该包没有包含私有schema/PK动态库，复现仍先按统一私有环境ensure与固定PKToy准备。
+公共extent资格、最终稳定源的集中全回归、独立Native/math和整体性能仍在主线继续，
+不会在检查点包或小提交处结算原目标。
