@@ -78,6 +78,7 @@ internal static class ParametricSurfaceIntersection
     [ThreadStatic] internal static ParameterCell LastRootCell;
     [ThreadStatic] internal static BufferOffset LastRootFixedAxis;
     internal const BufferCount MaxCells = 200000;
+    internal const double RootResidualTolerance = 1e-9;
     private const double ParameterTolerance = 2e-10;
 
     internal static AlgorithmStatus Find(in BezierSurfacePatch first, in BezierSurfacePatch second,
@@ -293,7 +294,7 @@ internal static class ParametricSurfaceIntersection
                     unique &= image.Lower > expanded.Lower.Parameter(axis) && image.Upper < expanded.Upper.Parameter(axis);
                 }
                 if (empty) continue;
-                if (unique && centerF[0].Magnitude < 1e-9 && centerF[1].Magnitude < 1e-9 && centerF[2].Magnitude < 1e-9)
+                if (unique && centerF[0].Magnitude < RootResidualTolerance && centerF[1].Magnitude < RootResidualTolerance && centerF[2].Magnitude < RootResidualTolerance)
                 {
                     IsolatedRootCertificate certificate=default;
                     if(!certificates.IsEmpty)

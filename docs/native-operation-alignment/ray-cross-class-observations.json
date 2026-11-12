@@ -1,0 +1,885 @@
+{
+  "scope": "One baseline then candidate development run with common diagnostic Oracle bytes. Each process executes four cases twice. Preserve every PK/GM point; repetition0 of a later case is not process-cold. Stage/wall counters are inclusive diagnostic elapsed/work, never exclusive CPU or statistical/causal qualification.",
+  "sources": {
+    "uv": {
+      "cases": {
+        "plane-nurbs": [
+          {
+            "PK_fix_blends": 21.522,
+            "PK_fix_blends_error": 0,
+            "fixProfile": {
+              "api-ms": 763.516,
+              "elapsed-ms": 756.64,
+              "pairs": 0,
+              "ssi-cells": 0,
+              "root-cells": 150,
+              "roots": 8,
+              "budget-failures": 0,
+              "winding": 18,
+              "bound-requests": 628,
+              "bound-evaluations": 452,
+              "cache-hits": 26,
+              "failure-cache-hits": 0,
+              "bound-ms": 325.894,
+              "stages": {
+                "None": 756.64
+              }
+            },
+            "self_fix_blends": 765.774,
+            "self_fix_blends_error": 0,
+            "PK_boolean": 6.897,
+            "PK_boolean_error": 0,
+            "self_boolean": 954.614,
+            "self_boolean_error": 0,
+            "booleanProfile": {
+              "api-ms": 954.604,
+              "elapsed-ms": 924.656,
+              "pairs": 42,
+              "ssi-cells": 0,
+              "root-cells": 1347,
+              "roots": 38,
+              "budget-failures": 0,
+              "winding": 161,
+              "bound-requests": 4438,
+              "bound-evaluations": 314,
+              "cache-hits": 875,
+              "failure-cache-hits": 0,
+              "bound-ms": 181.985,
+              "stages": {
+                "None": 0.098,
+                "Read": 2.207,
+                "Cuts": 220.287,
+                "Clip": 261.279,
+                "Split": 3.574,
+                "Arrange": 217.097,
+                "Classify": 124.974,
+                "Components": 95.141
+              }
+            }
+          },
+          {
+            "PK_fix_blends": 1.633,
+            "PK_fix_blends_error": 0,
+            "fixProfile": {
+              "api-ms": 403.288,
+              "elapsed-ms": 403.221,
+              "pairs": 0,
+              "ssi-cells": 0,
+              "root-cells": 150,
+              "roots": 8,
+              "budget-failures": 0,
+              "winding": 18,
+              "bound-requests": 628,
+              "bound-evaluations": 452,
+              "cache-hits": 26,
+              "failure-cache-hits": 0,
+              "bound-ms": 245.318,
+              "stages": {
+                "None": 403.221
+              }
+            },
+            "self_fix_blends": 403.349,
+            "self_fix_blends_error": 0,
+            "PK_boolean": 1.238,
+            "PK_boolean_error": 0,
+            "self_boolean": 252.56,
+            "self_boolean_error": 0,
+            "booleanProfile": {
+              "api-ms": 252.549,
+              "elapsed-ms": 252.426,
+              "pairs": 42,
+              "ssi-cells": 0,
+              "root-cells": 1347,
+              "roots": 38,
+              "budget-failures": 0,
+              "winding": 161,
+              "bound-requests": 4438,
+              "bound-evaluations": 314,
+              "cache-hits": 875,
+              "failure-cache-hits": 0,
+              "bound-ms": 54.315,
+              "stages": {
+                "None": 0,
+                "Read": 0.041,
+                "Cuts": 53.517,
+                "Clip": 67.241,
+                "Split": 0.21,
+                "Arrange": 65.461,
+                "Classify": 42.257,
+                "Components": 23.701
+              }
+            }
+          }
+        ],
+        "depressed-roof": [
+          {
+            "PK_fix_blends": 1.701,
+            "PK_fix_blends_error": 0,
+            "fixProfile": {
+              "api-ms": 126.607,
+              "elapsed-ms": 126.528,
+              "pairs": 0,
+              "ssi-cells": 0,
+              "root-cells": 158,
+              "roots": 8,
+              "budget-failures": 0,
+              "winding": 18,
+              "bound-requests": 768,
+              "bound-evaluations": 488,
+              "cache-hits": 50,
+              "failure-cache-hits": 0,
+              "bound-ms": 100.908,
+              "stages": {
+                "None": 126.528
+              }
+            },
+            "self_fix_blends": 126.66,
+            "self_fix_blends_error": 0,
+            "PK_boolean": 1.155,
+            "PK_boolean_error": 0,
+            "self_boolean": 251.102,
+            "self_boolean_error": 0,
+            "booleanProfile": {
+              "api-ms": 251.096,
+              "elapsed-ms": 251.032,
+              "pairs": 42,
+              "ssi-cells": 0,
+              "root-cells": 1331,
+              "roots": 38,
+              "budget-failures": 0,
+              "winding": 161,
+              "bound-requests": 3715,
+              "bound-evaluations": 324,
+              "cache-hits": 894,
+              "failure-cache-hits": 0,
+              "bound-ms": 54.75,
+              "stages": {
+                "None": 0,
+                "Read": 0.042,
+                "Cuts": 54.214,
+                "Clip": 67.813,
+                "Split": 0.199,
+                "Arrange": 58.518,
+                "Classify": 47.309,
+                "Components": 22.937
+              }
+            }
+          },
+          {
+            "PK_fix_blends": 1.709,
+            "PK_fix_blends_error": 0,
+            "fixProfile": {
+              "api-ms": 115.798,
+              "elapsed-ms": 115.767,
+              "pairs": 0,
+              "ssi-cells": 0,
+              "root-cells": 158,
+              "roots": 8,
+              "budget-failures": 0,
+              "winding": 18,
+              "bound-requests": 768,
+              "bound-evaluations": 488,
+              "cache-hits": 50,
+              "failure-cache-hits": 0,
+              "bound-ms": 93.763,
+              "stages": {
+                "None": 115.767
+              }
+            },
+            "self_fix_blends": 115.822,
+            "self_fix_blends_error": 0,
+            "PK_boolean": 1.056,
+            "PK_boolean_error": 0,
+            "self_boolean": 225.115,
+            "self_boolean_error": 0,
+            "booleanProfile": {
+              "api-ms": 225.109,
+              "elapsed-ms": 225.046,
+              "pairs": 42,
+              "ssi-cells": 0,
+              "root-cells": 1331,
+              "roots": 38,
+              "budget-failures": 0,
+              "winding": 161,
+              "bound-requests": 3715,
+              "bound-evaluations": 324,
+              "cache-hits": 894,
+              "failure-cache-hits": 0,
+              "bound-ms": 51.013,
+              "stages": {
+                "None": 0,
+                "Read": 0.036,
+                "Cuts": 50.09,
+                "Clip": 61.27,
+                "Split": 0.189,
+                "Arrange": 52.636,
+                "Classify": 40.024,
+                "Components": 20.801
+              }
+            }
+          }
+        ],
+        "nurbs-nurbs": [
+          {
+            "PK_fix_blends": 3.007,
+            "PK_fix_blends_error": 0,
+            "fixProfile": {
+              "api-ms": 1614.37,
+              "elapsed-ms": 1614.345,
+              "pairs": 0,
+              "ssi-cells": 0,
+              "root-cells": 524,
+              "roots": 8,
+              "budget-failures": 0,
+              "winding": 18,
+              "bound-requests": 2850,
+              "bound-evaluations": 1849,
+              "cache-hits": 78,
+              "failure-cache-hits": 0,
+              "bound-ms": 1296.905,
+              "stages": {
+                "None": 1614.345
+              }
+            },
+            "self_fix_blends": 1614.402,
+            "self_fix_blends_error": 0,
+            "PK_boolean": 2.127,
+            "PK_boolean_error": 0,
+            "self_boolean": 6290.824,
+            "self_boolean_error": 0,
+            "booleanProfile": {
+              "api-ms": 6290.817,
+              "elapsed-ms": 6290.764,
+              "pairs": 42,
+              "ssi-cells": 0,
+              "root-cells": 2835,
+              "roots": 30,
+              "budget-failures": 0,
+              "winding": 155,
+              "bound-requests": 15660,
+              "bound-evaluations": 4307,
+              "cache-hits": 3294,
+              "failure-cache-hits": 0,
+              "bound-ms": 3362.051,
+              "stages": {
+                "None": 0.001,
+                "Read": 0.023,
+                "Cuts": 649.532,
+                "Clip": 2005.407,
+                "Split": 0.178,
+                "Arrange": 997.282,
+                "Classify": 2052.029,
+                "Components": 586.313
+              }
+            }
+          },
+          {
+            "PK_fix_blends": 2.799,
+            "PK_fix_blends_error": 0,
+            "fixProfile": {
+              "api-ms": 1704.2,
+              "elapsed-ms": 1704.175,
+              "pairs": 0,
+              "ssi-cells": 0,
+              "root-cells": 524,
+              "roots": 8,
+              "budget-failures": 0,
+              "winding": 18,
+              "bound-requests": 2850,
+              "bound-evaluations": 1849,
+              "cache-hits": 78,
+              "failure-cache-hits": 0,
+              "bound-ms": 1377.219,
+              "stages": {
+                "None": 1704.175
+              }
+            },
+            "self_fix_blends": 1704.221,
+            "self_fix_blends_error": 0,
+            "PK_boolean": 2.362,
+            "PK_boolean_error": 0,
+            "self_boolean": 6571.577,
+            "self_boolean_error": 0,
+            "booleanProfile": {
+              "api-ms": 6571.57,
+              "elapsed-ms": 6571.515,
+              "pairs": 42,
+              "ssi-cells": 0,
+              "root-cells": 2835,
+              "roots": 30,
+              "budget-failures": 0,
+              "winding": 155,
+              "bound-requests": 15660,
+              "bound-evaluations": 4307,
+              "cache-hits": 3294,
+              "failure-cache-hits": 0,
+              "bound-ms": 3530.528,
+              "stages": {
+                "None": 0,
+                "Read": 0.033,
+                "Cuts": 711.436,
+                "Clip": 2181.358,
+                "Split": 0.036,
+                "Arrange": 1028.705,
+                "Classify": 2059.951,
+                "Components": 589.996
+              }
+            }
+          }
+        ],
+        "concave-nurbs-nurbs": [
+          {
+            "PK_fix_blends": 3.615,
+            "PK_fix_blends_error": 0,
+            "fixProfile": {
+              "api-ms": 7373.949,
+              "elapsed-ms": 7373.904,
+              "pairs": 0,
+              "ssi-cells": 0,
+              "root-cells": 1436,
+              "roots": 8,
+              "budget-failures": 0,
+              "winding": 22,
+              "bound-requests": 15452,
+              "bound-evaluations": 8888,
+              "cache-hits": 584,
+              "failure-cache-hits": 0,
+              "bound-ms": 6468.027,
+              "stages": {
+                "None": 7373.904
+              }
+            },
+            "self_fix_blends": 7373.985,
+            "self_fix_blends_error": 0,
+            "PK_boolean": 1.702,
+            "PK_boolean_error": 0,
+            "self_boolean": 23450.441,
+            "self_boolean_error": 0,
+            "booleanProfile": {
+              "api-ms": 23450.434,
+              "elapsed-ms": 23450.378,
+              "pairs": 54,
+              "ssi-cells": 0,
+              "root-cells": 6140,
+              "roots": 26,
+              "budget-failures": 0,
+              "winding": 205,
+              "bound-requests": 75616,
+              "bound-evaluations": 22352,
+              "cache-hits": 18290,
+              "failure-cache-hits": 0,
+              "bound-ms": 15605.396,
+              "stages": {
+                "None": 0,
+                "Read": 0.02,
+                "Cuts": 1821.878,
+                "Clip": 7988.164,
+                "Split": 0.059,
+                "Arrange": 6422.046,
+                "Classify": 5363.658,
+                "Components": 1854.553
+              }
+            }
+          },
+          {
+            "PK_fix_blends": 3.529,
+            "PK_fix_blends_error": 0,
+            "fixProfile": {
+              "api-ms": 7299.159,
+              "elapsed-ms": 7299.135,
+              "pairs": 0,
+              "ssi-cells": 0,
+              "root-cells": 1436,
+              "roots": 8,
+              "budget-failures": 0,
+              "winding": 22,
+              "bound-requests": 15452,
+              "bound-evaluations": 8888,
+              "cache-hits": 584,
+              "failure-cache-hits": 0,
+              "bound-ms": 6410.4,
+              "stages": {
+                "None": 7299.135
+              }
+            },
+            "self_fix_blends": 7299.207,
+            "self_fix_blends_error": 0,
+            "PK_boolean": 2.005,
+            "PK_boolean_error": 0,
+            "self_boolean": 23473.669,
+            "self_boolean_error": 0,
+            "booleanProfile": {
+              "api-ms": 23473.663,
+              "elapsed-ms": 23473.584,
+              "pairs": 54,
+              "ssi-cells": 0,
+              "root-cells": 6140,
+              "roots": 26,
+              "budget-failures": 0,
+              "winding": 205,
+              "bound-requests": 75616,
+              "bound-evaluations": 22352,
+              "cache-hits": 18290,
+              "failure-cache-hits": 0,
+              "bound-ms": 15608.096,
+              "stages": {
+                "None": 0,
+                "Read": 0.026,
+                "Cuts": 1821.11,
+                "Clip": 7931.874,
+                "Split": 0.059,
+                "Arrange": 6488.768,
+                "Classify": 5377.435,
+                "Components": 1854.309
+              }
+            }
+          }
+        ]
+      },
+      "failures": [],
+      "passes": [
+        "PASS all 8 freeform solid fillet and subsequent cutting cases"
+      ]
+    },
+    "ray": {
+      "cases": {
+        "plane-nurbs": [
+          {
+            "PK_fix_blends": 2.154,
+            "PK_fix_blends_error": 0,
+            "fixProfile": {
+              "api-ms": 754.733,
+              "elapsed-ms": 748.418,
+              "pairs": 0,
+              "ssi-cells": 0,
+              "root-cells": 150,
+              "roots": 8,
+              "budget-failures": 0,
+              "winding": 18,
+              "bound-requests": 628,
+              "bound-evaluations": 452,
+              "cache-hits": 26,
+              "failure-cache-hits": 0,
+              "bound-ms": 316.222,
+              "stages": {
+                "None": 748.418
+              }
+            },
+            "self_fix_blends": 757.529,
+            "self_fix_blends_error": 0,
+            "PK_boolean": 1.402,
+            "PK_boolean_error": 0,
+            "self_boolean": 928.71,
+            "self_boolean_error": 0,
+            "booleanProfile": {
+              "api-ms": 928.694,
+              "elapsed-ms": 901.028,
+              "pairs": 42,
+              "ssi-cells": 0,
+              "root-cells": 1132,
+              "roots": 38,
+              "budget-failures": 0,
+              "winding": 161,
+              "bound-requests": 4008,
+              "bound-evaluations": 314,
+              "cache-hits": 667,
+              "failure-cache-hits": 0,
+              "bound-ms": 193.049,
+              "stages": {
+                "None": 0.076,
+                "Read": 1.991,
+                "Cuts": 234.068,
+                "Clip": 256.109,
+                "Split": 3.361,
+                "Arrange": 240.177,
+                "Classify": 67.962,
+                "Components": 97.285
+              }
+            }
+          },
+          {
+            "PK_fix_blends": 1.552,
+            "PK_fix_blends_error": 0,
+            "fixProfile": {
+              "api-ms": 276.34,
+              "elapsed-ms": 276.273,
+              "pairs": 0,
+              "ssi-cells": 0,
+              "root-cells": 150,
+              "roots": 8,
+              "budget-failures": 0,
+              "winding": 18,
+              "bound-requests": 628,
+              "bound-evaluations": 452,
+              "cache-hits": 26,
+              "failure-cache-hits": 0,
+              "bound-ms": 166.481,
+              "stages": {
+                "None": 276.273
+              }
+            },
+            "self_fix_blends": 276.421,
+            "self_fix_blends_error": 0,
+            "PK_boolean": 1.121,
+            "PK_boolean_error": 0,
+            "self_boolean": 255.39,
+            "self_boolean_error": 0,
+            "booleanProfile": {
+              "api-ms": 255.383,
+              "elapsed-ms": 255.332,
+              "pairs": 42,
+              "ssi-cells": 0,
+              "root-cells": 1132,
+              "roots": 38,
+              "budget-failures": 0,
+              "winding": 161,
+              "bound-requests": 4008,
+              "bound-evaluations": 314,
+              "cache-hits": 667,
+              "failure-cache-hits": 0,
+              "bound-ms": 65.689,
+              "stages": {
+                "None": 0,
+                "Read": 0.037,
+                "Cuts": 41.382,
+                "Clip": 78.188,
+                "Split": 0.32,
+                "Arrange": 83.417,
+                "Classify": 29.258,
+                "Components": 22.73
+              }
+            }
+          }
+        ],
+        "depressed-roof": [
+          {
+            "PK_fix_blends": 1.599,
+            "PK_fix_blends_error": 0,
+            "fixProfile": {
+              "api-ms": 136.736,
+              "elapsed-ms": 136.714,
+              "pairs": 0,
+              "ssi-cells": 0,
+              "root-cells": 158,
+              "roots": 8,
+              "budget-failures": 0,
+              "winding": 18,
+              "bound-requests": 768,
+              "bound-evaluations": 488,
+              "cache-hits": 50,
+              "failure-cache-hits": 0,
+              "bound-ms": 108.703,
+              "stages": {
+                "None": 136.714
+              }
+            },
+            "self_fix_blends": 136.783,
+            "self_fix_blends_error": 0,
+            "PK_boolean": 0.997,
+            "PK_boolean_error": 0,
+            "self_boolean": 198.403,
+            "self_boolean_error": 0,
+            "booleanProfile": {
+              "api-ms": 198.398,
+              "elapsed-ms": 198.354,
+              "pairs": 42,
+              "ssi-cells": 0,
+              "root-cells": 1100,
+              "roots": 38,
+              "budget-failures": 0,
+              "winding": 161,
+              "bound-requests": 3253,
+              "bound-evaluations": 324,
+              "cache-hits": 670,
+              "failure-cache-hits": 0,
+              "bound-ms": 49.102,
+              "stages": {
+                "None": 0,
+                "Read": 0.036,
+                "Cuts": 43.777,
+                "Clip": 60.502,
+                "Split": 0.293,
+                "Arrange": 57.193,
+                "Classify": 20.57,
+                "Components": 15.983
+              }
+            }
+          },
+          {
+            "PK_fix_blends": 2.301,
+            "PK_fix_blends_error": 0,
+            "fixProfile": {
+              "api-ms": 110.311,
+              "elapsed-ms": 110.289,
+              "pairs": 0,
+              "ssi-cells": 0,
+              "root-cells": 158,
+              "roots": 8,
+              "budget-failures": 0,
+              "winding": 18,
+              "bound-requests": 768,
+              "bound-evaluations": 488,
+              "cache-hits": 50,
+              "failure-cache-hits": 0,
+              "bound-ms": 87.426,
+              "stages": {
+                "None": 110.289
+              }
+            },
+            "self_fix_blends": 110.329,
+            "self_fix_blends_error": 0,
+            "PK_boolean": 1.547,
+            "PK_boolean_error": 0,
+            "self_boolean": 201.135,
+            "self_boolean_error": 0,
+            "booleanProfile": {
+              "api-ms": 201.13,
+              "elapsed-ms": 201.087,
+              "pairs": 42,
+              "ssi-cells": 0,
+              "root-cells": 1100,
+              "roots": 38,
+              "budget-failures": 0,
+              "winding": 161,
+              "bound-requests": 3253,
+              "bound-evaluations": 324,
+              "cache-hits": 670,
+              "failure-cache-hits": 0,
+              "bound-ms": 46.441,
+              "stages": {
+                "None": 0,
+                "Read": 0.03,
+                "Cuts": 43.136,
+                "Clip": 50.347,
+                "Split": 0.175,
+                "Arrange": 62.326,
+                "Classify": 28.78,
+                "Components": 16.293
+              }
+            }
+          }
+        ],
+        "nurbs-nurbs": [
+          {
+            "PK_fix_blends": 2.827,
+            "PK_fix_blends_error": 0,
+            "fixProfile": {
+              "api-ms": 1632.764,
+              "elapsed-ms": 1632.725,
+              "pairs": 0,
+              "ssi-cells": 0,
+              "root-cells": 524,
+              "roots": 8,
+              "budget-failures": 0,
+              "winding": 18,
+              "bound-requests": 2850,
+              "bound-evaluations": 1849,
+              "cache-hits": 78,
+              "failure-cache-hits": 0,
+              "bound-ms": 1312.708,
+              "stages": {
+                "None": 1632.725
+              }
+            },
+            "self_fix_blends": 1632.798,
+            "self_fix_blends_error": 0,
+            "PK_boolean": 2.082,
+            "PK_boolean_error": 0,
+            "self_boolean": 4676.976,
+            "self_boolean_error": 0,
+            "booleanProfile": {
+              "api-ms": 4676.969,
+              "elapsed-ms": 4676.913,
+              "pairs": 42,
+              "ssi-cells": 0,
+              "root-cells": 1796,
+              "roots": 30,
+              "budget-failures": 0,
+              "winding": 155,
+              "bound-requests": 13582,
+              "bound-evaluations": 3491,
+              "cache-hits": 2678,
+              "failure-cache-hits": 0,
+              "bound-ms": 2646.482,
+              "stages": {
+                "None": 0,
+                "Read": 0.024,
+                "Cuts": 646.13,
+                "Clip": 2019.158,
+                "Split": 0.174,
+                "Arrange": 986.271,
+                "Classify": 652.517,
+                "Components": 372.639
+              }
+            }
+          },
+          {
+            "PK_fix_blends": 2.818,
+            "PK_fix_blends_error": 0,
+            "fixProfile": {
+              "api-ms": 1576.267,
+              "elapsed-ms": 1576.235,
+              "pairs": 0,
+              "ssi-cells": 0,
+              "root-cells": 524,
+              "roots": 8,
+              "budget-failures": 0,
+              "winding": 18,
+              "bound-requests": 2850,
+              "bound-evaluations": 1849,
+              "cache-hits": 78,
+              "failure-cache-hits": 0,
+              "bound-ms": 1279.321,
+              "stages": {
+                "None": 1576.235
+              }
+            },
+            "self_fix_blends": 1576.295,
+            "self_fix_blends_error": 0,
+            "PK_boolean": 2.196,
+            "PK_boolean_error": 0,
+            "self_boolean": 4688.415,
+            "self_boolean_error": 0,
+            "booleanProfile": {
+              "api-ms": 4688.409,
+              "elapsed-ms": 4688.36,
+              "pairs": 42,
+              "ssi-cells": 0,
+              "root-cells": 1796,
+              "roots": 30,
+              "budget-failures": 0,
+              "winding": 155,
+              "bound-requests": 13582,
+              "bound-evaluations": 3491,
+              "cache-hits": 2678,
+              "failure-cache-hits": 0,
+              "bound-ms": 2629.736,
+              "stages": {
+                "None": 0,
+                "Read": 0.027,
+                "Cuts": 640.087,
+                "Clip": 2013.606,
+                "Split": 0.04,
+                "Arrange": 992.953,
+                "Classify": 664.608,
+                "Components": 377.04
+              }
+            }
+          }
+        ],
+        "concave-nurbs-nurbs": [
+          {
+            "PK_fix_blends": 5.155,
+            "PK_fix_blends_error": 0,
+            "fixProfile": {
+              "api-ms": 6498.954,
+              "elapsed-ms": 6498.926,
+              "pairs": 0,
+              "ssi-cells": 0,
+              "root-cells": 1436,
+              "roots": 8,
+              "budget-failures": 0,
+              "winding": 22,
+              "bound-requests": 15452,
+              "bound-evaluations": 8888,
+              "cache-hits": 584,
+              "failure-cache-hits": 0,
+              "bound-ms": 5697.452,
+              "stages": {
+                "None": 6498.926
+              }
+            },
+            "self_fix_blends": 6498.978,
+            "self_fix_blends_error": 0,
+            "PK_boolean": 1.995,
+            "PK_boolean_error": 0,
+            "self_boolean": 17483.105,
+            "self_boolean_error": 0,
+            "booleanProfile": {
+              "api-ms": 17483.1,
+              "elapsed-ms": 17483.048,
+              "pairs": 54,
+              "ssi-cells": 0,
+              "root-cells": 3270,
+              "roots": 26,
+              "budget-failures": 0,
+              "winding": 205,
+              "bound-requests": 69856,
+              "bound-evaluations": 19712,
+              "cache-hits": 16762,
+              "failure-cache-hits": 0,
+              "bound-ms": 12276.024,
+              "stages": {
+                "None": 0,
+                "Read": 0.023,
+                "Cuts": 1633.736,
+                "Clip": 7203.687,
+                "Split": 0.064,
+                "Arrange": 5778.662,
+                "Classify": 1651.232,
+                "Components": 1215.644
+              }
+            }
+          },
+          {
+            "PK_fix_blends": 3.658,
+            "PK_fix_blends_error": 0,
+            "fixProfile": {
+              "api-ms": 6634.03,
+              "elapsed-ms": 6633.989,
+              "pairs": 0,
+              "ssi-cells": 0,
+              "root-cells": 1436,
+              "roots": 8,
+              "budget-failures": 0,
+              "winding": 22,
+              "bound-requests": 15452,
+              "bound-evaluations": 8888,
+              "cache-hits": 584,
+              "failure-cache-hits": 0,
+              "bound-ms": 5814.505,
+              "stages": {
+                "None": 6633.989
+              }
+            },
+            "self_fix_blends": 6634.1,
+            "self_fix_blends_error": 0,
+            "PK_boolean": 3.119,
+            "PK_boolean_error": 0,
+            "self_boolean": 17425.905,
+            "self_boolean_error": 0,
+            "booleanProfile": {
+              "api-ms": 17425.9,
+              "elapsed-ms": 17425.847,
+              "pairs": 54,
+              "ssi-cells": 0,
+              "root-cells": 3270,
+              "roots": 26,
+              "budget-failures": 0,
+              "winding": 205,
+              "bound-requests": 69856,
+              "bound-evaluations": 19712,
+              "cache-hits": 16762,
+              "failure-cache-hits": 0,
+              "bound-ms": 12278.42,
+              "stages": {
+                "None": 0,
+                "Read": 0.041,
+                "Cuts": 1610.647,
+                "Clip": 7195.646,
+                "Split": 0.064,
+                "Arrange": 5755.269,
+                "Classify": 1645.632,
+                "Components": 1218.547
+              }
+            }
+          }
+        ]
+      },
+      "failures": [],
+      "passes": [
+        "PASS all 8 freeform solid fillet and subsequent cutting cases"
+      ]
+    }
+  }
+}

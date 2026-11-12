@@ -139,6 +139,16 @@ internal static unsafe partial class KernelRuntime
                     var status=RegularSurfaceExtent(slot,out var extent);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
                     var maximum=(new IntervalNumber(extent.XLo,extent.XHi)-point.X)*direction.X+(new IntervalNumber(extent.YLo,extent.YHi)-point.Y)*direction.Y+(new IntervalNumber(extent.ZLo,extent.ZHi)-point.Z)*direction.Z;
                     if(maximum.Upper<0)continue;var upper=Math.Max(1,maximum.Upper+1e-8*Math.Max(1,maximum.Magnitude));
+                    var source=Surfaces[slot];var certifiedBox=false;
+                    if(source.Class==SurfaceClass.BSurface)
+                        certifiedBox=OperationIntersection.HasFinitePositiveSplineHull(GetBSurfaceView(BSurfaceDataStore[source.DataIndex]));
+                    else if(source.Class==SurfaceClass.BlendSurface)
+                    {
+                        var data=BlendedEdgeDataPool[source.DataIndex];
+                        certifiedBox=OperationIntersection.CoversBlendRayDomain(GetNestedBlendProgram(data,source),data.ProgramRoot,
+                            new(source.UMin,source.UMax,source.VMin,source.VMax));
+                    }
+                    if(certifiedBox&&OperationIntersection.RayMissesBox(extent,point,direction,upper))continue;
                     status=IntersectRegularRay(slot,point,direction,upper,roots,out n);if(status!=AlgorithmStatus.Success)return IntersectionError(status);bounded=true;
                 }
                 for(var r=0;r<n;r++)

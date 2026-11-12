@@ -396,7 +396,9 @@ static unsafe int Cut(bool own,int body,double x)
     var started=Stopwatch.GetTimestamp();
     var error=own?KernelRuntime.BodyBoolean(body,1,&tool,(M.PK_BODY_boolean_o_s*)&options,&n,&bodies):PK_BODY_boolean(body,1,&tool,&options,&n,&bodies);
     var webMs=Stopwatch.GetElapsedTime(started).TotalMilliseconds;WebProgressCapture.BooleanAfter(own,error==0?new ReadOnlySpan<int>(bodies,n).ToArray():[],webMs,error,0,null);
-    Console.WriteLine($"TIME {(own?"self":"PK")} BODY_boolean x={x:R} ms={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F3}, error={error}");Check(error,"cut filleted solid");
+    Console.WriteLine($"TIME {(own?"self":"PK")} BODY_boolean x={x:R} ms={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F3}, error={error}");
+    if(own&&ModelingPerformance.Enabled)PrintProfile("BODY_boolean",webMs);
+    Check(error,"cut filleted solid");
     try{Require(n==1,"one cut solid");return bodies[0];}finally{Free(own,bodies);}
 }
 static void PrintProfile(string operation,double apiMs)
