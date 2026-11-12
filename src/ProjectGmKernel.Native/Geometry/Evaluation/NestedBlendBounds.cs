@@ -258,7 +258,7 @@ internal static partial class JointNestedBlendEvaluation
                 var equal=BitConverter.DoubleToInt64Bits(next.Lower)==BitConverter.DoubleToInt64Bits(boxes[i].Lower)&&BitConverter.DoubleToInt64Bits(next.Upper)==BitConverter.DoubleToInt64Bits(boxes[i].Upper);
                 same&=equal;if(i>=3)sameUv&=equal;boxes[i]=next;
             }
-            if(cartesianSpline)ModelingPerformance.SplineContraction(same,sameUv);
+            ModelingPerformance.SplineContraction(same,sameUv,cartesianSpline);
             status=IntervalJacobianWithRecord(program,nodes,boxes[..n],t,intervalJacobian[..(n*n)],variables,equations,fixedCharts,splineCache,ref jacobianRecord,cartesianSpline,substitutedConic);if(status!=AlgorithmStatus.Success)return status;
             if(substitutedConic)ConicBlockPrecondition(inverse[..(n*n)],intervalJacobian[..(n*n)],remainder[..(n*n)]);
             else Precondition(inverse[..(n*n)],intervalJacobian[..(n*n)],n,remainder);
