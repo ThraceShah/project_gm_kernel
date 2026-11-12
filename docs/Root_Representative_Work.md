@@ -1,5 +1,7 @@
 # 原生根代表点的受保护Newton提议
 
+已停止：唯一完整shortedge开发仅观察−1.654%，不足推进。定向通过/完整开发原件保留，不进入基线、不新增suite/family/正式窗/独验。详 `docs/Rejected_Root_Representative_Work.md`。
+
 从固定已接受ab1065e7c8/计算ab0177e/Native90573c1c独立建立，实际AGENTS/两架构逐字核原ab、初始src/tests diff空、private ensure0/ENV_READY。80a9406与294cb5e全文实际fetch读/限定接受；a908已接受但本候选未叠它。ccc/0cc/54ce/271及两ZIP正一次集中重大独验，全部冻结未当基线。未恢复c10/090/9d位置carry/dd/b095等拒实现，不混移动query/norm。
 
 实际读SurfaceIsoPlaneRoots/AnalyticLevelSet及消费者，现有证书IsolateBracket已用interval Newton，不声称原来没有。当前只改无isolation输出的strict sign bracket内代表点选择：第一个仍原midpoint，之后只有当前点的原完整Bound给出有限且非零包含的scalar derivative，才以point Newton计算下一native参数；提议有限、严格在当前(a,b)且不等当前点才使用，否则原midpoint。没有用Newton估计作为根证明、替代原native-v或空间几何，实际点始终由原curve.Bound读取。
