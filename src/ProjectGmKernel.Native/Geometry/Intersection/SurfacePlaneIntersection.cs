@@ -68,7 +68,7 @@ internal static class SurfacePlaneIntersection
             {LastUnresolvedBudget=true;LastUnresolvedBox=pending[count-1];LastUnresolvedDepth=depths[count-1];ModelingPerformance.BudgetFailure();return AlgorithmStatus.NotConverged;}
             var index=--count;var cell=pending[index];var depth=depths[index];var free=-1;var failedBoundary=false;
             var savedNodes=nodeCount;var savedSegments=segmentCount;
-            var status=patch.Bound(cell,bounds);if(status==AlgorithmStatus.NotConverged)goto Subdivide;if(status!=AlgorithmStatus.Success)return status;
+            var status=patch.BoundCell(cell,bounds,out var cellPatch);if(status==AlgorithmStatus.NotConverged)goto Subdivide;if(status!=AlgorithmStatus.Success)return status;
             var distance=Distance(bounds,plane);
             var du=AnalyticLevelSet.Derivative(bounds,plane,3);
             var dv=AnalyticLevelSet.Derivative(bounds,plane,6);
@@ -97,7 +97,7 @@ internal static class SurfacePlaneIntersection
             {
                 var at=axis==0?(end==0?cell.U0:cell.U1):(end==0?cell.V0:cell.V1);
                 var lower=axis==0?cell.V0:cell.U0;var upper=axis==0?cell.V1:cell.U1;
-                var iso=new SurfaceIntersectionPatch(patch,axis==0,at,lower,upper);
+                var iso=new SurfaceIntersectionPatch(cellPatch,axis==0,at,lower,upper);
                 status=iso.Bound(new(lower,upper,0,0),bounds);if(status!=AlgorithmStatus.Success){LastBoundaryFailure=BoundaryFailure.Bound;goto Retry;}
                 if(Distance(bounds,plane).Magnitude==0||!certifiedRoots&&Distance(bounds,plane).Magnitude<=Math.Min(2e-12,tolerance))
                 {
@@ -126,7 +126,7 @@ internal static class SurfacePlaneIntersection
                     status=AlgorithmStatus.NotConverged;LastBoundaryFailure=BoundaryFailure.Order;goto Retry;
                 }
                 var lower=free==0?cell.V0:cell.U0;var upper=free==0?cell.V1:cell.U1;
-                var iso=new SurfaceIntersectionPatch(patch,free==0,at,lower,upper);var nr=0;
+                var iso=new SurfaceIntersectionPatch(cellPatch,free==0,at,lower,upper);var nr=0;
                 status=FindSection(iso,plane,free,at,lower,upper,roots,ref nr,tolerance,strictSeparation,certifiedRoots?isolations:default,sections,ref nextSection);if(status!=AlgorithmStatus.Success||nr>1){LastBoundaryFailure=BoundaryFailure.Transverse;goto Retry;}
                 if(nr==0)continue;
                 status=AddSegment(patch,cell,boundary[i],boundary[i+1],nodes,ref nodeCount,segments,ref segmentCount);if(status!=AlgorithmStatus.Success)return status;
