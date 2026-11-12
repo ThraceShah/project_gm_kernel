@@ -1,0 +1,192 @@
+{
+  "mathematicalControls": [
+    {
+      "kind": "manufactured; no geometry qualification",
+      "mode": "cog-small",
+      "lengthScale": 0.125,
+      "expected": "Verified",
+      "actual": "Verified"
+    },
+    {
+      "kind": "manufactured; no geometry qualification",
+      "mode": "cog-large",
+      "lengthScale": 0.125,
+      "expected": "Different",
+      "actual": "Different"
+    },
+    {
+      "kind": "manufactured; no geometry qualification",
+      "mode": "inertia-small",
+      "lengthScale": 0.125,
+      "expected": "Verified",
+      "actual": "Verified"
+    },
+    {
+      "kind": "manufactured; no geometry qualification",
+      "mode": "inertia-large",
+      "lengthScale": 0.125,
+      "expected": "Different",
+      "actual": "Different"
+    },
+    {
+      "kind": "manufactured; no geometry qualification",
+      "mode": "shared-wide",
+      "lengthScale": 0.125,
+      "expected": "Unresolved",
+      "actual": "Unresolved"
+    },
+    {
+      "kind": "manufactured; no geometry qualification",
+      "mode": "identity",
+      "lengthScale": 0.125,
+      "expected": "Verified",
+      "actual": "Verified"
+    },
+    {
+      "kind": "manufactured; no geometry qualification",
+      "mode": "cog-small",
+      "lengthScale": 1,
+      "expected": "Verified",
+      "actual": "Verified"
+    },
+    {
+      "kind": "manufactured; no geometry qualification",
+      "mode": "cog-large",
+      "lengthScale": 1,
+      "expected": "Different",
+      "actual": "Different"
+    },
+    {
+      "kind": "manufactured; no geometry qualification",
+      "mode": "inertia-small",
+      "lengthScale": 1,
+      "expected": "Verified",
+      "actual": "Verified"
+    },
+    {
+      "kind": "manufactured; no geometry qualification",
+      "mode": "inertia-large",
+      "lengthScale": 1,
+      "expected": "Different",
+      "actual": "Different"
+    },
+    {
+      "kind": "manufactured; no geometry qualification",
+      "mode": "shared-wide",
+      "lengthScale": 1,
+      "expected": "Unresolved",
+      "actual": "Unresolved"
+    },
+    {
+      "kind": "manufactured; no geometry qualification",
+      "mode": "identity",
+      "lengthScale": 1,
+      "expected": "Verified",
+      "actual": "Verified"
+    },
+    {
+      "kind": "manufactured; no geometry qualification",
+      "mode": "cog-small",
+      "lengthScale": 8,
+      "expected": "Verified",
+      "actual": "Verified"
+    },
+    {
+      "kind": "manufactured; no geometry qualification",
+      "mode": "cog-large",
+      "lengthScale": 8,
+      "expected": "Different",
+      "actual": "Different"
+    },
+    {
+      "kind": "manufactured; no geometry qualification",
+      "mode": "inertia-small",
+      "lengthScale": 8,
+      "expected": "Verified",
+      "actual": "Verified"
+    },
+    {
+      "kind": "manufactured; no geometry qualification",
+      "mode": "inertia-large",
+      "lengthScale": 8,
+      "expected": "Different",
+      "actual": "Different"
+    },
+    {
+      "kind": "manufactured; no geometry qualification",
+      "mode": "shared-wide",
+      "lengthScale": 8,
+      "expected": "Unresolved",
+      "actual": "Unresolved"
+    },
+    {
+      "kind": "manufactured; no geometry qualification",
+      "mode": "identity",
+      "lengthScale": 8,
+      "expected": "Verified",
+      "actual": "Verified"
+    },
+    {
+      "mode": "zero-mass",
+      "result": "hard exception; no certification"
+    },
+    {
+      "mode": "scale-crosses-zero",
+      "result": "hard exception; no certification"
+    },
+    {
+      "mode": "nonfinite",
+      "result": "hard exception; no certification"
+    },
+    {
+      "mode": "subnormal",
+      "result": "hard exception; no certification"
+    },
+    {
+      "mode": "overflow",
+      "result": "hard exception; no certification"
+    }
+  ],
+  "actualPkPrecision": 1E-08,
+  "nativeFrameControl": "2x4x6 block; M=48; I=(208,160,80); 45deg Z rotation gives (184,184,80), Ixy=Iyx=24; translated cog=(5,7,6)",
+  "sealedProductControls": [
+    {
+      "gmSha256": "a2be1e06de607199e9cea0f823afbbdd53bd58ff5779ca36425daa3cd1123304",
+      "referenceSha256": "b197d9f449bc782a48fe2188ed773a026b99c6648cf711c1d412406721024c5a",
+      "queries": 48
+    },
+    {
+      "gmSha256": "e984493a6258ddaf9ef5abbb7534debc02c522e318779cd95d661526bb0eaa31",
+      "referenceSha256": "217ab10208634197e8f70f6bbf4722e235dc7552a6530103aa20c582b15c35c8",
+      "queries": 48
+    },
+    {
+      "gmSha256": "41d9c90e0444d65b84b7a65bd690abf4d3dc48082f64a355eaa34a4bb8e57da4",
+      "referenceSha256": "01240ace770db21ecd810bf9526cf55e8e04eacdfb22f5f80c365547c8f3cb7a",
+      "queries": 48
+    },
+    {
+      "gmSha256": "4051a9211d3c8c738561b3feca1da2e89449c06a930c67c7b1f1e6484ef42ca4",
+      "referenceSha256": "1f3c705d5075db35063bdbbeea91b4342406e05d7e7d979eaa306d9d40529c70",
+      "queries": 48
+    },
+    {
+      "gmSha256": "8eb4d828b38883b0cd0fd79819737bba42f865143a0c3e8c6b016276a5853683",
+      "referenceSha256": "d1832330d20df75f4de60bc31920dcb1762a26c2a4505ea8f1f9b339cab6d7a3",
+      "queries": 48
+    }
+  ],
+  "checks": 5681,
+  "queries": 240,
+  "nativeMvid": "5fa6dd91-71f5-4f98-ba53-8e1bc28431dc",
+  "nativeDllSha256": "6a628defcda53be0159e17e984bf3482d6fb3a4d6780ac741e685a76ff032243",
+  "scriptSha256": "735cbb072f2d9bec4ec416bc522ae63b33f7ea53beabb6703b44ad1bc847ef87",
+  "massHelperSha256": "7e5863f623ef5783410ab621ec37cf451b46ce5e2aae62d704fba62bdb302d15",
+  "actualMappedPkLibraries": [
+    {
+      "module": "libpskernel.so",
+      "bytes": 91444112,
+      "sha256": "fc9ba50b40d7e9ee05e02f28c2a29e6ab75b9c91e6b6ba5ea588cf54149b9c52"
+    }
+  ]
+}

@@ -1,0 +1,153 @@
+{
+  "calculationCommit": "ab597e8a24b2ef23753507c8ca3e43d12edcc650",
+  "deliveryCommit": "f633b51db703df308cf4ac194e3c2b1661398d4d",
+  "reviewScope": "native queries, finite precision evidence and physical invariant mass normalization; no UI review",
+  "sourceAccepted": true,
+  "nativeProductScopeAccepted": true,
+  "normalizationContractAccepted": true,
+  "newAuthorBlockingDefectFound": false,
+  "all510FourWayAgreementProven": false,
+  "generalSurfaceMassTargetProven": false,
+  "historicalUnrecordedSelf495Reconstructed": false,
+  "mainIntegrated": false,
+  "published": false,
+  "nativeAotExecuted": false,
+  "globalProcessKillExecuted": false,
+  "envEnsureResult": "ENV_READY profile=native Linux x64 PK 38.0.150; PKToy d820719b6d8510d623972ab9d8efc65edbc312f9",
+  "policyBodySha256": "55f16ce0cf53bbb37ddd91920445f32468eb8e2b5b6e28f6fb90856810afcca1",
+  "policyAutoloadVerified": false,
+  "executions": [
+    {
+      "name": "evidence-initial",
+      "rawExitFromExecutor": 134,
+      "kind": "review-tool XYZ-column error"
+    },
+    {
+      "name": "evidence-v2",
+      "rawExitFromExecutor": 0,
+      "kind": "source and historical-byte audit"
+    },
+    {
+      "name": "evidence-v3",
+      "rawExitFromExecutor": 0,
+      "kind": "final complete CSV and original-property audit"
+    },
+    {
+      "name": "math-native-v1",
+      "rawExitFromExecutor": 0,
+      "kind": "initial math/frame/sealed-query controls"
+    },
+    {
+      "name": "math-native-final",
+      "rawExitFromExecutor": 134,
+      "kind": "review-tool redundant native carrier deletion"
+    },
+    {
+      "name": "math-native-final2",
+      "rawExitFromExecutor": 0,
+      "kind": "final math/frame/negative/sealed-query controls"
+    },
+    {
+      "name": "six-tests",
+      "rawExitFromExecutor": 0,
+      "kind": "six existing new regressions; no complete suite replay"
+    },
+    {
+      "name": "independent-fixed20",
+      "rawExitFromExecutor": 0,
+      "kind": "original 20 XYZ / original five product bytes; four actual API columns"
+    }
+  ],
+  "snapshots": [
+    {
+      "source": "temp_docs/native-query-independent/evidence-v3/receipt.json",
+      "path": "docs/query-numerics-independent/evidence-receipt.json",
+      "bytes": 3681,
+      "sha256": "f3d400b102756ebe92760123944839dc8db7bcc5f7d2c224846cd058babf341e"
+    },
+    {
+      "source": "temp_docs/native-query-independent/math-native-final2/receipt.json",
+      "path": "docs/query-numerics-independent/math-native-receipt.json",
+      "bytes": 5580,
+      "sha256": "e897ad5e4e5566723e9c7f82a4d74458bc720365bdef0844fabbace4a4dabc93"
+    },
+    {
+      "source": "temp_docs/native-query-replay/independent-fixed20/results.json",
+      "path": "docs/query-numerics-independent/fixed20-receipt.json",
+      "bytes": 17400,
+      "sha256": "72dfadb8ceb131933f77b0eed5f4ff54aa2912dafa1e8be58fb869c4fe5b79a3"
+    }
+  ],
+  "inputsAndPrivateLogs": [
+    {
+      "path": "docs/Native_Query_Numerics_Independent_Review.md",
+      "bytes": 16480,
+      "sha256": "a4b3eb88dcb58ed8b9f98ce9faeb053363ad8baff7d0e109b3ff06313af4a329"
+    },
+    {
+      "path": "scripts/ReviewNativeQueryEvidence.cs",
+      "bytes": 11404,
+      "sha256": "bb24cfea83f4e15159dfdddc9c3c2ef69413055bf9b5e9d47e7e576f229dd068"
+    },
+    {
+      "path": "scripts/ReviewNativeQueryMath.cs",
+      "bytes": 11968,
+      "sha256": "735cbb072f2d9bec4ec416bc522ae63b33f7ea53beabb6703b44ad1bc847ef87"
+    },
+    {
+      "path": "docs/query-numerics-closure/results.json",
+      "bytes": 5247186,
+      "sha256": "aed7c9787a03bbb798f7a7be0f9f3b832400c15956af205a7b55662e4866bd60"
+    },
+    {
+      "path": "docs/query-numerics-closure/source-manifest.json",
+      "bytes": 125112,
+      "sha256": "b499fc26710998df9e3f50b36db913d40c3c0243eb31e89a7c7fd91b6b0d4d16"
+    },
+    {
+      "path": "docs/query-numerics-closure/artifact-manifest.json",
+      "bytes": 59649,
+      "sha256": "f50917391540c926e7b1f3fc628122a2946c6222adcd907e12355cb8c6914488"
+    },
+    {
+      "path": "temp_docs/native-query-independent/evidence-v2.log",
+      "bytes": 634,
+      "sha256": "140a8e58884c89ce3522d9f8f451faa001f0e687659b1a7c75a6b2a73d138753"
+    },
+    {
+      "path": "temp_docs/native-query-independent/evidence-v3.log",
+      "bytes": 634,
+      "sha256": "a6825d91c3156bb4851965b580a8e1fc564b767961478624d53a38584179c670"
+    },
+    {
+      "path": "temp_docs/native-query-independent/math-native-v1.log",
+      "bytes": 439413,
+      "sha256": "55eb9c19dde15f6e17dbc7af211b178113df0caea50a375e42b15710596a1a6e"
+    },
+    {
+      "path": "temp_docs/native-query-independent/math-native-final.log",
+      "bytes": 438716,
+      "sha256": "f0bd0394d1afc069724c2b03ff99c7f671d8298faf8e2ae13e947ac5759841bb"
+    },
+    {
+      "path": "temp_docs/native-query-independent/math-native-final2.log",
+      "bytes": 438710,
+      "sha256": "6b2f57e8934e07658703c0d669511185fdcfb3c5a3b659549653379a3d5834a5"
+    },
+    {
+      "path": "temp_docs/native-query-independent/six-tests.log",
+      "bytes": 13381,
+      "sha256": "3c2157741e2e94836526114714b2aea64630fb5588181f3c73e5f2a8e8ee420d"
+    },
+    {
+      "path": "temp_docs/native-query-independent/six-tests/independent-six.trx",
+      "bytes": 10439,
+      "sha256": "e2837cf35ddf4179b1cb7dfdedc2537bb4653253cf61b234286dff926ab62651"
+    },
+    {
+      "path": "temp_docs/native-query-independent/fixed20.log",
+      "bytes": 6949,
+      "sha256": "0846483ab3364d73f8a7d14416e2a973352c5acd5d945b327c0f507135591854"
+    }
+  ]
+}

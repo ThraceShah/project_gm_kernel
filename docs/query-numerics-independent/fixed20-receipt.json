@@ -1,0 +1,791 @@
+{
+  "originalLogPath": "temp_docs/native-query-independent/original-material.log",
+  "originalLogBytes": 34977,
+  "originalLogSha256": "898878a22c3812a66b331fdc68e8d153ceb7dbde6e1ab8c02da1008ef9ce321c",
+  "scriptSha256": "9e9713bdd25d312f8a38596d9d2971d2b85389000bd0c308b61a42b41598ab84",
+  "nativeDllSha256": "6a628defcda53be0159e17e984bf3482d6fb3a4d6780ac741e685a76ff032243",
+  "nativeMvid": "5fa6dd91-71f5-4f98-ba53-8e1bc28431dc",
+  "nativePdbSha256": "05c502e97b894ea8e1505941e60aa60bee29e51dcd7e107379c5e400980c161e",
+  "actualMappedParasolidLibraries": [
+    {
+      "module": "libpskernel.so",
+      "path": "../../../../code/orca-worker/cache/gm-private-env/linux-x86_64-pk38.0/third_party/parasolid/lib/linux-x64/libpskernel.so",
+      "bytes": 91444112,
+      "sha256": "fc9ba50b40d7e9ee05e02f28c2a29e6ab75b9c91e6b6ba5ea588cf54149b9c52"
+    }
+  ],
+  "sources": [
+    {
+      "path": "temp_docs/native-query-independent/math-native-final2/cylinder-rim-fillet-managed.x_t",
+      "bytes": 1170,
+      "sha256": "a2be1e06de607199e9cea0f823afbbdd53bd58ff5779ca36425daa3cd1123304"
+    },
+    {
+      "path": "temp_docs/native-query-independent/math-native-final2/cylinder-rim-fillet-reference.x_t",
+      "bytes": 1097,
+      "sha256": "b197d9f449bc782a48fe2188ed773a026b99c6648cf711c1d412406721024c5a"
+    },
+    {
+      "path": "temp_docs/native-query-independent/math-native-final2/cylinder-both-rim-fillet-managed.x_t",
+      "bytes": 1516,
+      "sha256": "e984493a6258ddaf9ef5abbb7534debc02c522e318779cd95d661526bb0eaa31"
+    },
+    {
+      "path": "temp_docs/native-query-independent/math-native-final2/cylinder-both-rim-fillet-reference.x_t",
+      "bytes": 1372,
+      "sha256": "217ab10208634197e8f70f6bbf4722e235dc7552a6530103aa20c582b15c35c8"
+    },
+    {
+      "path": "temp_docs/native-query-independent/math-native-final2/cylinder-rim-chamfer-managed.x_t",
+      "bytes": 1172,
+      "sha256": "41d9c90e0444d65b84b7a65bd690abf4d3dc48082f64a355eaa34a4bb8e57da4"
+    },
+    {
+      "path": "temp_docs/native-query-independent/math-native-final2/cylinder-rim-chamfer-reference.x_t",
+      "bytes": 1372,
+      "sha256": "01240ace770db21ecd810bf9526cf55e8e04eacdfb22f5f80c365547c8f3cb7a"
+    },
+    {
+      "path": "temp_docs/native-query-independent/math-native-final2/cylinder-both-rim-chamfer-managed.x_t",
+      "bytes": 1524,
+      "sha256": "4051a9211d3c8c738561b3feca1da2e89449c06a930c67c7b1f1e6484ef42ca4"
+    },
+    {
+      "path": "temp_docs/native-query-independent/math-native-final2/cylinder-both-rim-chamfer-reference.x_t",
+      "bytes": 1737,
+      "sha256": "1f3c705d5075db35063bdbbeea91b4342406e05d7e7d979eaa306d9d40529c70"
+    },
+    {
+      "path": "temp_docs/native-query-independent/math-native-final2/cylinder-unequal-chamfer-managed.x_t",
+      "bytes": 1172,
+      "sha256": "8eb4d828b38883b0cd0fd79819737bba42f865143a0c3e8c6b016276a5853683"
+    },
+    {
+      "path": "temp_docs/native-query-independent/math-native-final2/cylinder-unequal-chamfer-reference.x_t",
+      "bytes": 1375,
+      "sha256": "d1832330d20df75f4de60bc31920dcb1762a26c2a4505ea8f1f9b339cab6d7a3"
+    }
+  ],
+  "points": [
+    {
+      "label": "cylinder-rim-fillet",
+      "x": 0.342424497432269,
+      "y": 0.1706241890659661,
+      "z": 1E-05,
+      "originalGmError": 5000,
+      "originalGmEnclosure": 5704,
+      "originalPkError": 0,
+      "originalPkEnclosure": 5701,
+      "order": "PK_reference, PK_reference_roundtrip, GM_fixed_input_reload, PK_GM_fresh",
+      "enclosures": [
+        5701,
+        5701,
+        5701,
+        5701
+      ],
+      "errors": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "topology": [
+        81,
+        112,
+        10,
+        115
+      ],
+      "topologyClasses": [
+        5011,
+        5011,
+        5011,
+        5011
+      ],
+      "agreement": "Verified"
+    },
+    {
+      "label": "cylinder-rim-fillet",
+      "x": 0.342424497432269,
+      "y": 0.1706241890659661,
+      "z": -1E-05,
+      "originalGmError": 5000,
+      "originalGmEnclosure": 5704,
+      "originalPkError": 0,
+      "originalPkEnclosure": 5702,
+      "order": "PK_reference, PK_reference_roundtrip, GM_fixed_input_reload, PK_GM_fresh",
+      "enclosures": [
+        5702,
+        5702,
+        5702,
+        5702
+      ],
+      "errors": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "topology": [
+        55,
+        86,
+        9,
+        114
+      ],
+      "topologyClasses": [
+        5011,
+        5011,
+        5011,
+        5011
+      ],
+      "agreement": "Verified"
+    },
+    {
+      "label": "cylinder-rim-fillet",
+      "x": -0.3951051893449242,
+      "y": -0.19687406430688337,
+      "z": 5.99999,
+      "originalGmError": 5000,
+      "originalGmEnclosure": 5704,
+      "originalPkError": 0,
+      "originalPkEnclosure": 5701,
+      "order": "PK_reference, PK_reference_roundtrip, GM_fixed_input_reload, PK_GM_fresh",
+      "enclosures": [
+        5701,
+        5701,
+        5701,
+        5701
+      ],
+      "errors": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "topology": [
+        81,
+        112,
+        10,
+        115
+      ],
+      "topologyClasses": [
+        5011,
+        5011,
+        5011,
+        5011
+      ],
+      "agreement": "Verified"
+    },
+    {
+      "label": "cylinder-rim-fillet",
+      "x": -0.3951051893449242,
+      "y": -0.19687406430688337,
+      "z": 6.00001,
+      "originalGmError": 5000,
+      "originalGmEnclosure": 5704,
+      "originalPkError": 0,
+      "originalPkEnclosure": 5702,
+      "order": "PK_reference, PK_reference_roundtrip, GM_fixed_input_reload, PK_GM_fresh",
+      "enclosures": [
+        5702,
+        5702,
+        5702,
+        5702
+      ],
+      "errors": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "topology": [
+        55,
+        86,
+        9,
+        114
+      ],
+      "topologyClasses": [
+        5011,
+        5011,
+        5011,
+        5011
+      ],
+      "agreement": "Verified"
+    },
+    {
+      "label": "cylinder-both-rim-fillet",
+      "x": 0.342424497432269,
+      "y": 0.1706241890659661,
+      "z": 1E-05,
+      "originalGmError": 5000,
+      "originalGmEnclosure": 5704,
+      "originalPkError": 0,
+      "originalPkEnclosure": 5701,
+      "order": "PK_reference, PK_reference_roundtrip, GM_fixed_input_reload, PK_GM_fresh",
+      "enclosures": [
+        5701,
+        5701,
+        5701,
+        5701
+      ],
+      "errors": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "topology": [
+        182,
+        221,
+        43,
+        224
+      ],
+      "topologyClasses": [
+        5011,
+        5011,
+        5011,
+        5011
+      ],
+      "agreement": "Verified"
+    },
+    {
+      "label": "cylinder-both-rim-fillet",
+      "x": 0.342424497432269,
+      "y": 0.1706241890659661,
+      "z": -1E-05,
+      "originalGmError": 5000,
+      "originalGmEnclosure": 5704,
+      "originalPkError": 0,
+      "originalPkEnclosure": 5702,
+      "order": "PK_reference, PK_reference_roundtrip, GM_fixed_input_reload, PK_GM_fresh",
+      "enclosures": [
+        5702,
+        5702,
+        5702,
+        5702
+      ],
+      "errors": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "topology": [
+        148,
+        187,
+        42,
+        223
+      ],
+      "topologyClasses": [
+        5011,
+        5011,
+        5011,
+        5011
+      ],
+      "agreement": "Verified"
+    },
+    {
+      "label": "cylinder-both-rim-fillet",
+      "x": -0.34242449743226855,
+      "y": -0.17062418906596588,
+      "z": 5.99999,
+      "originalGmError": 5000,
+      "originalGmEnclosure": 5704,
+      "originalPkError": 0,
+      "originalPkEnclosure": 5701,
+      "order": "PK_reference, PK_reference_roundtrip, GM_fixed_input_reload, PK_GM_fresh",
+      "enclosures": [
+        5701,
+        5701,
+        5701,
+        5701
+      ],
+      "errors": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "topology": [
+        182,
+        221,
+        43,
+        224
+      ],
+      "topologyClasses": [
+        5011,
+        5011,
+        5011,
+        5011
+      ],
+      "agreement": "Verified"
+    },
+    {
+      "label": "cylinder-both-rim-fillet",
+      "x": -0.34242449743226855,
+      "y": -0.17062418906596588,
+      "z": 6.00001,
+      "originalGmError": 5000,
+      "originalGmEnclosure": 5704,
+      "originalPkError": 0,
+      "originalPkEnclosure": 5702,
+      "order": "PK_reference, PK_reference_roundtrip, GM_fixed_input_reload, PK_GM_fresh",
+      "enclosures": [
+        5702,
+        5702,
+        5702,
+        5702
+      ],
+      "errors": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "topology": [
+        148,
+        187,
+        42,
+        223
+      ],
+      "topologyClasses": [
+        5011,
+        5011,
+        5011,
+        5011
+      ],
+      "agreement": "Verified"
+    },
+    {
+      "label": "cylinder-rim-chamfer",
+      "x": 0.342424497432269,
+      "y": 0.1706241890659661,
+      "z": 1E-05,
+      "originalGmError": 5000,
+      "originalGmEnclosure": 5704,
+      "originalPkError": 0,
+      "originalPkEnclosure": 5701,
+      "order": "PK_reference, PK_reference_roundtrip, GM_fixed_input_reload, PK_GM_fresh",
+      "enclosures": [
+        5701,
+        5701,
+        5701,
+        5701
+      ],
+      "errors": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "topology": [
+        292,
+        326,
+        80,
+        331
+      ],
+      "topologyClasses": [
+        5011,
+        5011,
+        5011,
+        5011
+      ],
+      "agreement": "Verified"
+    },
+    {
+      "label": "cylinder-rim-chamfer",
+      "x": 0.342424497432269,
+      "y": 0.1706241890659661,
+      "z": -1E-05,
+      "originalGmError": 5000,
+      "originalGmEnclosure": 5704,
+      "originalPkError": 0,
+      "originalPkEnclosure": 5702,
+      "order": "PK_reference, PK_reference_roundtrip, GM_fixed_input_reload, PK_GM_fresh",
+      "enclosures": [
+        5702,
+        5702,
+        5702,
+        5702
+      ],
+      "errors": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "topology": [
+        266,
+        300,
+        79,
+        330
+      ],
+      "topologyClasses": [
+        5011,
+        5011,
+        5011,
+        5011
+      ],
+      "agreement": "Verified"
+    },
+    {
+      "label": "cylinder-rim-chamfer",
+      "x": -0.3951051893449242,
+      "y": -0.19687406430688337,
+      "z": 5.99999,
+      "originalGmError": 5000,
+      "originalGmEnclosure": 5704,
+      "originalPkError": 0,
+      "originalPkEnclosure": 5701,
+      "order": "PK_reference, PK_reference_roundtrip, GM_fixed_input_reload, PK_GM_fresh",
+      "enclosures": [
+        5701,
+        5701,
+        5701,
+        5701
+      ],
+      "errors": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "topology": [
+        292,
+        326,
+        80,
+        331
+      ],
+      "topologyClasses": [
+        5011,
+        5011,
+        5011,
+        5011
+      ],
+      "agreement": "Verified"
+    },
+    {
+      "label": "cylinder-rim-chamfer",
+      "x": -0.3951051893449242,
+      "y": -0.19687406430688337,
+      "z": 6.00001,
+      "originalGmError": 5000,
+      "originalGmEnclosure": 5704,
+      "originalPkError": 0,
+      "originalPkEnclosure": 5702,
+      "order": "PK_reference, PK_reference_roundtrip, GM_fixed_input_reload, PK_GM_fresh",
+      "enclosures": [
+        5702,
+        5702,
+        5702,
+        5702
+      ],
+      "errors": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "topology": [
+        266,
+        300,
+        79,
+        330
+      ],
+      "topologyClasses": [
+        5011,
+        5011,
+        5011,
+        5011
+      ],
+      "agreement": "Verified"
+    },
+    {
+      "label": "cylinder-both-rim-chamfer",
+      "x": 0.342424497432269,
+      "y": 0.1706241890659661,
+      "z": 1E-05,
+      "originalGmError": 5000,
+      "originalGmEnclosure": 5704,
+      "originalPkError": 0,
+      "originalPkEnclosure": 5701,
+      "order": "PK_reference, PK_reference_roundtrip, GM_fixed_input_reload, PK_GM_fresh",
+      "enclosures": [
+        5701,
+        5701,
+        5701,
+        5701
+      ],
+      "errors": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "topology": [
+        402,
+        445,
+        113,
+        448
+      ],
+      "topologyClasses": [
+        5011,
+        5011,
+        5011,
+        5011
+      ],
+      "agreement": "Verified"
+    },
+    {
+      "label": "cylinder-both-rim-chamfer",
+      "x": 0.342424497432269,
+      "y": 0.1706241890659661,
+      "z": -1E-05,
+      "originalGmError": 5000,
+      "originalGmEnclosure": 5704,
+      "originalPkError": 0,
+      "originalPkEnclosure": 5702,
+      "order": "PK_reference, PK_reference_roundtrip, GM_fixed_input_reload, PK_GM_fresh",
+      "enclosures": [
+        5702,
+        5702,
+        5702,
+        5702
+      ],
+      "errors": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "topology": [
+        365,
+        408,
+        112,
+        447
+      ],
+      "topologyClasses": [
+        5011,
+        5011,
+        5011,
+        5011
+      ],
+      "agreement": "Verified"
+    },
+    {
+      "label": "cylinder-both-rim-chamfer",
+      "x": -0.34242449743226855,
+      "y": -0.17062418906596588,
+      "z": 5.99999,
+      "originalGmError": 5000,
+      "originalGmEnclosure": 5704,
+      "originalPkError": 0,
+      "originalPkEnclosure": 5701,
+      "order": "PK_reference, PK_reference_roundtrip, GM_fixed_input_reload, PK_GM_fresh",
+      "enclosures": [
+        5701,
+        5701,
+        5701,
+        5701
+      ],
+      "errors": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "topology": [
+        402,
+        445,
+        113,
+        448
+      ],
+      "topologyClasses": [
+        5011,
+        5011,
+        5011,
+        5011
+      ],
+      "agreement": "Verified"
+    },
+    {
+      "label": "cylinder-both-rim-chamfer",
+      "x": -0.34242449743226855,
+      "y": -0.17062418906596588,
+      "z": 6.00001,
+      "originalGmError": 5000,
+      "originalGmEnclosure": 5704,
+      "originalPkError": 0,
+      "originalPkEnclosure": 5702,
+      "order": "PK_reference, PK_reference_roundtrip, GM_fixed_input_reload, PK_GM_fresh",
+      "enclosures": [
+        5702,
+        5702,
+        5702,
+        5702
+      ],
+      "errors": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "topology": [
+        365,
+        408,
+        112,
+        447
+      ],
+      "topologyClasses": [
+        5011,
+        5011,
+        5011,
+        5011
+      ],
+      "agreement": "Verified"
+    },
+    {
+      "label": "cylinder-unequal-chamfer",
+      "x": 0.3555946704104329,
+      "y": 0.17718665787619536,
+      "z": 1E-05,
+      "originalGmError": 5000,
+      "originalGmEnclosure": 5704,
+      "originalPkError": 0,
+      "originalPkEnclosure": 5701,
+      "order": "PK_reference, PK_reference_roundtrip, GM_fixed_input_reload, PK_GM_fresh",
+      "enclosures": [
+        5701,
+        5701,
+        5701,
+        5701
+      ],
+      "errors": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "topology": [
+        516,
+        550,
+        150,
+        555
+      ],
+      "topologyClasses": [
+        5011,
+        5011,
+        5011,
+        5011
+      ],
+      "agreement": "Verified"
+    },
+    {
+      "label": "cylinder-unequal-chamfer",
+      "x": 0.3555946704104329,
+      "y": 0.17718665787619536,
+      "z": -1E-05,
+      "originalGmError": 5000,
+      "originalGmEnclosure": 5704,
+      "originalPkError": 0,
+      "originalPkEnclosure": 5702,
+      "order": "PK_reference, PK_reference_roundtrip, GM_fixed_input_reload, PK_GM_fresh",
+      "enclosures": [
+        5702,
+        5702,
+        5702,
+        5702
+      ],
+      "errors": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "topology": [
+        490,
+        524,
+        149,
+        554
+      ],
+      "topologyClasses": [
+        5011,
+        5011,
+        5011,
+        5011
+      ],
+      "agreement": "Verified"
+    },
+    {
+      "label": "cylinder-unequal-chamfer",
+      "x": -0.3951051893449242,
+      "y": -0.19687406430688337,
+      "z": 5.99999,
+      "originalGmError": 5000,
+      "originalGmEnclosure": 5704,
+      "originalPkError": 0,
+      "originalPkEnclosure": 5701,
+      "order": "PK_reference, PK_reference_roundtrip, GM_fixed_input_reload, PK_GM_fresh",
+      "enclosures": [
+        5701,
+        5701,
+        5701,
+        5701
+      ],
+      "errors": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "topology": [
+        516,
+        550,
+        150,
+        555
+      ],
+      "topologyClasses": [
+        5011,
+        5011,
+        5011,
+        5011
+      ],
+      "agreement": "Verified"
+    },
+    {
+      "label": "cylinder-unequal-chamfer",
+      "x": -0.3951051893449242,
+      "y": -0.19687406430688337,
+      "z": 6.00001,
+      "originalGmError": 5000,
+      "originalGmEnclosure": 5704,
+      "originalPkError": 0,
+      "originalPkEnclosure": 5702,
+      "order": "PK_reference, PK_reference_roundtrip, GM_fixed_input_reload, PK_GM_fresh",
+      "enclosures": [
+        5702,
+        5702,
+        5702,
+        5702
+      ],
+      "errors": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "topology": [
+        490,
+        524,
+        149,
+        554
+      ],
+      "topologyClasses": [
+        5011,
+        5011,
+        5011,
+        5011
+      ],
+      "agreement": "Verified"
+    }
+  ]
+}

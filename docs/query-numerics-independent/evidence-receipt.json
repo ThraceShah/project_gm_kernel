@@ -1,0 +1,161 @@
+{
+  "artifactsVerified": 279,
+  "fixedGitSourcesVerified": 698,
+  "binarySourceBindings": [
+    {
+      "role": "final-axial-kernel",
+      "documentsVerified": 335,
+      "mvid": "e5e6aeff-d2b6-480d-aaee-2a1cb8815b27"
+    },
+    {
+      "role": "final-axial-oracle",
+      "documentsVerified": 6,
+      "mvid": "d5aa8dfe-0959-4a1e-ab98-3d4f13ef7345"
+    },
+    {
+      "role": "final-self-kernel",
+      "documentsVerified": 335,
+      "mvid": "e5e6aeff-d2b6-480d-aaee-2a1cb8815b27"
+    },
+    {
+      "role": "final-self-oracle",
+      "documentsVerified": 6,
+      "mvid": "43491e7a-b20d-4c68-87bb-6ce008a6698c"
+    },
+    {
+      "role": "final-import-kernel",
+      "documentsVerified": 335,
+      "mvid": "e5e6aeff-d2b6-480d-aaee-2a1cb8815b27"
+    },
+    {
+      "role": "final-import-oracle",
+      "documentsVerified": 6,
+      "mvid": "43491e7a-b20d-4c68-87bb-6ce008a6698c"
+    },
+    {
+      "role": "final-contact-kernel",
+      "documentsVerified": 335,
+      "mvid": "e5e6aeff-d2b6-480d-aaee-2a1cb8815b27"
+    },
+    {
+      "role": "final-contact-oracle",
+      "documentsVerified": 6,
+      "mvid": "565189b2-4b6f-499e-a93e-71783784161f"
+    },
+    {
+      "role": "final-negative-kernel",
+      "documentsVerified": 335,
+      "mvid": "e5e6aeff-d2b6-480d-aaee-2a1cb8815b27"
+    },
+    {
+      "role": "final-negative-oracle",
+      "documentsVerified": 6,
+      "mvid": "3f671a31-fa81-4e82-8a88-43ccfab5980c"
+    },
+    {
+      "role": "managed-suite-ProjectGmKernel.Native",
+      "documentsVerified": 335,
+      "mvid": "943f36a3-b0b0-450e-ba38-c9e9f8754e46"
+    },
+    {
+      "role": "managed-suite-KernelTests",
+      "documentsVerified": 166,
+      "mvid": "bc32cbee-7ebb-4f5f-9124-9a3e4af200d0"
+    }
+  ],
+  "originalExecutions": [
+    {
+      "name": "final-axial",
+      "rawExit": 0
+    },
+    {
+      "name": "final-self",
+      "rawExit": 2
+    },
+    {
+      "name": "final-import",
+      "rawExit": 2
+    },
+    {
+      "name": "final-contact",
+      "rawExit": 2
+    },
+    {
+      "name": "final-fixed20",
+      "rawExit": 0
+    },
+    {
+      "name": "final-negative",
+      "rawExit": 0
+    },
+    {
+      "name": "final-self-direct",
+      "rawExit": 2
+    },
+    {
+      "name": "final-import-direct",
+      "rawExit": 2
+    },
+    {
+      "name": "final-native-mass",
+      "rawExit": 2
+    },
+    {
+      "name": "final-suite",
+      "rawExit": 0
+    },
+    {
+      "name": "mass-review-final",
+      "rawExit": 0
+    }
+  ],
+  "fixed510": [
+    {
+      "run": "closure-final-self-direct",
+      "rowsVerified": 510,
+      "finiteWitnesses": 9,
+      "derivedControls": 30,
+      "unresolved": 15
+    },
+    {
+      "run": "closure-final-import-direct",
+      "rowsVerified": 510,
+      "finiteWitnesses": 9,
+      "derivedControls": 32,
+      "unresolved": 16
+    },
+    {
+      "run": "closure-final-self",
+      "rowsVerified": 510,
+      "finiteWitnesses": 9,
+      "derivedControls": 30,
+      "unresolved": 15
+    },
+    {
+      "run": "closure-final-import",
+      "rowsVerified": 510,
+      "finiteWitnesses": 9,
+      "derivedControls": 32,
+      "unresolved": 16
+    }
+  ],
+  "jointReportCount": 72,
+  "jointComponents": 1080,
+  "jointTransitions": {
+    "Unresolved-\u003EUnresolved": 540,
+    "Verified-\u003EVerified": 348,
+    "Verified-\u003EUnresolved": 48,
+    "Unresolved-\u003EVerified": 144
+  },
+  "jointCohorts": {
+    "main.before.Unresolved": 588,
+    "main.after.Unresolved": 552,
+    "main.before.Verified": 312,
+    "main.after.Verified": 348,
+    "roundtrip.before.Verified": 84,
+    "roundtrip.after.Verified": 144,
+    "roundtrip.before.Unresolved": 96,
+    "roundtrip.after.Unresolved": 36
+  },
+  "checks": 46915
+}
