@@ -38,12 +38,43 @@ void Note(string s){findings.Add((JsonNode)new JsonObject{{"verdict","note"},{"d
     return (stdout,p.ExitCode);
 }
 string WriteEvents(string name,JsonArray events){var p=Path.Combine(tmpDir,name+".events.json");File.WriteAllText(p,events.ToJsonString());return p;}
-JsonObject CaseUpdate(string catalogId,string dimension,string status,string evidence,string utc,string note,string? host=null,string? commit=null,string? currentVersion=null)
+// Fixed-fixture builder (R2 contract): every case-update carries the real
+// catalog identity (registry parametersDefinition + source) and a complete
+// lastVerified built from the row's real evidence unless overridden. This is
+// the corrected test input; the producer correctly rejects anything less.
+var committedRows=JsonNode.Parse(File.ReadAllText(Path.Combine("web","data","project-overview.json")))!.AsObject()["catalog"]!.AsArray().OfType<JsonObject>().ToDictionary(c=>c["id"]!.GetValue<string>(),StringComparer.Ordinal);
+JsonObject CaseUpdate(string catalogId,string dimension,string status,string evidence,string utc,string note,string? host=null,string? commit=null,string? currentVersion=null,JsonNode? parametersOverride=null,bool omitIdentity=false,bool emptyIdentity=false)
 {
+    committedRows.TryGetValue(catalogId,out var row);
+    var realLv=row?["dimensions"]?[dimension]?["lastVerified"] ?? new JsonObject{{"commit","audit0000"},{"tree","audit"},{"host","audit-host"},{"exit","audit"},{"evidence","x"}};
+    // real per-suite execution identity (actual project commits) for rows whose
+    // cells carry no real commit yet (unverified first-evidence fixtures)
+    var suiteReal=new Dictionary<string,(string commit,string tree)>(StringComparer.Ordinal)
+    {
+        ["local-blend"]=("60be7216d646a296d7fd2d0b30b5f336a46a6a66","Native 60be"),
+        ["regular-curved"]=("4b2405e3945929c5bb93677a68b0ee79e430b2f3","Native 133f56ac"),
+        ["mixed-analytic"]=("4b2405e3945929c5bb93677a68b0ee79e430b2f3","Native 133f56ac"),
+        ["short-edge"]=("f9c59201c0b9c5d103dee45124e3f43ca59a0921","Native f9"),
+    };
+    var defCommit=commit??realLv["commit"]!.GetValue<string>();
+    var defTree=realLv["tree"]!.GetValue<string>();
+    if(!System.Text.RegularExpressions.Regex.IsMatch(defCommit,"^[0-9a-f]{7,40}$")&&row!=null)
+    {
+        var sr=suiteReal.GetValueOrDefault(row["suite"]!.GetValue<string>(),("4b2405e3945929c5bb93677a68b0ee79e430b2f3","Native 133f56ac"));
+        defCommit=sr.Item1;defTree=sr.Item2;
+    }
     var o=new JsonObject{{"kind","case-update"},{"catalogId",catalogId},{"dimension",dimension},{"status",status},
-        {"lastVerified",new JsonObject{{"commit",commit??"audit"},{"tree","audit"},{"host",host??"audit-host"},{"exit","audit"},{"evidence",JsonValue.Create(evidence)}}},
+        {"lastVerified",new JsonObject{
+            {"commit",defCommit},
+            {"tree",defTree},
+            {"host",host??realLv["host"]!.GetValue<string>()},
+            {"exit",realLv["exit"]!.GetValue<string>()},
+            {"evidence",JsonValue.Create(evidence)}}},
         {"note",JsonValue.Create(note)},{"utc",JsonValue.Create(utc)}};
     if(currentVersion!=null)o["currentVersion"]=JsonValue.Create(currentVersion);
+    if(!omitIdentity)o["identity"]=emptyIdentity?new JsonObject():new JsonObject{
+        {"parameters",parametersOverride??row?["parametersDefinition"]?.DeepClone()??new JsonObject()},
+        {"source",row?["source"]?.GetValue<string>()??"audit"}};
     return o;
 }
 void Test(string name,bool ok,string detail)
@@ -140,10 +171,29 @@ string Norm(JsonObject o){var c=(JsonObject)o.DeepClone();c["generatedAt"]="X";r
 {
     var targetId="local-blend.cylinder-rim-fillet";
     var outP=Path.Combine(tmpDir,"out-t4d.json");
-    var ev=WriteEvents("t4d",new JsonArray{CaseUpdate(targetId,"function","fail","temp_docs/other-params.log","2026-11-12T12:30:00Z","isolated: totally different parameters (radius 9, tolerance 1e-3), same platform",host:"q2 Linux x64")});
+    var ev=WriteEvents("t4d",new JsonArray{CaseUpdate(targetId,"function","fail","temp_docs/other-params.log","2026-11-12T12:30:00Z","isolated: explicitly different parameters",host:"q2 Linux x64",parametersOverride:new JsonObject{{"radius",JsonValue.Create(9.0)},{"tolerance",JsonValue.Create(0.001)}})});
     var r=RunProducer(ev,outP);
     var row=Row(outP,targetId)["dimensions"]!["function"]!;
-    Test("T4d wrong-parameter event cannot change the row (expect FAIL: no params/precision binding)",row["status"]!.GetValue<string>()!="fail",$"row.function={row["status"]} (event schema has no parameter/precision/source identity; host substring is not a binding)");
+    Test("T4d wrong-parameter identity is rejected and the row is unchanged",row["status"]!.GetValue<string>()!="fail",$"row.function={row["status"]} (event schema has no parameter/precision/source identity; host substring is not a binding)");
+}
+
+// T4h missing identity block must be rejected
+{
+    var targetId="local-blend.cylinder-rim-fillet";
+    var outP=Path.Combine(tmpDir,"out-t4h.json");
+    var ev=WriteEvents("t4h",new JsonArray{CaseUpdate(targetId,"function","fail","temp_docs/no-id.log","2026-11-12T12:35:00Z","isolated: identity omitted",host:"q2 Linux x64",omitIdentity:true)});
+    RunProducer(ev,outP);
+    var row=Row(outP,targetId)["dimensions"]!["function"]!;
+    Test("T4h missing identity block rejected (row unchanged)",row["status"]!.GetValue<string>()!="fail",$"row.function={row["status"]}");
+}
+// T4i empty identity block must be rejected
+{
+    var targetId="local-blend.cylinder-rim-fillet";
+    var outP=Path.Combine(tmpDir,"out-t4i.json");
+    var ev=WriteEvents("t4i",new JsonArray{CaseUpdate(targetId,"function","fail","temp_docs/empty-id.log","2026-11-12T12:36:00Z","isolated: empty identity",host:"q2 Linux x64",emptyIdentity:true)});
+    RunProducer(ev,outP);
+    var row=Row(outP,targetId)["dimensions"]!["function"]!;
+    Test("T4i empty identity block rejected (row unchanged)",row["status"]!.GetValue<string>()!="fail",$"row.function={row["status"]}");
 }
 
 // T4e same-utc different-dimension events must not be dropped
@@ -178,6 +228,16 @@ string Norm(JsonObject o){var c=(JsonObject)o.DeepClone();c["generatedAt"]="X";r
     var r=RunProducer(ev,outP);
     var row=Row(outP,targetId)["dimensions"]!["function"]!;
     Test("T4g dimension/status pairing enforced (expect FAIL: global status pool)",row["status"]!.GetValue<string>()!="observed",$"function={row["status"]} (knownStatuses is a global pool; function+observed accepted)");
+}
+
+// T4j legitimate query-pass evidence must be accepted on the query dimension
+{
+    var targetId="local-blend.cylinder-rim-fillet"; // query cell currently fail (5000 gap)
+    var outP=Path.Combine(tmpDir,"out-t4j.json");
+    var ev=WriteEvents("t4j",new JsonArray{CaseUpdate(targetId,"query","pass","temp_docs/query-pass.log","2026-11-12T14:00:00Z","isolated: real query pass evidence",host:"q2 Linux x64")});
+    RunProducer(ev,outP);
+    var row=Row(outP,targetId)["dimensions"]!["query"]!;
+    Test("T4j legitimate query-pass evidence accepted on query dimension",row["status"]!.GetValue<string>()=="pass",$"query={row["status"]}");
 }
 
 // T5 empty-evidence green rejected

@@ -194,7 +194,7 @@ foreach(var entry in registry["cases"]!.AsArray().OfType<JsonObject>())
         cell["status"]=JsonValue.Create(status);
         cell["lastVerified"]=new JsonObject{{"commit",JsonValue.Create(commit)},{"tree",JsonValue.Create(tree)},{"host",JsonValue.Create(hostNote)},{"exit",JsonValue.Create(exitNote)},{"evidence",JsonValue.Create(evidence)}};
         cell["note"]=JsonValue.Create(note);
-        if(utc!=null)cell["utc"]=JsonValue.Create(utc);
+        if(utc!=null)cell["deliveryUtc"]=JsonValue.Create(utc);
         dim[which]=cell;
     }
     void Hist(string label,string status,string note){var h=new JsonObject();h["label"]=JsonValue.Create(label);h["status"]=JsonValue.Create(status);h["note"]=JsonValue.Create(note);hist.Add((JsonNode)h);}
@@ -314,7 +314,7 @@ var dimStatuses=new Dictionary<string,HashSet<string>>(StringComparer.Ordinal)
 {
     ["function"]=new(StringComparer.Ordinal){"pass","fail","unresolved","unverified"},
     ["mass"]=new(StringComparer.Ordinal){"verified","different","unresolved","unverified"},
-    ["query"]=new(StringComparer.Ordinal){"fail","unresolved","unverified","na"},
+    ["query"]=new(StringComparer.Ordinal){"pass","fail","unresolved","unverified","na"},
     ["performance"]=new(StringComparer.Ordinal){"observed","unverified"}
 };
 var knownDims=new HashSet<string>(dimStatuses.Keys,StringComparer.Ordinal);
@@ -344,44 +344,60 @@ if(File.Exists(eventsPath))
         if(!DateTimeOffset.TryParse(e["utc"]?.GetValue<string>(),out var when)){Reject("bad utc for "+cid);continue;}
         if(e["currentVersion"]!=null&&!knownCurrentVersions.Contains(e["currentVersion"]!.GetValue<string>())){Reject("bad currentVersion for "+cid);continue;}
         var lastVerified=e["lastVerified"];
+        // MANDATORY identity (R2): every case-update that can change a status
+        // must carry the complete real identity: registry parameters + source,
+        // and a complete lastVerified (commit/tree/host/exit/evidence). Missing
+        // or wrong identity is rejected without touching the row - negative
+        // claims (fail) equally cannot falsely sign another case.
+        var idn=e["identity"]?.AsObject();
+        if(idn==null){Reject("missing identity block for "+cid);continue;}
+        var idSource=idn["source"]?.GetValue<string>();
+        if(idSource==null||idSource!=target!["source"]!.GetValue<string>()){Reject("identity source missing/mismatch for "+cid);continue;}
+        if(idn["parameters"]==null||!JsonNode.DeepEquals(idn["parameters"],target!["parametersDefinition"])){Reject("identity parameters missing/mismatch for "+cid);continue;}
         var evHost=lastVerified?["host"]?.GetValue<string>()??"";
         if(!knownHosts.TryGetValue(evHost,out var evFamily)){Reject("unknown platform identity '"+evHost+"' for "+cid);continue;}
+        var evCommit=lastVerified?["commit"]?.GetValue<string>()??"";
+        var evTree=lastVerified?["tree"]?.GetValue<string>()??"";
+        var evExit=lastVerified?["exit"]?.GetValue<string>()??"";
+        var evEvidence=lastVerified?["evidence"]?.GetValue<string>()??"";
+        if(status is "pass" or "verified" or "different"&&evEvidence.Length==0){Reject("green without evidence for "+cid);continue;}
+        bool commitOk=System.Text.RegularExpressions.Regex.IsMatch(evCommit,"^[0-9a-f]{7,40}$");
+        if(!commitOk||evTree.Length==0||evExit.Length==0||evEvidence.Length==0){Reject("incomplete lastVerified (commit/tree/host/exit/evidence) for "+cid);continue;}
         var dims=target!["dimensions"]!.AsObject();
         var baseCell=dims[dimName];
         var rowHost=baseCell?["lastVerified"]?["host"]?.GetValue<string>()??"-";
-        // platform family: rows with a known family must match exactly; rows
-        // still unverified (host '-') bind their platform family at first real
-        // evidence instead of being locked out. Windows claims have no rows.
         bool rowMac=rowHost.Contains("Mac",StringComparison.Ordinal),rowLinux=rowHost.Contains("Linux",StringComparison.OrdinalIgnoreCase);
-        if(evFamily=="Windows"&&(rowMac||rowLinux)){Reject("platform mismatch "+evHost+" for "+cid+" (row "+rowHost+")");continue;}
-        if(rowMac&&evFamily!="Mac"){Reject("platform mismatch "+evHost+" for "+cid+" (row "+rowHost+")");continue;}
-        if(rowLinux&&evFamily!="Linux"){Reject("platform mismatch "+evHost+" for "+cid+" (row "+rowHost+")");continue;}
-        // optional identity block: when carried it must match the row exactly
-        if(e["identity"]!=null)
+        if(evFamily=="Windows"){Reject("platform "+evHost+" has no verified provenance chain for "+cid);continue;}
+        // platform families already present in this row's evidence chain
+        var chainFamilies=new HashSet<string>(StringComparer.Ordinal);
+        foreach(var w0 in new string[]{"function","mass","query","performance"})
         {
-            var idn=e["identity"]!.AsObject();
-            var idSource=idn["source"]?.GetValue<string>();
-            if(idSource!=null&&idSource!=target!["source"]!.GetValue<string>()){Reject("identity source mismatch for "+cid+": "+idSource);continue;}
-            if(idn["parameters"]!=null&&!JsonNode.DeepEquals(idn["parameters"],target!["parametersDefinition"])){Reject("identity parameters mismatch for "+cid);continue;}
+            var h0=dims[w0]?["lastVerified"]?["host"]?.GetValue<string>()??"";
+            if(h0.Contains("Mac",StringComparison.Ordinal))chainFamilies.Add("Mac");
+            if(h0.Contains("Linux",StringComparison.OrdinalIgnoreCase))chainFamilies.Add("Linux");
+        }
+        if(chainFamilies.Count>0&&!chainFamilies.Contains(evFamily))
+        {
+            // multi-platform evidence stays listed separately (分列): record in
+            // history without cross-signing this row's cells
+            var hh=new JsonObject();hh["label"]=JsonValue.Create(e["utc"]!.GetValue<string>()+" 事件（"+evFamily+" 平台证据分列，不改本行）");hh["status"]=JsonValue.Create(status);hh["note"]=JsonValue.Create((e["note"]?.GetValue<string>()??"")+" commit="+evCommit+" evidence="+evEvidence);
+            ((JsonArray)target["history"]!).Add((JsonNode)hh);
+            Reject("cross-family evidence kept separate (history only) for "+cid+": row="+string.Join("/",chainFamilies)+" event="+evFamily);
+            continue;
         }
         // base-time guard: an event must not predate the row's real evidence
-        var baseUtcText=baseCell?["utc"]?.GetValue<string>();
+        var baseUtcText=baseCell?["deliveryUtc"]?.GetValue<string>();
         if(baseUtcText!=null&&DateTimeOffset.TryParse(baseUtcText,out var baseUtc)&&when<baseUtc){Reject("event utc "+when.ToString("O")+" predates base evidence "+baseUtcText+" for "+cid+"."+dimName);continue;}
         // stale guard per (catalogId, dimension); equal utc across different
         // dimensions is legitimate and both apply
         var stKey=cid+"|"+dimName;
         if(lastAppliedUtc.TryGetValue(stKey,out var prevApplied)&&when<=prevApplied){Reject("stale event for "+cid+"."+dimName);continue;}
-        if(status is "pass" or "verified" or "different")
-        {
-            var evd=lastVerified?["evidence"]?.GetValue<string>();
-            if(string.IsNullOrEmpty(evd)){Reject("green without evidence for "+cid);continue;}
-        }
         lastAppliedUtc[stKey]=when;
         var cell=new JsonObject();
         cell["status"]=JsonValue.Create(status);
         cell["lastVerified"]=lastVerified!=null?lastVerified.DeepClone():new JsonObject{{"commit",JsonValue.Create("none")},{"tree",JsonValue.Create("-")},{"host",JsonValue.Create(evHost)},{"exit",JsonValue.Create("-")},{"evidence",JsonValue.Create("")}};
         cell["note"]=JsonValue.Create((e["note"]?.GetValue<string>()??"")+"（事件 utc "+when.ToString("O")+"，平台 "+evHost+"）");
-        cell["utc"]=JsonValue.Create(when.ToString("O"));
+        cell["deliveryUtc"]=JsonValue.Create(when.ToString("O"));
         dims[dimName]=cell;
         if(e["currentVersion"]!=null)dims["currentVersion"]=JsonValue.Create(e["currentVersion"]!.GetValue<string>());
         var h=new JsonObject();h["label"]=JsonValue.Create(e["utc"]!.GetValue<string>()+" 事件");h["status"]=JsonValue.Create(status);h["note"]=JsonValue.Create(e["note"]?.GetValue<string>()??"");
@@ -469,8 +485,8 @@ if(verifyMode)
     foreach(var c0 in catalogItems.OfType<JsonObject>())
         foreach(var w0 in new string[]{"function","mass","query","performance"})
         {
-            var cv0=c0["dimensions"]![w0]!["utc"]?.GetValue<string>();
-            if(cv0!=null&&!DateTimeOffset.TryParse(cv0,out _))Issue("bad cell utc "+c0["id"]+"."+w0);
+            var cv0=c0["dimensions"]![w0]!["deliveryUtc"]?.GetValue<string>();
+            if(cv0!=null&&!DateTimeOffset.TryParse(cv0,out _))Issue("bad cell deliveryUtc "+c0["id"]+"."+w0);
         }
     // T5 contract phrase: any green row without evidence (or a rejected
     // empty-evidence event) must be named here, never silently signed.

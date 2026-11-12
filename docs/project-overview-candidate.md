@@ -67,3 +67,12 @@
 - **R4**：display.stepId 用真实 manifest step id（operation-N / rep2-display）；pending 仅在目标 run+case+manifest 实际加载完成后一次消费（修复默认最新 run manifest 抢先消费 bug）；普通换 case 复位首步（策略明确）。实测：首击 unequal-chamfer→operation-5、重载后仍落、跨 run rep2-display、同 run rim-fillet→operation-1 全过。
 
 验证（隔离输出 temp_docs/self-audit-receipts）：AuditOverviewEvents 除 T4d 外全 PASS（T4b/T4c/T4e/T4f/T4g/T8 转 PASS）；AuditProjectOverviewData errors=0（14 notes=借用文档/相态合并等事实注记）；--verify 0 问题；浏览器落位 5 检查全过。
+
+## R2 身份强制/时间语义/查询配对（最终候选）
+
+- **identity 强制**：一切改写维度状态的 case-update 必须携完整 identity（parameters 深等 registry parametersDefinition + source 等 registry source）与完整 lastVerified（commit=真实 hex SHA/tree/host∈已知平台/exit/evidence 全非空）；缺块、空块、错参数、错 source、不完整 lastVerified 一律拒且不改行——fail 主张同样不能错签别 case。
+- **平台/版本分列**：Windows 无验证出处链一律拒；行证据链已有平台族之外的新族证据→只入 history 分列记录（不改本行 cell）；未验证行（host '-'）首份本族证据可绑定（不锁死）；身份正确性=参数+源+平台核验，非首平台粗锁。
+- **时间语义**：基线与事件统一按**交付可用时间**排序，字段名 `deliveryUtc` 明示（4b=2026-11-11T22:37:59Z、60be=2026-11-11T17:43:15Z、1654=2026-11-12T00:22:27Z）；执行验证时间另存 `currentVersion.windowUtc`（1654 实际窗口 2026-11-11T23:40:41..23:42:45.017395Z），不冒充；f9 执行时间未知→缺省不编造。
+- **状态配对**：query 白名单含 pass（可接真实查询通过证据）；function/mass/query/performance 各自枚举；currentVersion ∈ {reverified,not-retested}。
+- **测试 fixture 修正**（隔离副本 scripts/AuditOverviewEvents.cs，不改独审树）：CaseUpdate 改为从真实目录行取 identity（parametersDefinition+source）与完整 lastVerified（未验证行用真实 suite 证据链 commit/tree），T4d 负例显式改不同参数（radius 9/tolerance 1e-3），新增 T4h 缺 identity 拒、T4i 空 identity 拒、T4j 合法 query 通过。理由：旧正例无 identity 属旧测试输入，按当前合同补真实目录身份；无身份旧格式不保留（无历史兼容授权）。
+- **控制结果**：AuditOverviewEvents 19/19 全 PASS（T0–T8+T4h/T4i/T4j），errors=0/notes=0；AuditProjectOverviewData errors=0（14 notes=借用/相态事实注记）；--verify 0；步骤落位控制 5/5（首击 unequal-chamfer→operation-5、reload 仍落、跨 run rep2-display、同 run rim-fillet→operation-1）。
