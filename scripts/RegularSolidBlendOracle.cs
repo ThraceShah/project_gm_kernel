@@ -21,6 +21,7 @@ ModelingPerformance.Enabled=args.Contains("--bench-profile",StringComparer.Ordin
 KernelRuntime.ForbidLegacyRegularBlendAssembly=args.Contains("--event-arrangement",StringComparer.Ordinal);
 var cutArg=args.SingleOrDefault(x=>x.StartsWith("--cut-x=",StringComparison.Ordinal));
 var cutX=cutArg==null?.5:double.Parse(cutArg[8..],CultureInfo.InvariantCulture);
+if(args.Contains("--jit-proof-only",StringComparer.Ordinal)){Console.WriteLine("JIT_PROOF "+RuntimePolicyProof(Environment.TickCount));return;}
 Require(cutX>0&&cutX<1,"the cut station must be inside the seed's X range");
 var requireCutSection=args.Contains("--require-cut-section",StringComparer.Ordinal);
 var remoteCapBore=args.Contains("--remote-cap-bore",StringComparer.Ordinal);
@@ -56,6 +57,10 @@ var directory=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs"
 Require(!Directory.Exists(directory),"Existing execution evidence is immutable");Directory.CreateDirectory(directory);
 ParasolidMassProperties.BeginEvidence(directory);
 Console.WriteLine("GM_ASSEMBLY sha256="+Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(typeof(KernelRuntime).Assembly.Location))));
+Console.WriteLine("RUNTIME "+System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription+" "+System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture);
+foreach(var pair in new[]{("DOTNET_TieredCompilation","System.Runtime.TieredCompilation"),("DOTNET_TieredPGO","System.Runtime.TieredPGO"),
+    ("DOTNET_TC_QuickJit","System.Runtime.TieredCompilation.QuickJit"),("DOTNET_TC_QuickJitForLoops","System.Runtime.TieredCompilation.QuickJitForLoops"),("DOTNET_ReadyToRun","System.Runtime.ReadyToRun")})
+    Console.WriteLine($"RUNTIME_REQUEST {pair.Item1}={Environment.GetEnvironmentVariable(pair.Item1)??"unset"} runtimeconfig={AppContext.GetData(pair.Item2)??"unset"}");
 var oracleStarted=Stopwatch.GetTimestamp();
 #if DEBUG
 Console.WriteLine("CONFIG Debug managed oracle/kernel; independent native PK runtime");
@@ -65,6 +70,8 @@ Console.WriteLine("CONFIG Release managed oracle/kernel; independent native PK r
 if(!ParasolidScriptHost.TryStartSession("Independent regular freeform solid fillet",out var host,out var message))throw new Exception(message);
 using(host)unsafe
 {
+    PK_SESSION_kernel_version_t nativeVersion;Check(PK_SESSION_ask_kernel_version(&nativeVersion),"native kernel version");
+    Console.WriteLine($"PK_VERSION {nativeVersion.major_revision}.{nativeVersion.minor_revision}.{nativeVersion.build_number}");
     var start=new M.PK_SESSION_start_o_s{o_t_version=1};Check(KernelRuntime.SessionStart(&start),"own session");
     try
     {
@@ -642,3 +649,5 @@ static unsafe void Free(bool own,void* memory){if(memory!=null)Check(own?KernelR
 static void Check(int error,string name){if(error!=0)throw new Exception($"{name}: error={error}, blend={KernelRuntime.LastRegularBlendStage}, stage={KernelRuntime.LastRegularBooleanStage}, face={KernelRuntime.LastRegularBooleanFace}, sheet={KernelRuntime.LastSheetPartitionStage}, curve={KernelRuntime.LastSheetCurve}, parameter={KernelRuntime.LastSheetParameter:R}, algorithm={KernelRuntime.LastSheetAlgorithmStatus}");}
 static void Require(bool value,string message){if(!value)throw new Exception(message);}
 static string ScriptPath([CallerFilePath]string path="")=>path;
+[MethodImpl(MethodImplOptions.NoInlining)]
+static int RuntimePolicyProof(int value)=>value+1;

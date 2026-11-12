@@ -375,3 +375,14 @@ slab排除因此使用同一个完整搜索域证据，而非只给新增slab加
 前两次原exit134保留：原生浮点求值在natural上界给1.0000000000000002，不能要求
 其数值结果严格落入精确函数的凸包上界1。v3单独声明64*2^-52*max(1,abs(component))
 的求值舍入比较，未改生产区间/建模容差；相同native参数两端求值另保留1e-11检查。
+
+`scripts/CompareNativeJitPolicy.cs` 准备一次固定源Release IL的ABBA(关/开/开/关)
+完整操作比较，四个解析/非解析支撑族各两次fresh模型，独立Fix与Boolean均执行真实
+PK、fresh XT strict/full及既有生命周期；raw exit2的物性U仍单列。
+PGO/QuickJit/QuickJitForLoops固定1、ReadyToRun固定0，只有TieredCompilation
+变化；子进程清空环境后仅恢复明确非凭证白名单。runtimeconfig与环境同值，另以
+不计时的GM自有最小方法JIT输出检验FullOpts/Tier0实际分支。选择依据是整组GM API
+总时间，不按case或操作选配置；首轮序号仅称该family首次使用，不冒称全部process-cold。
+依据为官方[编译运行配置](https://learn.microsoft.com/en-us/dotnet/core/runtime-config/compilation)
+及[动态PGO说明](https://devblogs.microsoft.com/dotnet/announcing-net-6/)。
+本段只记录已准备的有界执行合同，尚无选择结论，也不回签历史未显式记录的默认环境。
