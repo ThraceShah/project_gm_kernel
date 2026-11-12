@@ -231,7 +231,7 @@ export interface OverviewCatalogItem {
     currentVersion?: string;
   };
   history?: { label: string; status: string; note: string }[];
-  display?: { runId: string; caseId: string; note: string };
+  display?: { runId: string; caseId: string; stepId: string; note: string };
 }
 export interface OverviewNamedItem {
   id: string; title: string; status: string; note: string; evidence: string; inModelingDenominator: boolean;

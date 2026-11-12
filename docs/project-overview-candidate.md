@@ -46,3 +46,14 @@
 ## 发布物（待独审后 owned 执行）
 
 - 发布时：owned 流程 freeze 新 UI 提交 + overview 数据（015 仅起点/历史回滚）；producer 钉新入口；ExecStart 增加 `BuildProjectOverview --verify` 核验；15 display 保留；容量 ≤30MiB（现 27.5MB+约0.8MB 摘要）。
+
+## 独审 B1–B6 闭合（同任务，原候选 2bece 保留）
+
+- **B1 归属**：selector 仅签本套件日志（regular45/mixed18/complete-catalog 各自限定）；9 行跨套件借用退未验证并在 note/mappingAudit 显式注明借源日志；mappingAudit 195 条含 suite+sourceLog。
+- **B2 提取**：相态感知解析（MASS_BOUND 相态由 MASS_AGREEMENT/自身标记封口）；function=自身 PASS/FAIL 行推导（3 行补签 pass：block-15903/basic-15903/block-single-fillet）；PASS 后 FAIL 保持 fail（--verify 控制）；round2 两条真实 FAIL（不属 463）入 verificationRecords 保留。
+- **B3 分维**：witness=function pass（执行范围）+mass fail（点值门红、两 cut 1.2044611267910417E-07/1.126468644220207E-07、原 exit 134、非当前 modulus）；strict=未验证（无执行证据）+历史注记；510 未决/分类回归失败/134 同列。
+- **B4 事件**：拒绝不崩溃（未知 id/维度/状态/utc、空证据绿、平台族冲突、旧绿覆盖新失败→拒并记录）；事件后全量重算 summary/current 复验；web/data/overview-events.json 交付 tracked（空数组）。
+- **B5 mass**：以自身 PASS 相态为准（5 多相态行 Verified，合并计数在注）；qualityStatusCounts=rep 样本级标签、1080/900 分量总账分列；逐样本 exit 引 allSamples rawExit/qualityStatus；performanceQualified 引 measurement-receipt.json runnerPerformanceQualified；无 rawExits 假字段。
+- **B6 落位**：display 携 stepId；同 run 同 case 亦落指定步骤（实测 unequal-chamfer→operation-5）；证据标注「私存原件（hash 锚定）」无可点假链接；来源 runner 显示；计数事件后重算。
+
+验证：--verify 0 问题；AuditOverviewEvents T0–T6/T5b 全 PASS（T7=本树 tracked 随本次提交成立）；AuditProjectOverviewData 剩余 25 findings 全为文档性/白名单（borrow×9 文档、phase-merged×5+mismatch×5=B5 刻意分歧、builder-mechanism×3=旧机制证明、measurement-schema×2+label×1=原 schema 事实）；浏览器累计 27 检查含双 step 落位全绿。

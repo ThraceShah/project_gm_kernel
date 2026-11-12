@@ -51,6 +51,7 @@ export const App: React.FC = () => {
   // Selected Case & Step
   const [selectedCaseId, setSelectedCaseId] = useState<string>('');
   const [currentStepIndex, setCurrentStepIndex] = useState<number>(0);
+  const pendingStepIndex = useRef<number | null>(null);
   const [subState, setSubState] = useState<'before' | 'after'>('before');
 
   // Meshes & Mesh Errors
@@ -287,7 +288,10 @@ export const App: React.FC = () => {
   if (viewMode === 'overview' && overviewData) {
     return (
       <div className="h-screen w-screen overflow-hidden">
-        <OverviewPanel overview={overviewData} onOpenRuns={(runId, caseId) => {
+        <OverviewPanel overview={overviewData} onOpenRuns={(runId, caseId, stepId) => {
+          const m = /^op-(\d+)$/.exec(stepId ?? '');
+          pendingStepIndex.current = m ? Math.max(0, Number(m[1]) - 1) : null;
+          if (pendingStepIndex.current !== null) setCurrentStepIndex(pendingStepIndex.current);
           setViewMode('runs');
           if (runId) { setSelectedRunId(runId); if (caseId) setSelectedCaseId(caseId); }
         }} />
@@ -501,6 +505,9 @@ export const App: React.FC = () => {
                 </div>
 
                 {/* Timeline & Discrete Stepper */}
+                <div data-testid="display-current-step" data-step-index={safeStepIndex} className="px-3 py-1 text-[11px] text-slate-500 border-b border-slate-200">
+                  当前步骤：{currentCase.steps[safeStepIndex]?.id ?? '-'}（第 {safeStepIndex + 1} 步）
+                </div>
                 <TimelineControl
                   steps={currentCase.steps || []}
                   currentStepIndex={currentStepIndex}

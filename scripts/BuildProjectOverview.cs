@@ -34,36 +34,63 @@ foreach(var p in new[]{Path.Combine(uniLog,"regular45-final.log"),Path.Combine(u
 // ---- strict per-scenario extraction: complete success = GEOMETRY_TOPOLOGY_PASS <key>
 // (the oracle's full geometry/topology gate marker). Partial evidence alone is
 // unverified (missing evidence is not failure). Explicit FAIL marks are fail.
-var scenarioAudit=new Dictionary<string,(bool pass,bool fail,int v,int u,int d)>(StringComparer.Ordinal);
+// Per (log,key) phase-aware extraction: a MASS_BOUND phase closes at a
+// MASS_AGREEMENT line or a pass/fail marker. Function derives from own
+// pass/fail lines only; mass merges phases but keeps the per-phase breakdown
+// and the definitive phase (own PASS) agreement so stages never conflate.
+var scenarioData=new Dictionary<string,Dictionary<string,(List<(int V,int U,int D,string? Agreement,bool Pass)> Phases,int PassLines,int FailLines)>>(StringComparer.Ordinal);
 void ReadScenarioLog(string path)
 {
-    string? current=null;bool pass=false,fail=false;int v=0,u=0,d=0;
-    void Flush(){if(current!=null&&!scenarioAudit.ContainsKey(current))scenarioAudit[current]=(pass,fail,v,u,d);}
-    foreach(var line in File.ReadLines(path))
+    var res=new Dictionary<string,(List<(int V,int U,int D,string? Agreement,bool Pass)> Phases,int PassLines,int FailLines)>(StringComparer.Ordinal);
+    void Ensure(string k){if(!res.ContainsKey(k))res[k]=(new(),0,0);}
+    foreach(var raw in File.ReadLines(path))
     {
-        var t=line.Trim();
-        if(t.StartsWith("GEOMETRY_TOPOLOGY_PASS ",StringComparison.Ordinal)){Flush();current=t.Split(' ')[1].TrimEnd(':');pass=true;fail=false;v=0;u=0;d=0;continue;}
-        if(t.StartsWith("GEOMETRY_TOPOLOGY_FAIL ",StringComparison.Ordinal)||t.StartsWith("FAIL ",StringComparison.Ordinal))
-        {
-            var key=t.Split(' ')[1].TrimEnd(':');
-            if(current!=key){Flush();current=key;}
-            fail=true;continue;
-        }
+        var t=raw.Trim();
         if(t.StartsWith("MASS_BOUND ",StringComparison.Ordinal))
         {
-            var key=t.Split(' ')[1].TrimEnd(':');
-            if(current!=key){Flush();current=key;}
-            if(t.EndsWith("status=Verified",StringComparison.Ordinal))v++;
-            else if(t.EndsWith("status=Unresolved",StringComparison.Ordinal))u++;
-            else if(t.EndsWith("status=Different",StringComparison.Ordinal))d++;
-            continue;
+            var k=t.Split(' ')[1].TrimEnd(':');Ensure(k);
+            var f=res[k];bool closed=f.Phases.Count>0&&(f.Phases[^1].Agreement!=null||f.Phases[^1].Pass);
+            if(f.Phases.Count==0||closed)f.Phases.Add((0,0,0,null,false));
+            var last=f.Phases[^1];
+            if(t.EndsWith("status=Verified",StringComparison.Ordinal))f.Phases[^1]=(last.V+1,last.U,last.D,last.Agreement,false);
+            else if(t.EndsWith("status=Unresolved",StringComparison.Ordinal))f.Phases[^1]=(last.V,last.U+1,last.D,last.Agreement,false);
+            else if(t.EndsWith("status=Different",StringComparison.Ordinal))f.Phases[^1]=(last.V,last.U,last.D+1,last.Agreement,false);
+        }
+        else if(t.StartsWith("MASS_AGREEMENT ",StringComparison.Ordinal))
+        {
+            var k=t.Split(' ')[1].TrimEnd(':');Ensure(k);
+            var f=res[k];bool closed=f.Phases.Count>0&&(f.Phases[^1].Agreement!=null||f.Phases[^1].Pass);
+            if(f.Phases.Count==0||closed)f.Phases.Add((0,0,0,null,false));
+            var st=t.Contains("status=Verified",StringComparison.Ordinal)?"Verified":t.Contains("status=Different",StringComparison.Ordinal)?"Different":t.Contains("status=Unresolved",StringComparison.Ordinal)?"Unresolved":"?";
+            var last=f.Phases[^1];f.Phases[^1]=(last.V,last.U,last.D,st,false);
+        }
+        else if(t.StartsWith("GEOMETRY_TOPOLOGY_PASS ",StringComparison.Ordinal))
+        {
+            var k=t.Split(' ')[1].TrimEnd(':');Ensure(k);
+            var f=res[k];res[k]=(f.Phases,f.PassLines+1,f.FailLines);
+            if(f.Phases.Count==0)f.Phases.Add((0,0,0,null,true));
+            else{var last=f.Phases[^1];f.Phases[^1]=(last.V,last.U,last.D,last.Agreement,true);}
+        }
+        else if(t.StartsWith("GEOMETRY_TOPOLOGY_FAIL ",StringComparison.Ordinal)||t.StartsWith("FAIL ",StringComparison.Ordinal))
+        {
+            var k=t.Split(' ')[1].TrimEnd(':');Ensure(k);
+            var f=res[k];res[k]=(f.Phases,f.PassLines,f.FailLines+1);
         }
     }
-    Flush();
+    scenarioData[path]=res;
 }
-ReadScenarioLog(Path.Combine(uniLog,"regular45-final.log"));
-ReadScenarioLog(Path.Combine(uniLog,"mixed18-final.log"));
-ReadScenarioLog(Path.Combine(blendLog,"temp_docs/blend-functional/final-integrated/complete-catalog.log"));
+var logRegular=Path.Combine(uniLog,"regular45-final.log");
+var logMixed=Path.Combine(uniLog,"mixed18-final.log");
+var logComplete=Path.Combine(blendLog,"temp_docs/blend-functional/final-integrated/complete-catalog.log");
+ReadScenarioLog(logRegular);ReadScenarioLog(logMixed);ReadScenarioLog(logComplete);
+// suite -> own log: a selector signs only rows of its own suite's log
+var suiteOwnLog=new Dictionary<string,string>(StringComparer.Ordinal){["regular-curved"]=logRegular,["mixed-analytic"]=logMixed,["local-blend"]=logComplete};
+var suiteLogRel=new Dictionary<string,string>(StringComparer.Ordinal)
+{
+    ["regular-curved"]="../gm-native-unified-delivery/temp_docs/unified-delivery/regular45-final.log",
+    ["mixed-analytic"]="../gm-native-unified-delivery/temp_docs/unified-delivery/mixed18-final.log",
+    ["local-blend"]="../gm-blend-functional-delivery/temp_docs/blend-functional/final-integrated/complete-catalog.log"
+};
 
 // ---- short-edge grid: exact dual verification (id-suffix + parameter tuple)
 var matrixNames=File.ReadAllLines(matrix96).Where(l=>l.Trim().Length>0).Select(l=>l.Trim()).ToArray();
@@ -98,11 +125,11 @@ Require(namedNonGrid.Length==5,"unexpected short-edge non-grid set: "+string.Joi
 // unresolved query boundaries; standard lifecycle passed at f9 scope.
 var nonGridFacts=new Dictionary<string,(string func,string mass,string query,string note,string evidence)>(StringComparer.Ordinal)
 {
-    ["short-edge.standard-strict-lifecycle"]=("pass","unverified","unverified","f9 标准生命周期几何/拓扑过（点值门历史）；当前模量口径未验证。","../gm-pk-native-delivery/temp_docs/pk-native-delivery/standard.log"),
-    ["short-edge.transverse-strict-lifecycle"]=("fail","unverified","unverified","横切真实失败保留：inertia.yz normalized15=1.2044611267910417E-07>1E-7（原 exit 134）；历史通过不永久绿。","../gm-pk-native-delivery/temp_docs/pk-native-delivery/transverse.log"),
-    ["short-edge.transverse-witness-lifecycle"]=("fail","unverified","unverified","横切真实失败保留：inertia.yz normalized15=1.126468644220207E-07>1E-7（原 exit 134）。","../gm-pk-native-delivery/temp_docs/pk-native-delivery/transverse.log"),
-    ["short-edge.self-fixed-probes"]=("pass","unverified","unresolved","BRep 构造过；510 分类边界 self 15 差异未决（原 exit 134）。","../gm-pk-native-delivery/temp_docs/pk-native-delivery/probes-self.log"),
-    ["short-edge.imported-fixed-probes"]=("pass","unverified","unresolved","BRep 构造过；510 分类边界 import 16 差异未决（原 exit 134）。","../gm-pk-native-delivery/temp_docs/pk-native-delivery/probes-import.log")
+    ["short-edge.standard-strict-lifecycle"]=("pass","unverified","unverified","f9 标准生命周期几何/拓扑过（standard.log CASE + 原 exit 见 evidence）；当前模量口径未验证。","../gm-pk-native-delivery/temp_docs/pk-native-delivery/standard.log"),
+    ["short-edge.transverse-strict-lifecycle"]=("unverified","unverified","unverified","strict 场景（无 reload/witness flags）无执行日志→未验证；f9 唯一 transverse 执行为 witness 场景（inertia-handoff 复现命令带 witness/reload flags），历史契约：inertia.yz normalized15 首/末两 cut=1.2044611267910417E-07/1.126468644220207E-07>1E-7 点值门失败（原 exit 134）。","../gm-pk-native-delivery/temp_docs/pk-native-delivery/transverse.log"),
+    ["short-edge.transverse-witness-lifecycle"]=("pass","fail","unverified","witness CLI 一次执行：两 cut 均几何/拓扑/finite/material 通过（功能按已执行范围=pass）；mass 点值门失败（inertia.yz 两阶段 1.2044611267910417E-07/1.126468644220207E-07>1E-7；原 exit 134 单列）——历史点值红，非当前 modulus Different/Verified。","../gm-pk-native-delivery/temp_docs/pk-native-delivery/transverse.log"),
+    ["short-edge.self-fixed-probes"]=("pass","unverified","unresolved","BRep 构造过；query gap=510 分类边界 self 15 差异未决；原分类回归失败（self15）与原 exit 134 同列保留。","../gm-pk-native-delivery/temp_docs/pk-native-delivery/probes-self.log"),
+    ["short-edge.imported-fixed-probes"]=("pass","unverified","unresolved","BRep 构造过；query gap=510 分类边界 import 16 差异未决；原分类回归失败（import16/native7）与原 exit 134 同列保留。","../gm-pk-native-delivery/temp_docs/pk-native-delivery/probes-import.log")
 };
 
 // ---- measurement five ops (explicit registry id mapping; per-process exits)
@@ -125,19 +152,19 @@ var cylinderQueryIds=new HashSet<string>(StringComparer.Ordinal){"local-blend.cy
 // ---- display links for items with real online artifacts (exact run/case/step context)
 var displayLinks=new Dictionary<string,JsonObject>(StringComparer.Ordinal)
 {
-    ["analytic-boolean.equal-overlap-subtract"]=new JsonObject{{"runId","20261112T002227Z-uperf1654"},{"caseId","unifiedperf.sphere"},{"note","1654 rep2 显示样本（本 case 参数）"}},
-    ["planar-boolean.overlap-two-axes-subtract"]=new JsonObject{{"runId","20261112T002227Z-uperf1654"},{"caseId","unifiedperf.planar"},{"note","1654 rep2 显示样本"}},
-    ["regular-curved.block-subtract"]=new JsonObject{{"runId","20261112T002227Z-uperf1654"},{"caseId","unifiedperf.curved"},{"note","1654 rep2 显示样本"}},
-    ["solid-blend.plane-nurbs"]=new JsonObject{{"runId","20261112T002227Z-uperf1654"},{"caseId","unifiedperf.solidblend"},{"note","1654 rep2 显示样本"}},
-    ["short-edge.a1-r0.5-t1e-07-reversefalse-default"]=new JsonObject{{"runId","20261112T002227Z-uperf1654"},{"caseId","unifiedperf.shortedge"},{"note","1654 rep2 显示样本（输入=PK seed→GM Fix）"}},
-    ["local-blend.oblique-unequal-chamfer"]=new JsonObject{{"runId","20261111T190547Z-integrated1887"},{"caseId","integrated.oblique-upstream"},{"note","同字节链上游（independent-construction）显示"}},
-    ["local-blend.prism-all-chamfer"]=new JsonObject{{"runId","20261111T174315Z-blend60be"},{"caseId","blend.planar-chamfer"},{"note","显示样本含 prism 全边倒角与 oblique 不等距"}},
-    ["local-blend.prism-all-fillet"]=new JsonObject{{"runId","20261111T174315Z-blend60be"},{"caseId","blend.planar-fillet"},{"note","倒圆目录显示样本"}},
-    ["local-blend.cylinder-rim-fillet"]=new JsonObject{{"runId","20261111T174315Z-blend60be"},{"caseId","blend.axial-cylinder"},{"note","五轴向操作同实例显示（步骤=各 cylinder case）"}},
-    ["local-blend.cylinder-both-rim-fillet"]=new JsonObject{{"runId","20261111T174315Z-blend60be"},{"caseId","blend.axial-cylinder"},{"note","同上（步骤区分）"}},
-    ["local-blend.cylinder-rim-chamfer"]=new JsonObject{{"runId","20261111T174315Z-blend60be"},{"caseId","blend.axial-cylinder"},{"note","同上（步骤区分）"}},
-    ["local-blend.cylinder-both-rim-chamfer"]=new JsonObject{{"runId","20261111T174315Z-blend60be"},{"caseId","blend.axial-cylinder"},{"note","同上（步骤区分）"}},
-    ["local-blend.cylinder-unequal-chamfer"]=new JsonObject{{"runId","20261111T174315Z-blend60be"},{"caseId","blend.axial-cylinder"},{"note","同上（步骤区分）"}}
+    ["analytic-boolean.equal-overlap-subtract"]=new JsonObject{{"runId","20261112T002227Z-uperf1654"},{"caseId","unifiedperf.sphere"},{"stepId","op-1"},{"note","1654 rep2 显示样本（本 case 参数）"}},
+    ["planar-boolean.overlap-two-axes-subtract"]=new JsonObject{{"runId","20261112T002227Z-uperf1654"},{"caseId","unifiedperf.planar"},{"stepId","op-1"},{"note","1654 rep2 显示样本"}},
+    ["regular-curved.block-subtract"]=new JsonObject{{"runId","20261112T002227Z-uperf1654"},{"caseId","unifiedperf.curved"},{"stepId","op-1"},{"note","1654 rep2 显示样本"}},
+    ["solid-blend.plane-nurbs"]=new JsonObject{{"runId","20261112T002227Z-uperf1654"},{"caseId","unifiedperf.solidblend"},{"stepId","op-1"},{"note","1654 rep2 显示样本"}},
+    ["short-edge.a1-r0.5-t1e-07-reversefalse-default"]=new JsonObject{{"runId","20261112T002227Z-uperf1654"},{"caseId","unifiedperf.shortedge"},{"stepId","op-1"},{"note","1654 rep2 显示样本（输入=PK seed→GM Fix）"}},
+    ["local-blend.oblique-unequal-chamfer"]=new JsonObject{{"runId","20261111T190547Z-integrated1887"},{"caseId","integrated.oblique-upstream"},{"stepId","op-1"},{"note","同字节链上游（independent-construction）显示"}},
+    ["local-blend.prism-all-chamfer"]=new JsonObject{{"runId","20261111T174315Z-blend60be"},{"caseId","blend.planar-chamfer"},{"stepId","op-1"},{"note","显示样本含 prism 全边倒角与 oblique 不等距"}},
+    ["local-blend.prism-all-fillet"]=new JsonObject{{"runId","20261111T174315Z-blend60be"},{"caseId","blend.planar-fillet"},{"stepId","op-1"},{"note","倒圆目录显示样本"}},
+    ["local-blend.cylinder-rim-fillet"]=new JsonObject{{"runId","20261111T174315Z-blend60be"},{"caseId","blend.axial-cylinder"},{"stepId","op-1"},{"note","五轴向操作同实例显示（步骤=各 cylinder case）"}},
+    ["local-blend.cylinder-both-rim-fillet"]=new JsonObject{{"runId","20261111T174315Z-blend60be"},{"caseId","blend.axial-cylinder"},{"stepId","op-2"},{"note","同上（步骤区分）"}},
+    ["local-blend.cylinder-rim-chamfer"]=new JsonObject{{"runId","20261111T174315Z-blend60be"},{"caseId","blend.axial-cylinder"},{"stepId","op-3"},{"note","同上（步骤区分）"}},
+    ["local-blend.cylinder-both-rim-chamfer"]=new JsonObject{{"runId","20261111T174315Z-blend60be"},{"caseId","blend.axial-cylinder"},{"stepId","op-4"},{"note","同上（步骤区分）"}},
+    ["local-blend.cylinder-unequal-chamfer"]=new JsonObject{{"runId","20261111T174315Z-blend60be"},{"caseId","blend.axial-cylinder"},{"stepId","op-5"},{"note","同上（步骤区分）"}}
 };
 
 var now=DateTimeOffset.UtcNow;
@@ -175,17 +202,41 @@ foreach(var entry in registry["cases"]!.AsArray().OfType<JsonObject>())
     Cell("query","unverified","未取得查询/分类记录。","","-","-","-","-");
     Cell("performance","unverified","无性能观测。","","-","-","-","-");
     dim["currentVersion"]=JsonValue.Create("not-retested");
-    // (1) 63 Boolean scenarios + local-blend 17 via strict success markers (suite-scoped)
-    if(selector!=null&&scenarioAudit.TryGetValue(selector,out var sc))
+    // (1) 63 Boolean scenarios + local-blend 17: own-suite log only. Cross-suite
+    // name collisions are documented as borrowed and stay unverified (never signed
+    // by another suite's records). Function derives from own pass/fail lines; mass
+    // merges phases but preserves the per-phase breakdown.
+    if(selector!=null)
     {
-        var logRel=suite=="local-blend"?"../gm-blend-functional-delivery/temp_docs/blend-functional/final-integrated/complete-catalog.log":suite=="mixed-analytic"?"../gm-native-unified-delivery/temp_docs/unified-delivery/mixed18-final.log":"../gm-native-unified-delivery/temp_docs/unified-delivery/regular45-final.log";
-        var commit=suite=="local-blend"?"60be7216d646a296d7fd2d0b30b5f336a46a6a66":"4b2405e3945929c5bb93677a68b0ee79e430b2f3";
-        var tree=suite=="local-blend"?"Native 60be":"Native 133f56ac";
-        var func=sc.fail?"fail":sc.pass?"pass":"unverified";
-        Cell("function",func,sc.pass?"GEOMETRY_TOPOLOGY_PASS 完整几何/拓扑门通过（原日志逐案标记）。":sc.fail?"原日志真实失败标记。":"原日志缺完整成功标记（缺证据非失败）→未验证。",logRel,commit,tree,"q2 Linux x64","批次 exit 2（mass Unresolved 编码；逐 case 进程 exit 未单独记录，不伪造）");
-        Cell("mass",MassState(sc.v,sc.u,sc.d),sc.v+sc.u+sc.d==0?"原日志无 MASS_BOUND 行（分量未记录），不推断。":$"MASS_BOUND 逐分量：Verified {sc.v} / Unresolved {sc.u} / Different {sc.d}。",logRel,commit,tree,"q2 Linux x64","批次 exit 2");
-        Hist(commit.Substring(0,7)+" "+tree+"（q2 Linux）",func+" / "+MassState(sc.v,sc.u,sc.d),"逐案原日志标记（selector=registry selector，套件内限定匹配）。");
-        mappingAudit.Add((JsonNode)new JsonObject{{"catalogId",JsonValue.Create(id)},{"via",JsonValue.Create("selector="+selector+" @ "+suite+" log")},{"status",JsonValue.Create(func)}});
+        var borrowedLogs=new List<string>();
+        foreach(var kv in scenarioData)if(kv.Value.ContainsKey(selector)&&kv.Key!=suiteOwnLog.GetValueOrDefault(suite))borrowedLogs.Add(Path.GetFileName(kv.Key));
+        var borrowNote=borrowedLogs.Count>0?"selector 亦见于他套件日志 "+string.Join("/",borrowedLogs)+"（跨套件记录，不作本行证据）":"";
+        (List<(int V,int U,int D,string? Agreement,bool Pass)> Phases,int PassLines,int FailLines)? own=null;
+        if(suiteOwnLog.TryGetValue(suite,out var ownPath)&&scenarioData[ownPath].TryGetValue(selector,out var ownHit))own=ownHit;
+        if(own!=null)
+        {
+            var func=own.Value.FailLines>0?"fail":own.Value.PassLines>0?"pass":"unverified";
+            int v=0,u=0,d=0;foreach(var ph in own.Value.Phases){v+=ph.V;u+=ph.U;d+=ph.D;}
+            var defAgree=own.Value.Phases.Where(p=>p.Pass).Select(p=>p.Agreement).LastOrDefault();
+            // B5: the case's own final PASS phase is authoritative ("以自身 PASS
+            // 相态为准"); merged counts stay in the note so prior phases never mix
+            // into the case's own verdict.
+            var mst=defAgree=="Verified"?"verified":defAgree=="Different"?"different":defAgree=="Unresolved"?"unresolved":d>0?"different":u>0?"unresolved":v>0?"verified":"unverified";
+            var phaseNote=own.Value.Phases.Count>1?"逐相态："+string.Join("；",own.Value.Phases.Select((p,i)=>$"相{i+1} {p.V}V/{p.U}U/{p.D}D"+(p.Agreement!=null?$" agreement={p.Agreement}":"")))+$"；自身 PASS 相态 agreement={defAgree??"（无）"} 为准；合并仅计数不混账":"";
+            var logRel=suiteLogRel[suite];
+            var commit=suite=="local-blend"?"60be7216d646a296d7fd2d0b30b5f336a46a6a66":"4b2405e3945929c5bb93677a68b0ee79e430b2f3";
+            var tree=suite=="local-blend"?"Native 60be":"Native 133f56ac";
+            Cell("function",func,own.Value.PassLines>0?"GEOMETRY_TOPOLOGY_PASS 完整几何/拓扑门通过（自身标记 "+own.Value.PassLines+" 行）":own.Value.FailLines>0?"原日志真实失败标记（"+own.Value.FailLines+" 行）":"原日志缺完整成功标记（缺证据非失败）→未验证。"+(borrowNote!=""?"；"+borrowNote:""),logRel,commit,tree,"q2 Linux x64","批次 exit 2（逐 case 进程 exit 未单独记录，不伪造）");
+            Cell("mass",mst,(v+u+d)==0?"原日志无 MASS_BOUND 行（分量未记录），不推断。":$"MASS_BOUND 逐分量合并 {v}V/{u}U/{d}D"+(phaseNote!=""?"；"+phaseNote:"")+(borrowNote!=""?"；"+borrowNote:""),logRel,commit,tree,"q2 Linux x64","批次 exit 2");
+            Hist(commit.Substring(0,7)+" "+tree+"（q2 Linux）",func+" / "+mst,"逐案自身标记（本套件日志限定）；"+(phaseNote!=""?phaseNote+"；":"")+(borrowNote!=""?borrowNote+"。":""));
+            mappingAudit.Add((JsonNode)new JsonObject{{"catalogId",JsonValue.Create(id)},{"suite",JsonValue.Create(suite)},{"sourceLog",JsonValue.Create(suiteLogRel[suite])},{"via",JsonValue.Create("own-suite selector="+selector)},{"status",JsonValue.Create(func)},{"borrowed",JsonValue.Create(borrowNote)}});
+        }
+        else if(borrowedLogs.Count>0)
+        {
+            Cell("function","unverified","本套件无执行证据；"+borrowNote+"→退未验证（不以同名 selector 签别套件）","-","-","-","-","-");
+            Cell("mass","unverified","本套件无分量记录；"+borrowNote,"-","-","-","-","-");
+            mappingAudit.Add((JsonNode)new JsonObject{{"catalogId",JsonValue.Create(id)},{"suite",JsonValue.Create(suite)},{"sourceLog",JsonValue.Create("-")},{"via",JsonValue.Create("cross-suite borrowed: "+string.Join("/",borrowedLogs))},{"status",JsonValue.Create("unverified")},{"borrowed",JsonValue.Create(borrowNote)}});
+        }
     }
     // (2) short-edge 96 grid: f9 history (function pass; mass = current-modulus unverified)
     if(gridCovered.Contains(id))
@@ -193,16 +244,16 @@ foreach(var entry in registry["cases"]!.AsArray().OfType<JsonObject>())
         Cell("function","pass","f9 96-case self Fix 矩阵几何/拓扑接受（名单逐项匹配：id 后缀+参数 tuple 双重核对）。","../gm-pk-native-delivery/temp_docs/pk-native-delivery/matrix-96-cases.txt","f9c59201c0b9c5d103dee45124e3f43ca59a0921","Native f9","q2 Linux x64","批次 exit 0（矩阵 shard）");
         Cell("mass","unverified","当前模量口径未验证：f9 仅有原 270 点值门记录，无三态模量结论（不新建实测 Unresolved）。","../gm-pk-native-delivery/temp_docs/pk-native-delivery/evidence-final.sha256","f9c59201c0b9c5d103dee45124e3f43ca59a0921","Native f9","q2 Linux x64","0");
         Hist("f9c59201 历史接受（q2 Linux）","pass / 点值门","96 矩阵几何/拓扑过；物性=点值门（非三态模量）。");
-        mappingAudit.Add((JsonNode)new JsonObject{{"catalogId",JsonValue.Create(id)},{"via",JsonValue.Create("matrix-96 name+tuple dual match")},{"status",JsonValue.Create("pass")}});
+        mappingAudit.Add((JsonNode)new JsonObject{{"catalogId",JsonValue.Create(id)},{"suite",JsonValue.Create("short-edge")},{"sourceLog",JsonValue.Create("../gm-pk-native-delivery/temp_docs/pk-native-delivery/matrix-96-cases.txt")},{"via",JsonValue.Create("matrix-96 name+tuple dual match")},{"status",JsonValue.Create("pass")}});
     }
     // (3) named non-grid short-edge items (real failures / probes kept)
     if(nonGridFacts.TryGetValue(id,out var nf))
     {
         Cell("function",nf.func,nf.note,nf.evidence,"f9c59201c0b9c5d103dee45124e3f43ca59a0921","Native f9","q2 Linux x64","见证据");
-        Cell("mass",nf.mass,"当前模量口径未验证。",nf.evidence,"f9c59201c0b9c5d103dee45124e3f43ca59a0921","Native f9","q2 Linux x64","见证据");
+        Cell("mass",nf.mass,nf.note,nf.evidence,"f9c59201c0b9c5d103dee45124e3f43ca59a0921","Native f9","q2 Linux x64","见证据（点值门历史/分阶段数值见注）");
         Cell("query",nf.query,nf.note,nf.evidence,"f9c59201c0b9c5d103dee45124e3f43ca59a0921","Native f9","q2 Linux x64","见证据");
         Hist("f9c59201 历史记录（q2 Linux）",nf.func,nf.note);
-        mappingAudit.Add((JsonNode)new JsonObject{{"catalogId",JsonValue.Create(id)},{"via",JsonValue.Create("named non-grid explicit evidence")},{"status",JsonValue.Create(nf.func)}});
+        mappingAudit.Add((JsonNode)new JsonObject{{"catalogId",JsonValue.Create(id)},{"suite",JsonValue.Create("short-edge")},{"sourceLog",JsonValue.Create(nf.evidence)},{"via",JsonValue.Create("named non-grid explicit evidence")},{"status",JsonValue.Create(nf.func)}});
     }
     // (4) cylinder query gap (explicit five)
     if(cylinderQueryIds.Contains(id))
@@ -215,25 +266,25 @@ foreach(var entry in registry["cases"]!.AsArray().OfType<JsonObject>())
     {
         var ca=mop["candidate"]!;var b=mop["baseline"]!;
         var rom=ca["warmGmMedianMs"]!.GetValue<double>()/ca["warmPkMedianMs"]!.GetValue<double>();
-        var procExits=mop["rawExits"]?.ToJsonString();
+        // real fields only: per-sample exits from allSamples rawExit/qualityStatus;
+        // process-level exit facts live in measurement-receipt.json qualityStates
+        // (exit2-Unresolved=16 / exit0-Verified=4) and runnerRawExit=2.
+        var myCase=mop["case"]!.GetValue<string>();
+        var sampleTally=string.Join(",",opSummary["allSamples"]!.AsArray().OfType<JsonObject>().Where(s=>s["case"]!.GetValue<string>()==myCase).GroupBy(s=>(s["rawExit"]!.GetValue<int>(),s["qualityStatus"]!.GetValue<string>())).Select(g=>$"{g.Key.Item1}x{g.Key.Item2}={g.Count()}"));
         Cell("performance","observed",
-            $"1654 当前窗口：暖中位 基线 {b["warmGmMedianMs"]!.GetValue<double>().ToString("G17")}→候选 {ca["warmGmMedianMs"]!.GetValue<double>().ToString("G17")}ms，变化 {mop["changePercent"]!.GetValue<double>().ToString("G6")}%；候选配对 GM/PK ratioMedian {ca["warmPairedGmPkMedian"]!.GetValue<double>().ToString("G6")} / 中位数之比 {rom.ToString("G6")}（两口径分列）；performanceQualified=false。",
-            "docs/uperf-1654-publish-receipt.md","1654dbf2bb31ff867f40c3ae4eb66cdb3d601fb7","Native 224564d1","Mac M4 / macOS 27.2","各进程原 exit 见 measurement-receipt（planar 4 进程 raw0；其余 raw2；主 runner 2 另层）");
-        Cell("function","pass","1654 窗口质量门（fresh/full/strict/finite）通过（60 对全过）——当前版本复验。","docs/uperf-1654-publish-receipt.md","1654dbf2bb31ff867f40c3ae4eb66cdb3d601fb7","Native 224564d1","Mac M4 / macOS 27.2","4 planar 进程 raw0；其余 16 进程 raw2");
+            $"1654 当前窗口：暖中位 基线 {b["warmGmMedianMs"]!.GetValue<double>().ToString("G17")}→候选 {ca["warmGmMedianMs"]!.GetValue<double>().ToString("G17")}ms，变化 {mop["changePercent"]!.GetValue<double>().ToString("G6")}%（基线→候选）；候选配对 GM/PK ratioMedian {ca["warmPairedGmPkMedian"]!.GetValue<double>().ToString("G6")} / 中位数之比 {rom.ToString("G6")}（两口径分列）；性能目标未达，runnerPerformanceQualified=false（measurement-receipt.json）。",
+            "docs/uperf-1654-publish-receipt.md","1654dbf2bb31ff867f40c3ae4eb66cdb3d601fb7","Native 224564d1","Mac M4 / macOS 27.2","样本级原 exit=allSamples rawExit/qualityStatus（本 op "+sampleTally+"）；进程级见 measurement-receipt.json qualityStates（exit2-Unresolved=16/exit0-Verified=4）、runnerRawExit=2");
+        Cell("function","pass","1654 窗口质量门（fresh/full/strict/finite）通过（60 对全过）——当前版本复验。","docs/uperf-1654-publish-receipt.md","1654dbf2bb31ff867f40c3ae4eb66cdb3d601fb7","Native 224564d1","Mac M4 / macOS 27.2","runnerRawExit=2（measurement-receipt.json）");
         var qk=ca["qualityStatusCounts"]!.AsObject();
-        Cell("mass",qk.ContainsKey("Unresolved")?"unresolved":"verified","1654 当前质量状态："+qk.ToJsonString()+"（分量级）；主 900 分量 312V/588U 总账见验证记录。","docs/uperf-1654-publish-receipt.md","1654dbf2bb31ff867f40c3ae4eb66cdb3d601fb7","Native 224564d1","Mac M4 / macOS 27.2","planar 进程 raw0/Verified；其余 raw2/Unresolved");
+        Cell("mass",qk.ContainsKey("Unresolved")?"unresolved":"verified","1654 当前质量状态："+qk.ToJsonString()+"（每 op 候选侧 2 rep 样本状态计数，样本级口径）；物性分量总账另列：主 900 分量 312V/588U、唯一总账 1080=396V/684U（质量归档，不与样本级混算）。","docs/uperf-1654-publish-receipt.md","1654dbf2bb31ff867f40c3ae4eb66cdb3d601fb7","Native 224564d1","Mac M4 / macOS 27.2","样本级 "+sampleTally+"；进程级 measurement-receipt.json");
         Cell("query","na","本窗口无查询/分类维度检查。","","-","-","-","-");
         Hist("1654 当前窗口（Mac M4）","当前版本复验","基线→候选变化 "+mop["changePercent"]!.GetValue<double>().ToString("G6")+"%；性能观测不改功能状态。");
         dim["currentVersion"]=JsonValue.Create("reverified");
-        mappingAudit.Add((JsonNode)new JsonObject{{"catalogId",JsonValue.Create(id)},{"via",JsonValue.Create("explicit measurement mapping (op→registry id)")},{"status",JsonValue.Create("reverified")}});
+        mappingAudit.Add((JsonNode)new JsonObject{{"catalogId",JsonValue.Create(id)},{"suite",JsonValue.Create(suite)},{"sourceLog",JsonValue.Create("operation-summary.json + measurement-receipt.json")},{"via",JsonValue.Create("explicit measurement mapping (op→registry id)")},{"status",JsonValue.Create("reverified")}});
     }
     item["dimensions"]=dim;item["history"]=hist;
     if(displayLinks.TryGetValue(id,out var link))item["display"]=link.DeepClone();
     Count("catalog");Count("family:"+family);
-    Count("function:"+dim["function"]!["status"]!.GetValue<string>());
-    Count("mass:"+dim["mass"]!["status"]!.GetValue<string>());
-    Count("query:"+dim["query"]!["status"]!.GetValue<string>());
-    Count("performance:"+dim["performance"]!["status"]!.GetValue<string>());
     catalogItems.Add((JsonNode)item);
 }
 
@@ -250,31 +301,76 @@ Delivery("20261111T190547Z-integrated1887","功能集成 1887","1887e30d","2026-
 Delivery("20261111T174315Z-blend60be","Blend 60be 功能验收","60be7216","2026-11-11T17:43:15Z","blend acceptance");
 Delivery("20261110T195008Z-610e3ce8","历史 main610 基线","610e3ce8","2026-11-10T19:50:08Z","historical baseline");
 Delivery("archived","已归档快照（f9/676/6616/重复 run）","various","2026-11-10..11","release 只读 archive；成果目录保留");
+var knownStatuses=new HashSet<string>(StringComparer.Ordinal){"pass","fail","unresolved","unverified","na","verified","different","observed"};
+var knownDims=new HashSet<string>(StringComparer.Ordinal){"function","mass","query","performance"};
+var rejectedEvents=new JsonArray();
+var lastAppliedUtc=new Dictionary<string,DateTimeOffset>(StringComparer.Ordinal);
 if(File.Exists(eventsPath))
 {
     var events=JsonNode.Parse(File.ReadAllText(eventsPath))!.AsArray();
     foreach(var e in events.OfType<JsonObject>())
     {
-        if(e["kind"]!.GetValue<string>()=="delivery")Delivery(e["runId"]!.GetValue<string>(),e["label"]!.GetValue<string>(),e["commit"]!.GetValue<string>(),e["utc"]!.GetValue<string>(),e["note"]!.GetValue<string>());
-        if(e["kind"]!.GetValue<string>()=="case-update")
+        if(e["kind"]?.GetValue<string>()=="delivery")
         {
-            var cid=e["catalogId"]!.GetValue<string>();
-            var target=catalogItems.OfType<JsonObject>().FirstOrDefault(c=>c["id"]!.GetValue<string>()==cid);
-            if(target!=null)
-            {
-                var dimName=e["dimension"]!.GetValue<string>();
-                var dims=target["dimensions"]!.AsObject();
-                var cell=new JsonObject();
-                cell["status"]=JsonValue.Create(e["status"]!.GetValue<string>());
-                cell["lastVerified"]=e["lastVerified"]!.DeepClone();
-                cell["note"]=JsonValue.Create(e["note"]!.GetValue<string>());
-                dims[dimName]=cell;
-                if(e["currentVersion"]!=null)dims["currentVersion"]=JsonValue.Create(e["currentVersion"]!.GetValue<string>());
-                var h=new JsonObject();h["label"]=JsonValue.Create(e["utc"]!.GetValue<string>()+" 新事件");h["status"]=JsonValue.Create(e["status"]!.GetValue<string>());h["note"]=JsonValue.Create(e["note"]!.GetValue<string>());
-                ((JsonArray)target["history"]!).Add((JsonNode)h);
-            }
+            if(!DateTimeOffset.TryParse(e["utc"]?.GetValue<string>(),out _)){rejectedEvents.Add((JsonNode?)JsonValue.Create("delivery bad utc"));}
+            else Delivery(e["runId"]!.GetValue<string>(),e["label"]!.GetValue<string>(),e["commit"]!.GetValue<string>(),e["utc"]!.GetValue<string>(),e["note"]!.GetValue<string>()!);
+            continue;
         }
+        // case-update: reject-and-record (never crash, never silently sign)
+        string Reject(string why){rejectedEvents.Add((JsonNode?)JsonValue.Create(why));return why;}
+        if(e["kind"]?.GetValue<string>()!="case-update"){Reject("unknown kind");continue;}
+        var cid=e["catalogId"]?.GetValue<string>()??"";
+        var target=catalogItems.OfType<JsonObject>().FirstOrDefault(c=>c["id"]!.GetValue<string>()==cid);
+        if(target==null){Reject("unknown catalogId "+cid);continue;}
+        var dimName=e["dimension"]?.GetValue<string>()??"";
+        if(!knownDims.Contains(dimName)){Reject("bad dimension "+dimName+" for "+cid);continue;}
+        var status=e["status"]?.GetValue<string>()??"";
+        if(!knownStatuses.Contains(status)){Reject("bad status "+status+" for "+cid);continue;}
+        if(!DateTimeOffset.TryParse(e["utc"]?.GetValue<string>(),out var when)){Reject("bad utc for "+cid);continue;}
+        // stale events never overwrite: apply only strictly newer claims per row
+        if(lastAppliedUtc.TryGetValue(cid,out var prevApplied)&&when<=prevApplied){Reject("stale event utc "+when.ToString("O")+" cannot overwrite newer state for "+cid);continue;}
+        var lastVerified=e["lastVerified"];
+        if(status is "pass" or "verified" or "different")
+        {
+            var evd=lastVerified?["evidence"]?.GetValue<string>();
+            if(string.IsNullOrEmpty(evd)){Reject("green without evidence for "+cid);continue;}
+        }
+        // platform family identity: the row's own lastVerified.host pins its
+        // platform family; a different family cannot cross-sign this row.
+        var rowHost=target!["dimensions"]![dimName]!["lastVerified"]!["host"]!.GetValue<string>();
+        var evHost=lastVerified?["host"]?.GetValue<string>()??"";
+        bool rowMac=rowHost.Contains("Mac",StringComparison.Ordinal),rowLinux=rowHost.Contains("Linux",StringComparison.OrdinalIgnoreCase);
+        bool evMac=evHost.Contains("Mac",StringComparison.Ordinal),evWin=evHost.Contains("Windows",StringComparison.Ordinal),evLin=evHost.Contains("Linux",StringComparison.OrdinalIgnoreCase);
+        if((evMac&&!rowMac)||(evLin&&!rowLinux)||evWin)
+        {
+            Reject("platform mismatch for "+cid+": row="+rowHost+" event="+evHost);continue;
+        }
+        lastAppliedUtc[cid]=when;
+        var dims=target!["dimensions"]!.AsObject();
+        var cell=new JsonObject();
+        cell["status"]=JsonValue.Create(status);
+        cell["lastVerified"]=lastVerified!=null?lastVerified.DeepClone():new JsonObject{{"commit",JsonValue.Create("none")},{"tree",JsonValue.Create("-")},{"host",JsonValue.Create(evHost)},{"exit",JsonValue.Create("-")},{"evidence",JsonValue.Create("")}};
+        cell["note"]=JsonValue.Create((e["note"]?.GetValue<string>()??"")+"（事件 utc "+when.ToString("O")+"，平台族已核）");
+        dims[dimName]=cell;
+        if(e["currentVersion"]!=null)dims["currentVersion"]=JsonValue.Create(e["currentVersion"]!.GetValue<string>());
+        var h=new JsonObject();h["label"]=JsonValue.Create(e["utc"]!.GetValue<string>()+" 事件");h["status"]=JsonValue.Create(status);h["note"]=JsonValue.Create(e["note"]?.GetValue<string>()??"");
+        ((JsonArray)target["history"]!).Add((JsonNode)h);
+        mappingAudit.Add((JsonNode)new JsonObject{{"catalogId",JsonValue.Create(cid)},{"suite",JsonValue.Create(target!["suite"]!.GetValue<string>())},{"sourceLog",JsonValue.Create("overview-events.json")},{"via",JsonValue.Create("case-update event")},{"status",JsonValue.Create(status)}});
     }
+}
+// recount all row-derived counters from the post-event rows (B4: summary recompute)
+foreach(var k in counts.Keys.Where(k=>k.Contains(':')&&(k.StartsWith("function:")||k.StartsWith("mass:")||k.StartsWith("query:")||k.StartsWith("performance:")||k.StartsWith("current:"))).ToList())counts.Remove(k);
+foreach(var it in catalogItems.OfType<JsonObject>())
+{
+    var d=it["dimensions"]!.AsObject();
+    foreach(var w in new[]{"function","mass","query","performance"})
+    {
+        var st=d[w]!["status"]!.GetValue<string>()+"";
+        var ck=$"{w}:{st}";counts[ck]=(counts.TryGetValue(ck,out var c0)?c0:0)+1;
+    }
+    var cv=d["currentVersion"]?.GetValue<string>()??"not-retested";
+    var vk="current:"+(cv=="reverified"?"reverified":"not-retested");
+    counts[vk]=(counts.TryGetValue(vk,out var v0)?v0:0)+1;
 }
 
 // ---- boundary registers + verification records (not in modeling denominator)
@@ -295,6 +391,7 @@ void Record(string id,string title,string status,string note,string evidence)
 Record("suite.mac-2000","Mac 统一包套件 2000/1998/2（原 raw 1）","fail","2 supportingBlend NotConverged 保留（同 Mac baseline 133 窄复现）；栈修复实质记录；不入建模分母。","docs/uperf-1654-publish-receipt.md");
 Record("suite.linux-1974","Linux unified4b 套件 1974/1974（原 raw 0）","pass","历史 2 项本 TRX Passed；不代签 Mac 全绿。","docs/unified-4b-publish-receipt.md");
 Record("mass.component-ledger","物性分量总账：主 900 分量 312V/588U/0D + 额外 180；唯一总账 1080 分量 396V/684U/0D","unresolved","分量不是功能 case；不重复计数。","docs/uperf-1654-publish-receipt.md");
+Record("interaction.round2-failures","常规/混合 round-2 交互步骤 mass mismatch 真实失败记录（键 block-15903-basic-15902-round2 / basic-15903-basic-15902-round2）","fail","两条原日志 FAIL mass 行保留（不属 463 具名 case，不入分母；不以 PASS 后吞 FAIL）；来源 regular45-final.log / mixed18-final.log。","../gm-native-unified-delivery/temp_docs/unified-delivery/regular45-final.log");
 Record("perf.targets","性能目标未达（各窗口分源口径）：1654 当前 shortedge 配对 387.35924x；历史窗口 217fc 340.1703x、6616 3423.49713x、676 9465.56563x","unresolved","窗口不相乘、口径不混；主体性能目标未达。","docs/uperf-1654-publish-receipt.md");
 
 // ---- source / archive index
@@ -324,6 +421,30 @@ if(verifyMode)
     var issues=new JsonArray();
     void Issue(string s)=>issues.Add((JsonNode?)JsonValue.Create(s));
     if(catalogItems.Count!=463)Issue("catalog count changed: "+catalogItems.Count);
+    // cross-suite borrow must never be green; own-suite attribution required
+    foreach(var it in catalogItems.OfType<JsonObject>())
+    {
+        var f=it["dimensions"]!["function"]!["status"]!.GetValue<string>();
+        var ev=it["dimensions"]!["function"]!["lastVerified"]!["evidence"]!.GetValue<string>();
+        if(f=="pass"&&ev.Contains("regular45-final.log")&&it["suite"]!.GetValue<string>()!="regular-curved")Issue("cross-suite borrow signed green: "+it["id"]);
+    }
+    // PASS-after-FAIL and phase aggregation: any own FAIL line must yield fail
+    foreach(var kv in scenarioData)foreach(var sk in kv.Value)if(sk.Value.FailLines>0&&sk.Value.PassLines>0)
+    {
+        var row=catalogItems.OfType<JsonObject>().FirstOrDefault(c=>c["selector"]?.GetValue<string>()==sk.Key);
+        if(row!=null&&row["dimensions"]!["function"]!["status"]!.GetValue<string>()!="fail")Issue("PASS+FAIL key not fail: "+sk.Key+" @ "+kv.Key);
+    }
+    if(!counts.ContainsKey("current:reverified"))Issue("current reverify count missing");
+    // T5 contract phrase: any green row without evidence (or a rejected
+    // empty-evidence event) must be named here, never silently signed.
+    foreach(var it in catalogItems.OfType<JsonObject>())
+        foreach(var w in new[]{"function","mass","query","performance"})
+        {
+            var c=it["dimensions"]![w]!;
+            if(c["status"]!.GetValue<string>() is ("pass" or "verified" or "different") && c["lastVerified"]!["evidence"]!.GetValue<string>().Length==0)Issue("green without evidence: "+it["id"]+"."+w);
+        }
+    foreach(var rj in rejectedEvents)if(rj!.GetValue<string>().Contains("green without evidence"))Issue(rj.GetValue<string>()+" (event rejected, row unchanged)");
+    if(rejectedEvents.Count>0)Console.WriteLine("REJECTED-EVENTS "+string.Join(" | ",rejectedEvents.Select(r=>r!.GetValue<string>())));
     foreach(var kv in counts.OrderBy(kv=>kv.Key)){}
     var ids=catalogItems.OfType<JsonObject>().Select(c=>c["id"]!.GetValue<string>()).ToArray();
     if(ids.Distinct(StringComparer.Ordinal).Count()!=ids.Length)Issue("duplicate catalog ids");
@@ -331,11 +452,16 @@ if(verifyMode)
     var t1e5=ids.Where(i=>i.StartsWith("short-edge.a0.25-r0.25-t1e-05",System.StringComparison.Ordinal)).ToArray();
     var t1e7=ids.Where(i=>i.StartsWith("short-edge.a0.25-r0.25-t1e-07",System.StringComparison.Ordinal)).ToArray();
     if(t1e5.Length==0||t1e7.Length==0)Issue("tolerance variant rows missing");
-    // real failure not overwritten by old green
-    foreach(var cid in new[]{"short-edge.transverse-strict-lifecycle","short-edge.transverse-witness-lifecycle"})
+    // transverse per B3: witness=function pass (executed scope) + mass fail
+    // (point gate red, both cut stage values kept); strict=no execution evidence
+    // -> unverified; never two CLI modeling failures, never modulus Different.
     {
-        var c=catalogItems.OfType<JsonObject>().First(x=>x["id"]!.GetValue<string>()==cid);
-        if(c["dimensions"]!["function"]!["status"]!.GetValue<string>()!="fail")Issue("transverse failure overwritten: "+cid);
+        var w=catalogItems.OfType<JsonObject>().First(x=>x["id"]!.GetValue<string>()=="short-edge.transverse-witness-lifecycle");
+        var s=catalogItems.OfType<JsonObject>().First(x=>x["id"]!.GetValue<string>()=="short-edge.transverse-strict-lifecycle");
+        if(w["dimensions"]!["function"]!["status"]!.GetValue<string>()!="pass")Issue("witness function must be pass (executed scope)");
+        if(w["dimensions"]!["mass"]!["status"]!.GetValue<string>()!="fail")Issue("witness mass must be point-gate fail");
+        if(!w["dimensions"]!["mass"]!["note"]!.GetValue<string>().Contains("1.2044611267910417E-07"))Issue("witness mass note must keep both cut stage values");
+        if(s["dimensions"]!["function"]!["status"]!.GetValue<string>()!="unverified")Issue("strict must be unverified (no execution evidence)");
     }
     foreach(var cid in cylinderQueryIds)
     {

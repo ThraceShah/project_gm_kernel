@@ -7,7 +7,7 @@ import { formatDateTime } from '../utils/formatters';
 
 interface OverviewPanelProps {
   overview: ProjectOverview;
-  onOpenRuns: (runId?: string, caseId?: string) => void;
+  onOpenRuns: (runId?: string, caseId?: string, stepId?: string) => void;
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -111,21 +111,25 @@ export const OverviewPanel: React.FC<OverviewPanelProps> = ({ overview, onOpenRu
                         <div key={dim} className="flex items-start gap-2">
                           <span className="w-64"><StatusChip cell={cell} label={dim === 'function' ? '几何拓扑/操作功能' : dim === 'mass' ? '物性数值' : dim === 'query' ? '查询/分类' : '性能观测'} /></span>
                           <span className="flex-1 text-slate-600">{cell.note}
-                            {cell.lastVerified.evidence ? <span className="block text-[10px] text-slate-400 break-all">最后验证：{cell.lastVerified.commit.slice(0, 7)} / {cell.lastVerified.tree} / {cell.lastVerified.host} / exit {cell.lastVerified.exit} · 证据 {cell.lastVerified.evidence}</span> : null}
+                            {cell.lastVerified.evidence ? <span className="block text-[10px] text-slate-400 break-all">最后验证：{cell.lastVerified.commit.slice(0, 7)} / {cell.lastVerified.tree} / {cell.lastVerified.host} / exit {cell.lastVerified.exit} · 私存原件（hash 锚定）：{cell.lastVerified.evidence || '（无）'}</span> : null}
                           </span>
                         </div>
                       );
                     })}
                     <div className="flex items-center gap-2">
+                      <span className="w-64 text-slate-500">来源 runner</span>
+                      <span className="text-slate-600 text-xs">{c.source ?? '-'}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
                       <span className="w-64 text-slate-500">在线产物</span>
                       {c.display ? (
-                        <button data-testid={`catalog-model-${c.id}`} className="text-sky-700 underline" onClick={(e) => { e.stopPropagation(); onOpenRuns(c.display!.runId, c.display!.caseId); }}>
+                        <button data-testid={`catalog-model-${c.id}`} className="text-sky-700 underline" onClick={(e) => { e.stopPropagation(); onOpenRuns(c.display!.runId, c.display!.caseId, c.display!.stepId); }}>
                           查看模型 / 操作步骤 / 证据 ↗
                         </button>
                       ) : (
                         <span className="text-slate-400">无在线模型（原始证据见来源/归档索引；已归档/未采集不造 404）</span>
                       )}
-                      {c.display && <span className="text-[10px] text-slate-400">{c.display.note} · run {c.display.runId} / case {c.display.caseId}</span>}
+                      {c.display && <span className="text-[10px] text-slate-400">{c.display.note} · run {c.display.runId} / case {c.display.caseId} / 步骤 {c.display.stepId}</span>}
                     </div>
                     <div>
                       <div className="font-semibold text-slate-600 mb-0.5">历史验证（各版本分别标注，不互相顶替）</div>
