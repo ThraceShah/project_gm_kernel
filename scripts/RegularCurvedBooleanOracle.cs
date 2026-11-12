@@ -43,8 +43,9 @@ using(host)unsafe
             try
             {
                 Exception? ownFailure=null,nativeFailure=null;int[] ours=[],reference=[];var intermediate=new Dictionary<string,int>();
-                try{ours=Produce(true,kind,function,evidenceDirectory:directory);}catch(Exception ex){ownFailure=ex;}
-                try{reference=Produce(false,kind,function,evidenceDirectory:directory,intermediate:intermediate);}catch(Exception ex){nativeFailure=ex;}
+                var oursTracking=new List<string>();var nativeTracking=new List<string>();
+                try{ours=Produce(true,kind,function,evidenceDirectory:directory,trackingEnabled:args.Contains("--tracking",StringComparer.Ordinal),trackingShape:oursTracking);}catch(Exception ex){ownFailure=ex;}
+                try{reference=Produce(false,kind,function,evidenceDirectory:directory,intermediate:intermediate,trackingEnabled:args.Contains("--tracking",StringComparer.Ordinal),trackingShape:nativeTracking);}catch(Exception ex){nativeFailure=ex;}
                 foreach(var stage in intermediate)
                 {
                     try
@@ -58,6 +59,7 @@ using(host)unsafe
                     finally{var copy=stage.Value;Check(PK_ENTITY_delete(1,&copy),"release intermediate independent product");}
                 }
                 if(ownFailure!=null||nativeFailure!=null)throw new AggregateException(new[]{ownFailure,nativeFailure}.OfType<Exception>());
+                Require(oursTracking.Order().SequenceEqual(nativeTracking.Order()),name+" tracking source owner/class relations");
                 Require(ours.Length==reference.Length,name+" body count");
                 var matched=new bool[reference.Length];
                 for(var i=0;i<ours.Length;i++)
@@ -81,7 +83,7 @@ using(host)unsafe
     finally{KernelRuntime.TraceFiniteBoundary=null;Check(KernelRuntime.SessionStop(),"own session stop");}
 }
 
-static unsafe int[] Produce(bool own,string kind,int function,double tolerance=1e-5,double scale=1,string? evidenceDirectory=null,Dictionary<string,int>? intermediate=null)
+static unsafe int[] Produce(bool own,string kind,int function,double tolerance=1e-5,double scale=1,string? evidenceDirectory=null,Dictionary<string,int>? intermediate=null,bool trackingEnabled=false,List<string>? trackingShape=null)
 {
     var target=Roof(own,0,0,0,.8);int tool;
     if(kind.StartsWith("same-domain",StringComparison.Ordinal))
@@ -97,7 +99,7 @@ static unsafe int[] Produce(bool own,string kind,int function,double tolerance=1
     else if(kind=="enclosed-target")tool=Block(own,.5,.5,-.25,3,3,3);
     else tool=Block(own,.25,.25,.25,1,1,1);
     if(scale!=1){ScaleSource(own,target,scale);ScaleSource(own,tool,scale);}
-    var options=new PK_BODY_boolean_o_t{function=function,default_tol=tolerance,tracking=PK_LOGICAL_false};int count;int* bodies;
+    var options=new PK_BODY_boolean_o_t{function=function,default_tol=tolerance,tracking=trackingEnabled?PK_LOGICAL_true:PK_LOGICAL_false};int count;int* bodies;
     if(kind is "continuous" or "reloaded" or "reloaded-block")
     {
         var first=options;first.function=PK_boolean_subtract_c;
@@ -130,9 +132,24 @@ static unsafe int[] Produce(bool own,string kind,int function,double tolerance=1
         File.WriteAllBytes(Path.Combine(evidenceDirectory,$"{kind}-{function}-{side}-target-before.x_t"),own?Transmit(target):TransmitNative(target));
         for(var i=0;i<toolCount;i++)File.WriteAllBytes(Path.Combine(evidenceDirectory,$"{kind}-{function}-{side}-tool{i+1}-before.x_t"),own?Transmit(tools[i]):TransmitNative(tools[i]));
     }
-    if(WebProgressCapture.Enabled)
+    if(WebProgressCapture.Enabled||trackingEnabled)
     {
-        // Preserve the oracle's tracking=false option: this GM curved path rejects tracking=true.
+        var originalOwners=new Dictionary<int,(int Owner,int Class)>();
+        if(trackingEnabled)
+        {
+            var inputs=new[]{target}.Concat(new ReadOnlySpan<int>(tools,toolCount).ToArray()).ToArray();
+            for(var b=0;b<inputs.Length;b++)
+            {
+                foreach(var cls in new[]{PK_CLASS_face,PK_CLASS_edge})
+                {
+                    int n;int* topology;
+                    Check(own?(cls==PK_CLASS_face?KernelRuntime.BodyAskFaces(inputs[b],&n,&topology):KernelRuntime.BodyAskEdges(inputs[b],&n,&topology))
+                        :(cls==PK_CLASS_face?PK_BODY_ask_faces(inputs[b],&n,&topology):PK_BODY_ask_edges(inputs[b],&n,&topology)),"snapshot original tracking topology");
+                    try{for(var t=0;t<n;t++)originalOwners.Add(topology[t],(b,cls));}
+                    finally{Check(own?KernelRuntime.MemoryFree(topology):PK_MEMORY_free(topology),"free original tracking topology");}
+                }
+            }
+        }
         WebProgressCapture.Before(own,target,[],"PK_BODY_boolean_2",new ReadOnlySpan<int>(tools,toolCount).ToArray());
     WebProgressCapture.BooleanParameters(own,options);
         PK_TOPOL_track_r_t tracking=default;PK_boolean_r_t result=default;
@@ -143,6 +160,25 @@ static unsafe int[] Produce(bool own,string kind,int function,double tolerance=1
         try
         {
             var output=error==0?new ReadOnlySpan<int>(result.bodies,result.n_bodies).ToArray():[];
+            Console.WriteLine($"TRACK_API side={(own?"gm":"pk")} case={kind}-{function} error={error} records={tracking.n_track_records}");
+            var seenProducts=new HashSet<int>();
+            for(var i=0;i<tracking.n_track_records;i++)
+            {
+                var record=tracking.track_records[i];
+                Console.WriteLine($"TRACK_RECORD side={(own?"gm":"pk")} kind={record.track} originals={string.Join(',',new ReadOnlySpan<int>(record.original_topols,record.n_original_topols).ToArray())} classes={string.Join(',',new ReadOnlySpan<int>(record.original_classes,record.n_original_topols).ToArray())} products={string.Join(',',new ReadOnlySpan<int>(record.product_topols,record.n_product_topols).ToArray())}");
+                if(trackingEnabled)
+                {
+                    var origins=new List<string>();
+                    for(var t=0;t<record.n_original_topols;t++)
+                    {
+                        Require(originalOwners.TryGetValue(record.original_topols[t],out var source)&&source.Class==record.original_classes[t],"actual original topology and class");
+                        origins.Add(source.Owner+":"+source.Class);
+                    }
+                    Require(record.n_product_topols==1&&seenProducts.Add(record.product_topols[0]),"one uniquely tracked product edge");
+                    int cls;Check(own?KernelRuntime.EntityAskClass(record.product_topols[0],&cls):PK_ENTITY_ask_class(record.product_topols[0],&cls),"published tracking product");Require(cls==PK_CLASS_edge,"tracked edge class");
+                    trackingShape?.Add(record.track+"/"+string.Join(',',origins.Order())+"/"+cls);
+                }
+            }
             WebProgressCapture.BooleanAfter(own,output,ms,error,result.result,&tracking);Check(error,"web tracked Boolean");return output;
         }
         finally {if(own){KernelRuntime.TopolTrackResultFree((M.PK_TOPOL_track_r_s*)&tracking);KernelRuntime.BooleanResultFree((M.PK_boolean_r_s*)&result);}else{PK_TOPOL_track_r_f(&tracking);PK_boolean_r_f(&result);}}

@@ -38,6 +38,7 @@ internal static unsafe partial class KernelRuntime
     {
         internal Span<KernelVector3> Points;
         internal Span<BoundaryEventId> EventAliases;
+        internal Span<BufferOffset> EdgeAliases;
         internal Span<ModelingEdge> InputEdges;
         internal Span<VertexSlot> OriginalVertices;
         internal Span<double> VertexPrecisions;
@@ -63,6 +64,17 @@ internal static unsafe partial class KernelRuntime
         internal BufferCount ParameterCount;
         internal BufferCount NP,NE,NC,NL,NF;
         internal double Tolerance;
+
+        internal BufferOffset CanonicalEdge(BufferOffset edge)
+        {
+            if(!EdgeAliases.IsEmpty)while(EdgeAliases[edge]!=edge)edge=EdgeAliases[edge];
+            return edge;
+        }
+
+        internal void AliasEdge(BufferOffset from,BufferOffset to)
+        {
+            if(!EdgeAliases.IsEmpty)EdgeAliases[CanonicalEdge(from)]=CanonicalEdge(to);
+        }
 
         internal BoundaryEventId CanonicalEvent(BoundaryEventId point)
         {
@@ -302,6 +314,7 @@ internal static unsafe partial class KernelRuntime
             index=-1;
             if(NE==Edges.Length)return ParasolidConstants.PK_ERROR_not_implemented;
             index=NE;CutEdges[NE]=cut?(byte)1:(byte)0;
+            if(!EdgeAliases.IsEmpty)EdgeAliases[NE]=NE;
             Edges[NE++]=new(){Curve=curve,Start=first,End=last,StartVertex=start,EndVertex=end};return 0;
         }
     }

@@ -17,12 +17,12 @@ internal static unsafe partial class KernelRuntime
     private static int RegularCurvedBoolean(ReadOnlySpan<BodyTag> inputs,PK_BODY_boolean_o_s* options,PK_TOPOL_track_r_s* tracking,PK_boolean_r_s* result)
     {
         LastRegularBooleanStage=RegularBooleanStage.Read;LastRegularBooleanFace=LastRegularBooleanOtherFace=-1;
-        if(options->merge_imprinted!=0||options->tracking!=0)return ParasolidConstants.PK_ERROR_not_implemented;
+        if(options->merge_imprinted!=0)return ParasolidConstants.PK_ERROR_not_implemented;
         var scratch=CommandScratch.Current;
         var tangencyWords=(SheetPointLimit*sizeof(BoundaryTangency)+sizeof(double)-1)/sizeof(double);
         var memory=scratch.Take(213000+2*SheetPointLimit+tangencyWords);if(memory.IsEmpty)return ParasolidConstants.PK_ERROR_memory_full;
         ModelingPerformance.Context performance=default;using var measurement=new ModelingPerformance.Scope(&performance,immutableGeometry:true);ModelingPerformance.Stage(RegularBooleanStage.Read);
-        var ownedCount=0;Span<double> sectionChartMemory=default,incidenceMemory=default;
+        var ownedCount=0;Span<double> sectionChartMemory=default,incidenceMemory=default,trackingMemory=default;
         try
         {
             var bytes=MemoryMarshal.AsBytes(memory);var cursor=0;
@@ -39,6 +39,7 @@ internal static unsafe partial class KernelRuntime
             Span<BoundaryEventId> aliases=stackalloc BoundaryEventId[SheetPointLimit];
             for(var i=0;i<aliases.Length;i++)aliases[i]=i;
             model.EventAliases=aliases;
+            Span<RegularBooleanOrigin> origins=default;
             var inputEdges=ModelSpan<ModelingEdge>(bytes,ref cursor,RegularInputEdges);var originalEdges=ModelSpan<EdgeSlot>(bytes,ref cursor,RegularInputEdges);
             var inputCoedges=ModelSpan<ModelingCoedge>(bytes,ref cursor,RegularInputCoedges);var inputLoops=ModelSpan<ModelingLoop>(bytes,ref cursor,RegularInputLoops);
             var inputFaces=ModelSpan<ModelingFace>(bytes,ref cursor,RegularInputFaces);var sources=ModelSpan<FaceSlot>(bytes,ref cursor,RegularInputFaces);
@@ -181,6 +182,16 @@ internal static unsafe partial class KernelRuntime
                 error=ArrangeSheetFace(sources[f],0,sourceEdges[..ne],faceCuts[..n],ref model,halfedges,cycleCoedges,cycles,true,coincident);if(error!=0)return error;
             }
             LastRegularBooleanStage=RegularBooleanStage.Classify;ModelingPerformance.Stage(RegularBooleanStage.Classify);
+            if(options->tracking!=0)
+            {
+                trackingMemory=scratch.Take((SheetEdgeLimit*sizeof(BufferOffset)+model.NC*sizeof(RegularBooleanOrigin)+sizeof(double)-1)/sizeof(double));
+                if(trackingMemory.IsEmpty)return ParasolidConstants.PK_ERROR_memory_full;
+                var originBytes=MemoryMarshal.AsBytes(trackingMemory);var originCursor=0;
+                model.EdgeAliases=ModelSpan<BufferOffset>(originBytes,ref originCursor,SheetEdgeLimit);
+                for(var e=0;e<model.NE;e++)model.EdgeAliases[e]=e;
+                origins=ModelSpan<RegularBooleanOrigin>(originBytes,ref originCursor,model.NC);
+            }
+            var originCount=ReadRegularBooleanOrigins(ref model,origins);
             if(coincident){error=UnifyRegularCoincidentEdges(ref model);if(error!=0)return error;}
             Span<byte> selected=stackalloc byte[model.NF],reversed=stackalloc byte[model.NF];selected.Clear();reversed.Clear();
             Span<BufferOffset> bodyFaces=stackalloc BufferOffset[RegularInputFaces];Span<bool> minus=stackalloc bool[inputs.Length],plus=stackalloc bool[inputs.Length];
@@ -248,12 +259,12 @@ internal static unsafe partial class KernelRuntime
                     error=ReduceProjectedRollingCells(TagRec(inputs[0]).Slot,input,sources[..nf],ref model,selected,reversed,owned,ref ownedCount,
                         halfedges,cycleCoedges,cycles);if(error!=0)return error;
                 }
-                error=BuildRegularBooleanProducts(inputs,ref model,selected[..model.NF],reversed[..model.NF],options,result);if(error!=0)return error;
+                error=BuildRegularBooleanProducts(inputs,ref model,selected[..model.NF],reversed[..model.NF],sourceEdges[..ne],origins[..originCount],options,tracking,result);if(error!=0)return error;
                 if(!targetClash)result->result=ParasolidConstants.PK_boolean_result_no_clash_c;
             }
             for(var i=0;i<ownedCount;i++){var curve=owned[i].Curve;error=EntityDelete(1,&curve);if(error!=0)return error;}
             return 0;
         }
-        finally{scratch.Return(incidenceMemory);scratch.Return(sectionChartMemory);scratch.Return(memory);}
+        finally{scratch.Return(trackingMemory);scratch.Return(incidenceMemory);scratch.Return(sectionChartMemory);scratch.Return(memory);}
     }
 }

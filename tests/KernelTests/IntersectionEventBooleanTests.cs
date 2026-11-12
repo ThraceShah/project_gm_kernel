@@ -17,7 +17,7 @@ public unsafe class IntersectionEventBooleanTests:IDisposable
         var target=RegularCurvedBooleanTests.RoofSolid();var tool=RegularCurvedBooleanTests.RoofSolid();
         Subtract(target,BooleanOperationTests.Block(.1,.5,.25,.6,2,2));Subtract(tool,BooleanOperationTests.Block(.9,.5,.25,.6,2,2));
         if(reload){Assert.Equal(0,XtBrepImportTests.Receive(XtBrepImportTests.Transmit(tool),out var loaded));Assert.Equal(0,KernelRuntime.EntityDelete(1,&tool));tool=loaded;}
-        var options=BooleanOperationTests.Options(function);int count;int* products;
+        var options=BooleanOperationTests.Options(function);options.tracking=1;int count;int* products;
         var error=KernelRuntime.BodyBoolean(target,1,&tool,&options,&count,&products);
         Assert.True(error==0,$"error={error}, stage={KernelRuntime.LastRegularBooleanStage}, pair={KernelRuntime.LastRegularBooleanFace}/{KernelRuntime.LastRegularBooleanOtherFace}, curve={KernelRuntime.LastSheetCurve}, t={KernelRuntime.LastSheetParameter}, sheet={KernelRuntime.LastSheetPartitionStage}, status={KernelRuntime.LastSheetAlgorithmStatus}, uv={KernelRuntime.LastSheetRayU}/{KernelRuntime.LastSheetRayV}");
         try
@@ -56,11 +56,21 @@ public unsafe class IntersectionEventBooleanTests:IDisposable
         var target=RegularCurvedBooleanTests.RoofSolid();int tool;
         if(reload)Assert.Equal(0,XtBrepImportTests.Receive(XtBrepImportTests.Transmit(target),out tool));
         else Assert.Equal(0,KernelRuntime.EntityCopy(target,&tool));
-        var options=BooleanOperationTests.Options(function);int count;int* products;
-        var error=KernelRuntime.BodyBoolean(target,1,&tool,&options,&count,&products);
+        var options=BooleanOperationTests.Options(function);options.tracking=1;PK_TOPOL_track_r_s tracking=default;PK_boolean_r_s result=default;
+        var error=KernelRuntime.BodyBoolean2(target,1,&tool,&options,&tracking,&result);var count=result.n_bodies;var products=result.bodies;
         Assert.True(error==0,$"error={error}, stage={KernelRuntime.LastRegularBooleanStage}, pair={KernelRuntime.LastRegularBooleanFace}/{KernelRuntime.LastRegularBooleanOtherFace}, curve={KernelRuntime.LastSheetCurve}, t={KernelRuntime.LastSheetParameter}, sheet={KernelRuntime.LastSheetPartitionStage}");
-        try{Assert.Equal(expected,count);if(expected!=0){Assert.Equal(target,products[0]);BooleanOperationTests.Counts(target,6,12,8);Assert.Equal(0,KernelRuntime.EntityDelete(1,&target));}}
-        finally{if(products!=null)KernelRuntime.MemoryFree(products);}
+        try
+        {
+            Assert.Equal(expected,count);Assert.Equal(expected==0?0:12,tracking.n_track_records);
+            for(var i=0;i<tracking.n_track_records;i++)
+            {
+                var record=tracking.track_records[i];Assert.Equal(2,record.n_original_topols);Assert.Equal(1,record.n_product_topols);
+                Assert.Equal(ParasolidConstants.PK_CLASS_edge,record.original_classes[0]);Assert.Equal(ParasolidConstants.PK_CLASS_edge,record.original_classes[1]);
+                Assert.True(KernelRuntime.IsValidTag(record.product_topols[0]));
+            }
+            if(expected!=0){Assert.Equal(target,products[0]);BooleanOperationTests.Counts(target,6,12,8);Assert.Equal(0,KernelRuntime.EntityDelete(1,&target));}
+        }
+        finally{KernelRuntime.TopolTrackResultFree(&tracking);KernelRuntime.BooleanResultFree(&result);}
         Assert.Equal(0,KernelRuntime.Bodies.AliveCount);Assert.Equal(0,KernelRuntime.Curves.AliveCount);Assert.Equal(0,KernelRuntime.Surfaces.AliveCount);
     }
 }

@@ -9,7 +9,8 @@ namespace ProjectGmKernel.Native.Runtime;
 internal static unsafe partial class KernelRuntime
 {
     private static int BuildRegularBooleanProducts(ReadOnlySpan<BodyTag> inputs,ref SheetArrangement model,
-        ReadOnlySpan<byte> selected,ReadOnlySpan<byte> reversed,PK_BODY_boolean_o_s* options,PK_boolean_r_s* result)
+        ReadOnlySpan<byte> selected,ReadOnlySpan<byte> reversed,ReadOnlySpan<SheetSourceEdge> sourceEdges,ReadOnlySpan<RegularBooleanOrigin> origins,
+        PK_BODY_boolean_o_s* options,PK_TOPOL_track_r_s* tracking,PK_boolean_r_s* result)
     {
         Span<BufferOffset> sourceOwners=stackalloc BufferOffset[model.NF];sourceOwners.Fill(-1);
         for(var f=0;f<model.NF;f++)
@@ -99,6 +100,8 @@ internal static unsafe partial class KernelRuntime
         }
         Span<BodyTag> products=stackalloc BodyTag[componentCount],retained=stackalloc BodyTag[componentCount];retained.Clear();
         Span<FaceSlot> faceProducts=stackalloc FaceSlot[model.NF];faceProducts.Fill(-1);
+        Span<EdgeSlot> edgeProducts=options->tracking==0?default:stackalloc EdgeSlot[model.NE];edgeProducts.Fill(-1);
+        Span<EdgeSlot> builtEdges=options->tracking==0?default:stackalloc EdgeSlot[model.NE];
         Span<FaceSlot> builtFaces=stackalloc FaceSlot[model.NF];Span<byte> cavityFaces=stackalloc byte[model.NF];cavityFaces.Clear();var productCount=0;
         LastRegularBooleanStage=RegularBooleanStage.Assemble;
         for(var c=0;c<componentCount;c++)if(cavity[c]==0)
@@ -111,10 +114,14 @@ internal static unsafe partial class KernelRuntime
             if(reuse)
             {
                 products[productCount]=retained[productCount]=inputs[owner];for(var i=0;i<n;i++)builtFaces[i]=model.Sources[members[i]];
+                if(!edgeProducts.IsEmpty)foreach(var range in sourceEdges)
+                    if(Edges[range.Source].Body==TagRec(inputs[owner]).Slot)
+                        for(var e=range.First;e<range.First+range.Count;e++)edgeProducts[model.CanonicalEdge(e)]=range.Source;
             }
             else
             {
-                var error=CloneRegularBoundaryBody(ref model,members[..n],reversed,cavityFaces,out products[productCount],builtFaces[..n]);if(error!=0)return error;
+                var error=CloneRegularBoundaryBody(ref model,members[..n],reversed,cavityFaces,out products[productCount],builtFaces[..n],builtEdges);if(error!=0)return error;
+                for(var e=0;e<builtEdges.Length;e++)if(builtEdges[e]>=0)edgeProducts[e]=builtEdges[e];
                 if(productCount==0)retained[productCount]=inputs[0];
                 else if(options->function==ParasolidConstants.PK_boolean_unite_c)
                     for(var b=1;b<inputs.Length;b++)
@@ -126,6 +133,10 @@ internal static unsafe partial class KernelRuntime
             }
             productCount++;
             for(var i=0;i<n;i++)faceProducts[members[i]]=builtFaces[i];
+        }
+        if(options->tracking!=0)
+        {
+            var error=CreateRegularBooleanTracking(ref model,first,sourceEdges,origins,edgeProducts,tracking);if(error!=0)return error;
         }
         LastRegularBooleanStage=RegularBooleanStage.Publish;
         Span<FaceSlot> originals=stackalloc FaceSlot[model.NF],replacements=stackalloc FaceSlot[model.NF],moved=stackalloc FaceSlot[model.NF];var movedCount=0;

@@ -233,15 +233,37 @@ public unsafe class RegularCurvedBooleanTests:IDisposable
         finally{KernelRuntime.MemoryFree(faces);KernelRuntime.MemoryFree(edges);KernelRuntime.MemoryFree(vertices);KernelRuntime.MemoryFree(bodies);}
     }
 
-    [Fact]
-    public void UnsupportedTrackingFailsAtomically()
+    [Theory]
+    [InlineData(ParasolidConstants.PK_boolean_unite_c)]
+    [InlineData(ParasolidConstants.PK_boolean_intersect_c)]
+    [InlineData(ParasolidConstants.PK_boolean_subtract_c)]
+    public void CurvedBooleanTrackingUsesOriginalFacesAndPublishedFiniteEdges(int operation)
     {
-        var target=RoofSolid();var tool=BooleanOperationTests.Block(.25,.25,.25,1,1,1);var options=BooleanOperationTests.Options(ParasolidConstants.PK_boolean_subtract_c);options.tracking=1;
-        var curves=KernelRuntime.Curves.AliveCount;var surfaces=KernelRuntime.Surfaces.AliveCount;var blocks=KernelRuntime.ReturnOutstandingBlocks;
+        var target=RoofSolid();var tool=BooleanOperationTests.Block(.25,.25,.25,1,1,1);var options=BooleanOperationTests.Options(operation);options.tracking=1;
+        int count;int* tags;Assert.Equal(0,KernelRuntime.BodyAskFaces(target,&count,&tags));var targetFaces=new ReadOnlySpan<int>(tags,count).ToArray();KernelRuntime.MemoryFree(tags);
+        Assert.Equal(0,KernelRuntime.BodyAskFaces(tool,&count,&tags));var toolFaces=new ReadOnlySpan<int>(tags,count).ToArray();KernelRuntime.MemoryFree(tags);
         PK_TOPOL_track_r_s tracking=default;PK_boolean_r_s result=default;
-        Assert.Equal(ParasolidConstants.PK_ERROR_not_implemented,KernelRuntime.BodyBoolean2(target,1,&tool,&options,&tracking,&result));
-        Assert.Equal(0,result.n_bodies);Assert.True(result.bodies==null);BooleanOperationTests.Counts(target,6,12,8);BooleanOperationTests.Counts(tool,6,12,8);
-        Assert.Equal(curves,KernelRuntime.Curves.AliveCount);Assert.Equal(surfaces,KernelRuntime.Surfaces.AliveCount);Assert.Equal(blocks,KernelRuntime.ReturnOutstandingBlocks);
+        var error=KernelRuntime.BodyBoolean2(target,1,&tool,&options,&tracking,&result);
+        Assert.True(error==0,$"error={error} stage={KernelRuntime.LastRegularBooleanStage} pair={KernelRuntime.LastRegularBooleanFace}/{KernelRuntime.LastRegularBooleanOtherFace} sheet={KernelRuntime.LastSheetPartitionStage} status={KernelRuntime.LastSheetAlgorithmStatus}");
+        try
+        {
+            Assert.Equal(6,tracking.n_track_records);Assert.Equal(1,result.n_bodies);
+            for(var i=0;i<tracking.n_track_records;i++)
+            {
+                var record=tracking.track_records[i];Assert.Equal(ParasolidConstants.PK_TOPOL_track_derive_c,record.track);
+                Assert.Equal(2,record.n_original_topols);Assert.Equal(1,record.n_product_topols);
+                var origins=new ReadOnlySpan<int>(record.original_topols,2).ToArray();
+                Assert.Single(origins.Intersect(targetFaces));Assert.Single(origins.Intersect(toolFaces));
+                Assert.Equal(ParasolidConstants.PK_CLASS_face,record.original_classes[0]);Assert.Equal(ParasolidConstants.PK_CLASS_face,record.original_classes[1]);
+                var edge=KernelRuntime.ResolveTagRecord(record.product_topols[0]);Assert.Equal((byte)PoolKind.Edge,edge.Pool);
+                Assert.Equal(KernelRuntime.ResolveTagRecord(result.bodies[0]).Slot,KernelRuntime.Edges[edge.Slot].Body);
+                Assert.True(KernelRuntime.Edges[edge.Slot].ParameterEnd>KernelRuntime.Edges[edge.Slot].ParameterStart);
+            }
+            var body=result.bodies[0];var bytes=XtBrepImportTests.Transmit(body);var copy=0;Assert.Equal(0,KernelRuntime.EntityCopy(body,&copy));
+            Assert.Equal(0,KernelRuntime.EntityDelete(1,&body));Assert.True(XtBrepImportTests.Transmit(copy).Length>0);
+            Assert.True(bytes.Length>0);Assert.Equal(0,KernelRuntime.EntityDelete(1,&copy));
+        }
+        finally{Assert.Equal(0,KernelRuntime.TopolTrackResultFree(&tracking));Assert.Equal(0,KernelRuntime.BooleanResultFree(&result));}
     }
 
     [Fact]

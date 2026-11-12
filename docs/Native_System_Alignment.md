@@ -52,3 +52,40 @@
 
 验证不增加算法预算、不调高容差、不删证明。无 C ABI 改动不执行 NativeAOT。
 持久说明放在 docs，原始新运行放在 temp_docs；历史 query/numerics 279 制品保持只读。
+
+## 第一项共同机制：有限来源随归并传递
+
+真实 PK 同输入曲面 Boolean 的基本追踪返回 derive 记录，来源可以是 face/face、
+edge/face 或 edge/edge。同域相同实体的 unite/intersect 返回十二条 edge/edge，
+部分同域 overlay 返回二十二条；因此仅从最终存活面的两个 owner 反推来源不成立。
+初版试验的 45 项几何均通过，却在这些类别漏追踪；原始结果保留，不能算完整追踪通过。
+
+实现保留材料选择前实际 face/coedge 的来源行，有限原边片段继续绑定原 edge。
+只有既有 EquivalentRegularEdges 证明归并或共同边合并实际执行时才传递 edge alias。
+发布从真实 alias、来源片段和建成 edge slot 输出关系，原 edge 优先于其本体内的
+incident faces；不做结果中点反求。临时来源不进入 XT 或 geometry 定义。
+tracking=false 不分配来源行；tracking=true 的来源工作区在 SSI/arrangement 完成后
+才借用，长度按实际 coedge 数，避免占用求交工作区。早期提前借用导致真实 157 的
+失败日志保留在 `temp_docs/native-system-alignment/lineage-{managed,focus}.*`。
+
+实际验证：
+
+- `lineage-verified-managed.log/.exit`：57/57，原 exit 0，覆盖曲面三操作、同域
+  不同有限环、同域 copy/reload、既有失败及 allocation rollback；allocation guard CLEAN。
+- `tracking-lineage-verified.log/.exit`：45/45 独立建模，GM fresh XT 真实 PK receive、
+  完整检查、原 strict comparator、每个产品 125 材料点及已有连续/reload 消费者通过。
+  新检查逐条核来源确属调用前输入、原 class、成品 edge 有效且不重复，并与 PK 比较
+  来源 owner/class 关系的多重集；这不冒称已证明每个原 face 的几何对应。
+  物性另有 47 次 Unresolved，原进程 exit 2，不签整体数值通过。
+- `tracking-lineage-domain.*`：12 同域控制的实际记录数与 PK 一致，原 exit 2，
+  物性十次 Unresolved；它是上一快照的开发证据。
+- bounded GDB 实际命中 start_tracking、ISS__phase2、MAR_explore、end_tracking、
+  process_boolean_tracking、fill_TOPOL_track_r。求交栈实际经过 face_face、
+  target_topols_x_tool_topols、ISS_intersect_regions、ISS2_pursue_bdry_data。
+  `tracking-baseline-gdb-sequential.*` debugger exit 0，inferior 的物性未决另记；
+  后两个断点发生在第二次 native Boolean，不能声称六点是同一次调用的全链。
+  首次多行 `-ex commands` 没有执行命令块，只停在首断点；该日志不作处理链证据。
+
+本增量仅接受 basic tracking；complete/region tracking 仍明确未实现，不用 basic 返回
+冒充其他选项。下一项沿同一来源图处理保留边/顶点的 tag persistence 与生命周期，
+再继续精度、依赖和剩余建模类别；本次小提交不表示原总体目标已完成。

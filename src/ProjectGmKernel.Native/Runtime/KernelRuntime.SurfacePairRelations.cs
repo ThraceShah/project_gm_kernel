@@ -245,7 +245,7 @@ internal static unsafe partial class KernelRuntime
             for(var p=0;p<e;p++)
             {
                 if(canonical[p]!=p)continue;var error=EquivalentRegularEdges(edge,model.Edges[p],roots,out var equivalent,out var flip);if(error!=0)return error;if(!equivalent)continue;
-                canonical[e]=p;reverse[e]=flip;break;
+                canonical[e]=p;reverse[e]=flip;model.AliasEdge(e,p);break;
             }
         }
         for(var c=0;c<model.NC;c++){ref var coedge=ref model.Coedges[c];coedge.Forward^=reverse[coedge.Edge];coedge.Edge=canonical[coedge.Edge];}

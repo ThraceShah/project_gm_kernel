@@ -134,6 +134,7 @@ internal static unsafe partial class KernelRuntime
                 if((positive?ea.EndVertex:ea.StartVertex)!=v||(positive?eb.StartVertex:eb.EndVertex)!=v)continue;
                 var merged=ea;merged.End=eb.End;if(positive)merged.EndVertex=eb.EndVertex;else merged.StartVertex=eb.StartVertex;
                 model.Edges[a]=merged;
+                model.AliasEdge(b,a);
                 for(var l=0;l<model.NL;l++)
                 {
                     var loop=model.Loops[l];var write=loop.FirstCoedge;var previous=-1;
