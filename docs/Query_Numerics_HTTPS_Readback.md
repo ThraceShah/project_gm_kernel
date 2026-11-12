@@ -27,3 +27,19 @@
 另有两项应按已接受原文澄清的来源描述：Joint 本次是只读标准重判，不能由 `operation/apis=PK_TOPOL_eval_mass_props` 的通用配对模板暗示新执行了 GM/PK 双边积分；FAQ 新增“严格求交/修剪/拓扑重构是 1e-8/1e-5 局部逼近”的普遍断言，独验原文没有给出该算法精度范围，应回到“有效性/容差比较不等于全域零误差和积分预算”的实际结论。
 
 这些差异不撤销 `3e7ac1b` 的 Native/数学接受，也不改变原始模型、2025/2025 或未决数值账。当前仅完成真实内容读回并交发布 owner 自修；在更正资源实际上线并窄读回前，不结算整个任务完成。
+
+## 修订发布窄读回完成
+
+发布 owner 在固定提交 `4e5b97254f29668b8d736f41c92143b1a0783a1e` 自修上述元数据，并发布修订 run **`20261112T072500Z-queryab597`**。本轮不重开 UI review，不重跑计算，也不等待其他性能事件。
+
+`ReadQueryPublicationRevision.cs online-readback-v2` 的真实执行原 exit **0**：**5 个 HTTPS 请求、115 项核对、0 差异**。机器收据为 `docs/query-numerics-closure-online/readback-v2.json`；原响应、日志与 exit 位于 `temp_docs/query-numerics-closure/online-readback-v2*`。首次窄核辅助脚本有一处括号编译错误，原 exit 1 留存为 `online-readback-v2.log/.exit`，没有执行 HTTP；修正后的实际执行日志/exit 为 `online-readback-v2-final.log/.exit`，两者未混写。
+
+- 新 manifest 实际 HTTP 200，25,730B / SHA `72822fa82b97dbdfcad89a1eeb24ca7d3ef18be2a82881180773450f3bc222df`；计算/交付/Native 数学独验仍为固定 `ab597` / `f633` / `3e7ac1b`。
+- 两个等距 chamfer `.4/.4`、unequal `.3/.6`、radius=null、两个 fillet radius=.4，以及 GM/PK 两侧 mark/fix 和实际 tolerance 均与原 Capture 一致。
+- 510 详情与原两 direct check 为 diagnostic、correctnessQualified=false，15/16U 保持；producer 为实际 ShortEdgeBlendOracle。Joint 为 ReviewMassCertification@ab597 的只读报告重判，无新双边积分语义；套件为 GM 单侧 2025，通过数与原执行一致，PK 不适用且计数为 null。FAQ 无依据的普遍精度区间已删除。
+- 463 整目录、五 query pass、功能/物性与性能分源保留；其他有效 run 的索引对象与首次实际读回逐 JSON 相同，只替换已证错元数据 run。
+- 新 run 的 gzip 实际 HTTP 200，与首次真实 HTTPS gzip **逐字节相同**（257,328B / SHA `3f29e8dc9965978bbef9e7e0b7db1b509e4b6e119b9ebbd653368e91a29db270`）；再次解压与 f633 原结果 **逐字节相同**（5,247,186B / SHA `aed7c9787a03bbb798f7a7be0f9f3b832400c15956af205a7b55662e4866bd60`）。完整当前列、历史缺失、Joint 新旧账及原输入/质量身份均未改。
+- 旧错元数据 manifest 实际 HTTP 404；声明的只读归档全部 **19 文件**逐长度/SHA 核同，原 manifest 仍为 `e8bb5c626e9e2154c24e5c53ac6238b8b0551966817d9be2ce63e313a777d742`。
+- 按协调要求没有重复 HTTP 下载 12 个未改模型；逐个核实“首次实际 HTTPS 响应 == 完整只读归档 == 修订发布源文件”字节/哈希链。此项为明确的来源保持证明，不补造第二次 HTTP 模型观察。
+
+**本任务代码、集中独验、数据发布及实际读回交接已闭环。** 首次 readback raw 2 和旧错元数据原件保留，不被本次 raw 0 洗绿。Native/数学接受仍仅限独验报告明示范围；510 四方相等未决、历史 self 其余 495 原列缺失、Joint 重判 588 个未决分量和一般曲面/任意 precision 认证边界均继续保留。没有宣称 main 合并、合一 binary、全部 M0–M5 完成或 PK 性能目标达成。

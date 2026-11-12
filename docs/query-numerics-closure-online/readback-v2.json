@@ -1,0 +1,355 @@
+{
+  "runId": "20261112T072500Z-queryab597",
+  "publicationCommit": "4e5b97254f29668b8d736f41c92143b1a0783a1e",
+  "readOnly": true,
+  "noModelingTestsOrUiReview": true,
+  "accepted": true,
+  "sourceSha256": "2a7eb5369ad6c52a828241eed02b2a1f9c11af2ab4cb623aed72b1424c6904f9",
+  "reads": [
+    {
+      "url": "https://qingyu1-linux.tail77e06.ts.net/apps/gm-kernel-progress/data/runs/20261112T072500Z-queryab597/manifest.json",
+      "utc": "2026-11-12T07:34:13.7594893+00:00",
+      "status": 200,
+      "bytes": 25730,
+      "sha256": "72822fa82b97dbdfcad89a1eeb24ca7d3ef18be2a82881180773450f3bc222df",
+      "saved": "data_runs_20261112T072500Z-queryab597_manifest.json"
+    },
+    {
+      "url": "https://qingyu1-linux.tail77e06.ts.net/apps/gm-kernel-progress/data/index.json",
+      "utc": "2026-11-12T07:34:13.7705859+00:00",
+      "status": 200,
+      "bytes": 3290,
+      "sha256": "38bf40468c95a48a048bbebf46abc3d2c80cc9607763e78a2b0477a9b49b3d95",
+      "saved": "data_index.json"
+    },
+    {
+      "url": "https://qingyu1-linux.tail77e06.ts.net/apps/gm-kernel-progress/data/project-overview.json",
+      "utc": "2026-11-12T07:34:13.8578819+00:00",
+      "status": 200,
+      "bytes": 823016,
+      "sha256": "98a7c2049546560db19fa54a2eba19d1988ab9075ab25283abe456d6bcc48ff7",
+      "saved": "data_project-overview.json"
+    },
+    {
+      "url": "https://qingyu1-linux.tail77e06.ts.net/apps/gm-kernel-progress/data/runs/20261112T072500Z-queryab597/evidence/results.gz.json",
+      "utc": "2026-11-12T07:34:13.9062607+00:00",
+      "status": 200,
+      "bytes": 257328,
+      "sha256": "3f29e8dc9965978bbef9e7e0b7db1b509e4b6e119b9ebbd653368e91a29db270",
+      "saved": "data_runs_20261112T072500Z-queryab597_evidence_results.gz.json"
+    },
+    {
+      "url": "https://qingyu1-linux.tail77e06.ts.net/apps/gm-kernel-progress/data/runs/20261112T132500Z-queryab597/manifest.json",
+      "utc": "2026-11-12T07:34:13.9305726+00:00",
+      "status": 404,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "saved": "data_runs_20261112T132500Z-queryab597_manifest.json"
+    }
+  ],
+  "checks": [
+    "actual HTTP 200 data/runs/20261112T072500Z-queryab597/manifest.json",
+    "fixed corrected manifest bytes/hash",
+    "actual HTTP 200 data/index.json",
+    "actual HTTP 200 data/project-overview.json",
+    "corrected run indexed with source",
+    "only erroneous run removed from active index",
+    "other indexed run preserved 20261112T045837Z-projcc47871",
+    "other indexed run preserved 20261112T002227Z-uperf1654",
+    "other indexed run preserved 20261111T223759Z-unified4b",
+    "other indexed run preserved 20261111T211605Z-gconic217fc",
+    "other indexed run preserved 20261111T190547Z-integrated1887",
+    "other indexed run preserved 20261111T174315Z-blend60be",
+    "other indexed run preserved 20261110T195008Z-610e3ce8",
+    "calculation/delivery/Native-review sources unchanged",
+    "cylinder-rim-chamfer actual radius",
+    "cylinder-rim-chamfer gm actual radius",
+    "cylinder-rim-chamfer pk actual radius",
+    "cylinder-rim-chamfer actual range0",
+    "cylinder-rim-chamfer gm actual range0",
+    "cylinder-rim-chamfer pk actual range0",
+    "cylinder-rim-chamfer actual range1",
+    "cylinder-rim-chamfer gm actual range1",
+    "cylinder-rim-chamfer pk actual range1",
+    "cylinder-rim-chamfer actual tolerance",
+    "cylinder-rim-chamfer gm actual tolerance",
+    "cylinder-rim-chamfer pk actual tolerance",
+    "cylinder-rim-chamfer mark/fix separated",
+    "cylinder-both-rim-chamfer actual radius",
+    "cylinder-both-rim-chamfer gm actual radius",
+    "cylinder-both-rim-chamfer pk actual radius",
+    "cylinder-both-rim-chamfer actual range0",
+    "cylinder-both-rim-chamfer gm actual range0",
+    "cylinder-both-rim-chamfer pk actual range0",
+    "cylinder-both-rim-chamfer actual range1",
+    "cylinder-both-rim-chamfer gm actual range1",
+    "cylinder-both-rim-chamfer pk actual range1",
+    "cylinder-both-rim-chamfer actual tolerance",
+    "cylinder-both-rim-chamfer gm actual tolerance",
+    "cylinder-both-rim-chamfer pk actual tolerance",
+    "cylinder-both-rim-chamfer mark/fix separated",
+    "cylinder-unequal-chamfer actual radius",
+    "cylinder-unequal-chamfer gm actual radius",
+    "cylinder-unequal-chamfer pk actual radius",
+    "cylinder-unequal-chamfer actual range0",
+    "cylinder-unequal-chamfer gm actual range0",
+    "cylinder-unequal-chamfer pk actual range0",
+    "cylinder-unequal-chamfer actual range1",
+    "cylinder-unequal-chamfer gm actual range1",
+    "cylinder-unequal-chamfer pk actual range1",
+    "cylinder-unequal-chamfer actual tolerance",
+    "cylinder-unequal-chamfer gm actual tolerance",
+    "cylinder-unequal-chamfer pk actual tolerance",
+    "cylinder-unequal-chamfer mark/fix separated",
+    "cylinder-rim-fillet actual radius",
+    "cylinder-rim-fillet gm actual radius",
+    "cylinder-rim-fillet pk actual radius",
+    "cylinder-rim-fillet actual tolerance",
+    "cylinder-rim-fillet gm actual tolerance",
+    "cylinder-rim-fillet pk actual tolerance",
+    "cylinder-rim-fillet mark/fix separated",
+    "cylinder-both-rim-fillet actual radius",
+    "cylinder-both-rim-fillet gm actual radius",
+    "cylinder-both-rim-fillet pk actual radius",
+    "cylinder-both-rim-fillet actual tolerance",
+    "cylinder-both-rim-fillet gm actual tolerance",
+    "cylinder-both-rim-fillet pk actual tolerance",
+    "cylinder-both-rim-fillet mark/fix separated",
+    "510 not green/qualified",
+    "510 actual producer",
+    "510 direct unresolved 15/16 retained",
+    "510 check qualification corrected",
+    "Joint actual reassessment source",
+    "Joint read-only execution identity",
+    "suite PK not executed; no synthetic PK count",
+    "original GM suite count preserved",
+    "unsupported FAQ precision range removed",
+    "whole catalog and five query passes retained",
+    "query/norm source remains separate",
+    "actual HTTP 200 data/runs/20261112T072500Z-queryab597/evidence/results.gz.json",
+    "corrected live gzip equals original actual HTTPS bytes",
+    "decoded original payload unchanged",
+    "actual HTTP 404 data/runs/20261112T132500Z-queryab597/manifest.json",
+    "archived original manifest.json",
+    "archived original validation.json",
+    "archived original evidence/five-axial-queries.json",
+    "archived original evidence/mass-reassessment-summary.json",
+    "archived original evidence/query-510-summary.json",
+    "archived original evidence/results.gz.json",
+    "archived original evidence/run-receipt.json",
+    "archived original meshes/gm-2-after-0.json",
+    "mesh previous HTTP/archive/corrected stage hash chain meshes/gm-2-after-0.json",
+    "archived original meshes/gm-2-before.json",
+    "mesh previous HTTP/archive/corrected stage hash chain meshes/gm-2-before.json",
+    "archived original meshes/gm-3-after-0.json",
+    "mesh previous HTTP/archive/corrected stage hash chain meshes/gm-3-after-0.json",
+    "archived original meshes/gm-3-before.json",
+    "mesh previous HTTP/archive/corrected stage hash chain meshes/gm-3-before.json",
+    "archived original meshes/gm-4-after-0.json",
+    "mesh previous HTTP/archive/corrected stage hash chain meshes/gm-4-after-0.json",
+    "archived original meshes/gm-4-before.json",
+    "mesh previous HTTP/archive/corrected stage hash chain meshes/gm-4-before.json",
+    "archived original meshes/pk-2-after-0.json",
+    "mesh previous HTTP/archive/corrected stage hash chain meshes/pk-2-after-0.json",
+    "archived original meshes/pk-2-before.json",
+    "mesh previous HTTP/archive/corrected stage hash chain meshes/pk-2-before.json",
+    "archived original meshes/pk-3-after-0.json",
+    "mesh previous HTTP/archive/corrected stage hash chain meshes/pk-3-after-0.json",
+    "archived original meshes/pk-3-before.json",
+    "mesh previous HTTP/archive/corrected stage hash chain meshes/pk-3-before.json",
+    "archived original meshes/pk-4-after-0.json",
+    "mesh previous HTTP/archive/corrected stage hash chain meshes/pk-4-after-0.json",
+    "archived original meshes/pk-4-before.json",
+    "mesh previous HTTP/archive/corrected stage hash chain meshes/pk-4-before.json",
+    "complete erroneous metadata archive and 12 model sources retained",
+    "original incorrect manifest retained byte-for-byte"
+  ],
+  "archivedFiles": [
+    {
+      "path": "manifest.json",
+      "bytes": 22199,
+      "sha256": "e8bb5c626e9e2154c24e5c53ac6238b8b0551966817d9be2ce63e313a777d742"
+    },
+    {
+      "path": "validation.json",
+      "bytes": 74,
+      "sha256": "f77b244182510f1aab9c127cac55684ee0aa619cdfc4c1cf7e481c14312b54a9"
+    },
+    {
+      "path": "evidence/five-axial-queries.json",
+      "bytes": 10967,
+      "sha256": "5e89a4b423d0d1e6c786fcdd9c6881b1791bc3b5b9aefa74efff66b8c07c0025"
+    },
+    {
+      "path": "evidence/mass-reassessment-summary.json",
+      "bytes": 1237,
+      "sha256": "490fe18a48b341b3046fc020951bcbf36208094b9d9db1fb11f1123a641ecb3f"
+    },
+    {
+      "path": "evidence/query-510-summary.json",
+      "bytes": 1056,
+      "sha256": "6224592e8969817b34119e394482f335d00d748d03a1f46fc09928ff160aa1d0"
+    },
+    {
+      "path": "evidence/results.gz.json",
+      "bytes": 257328,
+      "sha256": "3f29e8dc9965978bbef9e7e0b7db1b509e4b6e119b9ebbd653368e91a29db270"
+    },
+    {
+      "path": "evidence/run-receipt.json",
+      "bytes": 606,
+      "sha256": "7783ceadb0d6e6c9f8ea1cee9289e494fbcbb16a632f1d9a5682a7a371ee7df3"
+    },
+    {
+      "path": "meshes/gm-2-after-0.json",
+      "bytes": 37859,
+      "sha256": "4bd8785d64c152e055bdc083a079b2df7389aeb7b51c7decc8aef61aa73ae16e"
+    },
+    {
+      "path": "meshes/gm-2-before.json",
+      "bytes": 22275,
+      "sha256": "a8a6bfebf4d5414910db1c489daf5135c02a357e5b1261a33605a0b61a7adf9a"
+    },
+    {
+      "path": "meshes/gm-3-after-0.json",
+      "bytes": 53298,
+      "sha256": "ae0eb0becb2031ca5497539fd64cdb597823180707a984e6b221eab9914231de"
+    },
+    {
+      "path": "meshes/gm-3-before.json",
+      "bytes": 22308,
+      "sha256": "b2197e59bfbfefa909f91a6b1777f425d5c381ffae1e9a70f607d60dadca2d7e"
+    },
+    {
+      "path": "meshes/gm-4-after-0.json",
+      "bytes": 37695,
+      "sha256": "ffa8b58e8fe50ce42254c0d395e1649f71f21db2d0cf9d5eef9dbe57041fa7f6"
+    },
+    {
+      "path": "meshes/gm-4-before.json",
+      "bytes": 22284,
+      "sha256": "500ca22729f216d7f8fa79dc3eae1bee73aa343206ab5722a0d51eae8662fc13"
+    },
+    {
+      "path": "meshes/pk-2-after-0.json",
+      "bytes": 38469,
+      "sha256": "ff755aef50d8305c53038d5fd1864d9592101564d2473faaa63c707ddc6b61a1"
+    },
+    {
+      "path": "meshes/pk-2-before.json",
+      "bytes": 22273,
+      "sha256": "bc67f44bf78fc6a2e3ff2e140c636b214c731bdf44986fc6235e48d202dc1b3c"
+    },
+    {
+      "path": "meshes/pk-3-after-0.json",
+      "bytes": 54529,
+      "sha256": "4ac3f4ed5ed9924ef9c04af665d1c62133fbdfccca3c1f1ad378e0c36614a1a0"
+    },
+    {
+      "path": "meshes/pk-3-before.json",
+      "bytes": 22318,
+      "sha256": "b3e15900436d0f2568aad677c853f4c376bbcae38c73cf738609782f0566b69d"
+    },
+    {
+      "path": "meshes/pk-4-after-0.json",
+      "bytes": 38309,
+      "sha256": "ba9a4bbf250340b311fc654cda160458954677f64507cc29fc8ce8f6008546ee"
+    },
+    {
+      "path": "meshes/pk-4-before.json",
+      "bytes": 22294,
+      "sha256": "52176b7f3145e000473f5b62209a5bde46c37db257b18163803471e52010938c"
+    }
+  ],
+  "unchangedMeshSourceBindings": [
+    {
+      "path": "meshes/gm-2-after-0.json",
+      "bytes": 37859,
+      "sha256": "4bd8785d64c152e055bdc083a079b2df7389aeb7b51c7decc8aef61aa73ae16e",
+      "scope": "previous actual HTTP bytes == immutable archive == corrected publication source; not refetched over HTTP"
+    },
+    {
+      "path": "meshes/gm-2-before.json",
+      "bytes": 22275,
+      "sha256": "a8a6bfebf4d5414910db1c489daf5135c02a357e5b1261a33605a0b61a7adf9a",
+      "scope": "previous actual HTTP bytes == immutable archive == corrected publication source; not refetched over HTTP"
+    },
+    {
+      "path": "meshes/gm-3-after-0.json",
+      "bytes": 53298,
+      "sha256": "ae0eb0becb2031ca5497539fd64cdb597823180707a984e6b221eab9914231de",
+      "scope": "previous actual HTTP bytes == immutable archive == corrected publication source; not refetched over HTTP"
+    },
+    {
+      "path": "meshes/gm-3-before.json",
+      "bytes": 22308,
+      "sha256": "b2197e59bfbfefa909f91a6b1777f425d5c381ffae1e9a70f607d60dadca2d7e",
+      "scope": "previous actual HTTP bytes == immutable archive == corrected publication source; not refetched over HTTP"
+    },
+    {
+      "path": "meshes/gm-4-after-0.json",
+      "bytes": 37695,
+      "sha256": "ffa8b58e8fe50ce42254c0d395e1649f71f21db2d0cf9d5eef9dbe57041fa7f6",
+      "scope": "previous actual HTTP bytes == immutable archive == corrected publication source; not refetched over HTTP"
+    },
+    {
+      "path": "meshes/gm-4-before.json",
+      "bytes": 22284,
+      "sha256": "500ca22729f216d7f8fa79dc3eae1bee73aa343206ab5722a0d51eae8662fc13",
+      "scope": "previous actual HTTP bytes == immutable archive == corrected publication source; not refetched over HTTP"
+    },
+    {
+      "path": "meshes/pk-2-after-0.json",
+      "bytes": 38469,
+      "sha256": "ff755aef50d8305c53038d5fd1864d9592101564d2473faaa63c707ddc6b61a1",
+      "scope": "previous actual HTTP bytes == immutable archive == corrected publication source; not refetched over HTTP"
+    },
+    {
+      "path": "meshes/pk-2-before.json",
+      "bytes": 22273,
+      "sha256": "bc67f44bf78fc6a2e3ff2e140c636b214c731bdf44986fc6235e48d202dc1b3c",
+      "scope": "previous actual HTTP bytes == immutable archive == corrected publication source; not refetched over HTTP"
+    },
+    {
+      "path": "meshes/pk-3-after-0.json",
+      "bytes": 54529,
+      "sha256": "4ac3f4ed5ed9924ef9c04af665d1c62133fbdfccca3c1f1ad378e0c36614a1a0",
+      "scope": "previous actual HTTP bytes == immutable archive == corrected publication source; not refetched over HTTP"
+    },
+    {
+      "path": "meshes/pk-3-before.json",
+      "bytes": 22318,
+      "sha256": "b3e15900436d0f2568aad677c853f4c376bbcae38c73cf738609782f0566b69d",
+      "scope": "previous actual HTTP bytes == immutable archive == corrected publication source; not refetched over HTTP"
+    },
+    {
+      "path": "meshes/pk-4-after-0.json",
+      "bytes": 38309,
+      "sha256": "ba9a4bbf250340b311fc654cda160458954677f64507cc29fc8ce8f6008546ee",
+      "scope": "previous actual HTTP bytes == immutable archive == corrected publication source; not refetched over HTTP"
+    },
+    {
+      "path": "meshes/pk-4-before.json",
+      "bytes": 22294,
+      "sha256": "52176b7f3145e000473f5b62209a5bde46c37db257b18163803471e52010938c",
+      "scope": "previous actual HTTP bytes == immutable archive == corrected publication source; not refetched over HTTP"
+    }
+  ],
+  "previousReadbackRawExit": 2,
+  "actualReaderRawExit": 0,
+  "firstReadback": {
+    "path": "docs/query-numerics-closure-online/readback-v1.json",
+    "rawExit": 2,
+    "rewritten": false
+  },
+  "originalSourceAndArtifactsUnchanged": true,
+  "scope": {
+    "nativeMathIndependentReview": "3e7ac1b1273c56530bfbd50f0cb6bdffb08e4fd7",
+    "publicationReadbackComplete": true,
+    "mainMerged": false,
+    "all510Agreed": false,
+    "allMassCertified": false,
+    "anyPrecisionCertified": false,
+    "newPkOrTestsExecuted": false
+  }
+}
