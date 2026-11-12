@@ -1,0 +1,195 @@
+{
+  "scope": "Development only: one complete CCC process then one witness process, four cases twice in each. Case repetition0 is not universally cold; preserve both points and actual PK timings. No formal window, statistical/CPU or complete numerical qualification. Original processes each raw2, no FAIL and PASSall8.",
+  "source": {
+    "cases": {
+      "plane-nurbs": [
+        {
+          "PK_fix_blends": 22.586,
+          "PK_fix_blends_error": 0,
+          "self_fix_blends": 1110.759,
+          "self_fix_blends_error": 0,
+          "PK_boolean": 7.136,
+          "PK_boolean_error": 0,
+          "self_boolean": 1015.733,
+          "self_boolean_error": 0
+        },
+        {
+          "PK_fix_blends": 1.535,
+          "PK_fix_blends_error": 0,
+          "self_fix_blends": 438.368,
+          "self_fix_blends_error": 0,
+          "PK_boolean": 1.228,
+          "PK_boolean_error": 0,
+          "self_boolean": 243.285,
+          "self_boolean_error": 0
+        }
+      ],
+      "depressed-roof": [
+        {
+          "PK_fix_blends": 1.704,
+          "PK_fix_blends_error": 0,
+          "self_fix_blends": 172.268,
+          "self_fix_blends_error": 0,
+          "PK_boolean": 1.19,
+          "PK_boolean_error": 0,
+          "self_boolean": 238.75,
+          "self_boolean_error": 0
+        },
+        {
+          "PK_fix_blends": 1.669,
+          "PK_fix_blends_error": 0,
+          "self_fix_blends": 139.31,
+          "self_fix_blends_error": 0,
+          "PK_boolean": 1.147,
+          "PK_boolean_error": 0,
+          "self_boolean": 252.32,
+          "self_boolean_error": 0
+        }
+      ],
+      "nurbs-nurbs": [
+        {
+          "PK_fix_blends": 2.889,
+          "PK_fix_blends_error": 0,
+          "self_fix_blends": 1829.645,
+          "self_fix_blends_error": 0,
+          "PK_boolean": 2.182,
+          "PK_boolean_error": 0,
+          "self_boolean": 6548.937,
+          "self_boolean_error": 0
+        },
+        {
+          "PK_fix_blends": 2.851,
+          "PK_fix_blends_error": 0,
+          "self_fix_blends": 1816.04,
+          "self_fix_blends_error": 0,
+          "PK_boolean": 3.272,
+          "PK_boolean_error": 0,
+          "self_boolean": 6520.387,
+          "self_boolean_error": 0
+        }
+      ],
+      "concave-nurbs-nurbs": [
+        {
+          "PK_fix_blends": 5.293,
+          "PK_fix_blends_error": 0,
+          "self_fix_blends": 7440.981,
+          "self_fix_blends_error": 0,
+          "PK_boolean": 1.861,
+          "PK_boolean_error": 0,
+          "self_boolean": 23380.365,
+          "self_boolean_error": 0
+        },
+        {
+          "PK_fix_blends": 3.295,
+          "PK_fix_blends_error": 0,
+          "self_fix_blends": 7337.254,
+          "self_fix_blends_error": 0,
+          "PK_boolean": 2.08,
+          "PK_boolean_error": 0,
+          "self_boolean": 23401.888,
+          "self_boolean_error": 0
+        }
+      ]
+    },
+    "failures": [],
+    "passes": [
+      "PASS all 8 freeform solid fillet and subsequent cutting cases"
+    ]
+  },
+  "witness": {
+    "cases": {
+      "plane-nurbs": [
+        {
+          "PK_fix_blends": 2.228,
+          "PK_fix_blends_error": 0,
+          "self_fix_blends": 759.216,
+          "self_fix_blends_error": 0,
+          "PK_boolean": 1.539,
+          "PK_boolean_error": 0,
+          "self_boolean": 966.002,
+          "self_boolean_error": 0
+        },
+        {
+          "PK_fix_blends": 1.455,
+          "PK_fix_blends_error": 0,
+          "self_fix_blends": 315.135,
+          "self_fix_blends_error": 0,
+          "PK_boolean": 1.68,
+          "PK_boolean_error": 0,
+          "self_boolean": 245.364,
+          "self_boolean_error": 0
+        }
+      ],
+      "depressed-roof": [
+        {
+          "PK_fix_blends": 1.581,
+          "PK_fix_blends_error": 0,
+          "self_fix_blends": 139.668,
+          "self_fix_blends_error": 0,
+          "PK_boolean": 1.155,
+          "PK_boolean_error": 0,
+          "self_boolean": 271.006,
+          "self_boolean_error": 0
+        },
+        {
+          "PK_fix_blends": 2.303,
+          "PK_fix_blends_error": 0,
+          "self_fix_blends": 117.556,
+          "self_fix_blends_error": 0,
+          "PK_boolean": 1.563,
+          "PK_boolean_error": 0,
+          "self_boolean": 241.157,
+          "self_boolean_error": 0
+        }
+      ],
+      "nurbs-nurbs": [
+        {
+          "PK_fix_blends": 4.252,
+          "PK_fix_blends_error": 0,
+          "self_fix_blends": 1788.26,
+          "self_fix_blends_error": 0,
+          "PK_boolean": 2.015,
+          "PK_boolean_error": 0,
+          "self_boolean": 6580.253,
+          "self_boolean_error": 0
+        },
+        {
+          "PK_fix_blends": 2.807,
+          "PK_fix_blends_error": 0,
+          "self_fix_blends": 1731.614,
+          "self_fix_blends_error": 0,
+          "PK_boolean": 3.727,
+          "PK_boolean_error": 0,
+          "self_boolean": 6661.22,
+          "self_boolean_error": 0
+        }
+      ],
+      "concave-nurbs-nurbs": [
+        {
+          "PK_fix_blends": 5.418,
+          "PK_fix_blends_error": 0,
+          "self_fix_blends": 7398.914,
+          "self_fix_blends_error": 0,
+          "PK_boolean": 2.112,
+          "PK_boolean_error": 0,
+          "self_boolean": 23664.245,
+          "self_boolean_error": 0
+        },
+        {
+          "PK_fix_blends": 3.332,
+          "PK_fix_blends_error": 0,
+          "self_fix_blends": 7328.803,
+          "self_fix_blends_error": 0,
+          "PK_boolean": 3.115,
+          "PK_boolean_error": 0,
+          "self_boolean": 23576.786,
+          "self_boolean_error": 0
+        }
+      ]
+    },
+    "failures": [],
+    "passes": [
+      "PASS all 8 freeform solid fillet and subsequent cutting cases"
+    ]
+  }
+}

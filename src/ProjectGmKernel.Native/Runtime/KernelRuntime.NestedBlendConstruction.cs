@@ -10,6 +10,7 @@ namespace ProjectGmKernel.Native.Runtime;
 internal static unsafe partial class KernelRuntime
 {
     internal enum RollingBuildStage:byte{Clone,Offset,Compile,Seed,Project,Forward,Backward,EndSeed,EndProject,Charts,Proof,Bind}
+    private const BufferCount RollingTracePointLimit=512;
     [ThreadStatic] internal static RollingBuildStage LastRollingBuildStage;
     private static int CreateGeneralRollingBlend(SurfTag first,double r0,SurfTag second,double r1,
         in KernelVector3 start,in KernelVector3 end,PK_SURF_create_blend_o_s* options,SurfTag* result)
@@ -42,7 +43,12 @@ internal static unsafe partial class KernelRuntime
             var compiler=new NestedProgramCompiler();if(!compiler.Ready)return ParasolidConstants.PK_ERROR_memory_full;
             var status=compiler.Surface(offset0,out var a);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
             status=compiler.Surface(offset1,out var b);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+            var retainSupportUv=compiler.View.Surfaces[a].IsBSpline||compiler.View.Surfaces[b].IsBSpline;
+            var supportUv=retainSupportUv?NestedWorkspace<double>(4*RollingTracePointLimit):default;
+            var backwardUv=retainSupportUv?NestedWorkspace<double>(4*RollingTracePointLimit):default;
+            if(retainSupportUv&&(supportUv.IsEmpty||backwardUv.IsEmpty))return ParasolidConstants.PK_ERROR_memory_full;
             LastRollingBuildStage=RollingBuildStage.Seed;
+            // Reserve the trace witnesses before borrowing the program's numeric workspace.
             var program=compiler.View;var seed=options->have_help!=0?Vector(options->help.coord[0],options->help.coord[1],options->help.coord[2]):start;
             Span<double> contacts=stackalloc double[4];status=RollingBlendSample(program,a,b,seed,out _,out _,out var normal,contacts);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
             var projectedSpines=NestedWorkspace<BlendSpineInstruction>(program.Spines.Length+1);var projectedCharts=NestedWorkspace<BlendChartInstruction>(program.Charts.Length+2);
@@ -56,18 +62,26 @@ internal static unsafe partial class KernelRuntime
             var scale=Math.Max(1,OperationIntersection.Norm(Sub(start,end)));var step=.05*scale;
             var feature=Math.Min(RollingFeature(program.Surfaces[a]),RollingFeature(program.Surfaces[b]));if(double.IsFinite(feature))step=Math.Min(step,.5*feature);
             if(!(step>1e-12*scale))return ParasolidConstants.PK_ERROR_at_singularity;
-            Span<KernelVector3> points=stackalloc KernelVector3[512],backward=stackalloc KernelVector3[512];
+            Span<KernelVector3> points=stackalloc KernelVector3[RollingTracePointLimit],backward=stackalloc KernelVector3[RollingTracePointLimit];
+            Span<double> initialContacts=stackalloc double[4];contacts.CopyTo(initialContacts);
             LastRollingBuildStage=RollingBuildStage.Forward;
-            status=TraceRollingBlend(projector,projectionSpine,projectedCharts[projectionChart..],initial,tangent,step,contacts,points,out var count,out var closed,out var ctol,outwardTerminationPlanes,Math.Abs(r0));
+            status=TraceRollingBlend(projector,projectionSpine,projectedCharts[projectionChart..],initial,tangent,step,contacts,points,supportUv,out var count,out var closed,out var ctol,outwardTerminationPlanes,Math.Abs(r0));
             if(status!=AlgorithmStatus.Success)return EvaluationError(status);
             if(!closed)
             {
                 LastRollingBuildStage=RollingBuildStage.Backward;
-                status=RollingBlendSample(program,a,b,initial,out _,out _,out _,contacts);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
-                status=TraceRollingBlend(projector,projectionSpine,projectedCharts[projectionChart..],initial,Scale(tangent,-1),step,contacts,backward,out var left,out var leftClosed,out var leftError,outwardTerminationPlanes,Math.Abs(r0));
+                initialContacts.CopyTo(contacts);
+                status=TraceRollingBlend(projector,projectionSpine,projectedCharts[projectionChart..],initial,Scale(tangent,-1),step,contacts,backward,backwardUv,out var left,out var leftClosed,out var leftError,outwardTerminationPlanes,Math.Abs(r0));
                 if(status!=AlgorithmStatus.Success||leftClosed)return EvaluationError(status==AlgorithmStatus.Success?AlgorithmStatus.NotConverged:status);
                 if(left+count-1>points.Length)return ParasolidConstants.PK_ERROR_cant_do_intersect;
-                points[..count].CopyTo(points[(left-1)..]);for(var i=0;i<left-1;i++)points[i]=backward[left-1-i];count+=left-1;ctol=Math.Max(ctol,leftError);
+                points[..count].CopyTo(points[(left-1)..]);
+                if(!supportUv.IsEmpty)supportUv[..(4*count)].CopyTo(supportUv[(4*(left-1))..]);
+                for(var i=0;i<left-1;i++)
+                {
+                    points[i]=backward[left-1-i];
+                    if(!supportUv.IsEmpty)backwardUv.Slice(4*(left-1-i),4).CopyTo(supportUv.Slice(4*i,4));
+                }
+                count+=left-1;ctol=Math.Max(ctol,leftError);
             }
             LastRollingBuildStage=RollingBuildStage.EndSeed;
             status=RollingBlendSample(program,a,b,end,out _,out _,out var endNormal);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
@@ -81,7 +95,12 @@ internal static unsafe partial class KernelRuntime
             var matched=false;for(var i=0;i<count-1;i++)if(OperationIntersection.Norm(Sub(points[i],endPoint))<2*step)matched=true;
             if(!matched)return ParasolidConstants.PK_ERROR_cant_do_intersect;
             LastRollingBuildStage=RollingBuildStage.Charts;
-            status=compiler.ChartSpine(a,b,points[..count],0,1,Math.Max(2*ctol,1e-8*scale),Math.PI/12,closed?LimitType.Help:LimitType.Artificial,closed?LimitType.Help:LimitType.Artificial,out var spineIndex,r0*r1<0?ParasolidConstants.PK_TOPOL_sense_negative_c:ParasolidConstants.PK_TOPOL_sense_positive_c);
+            // Only the spline unknowns are native UV witnesses. Other support
+            // kinds keep their existing chart parameterisation path.
+            if(!supportUv.IsEmpty)for(var i=0;i<count;i++)for(var side=0;side<2;side++)
+                if(!program.Surfaces[side==0?a:b].IsBSpline){supportUv[4*i+2*side]=double.NaN;supportUv[4*i+2*side+1]=double.NaN;}
+            status=compiler.ChartSpine(a,b,points[..count],0,1,Math.Max(2*ctol,1e-8*scale),Math.PI/12,closed?LimitType.Help:LimitType.Artificial,closed?LimitType.Help:LimitType.Artificial,out var spineIndex,r0*r1<0?ParasolidConstants.PK_TOPOL_sense_negative_c:ParasolidConstants.PK_TOPOL_sense_positive_c,
+                knownUv:supportUv.IsEmpty?default:supportUv[..(4*count)]);
             if(status!=AlgorithmStatus.Success)return EvaluationError(status);
             if(!outwardTerminationPlanes.IsEmpty)
             {
@@ -101,10 +120,11 @@ internal static unsafe partial class KernelRuntime
             surface.Analytic.Kind is SurfaceClass.Sphere or SurfaceClass.Cylinder?surface.Analytic.Radius:double.PositiveInfinity;
 
     private static AlgorithmStatus TraceRollingBlend(in NestedBlendProgram program,BlendSpineIndex spine,Span<BlendChartInstruction> charts,
-        in KernelVector3 initial,in KernelVector3 tangent,double step,Span<double> contacts,Span<KernelVector3> points,
+        in KernelVector3 initial,in KernelVector3 tangent,double step,Span<double> contacts,Span<KernelVector3> points,Span<double> supportUv,
         out BufferCount count,out bool closed,out double error,ReadOnlySpan<AnalyticSurface> outwardTerminationPlanes=default,double radius=0)
     {
-        count=1;closed=false;error=0;points[0]=initial;var previous=initial;var direction=tangent;var minimum=step*1e-6;Span<double> savedContacts=stackalloc double[4];
+        count=1;closed=false;error=0;points[0]=initial;if(!supportUv.IsEmpty)contacts.CopyTo(supportUv[..4]);
+        var previous=initial;var direction=tangent;var minimum=step*1e-6;Span<double> savedContacts=stackalloc double[4];
         for(var visited=0;visited<2048&&count<points.Length;visited++)
         {
             var target=Add(previous,Scale(direction,step));contacts.CopyTo(savedContacts);
@@ -116,13 +136,22 @@ internal static unsafe partial class KernelRuntime
                 if(outwardTerminationPlanes.IsEmpty)
                 {
                     var boundary=RollingBlendBoundary(program,spine,charts,previous,direction,step,contacts,out var endpoint);
-                    if(boundary==AlgorithmStatus.Success){if(OperationIntersection.Norm(Sub(endpoint,previous))>1e-12)points[count++]=endpoint;return AlgorithmStatus.Success;}
+                    if(boundary==AlgorithmStatus.Success)
+                    {
+                        if(OperationIntersection.Norm(Sub(endpoint,previous))>1e-12)
+                        {if(!supportUv.IsEmpty)contacts.CopyTo(supportUv.Slice(4*count,4));points[count++]=endpoint;}
+                        return AlgorithmStatus.Success;
+                    }
                 }
                 step*=.5;if(step<minimum)return status==AlgorithmStatus.Success?AlgorithmStatus.NotConverged:status;continue;
             }
             error=Math.Max(error,correction);
             if(count>=8&&OperationIntersection.Norm(Sub(point,initial))<step*.8&&Dot(next,tangent)>.9)
-            {points[count++]=initial;closed=true;return AlgorithmStatus.Success;}
+            {
+                if(!supportUv.IsEmpty)supportUv[..4].CopyTo(supportUv.Slice(4*count,4));
+                points[count++]=initial;closed=true;return AlgorithmStatus.Success;
+            }
+            if(!supportUv.IsEmpty)contacts.CopyTo(supportUv.Slice(4*count,4));
             points[count++]=point;previous=point;direction=next;
             if(!outwardTerminationPlanes.IsEmpty&&RollingTraceBeyondPlane(new(point.X),new(point.Y),new(point.Z),outwardTerminationPlanes,radius))return AlgorithmStatus.Success;
         }
