@@ -92,12 +92,16 @@ try
             // PK's default size box is [-500,500]^3. A 10000-unit fixture is
             // intentionally invalid on both producers, not a geometry failure
             // to suppress in the positive Boolean gate.
-            if(!specialized&&!WebProgressCapture.Enabled)try
+            if(!specialized&&(!WebProgressCapture.Enabled||WebProgressCapture.Select("outside-default-size-box-negative")))try
             {
                 count++;
-                var actual=ReceiveOracle(TransmitManaged(Block(true,10000,0,0,2,2,2,0)));
-                var reference=Block(false,10000,0,0,2,2,2,0);
+                var ownInput=Block(true,10000,0,0,2,2,2,0);var pkInput=Block(false,10000,0,0,2,2,2,0);
+                var captureSizeBox=WebProgressCapture.Enabled&&WebProgressCapture.Select("outside-default-size-box-negative");
+                if(captureSizeBox){WebProgressCapture.Before(true,ownInput,[],"outside-default-size-box-negative",[]);WebProgressCapture.Before(false,pkInput,[],"outside-default-size-box-negative",[]);}
+                var actual=ReceiveOracle(TransmitManaged(ownInput));
+                var reference=pkInput;
                 Require(SizeBoxFault(actual)&&SizeBoxFault(reference),"both producers must report the size-box fault");
+                if(captureSizeBox){WebProgressCapture.BooleanAfter(true,[ownInput],0,0,0,null);WebProgressCapture.BooleanAfter(false,[pkInput],0,0,0,null);}
                 Log("PASS outside-default-size-box negative fixture");
             }
             catch(Exception ex){failures++;Log("FAIL size-box negative fixture: "+ex.Message);}

@@ -5,6 +5,7 @@
 #:property UsePskernelSharpUsings=true
 #:property UseParasolidScriptHost=true
 #:property AllowUnsafeBlocks=true
+#:property UseWebProgressCapture=true
 using static parasolid;
 using ProjectGmKernel.Native.Runtime;
 using System.Runtime.CompilerServices;
@@ -28,33 +29,39 @@ using(session)unsafe
         var planeSf=new PK_PLANE_sf_t();planeSf.basis_set.location=jet[0];planeSf.basis_set.axis=new(axis.coord[0],axis.coord[1],axis.coord[2]);var reference=Unit(Cross(axis,new(0,0,1)));planeSf.basis_set.ref_direction=new(reference.coord[0],reference.coord[1],reference.coord[2]);int plane,ownPlane;
         Check(PK_PLANE_create(&planeSf,&plane),"native cutter plane");Check(KernelRuntime.PlaneCreate((M.PK_PLANE_sf_s*)&planeSf,&ownPlane),"own cutter plane");
         var options=new PK_SURF_intersect_surf_o_t();
-        Intersect(native,own,plane,ownPlane,options,"blend-plane");
+        CaptureIntersection(sheet,"blend-plane",Intersect(native,own,plane,ownPlane,options,"blend-plane"),"真实输入片体（PK 原生 sheet）+ 本次实际求得的交点采样；采样渲染≠连续等价，几何未因显示改变。");
         var interest=options;interest.have_uvbox_1=interest.have_uvbox_2=PK_LOGICAL_true;interest.uvbox_1=box;
         interest.uvbox_1.param[0]+=.4*(box.param[2]-box.param[0]);interest.uvbox_1.param[2]-=.4*(box.param[2]-box.param[0]);
         interest.uvbox_1.param[1]=.4;interest.uvbox_1.param[3]=.6;
         interest.uvbox_2.param[0]=interest.uvbox_2.param[1]=-.01;interest.uvbox_2.param[2]=interest.uvbox_2.param[3]=.01;
-        Intersect(native,own,plane,ownPlane,interest,"blend-plane-uv-interest");
+        CaptureIntersection(sheet,"blend-plane-uv-interest",Intersect(native,own,plane,ownPlane,interest,"blend-plane-uv-interest"),"真实输入片体（PK 原生 sheet）+ 本次实际求得的交点采样；采样渲染≠连续等价，几何未因显示改变。");
         interest=options;interest.have_box=PK_LOGICAL_true;
         for(var d=0;d<3;d++){interest.box.coord[d]=jet[0].coord[d]-.01;interest.box.coord[d+3]=jet[0].coord[d]+.01;}
-        Intersect(native,own,plane,ownPlane,interest,"blend-plane-space-interest");
+        CaptureIntersection(sheet,"blend-plane-space-interest",Intersect(native,own,plane,ownPlane,interest,"blend-plane-space-interest"),"真实输入片体（PK 原生 sheet）+ 本次实际求得的交点采样；采样渲染≠连续等价，几何未因显示改变。");
         if(args.Contains("--interest-only"))return 0;
-        if(!args.Contains("--intersections-only")){Projection(native,own,box);PairDistance(native,own,box);}
+        if(!args.Contains("--intersections-only")){Projection(native,own,box);PairDistance(native,own,box);CaptureIntersection(sheet,"projection",[],"真实输入片体；本用例为全局投影评估，显示真实输入几何（无求交结果）。");CaptureIntersection(sheet,"pair-distance",[],"真实输入片体；本用例为配对距离评估，显示真实输入几何（无求交结果）。");}
         double* poles=stackalloc double[12];var secondAxis=Cross(axis,reference);
         for(var i=0;i<2;i++)for(var j=0;j<2;j++)for(var d=0;d<3;d++)poles[3*(2*i+j)+d]=jet[0].coord[d]+(i==0?-2:2)*reference.coord[d]+(j==0?-2:2)*secondAxis.coord[d];
         double* knots=stackalloc double[2]{-2,2};int* mult=stackalloc int[2]{2,2};var nurbsSf=new PK_BSURF_sf_t{u_degree=1,v_degree=1,n_u_vertices=2,n_v_vertices=2,vertex_dim=3,vertex=poles,n_u_knots=2,n_v_knots=2,u_knot=knots,v_knot=knots,u_knot_mult=mult,v_knot_mult=mult,form=PK_BSURF_form_arbitrary_c,u_knot_type=PK_knot_non_uniform_c,v_knot_type=PK_knot_non_uniform_c,self_intersecting=PK_self_intersect_false_c,convexity=PK_convexity_unset_c};
-        int nurbs,ownNurbs;Check(PK_BSURF_create(&nurbsSf,&nurbs),"native NURBS cutter");Check(KernelRuntime.BSurfCreate((M.PK_BSURF_sf_s*)&nurbsSf,&ownNurbs),"own NURBS cutter");Intersect(native,own,nurbs,ownNurbs,options,"blend-nurbs");
+        int nurbs,ownNurbs;Check(PK_BSURF_create(&nurbsSf,&nurbs),"native NURBS cutter");Check(KernelRuntime.BSurfCreate((M.PK_BSURF_sf_s*)&nurbsSf,&ownNurbs),"own NURBS cutter");CaptureIntersection(sheet,"blend-nurbs",Intersect(native,own,nurbs,ownNurbs,options,"blend-nurbs"),"真实输入片体（PK 原生 sheet）+ 本次实际求得的交点采样；采样渲染≠连续等价，几何未因显示改变。");
         var matrix=new M.PK_TRANSF_sf_s();var c=Math.Cos(Math.PI);var s=Math.Sin(Math.PI);matrix.matrix[0]=matrix.matrix[15]=1;matrix.matrix[5]=matrix.matrix[10]=c;matrix.matrix[6]=-s;matrix.matrix[9]=s;matrix.matrix[7]=jet[0].coord[1]-c*jet[0].coord[1]+s*jet[0].coord[2]+.007;matrix.matrix[11]=jet[0].coord[2]-s*jet[0].coord[1]-c*jet[0].coord[2]+.007;
         int nt,mt;Check(PK_TRANSF_create((PK_TRANSF_sf_t*)&matrix,&nt),"native second Blend transform");Check(KernelRuntime.TransfCreate(&matrix,&mt),"own second Blend transform");int second,ownSecond;PK_LOGICAL_t exact;byte ownExact;
         Check(PK_GEOM_transform(native,nt,0,&second,&exact),"native second Blend");Check(KernelRuntime.GeomTransform(own,mt,0,&ownSecond,&ownExact),"own second Blend");
-        Intersect(native,own,second,ownSecond,options,"blend-blend");
+        CaptureIntersection(sheet,"blend-blend",Intersect(native,own,second,ownSecond,options,"blend-blend"),"真实输入片体（PK 原生 sheet）+ 本次实际求得的交点采样；采样渲染≠连续等价，几何未因显示改变。");
         c=Math.Cos(.4);s=Math.Sin(.4);matrix.matrix[5]=matrix.matrix[10]=c;matrix.matrix[6]=-s;matrix.matrix[9]=s;matrix.matrix[7]=jet[0].coord[1]-c*jet[0].coord[1]+s*jet[0].coord[2];matrix.matrix[11]=jet[0].coord[2]-s*jet[0].coord[1]-c*jet[0].coord[2];
-        Check(PK_TRANSF_create((PK_TRANSF_sf_t*)&matrix,&nt),"native artificial-limit transform");Check(KernelRuntime.TransfCreate(&matrix,&mt),"own artificial-limit transform");Check(PK_GEOM_transform(native,nt,0,&second,&exact),"native artificial-limit support");Check(KernelRuntime.GeomTransform(own,mt,0,&ownSecond,&ownExact),"own artificial-limit support");ArtificialLimitFailure(native,second,own,ownSecond);
+        Check(PK_TRANSF_create((PK_TRANSF_sf_t*)&matrix,&nt),"native artificial-limit transform");Check(KernelRuntime.TransfCreate(&matrix,&mt),"own artificial-limit transform");Check(PK_GEOM_transform(native,nt,0,&second,&exact),"native artificial-limit support");Check(KernelRuntime.GeomTransform(own,mt,0,&ownSecond,&ownExact),"own artificial-limit support");CaptureIntersection(sheet,"artificial-limit-failure",[],"真实输入片体；本用例为人工上限失败负例，显示真实输入与真实失败状态，after 不伪造。");ArtificialLimitFailure(native,second,own,ownSecond);
     }
     finally{Check(KernelRuntime.SessionStop(),"self stop");}
 }
 Console.WriteLine("PASS Blend public intersections and global projection");return 0;
 
-static unsafe void Intersect(int a,int ownA,int b,int ownB,PK_SURF_intersect_surf_o_t options,string name)
+static unsafe void CaptureIntersection(int sheetBody,string name,double[] points,string note)
+{
+    if(!WebProgressCapture.Enabled||!WebProgressCapture.Select(name))return;
+    int nf;int* faces;Check(PK_BODY_ask_faces(sheetBody,&nf,&faces),"capture faces");var face=nf>0?faces[0]:0;Check(PK_MEMORY_free(faces),"capture faces free");
+    WebProgressCapture.Evaluation(false,sheetBody,face,points,[],name,note,"pk-only");
+}
+static unsafe double[] Intersect(int a,int ownA,int b,int ownB,PK_SURF_intersect_surf_o_t options,string name)
 {
     int copied;Check(PK_ENTITY_copy(a,&copied),"native independent first");a=copied;Check(PK_ENTITY_copy(b,&copied),"native independent second");b=copied;Check(KernelRuntime.EntityCopy(ownA,&copied),"own independent first");ownA=copied;Check(KernelRuntime.EntityCopy(ownB,&copied),"own independent second");ownB=copied;
     int np,nc;PK_VECTOR_t* points;int* curves;PK_INTERVAL_t* bounds;int* types;var watch=Stopwatch.StartNew();var nativeError=PK_SURF_intersect_surf(a,b,&options,&np,&points,&nc,&curves,&bounds,&types);
@@ -66,6 +73,8 @@ static unsafe void Intersect(int a,int ownA,int b,int ownB,PK_SURF_intersect_sur
         Console.WriteLine($"native curve={curve} class={cls} first V range={low:R}..{high:R}");
     }
     int mp,mc;M.PK_VECTOR_s* ownPoints;int* ownCurves;M.PK_INTERVAL_s* ownBounds;int* ownTypes;watch.Restart();var error=KernelRuntime.SurfIntersectSurf(ownA,ownB,(M.PK_SURF_intersect_surf_o_s*)&options,&mp,&ownPoints,&mc,&ownCurves,&ownBounds,&ownTypes);Console.WriteLine($"{name} own error={error} np={mp} nc={mc} ms={watch.Elapsed.TotalMilliseconds:F3}");Check(error,name+" own intersect");
+    var displayPoints=new double[np*3];
+    for(var i=0;i<np;i++){displayPoints[3*i]=points[i].coord[0];displayPoints[3*i+1]=points[i].coord[1];displayPoints[3*i+2]=points[i].coord[2];}
     try
     {
         if(np!=mp||nc!=mc||nc==0)throw new Exception(name+" intersection counts differ");
@@ -88,6 +97,7 @@ static unsafe void Intersect(int a,int ownA,int b,int ownB,PK_SURF_intersect_sur
         if(points!=null)PK_MEMORY_free(points);if(curves!=null)PK_MEMORY_free(curves);if(bounds!=null)PK_MEMORY_free(bounds);if(types!=null)PK_MEMORY_free(types);
         if(ownPoints!=null)KernelRuntime.MemoryFree(ownPoints);if(ownCurves!=null)KernelRuntime.MemoryFree(ownCurves);if(ownBounds!=null)KernelRuntime.MemoryFree(ownBounds);if(ownTypes!=null)KernelRuntime.MemoryFree(ownTypes);
     }
+    return displayPoints;
 }
 static unsafe void Projection(int native,int own,PK_UVBOX_t box)
 {

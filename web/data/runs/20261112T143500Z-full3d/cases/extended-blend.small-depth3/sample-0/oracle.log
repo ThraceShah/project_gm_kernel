@@ -1,0 +1,17 @@
+./src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./scripts/NestedBlendExtendedOracle.cs.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./scripts/NestedBlendExtendedOracle.cs.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+create 51/52, r=0.1: error=0 result=53
+class=4007
+create 53/58, r=0.01: error=0 result=64
+class=4007
+create 64/72, r=0.0033333333333333335: error=0 result=73
+class=4007
+saved both-supports-depth3.x_t
+both-supports-depth3.x_t-independent BODY_check=0 compare=21921/21931
+small-depth3 BODY_check=0 compare=21921/21931
+large-depth3 BODY_check=0 compare=21921/21931
+PASS independent both-supports Blend and scaled XT oracles
+
+STDERR

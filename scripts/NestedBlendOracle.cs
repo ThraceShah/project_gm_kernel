@@ -5,6 +5,7 @@
 #:property UsePskernelSharpUsings=true
 #:property UseParasolidScriptHost=true
 #:property AllowUnsafeBlocks=true
+#:property UseWebProgressCapture=true
 global using BenchmarkSurfaceIndex=System.Int32;
 using static parasolid;
 using System.Diagnostics;
@@ -242,6 +243,7 @@ static unsafe void IndependentConstruction(int nativeBlend,int nativeSecond,int 
         for(var d=0;d<3;d++)if(Math.Abs(actual.coord[d]-expected.coord[d])>1e-8)throw new Exception($"independent Blend point mismatch sample={i} component={d} delta={actual.coord[d]-expected.coord[d]:R}");
     }
     Console.WriteLine("independent public construction: 12 corresponding physical sections matched");
+    CaptureNested(result,nativeBlend,(nurbs?"nurbs":"torus")+"-plane-depth1");
     var ownParent=result;var nativeParent=nativeBlend;
     for(var depth=2;depth<=3;depth++)
     {
@@ -253,6 +255,7 @@ static unsafe void IndependentConstruction(int nativeBlend,int nativeSecond,int 
         error=KernelRuntime.SurfCreateBlend(ownParent,radius,tool,radius,depth==3&&!nurbs?*(M.PK_VECTOR_s*)&to:*(M.PK_VECTOR_s*)&from,depth==3&&!nurbs?*(M.PK_VECTOR_s*)&from:*(M.PK_VECTOR_s*)&to,&options,&next);
         Console.WriteLine($"independent public depth={depth} error={error} result={next} ms={watch.Elapsed.TotalMilliseconds:F3}");Check(error,"independent nested construction");
         ownParent=next;nativeParent=depth==2?nativeSecond:nativeThird;
+        CaptureNested(ownParent,nativeParent,(nurbs?"nurbs":"torus")+"-plane-depth"+depth);
         var own=new M.PK_BLENDSF_sf_s();Check(KernelRuntime.BlendSfAsk(ownParent,&own),"nested own definition");PK_BLENDSF_sf_t native;Check(PK_BLENDSF_ask(nativeParent,&native),"nested native definition");
         for(var i=1;i<=12;i++)
         {
@@ -409,4 +412,28 @@ static unsafe int Materialize(Compiled compiled)
     }
     return Surface(compiled.Root);
 }
+static unsafe void CaptureNested(int ownSurface,int nativeSurface,string label)
+{
+    if(!WebProgressCapture.Enabled||!WebProgressCapture.Select(label))return;
+    PK_UVBOX_t box;Check(PK_SURF_ask_uvbox(nativeSurface,&box),"capture box");
+    var patch=box;patch.param[0]+=.35*(box.param[2]-box.param[0]);patch.param[2]-=.35*(box.param[2]-box.param[0]);patch.param[1]=.1;patch.param[3]=.9;
+    var ownBox=new M.PK_UVBOX_s();Check(KernelRuntime.SurfAskUvbox(ownSurface,&ownBox),"capture own box");
+    ownBox.param[0]+=.35*(ownBox.param[2]-ownBox.param[0]);ownBox.param[2]-=.35*(ownBox.param[2]-ownBox.param[0]);ownBox.param[1]=.1;ownBox.param[3]=.9;
+    int ownBody,nativeBody;Check(KernelRuntime.SurfMakeSheetBody(ownSurface,ownBox,&ownBody),"capture own sheet");Check(PK_SURF_make_sheet_body(nativeSurface,patch,&nativeBody),"capture native sheet");
+    int nf;int* faces;Check(PK_BODY_ask_faces(nativeBody,&nf,&faces),"capture faces");var nativeFace=nf>0?faces[0]:0;Check(PK_MEMORY_free(faces),"capture faces free");
+    var ownFace=0;if(KernelRuntime.TryResolveBodySlot(ownBody,out var slot)){var fs=KernelRuntime.Bodies[slot].FirstFaceBody;if(fs>=0)ownFace=KernelRuntime.Faces[fs].Header.Tag;}
+    var points=new List<double>();var normals=new List<double>();
+    PK_VECTOR_t* vals=stackalloc PK_VECTOR_t[6];PK_VECTOR_t nrm;
+    for(var i=0;i<16;i++)
+    {
+        var u=box.param[0]+(box.param[2]-box.param[0])*(i+.5)/16;var v=.1+.8*((i*7)%16+.5)/16;
+        if(PK_SURF_eval_with_normal(nativeSurface,new(u,v),1,1,PK_LOGICAL_true,vals,&nrm)!=0)continue;
+        points.Add(vals[0].coord[0]);points.Add(vals[0].coord[1]);points.Add(vals[0].coord[2]);
+        normals.Add(nrm.coord[0]);normals.Add(nrm.coord[1]);normals.Add(nrm.coord[2]);
+    }
+    var note=$"嵌套 blend 真实曲面 {label}（native 参数域 {box.param[0]:R}..{box.param[2]:R} × {box.param[1]:R}..{box.param[3]:R}）；显示 {points.Count/3} 个实际求值点与原生法向；采样渲染≠连续等价，几何未因显示改变。";
+    WebProgressCapture.Evaluation(true,ownBody,ownFace,points.ToArray(),normals.ToArray(),label,note);
+    WebProgressCapture.Evaluation(false,nativeBody,nativeFace,points.ToArray(),normals.ToArray(),label,note);
+}
+
 sealed record Compiled(BlendSurfaceInstruction[] Surfaces,BlendSpineInstruction[] Spines,BlendChartInstruction[] Charts,BenchmarkSurfaceIndex Root);

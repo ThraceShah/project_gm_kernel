@@ -5,6 +5,7 @@
 #:property UsePskernelSharpUsings=true
 #:property UseParasolidScriptHost=true
 #:property AllowUnsafeBlocks=true
+#:property UseWebProgressCapture=true
 using static parasolid;
 using System.Runtime.CompilerServices;
 using ProjectGmKernel.Native.Runtime;
@@ -55,14 +56,40 @@ static unsafe void Independent(int native,int own,string label)
  for(var j=0;j<3;j++){PK_VECTOR_t p;var q=new M.PK_VECTOR_s();var uv=new M.PK_UV_s();uv.param[0]=u;uv.param[1]=.1+.4*j;Check(PK_SURF_eval(native,new(t,uv.param[1]),0,0,PK_LOGICAL_false,&p),"native independent point");Check(KernelRuntime.SurfEval(own,uv,0,0,0,&q),"own independent point");for(var d=0;d<3;d++)if(Math.Abs(q.coord[d]-p.coord[d])>1e-8)throw new Exception("independent both-supports mismatch");}}
  var ownBox=new M.PK_UVBOX_s();Check(KernelRuntime.SurfAskUvbox(own,&ownBox),"own independent range");var half=(ownBox.param[2]-ownBox.param[0])*.005;ownBox.param[0]=middle-half;ownBox.param[2]=middle+half;ownBox.param[1]=.15;ownBox.param[3]=.85;
  for(var i=0;i<2;i++){var p=new M.PK_VECTOR_s();Check(KernelRuntime.CurveEval(actual.spine,ownBox.param[2*i],0,&p),"own independent end");double t;Check(PK_CURVE_parameterise_vector(expected.spine,*(PK_VECTOR_t*)&p,&t),"native independent inverse");box.param[2*i]=t;}if(box.param[2]<box.param[0])(box.param[0],box.param[2])=(box.param[2],box.param[0]);box.param[1]=.15;box.param[3]=.85;
- int body,reference;Check(KernelRuntime.SurfMakeSheetBody(own,ownBox,&body),"own independent sheet");Check(PK_SURF_make_sheet_body(native,box,&reference),"native independent sheet");Compare(body,reference,label+"-independent");
+ int body,reference;Check(KernelRuntime.SurfMakeSheetBody(own,ownBox,&body),"own independent sheet");Check(PK_SURF_make_sheet_body(native,box,&reference),"native independent sheet");
+ var captureLabel=System.IO.Path.GetFileNameWithoutExtension(label);
+ if(WebProgressCapture.Enabled&&WebProgressCapture.Select(captureLabel))
+ {
+  int nf;int* faces;Check(PK_BODY_ask_faces(reference,&nf,&faces),"capture faces");var nativeFace=nf>0?faces[0]:0;Check(PK_MEMORY_free(faces),"capture faces free");
+  var ownFace=0;if(KernelRuntime.TryResolveBodySlot(body,out var slot)){var fs=KernelRuntime.Bodies[slot].FirstFaceBody;if(fs>=0)ownFace=KernelRuntime.Faces[fs].Header.Tag;}
+  var points=new List<double>();var normals=new List<double>();PK_VECTOR_t* vals=stackalloc PK_VECTOR_t[6];PK_VECTOR_t nrm;
+  for(var i=0;i<16;i++)
+  {
+   var u=box.param[0]+(box.param[2]-box.param[0])*(i+.5)/16;var v=box.param[1]+(box.param[3]-box.param[1])*((i*7)%16+.5)/16;
+   if(PK_SURF_eval_with_normal(native,new(u,v),1,1,PK_LOGICAL_true,vals,&nrm)!=0)continue;
+   points.Add(vals[0].coord[0]);points.Add(vals[0].coord[1]);points.Add(vals[0].coord[2]);normals.Add(nrm.coord[0]);normals.Add(nrm.coord[1]);normals.Add(nrm.coord[2]);
+  }
+  var note=$"扩展嵌套 blend 真实曲面 {captureLabel}（native 参数域 {box.param[0]:R}..{box.param[2]:R} × {box.param[1]:R}..{box.param[3]:R}）；显示 {points.Count/3} 个实际求值点与原生法向；采样渲染≠连续等价，几何未因显示改变。";
+  WebProgressCapture.Evaluation(true,body,ownFace,points.ToArray(),normals.ToArray(),captureLabel,note);
+  WebProgressCapture.Evaluation(false,reference,nativeFace,points.ToArray(),normals.ToArray(),captureLabel,note);
+ }
+ Compare(body,reference,label+"-independent");
 }
 static unsafe void ScaledFixture(double scale)
 {
  var folder=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","nested-blend-native");var bytes=File.ReadAllBytes(Path.Combine(folder,"depth3.x_t"));int native,own;
  fixed(byte* p=bytes){var memory=new PK_MEMORY_block_t(null,(ulong)bytes.Length,p);var receive=new PK_PART_receive_o_t{transmit_format=PK_transmit_format_text_c};int count;int* parts;Check(PK_PART_receive_b(memory,&receive,&count,&parts),"scale native receive");native=parts[0];PK_MEMORY_free(parts);var block=new M.PK_MEMORY_block_s{bytes=p,n_bytes=(nuint)bytes.Length};Check(KernelRuntime.PartReceiveB(block,(M.PK_PART_receive_o_s*)&receive,&count,&parts),"scale own receive");own=parts[0];KernelRuntime.MemoryFree(parts);}
  var sf=new M.PK_TRANSF_sf_s();sf.matrix[0]=sf.matrix[5]=sf.matrix[10]=scale;sf.matrix[15]=1;sf.matrix[3]=.3*scale;sf.matrix[7]=-.2*scale;sf.matrix[11]=.4*scale;int nt,mt;Check(PK_TRANSF_create((PK_TRANSF_sf_t*)&sf,&nt),"native scale transform");Check(KernelRuntime.TransfCreate(&sf,&mt),"own scale transform");int countReplaced;int* replacements;PK_LOGICAL_t* exact;Check(PK_BODY_transform(native,nt,0,&countReplaced,&replacements,&exact),"native scale body");if(replacements!=null)PK_MEMORY_free(replacements);if(exact!=null)PK_MEMORY_free(exact);byte* ownExact;Check(KernelRuntime.BodyTransform(own,mt,0,&countReplaced,&replacements,&ownExact),"own scale body");if(replacements!=null)KernelRuntime.MemoryFree(replacements);if(ownExact!=null)KernelRuntime.MemoryFree(ownExact);
- var label=scale<1?"small-depth3":"large-depth3";Compare(own,native,label);
+ var label=scale<1?"small-depth3":"large-depth3";
+ if(WebProgressCapture.Enabled&&WebProgressCapture.Select(label))
+ {
+  int nf;int* faces;Check(PK_BODY_ask_faces(native,&nf,&faces),"scaled capture faces");var nativeFace=nf>0?faces[0]:0;Check(PK_MEMORY_free(faces),"scaled capture faces free");
+  var ownFace=0;if(KernelRuntime.TryResolveBodySlot(own,out var slot)){var fs=KernelRuntime.Bodies[slot].FirstFaceBody;if(fs>=0)ownFace=KernelRuntime.Faces[fs].Header.Tag;}
+  var note=$"扩展嵌套 blend 真实缩放片体 {label}（scale={scale:R}；由 depth3 fixture 真实 receive+transform 得到）；显示真实片体与选中面，采样/几何未因显示改变。";
+  WebProgressCapture.Evaluation(true,own,ownFace,[],[],label,note);
+  WebProgressCapture.Evaluation(false,native,nativeFace,[],[],label,note);
+ }
+ Compare(own,native,label);
  var options=new PK_PART_transmit_o_t{transmit_format=PK_transmit_format_text_c,transmit_version=371};PK_MEMORY_block_t output;Check(PK_PART_transmit_b(1,&native,&options,&output),"native scaled fixture");try{using var stream=File.Create(Path.Combine(folder,label+".x_t"));for(var item=&output;item!=null;item=item->next)stream.Write(new ReadOnlySpan<byte>(item->bytes,checked((int)item->n_bytes)));}finally{PK_MEMORY_block_f(&output);}
 }
 static unsafe void Compare(int body,int reference,string name)

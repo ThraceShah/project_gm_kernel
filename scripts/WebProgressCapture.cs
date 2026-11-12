@@ -86,7 +86,7 @@ internal static unsafe class WebProgressCapture
     // overlay edges. It never creates GM geometry, never claims a modelling
     // operation, and a sampled rendering is explicitly not a continuous
     // mathematical equivalence claim.
-    internal static void Evaluation(bool own,BodyTag body,EntityTag face,double[] points,double[] normals,string operation,string note,double ms=0)
+    internal static void Evaluation(bool own,BodyTag body,EntityTag face,double[] points,double[] normals,string operation,string note,string? displayScope=null)
     {
         if(!Enabled)return;
         // The selected list is an EDGE-tag list; a face is highlighted by role below.
@@ -105,6 +105,7 @@ internal static unsafe class WebProgressCapture
             var step=Steps[ordinal]![side]!;
             step["before"]=beforePath;step["after"]=afterPath;
             step["afterBodies"]=new JsonArray((JsonNode?)JsonValue.Create(afterPath));
+            if(displayScope!=null){Steps[ordinal]!["displayScope"]=JsonValue.Create(displayScope);step["displayScope"]=JsonValue.Create(displayScope);}
             step["evaluation"]=new JsonObject{
                 ["kind"]="native-evaluation-display",
                 ["note"]=note,

@@ -67,6 +67,44 @@ foreach (var entry in byId.Values.Where(c => c["suite"]?.GetValue<string>() == "
     enabled.Add((JsonNode?)JsonValue.Create(entry["id"]!.GetValue<string>()));
 }
 
+// Nested blend depths: the oracle now emits one native-evaluation display per
+// constructed depth for both the torus-plane and NURBS-plane chains.
+foreach (var entry in byId.Values.Where(c => c["suite"]?.GetValue<string>() == "nested-blend"))
+{
+    var id = entry["id"]!.GetValue<string>();
+    entry["selector"] = id["nested-blend.".Length..];
+    entry["meshAdapter"] = true;
+    enabled.Add((JsonNode?)JsonValue.Create(id));
+}
+
+// Extended nested blend fixtures: the oracle emits a native-evaluation display
+// for the real sheet pair it compares.
+foreach (var entry in byId.Values.Where(c => c["suite"]?.GetValue<string>() == "extended-blend"))
+{
+    var id = entry["id"]!.GetValue<string>();
+    entry["selector"] = id["extended-blend.".Length..];
+    entry["meshAdapter"] = true;
+    enabled.Add((JsonNode?)JsonValue.Create(id));
+}
+
+// Short-edge probe registrations: the oracle already calls the observer for its
+// own fixtures; only the adapter flag was missing.
+foreach (var entry in byId.Values.Where(c => c["suite"]?.GetValue<string>() == "short-edge" && c["source"]?.GetValue<string>() == "scripts/ShortEdgeBlendOracle.cs" && c["meshAdapter"]?.GetValue<bool>() != true))
+{
+    entry["meshAdapter"] = true;
+    enabled.Add((JsonNode?)JsonValue.Create(entry["id"]!.GetValue<string>()));
+}
+
+// Blend-operation intersections: the oracle emits a pk-only display of the real
+// source sheet plus the intersection points it actually computed.
+foreach (var entry in byId.Values.Where(c => c["suite"]?.GetValue<string>() == "blend-operation"))
+{
+    var id = entry["id"]!.GetValue<string>();
+    entry["selector"] = id["blend-operation.".Length..];
+    entry["meshAdapter"] = true;
+    enabled.Add((JsonNode?)JsonValue.Create(id));
+}
+
 // Planar edit fixtures: the edit loop now captures the real input body before
 // the operation and the real output bodies at return; one case runs exactly its
 // own fixture via the selector.

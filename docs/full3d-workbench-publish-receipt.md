@@ -141,3 +141,20 @@
 - release：`ui-018-tools-9c2e2654-full3d`（tools 含 displayScope 契约；uiHash 不变 `7e7ae256…`），timer drop-in 已指向新 release，tick 输出 `UI_SKIP_SAME`（幂等保持）。旧数据整包归档 `data-archive-20261112T160541Z`。
 - 自测：nested-evaluation 与 pk-corpus 各自本地浏览器实测（真实面/样本点/法向可见、PK-only 侧 GM 明确空白、无 JS 错误、picking 真实 entity）；`ValidateWebProgress` 472 案 2148 mesh 597,844 三角片 0 error；两份 overview 审计 0 error。
 - **仍未完成（29 条）**：`planar-edit 10`（edit 循环需暴露输入 body 句柄并按 fixture 加 Before/After+selector）、`blend-operation 8`（曲面求交，需显示源 sheet + 实际求得交线/点）、`nested-blend 6` 与 `extended-blend 3`（oracle 无 observer，需在真实操作边界接观察器）、`short-edge.imported-fixed-probes`（原 exit 134，需查 PK 导入路径与 capture 层）。
+
+---
+
+## 10. 全量覆盖完成（2026-11-12T16:27Z）：463/463 有真实 3D 与真实角色
+
+- **覆盖**：`463/463` 全部有 steps（`pass 401 / fail 62 / unsupported 0 / missing 0`），2,248 mesh、603,926 三角片。
+- 本轮新增族：
+  - **nested-blend 6**：在 `IndependentConstruction` 的 depth1/2/3 真实构造点生成 sheet，双侧 `Evaluation`（真实曲面 + 16 个实际求值点/原生法向），selector = `torus-plane-depthN` / `nurbs-plane-depthN`。
+  - **extended-blend 3**：`Independent` 与 `ScaledFixture` 在真实比较/缩放片体处生成显示（both-supports/small/large），selector = fixture 名。
+  - **blend-operation 8**：`Intersect` 返回本次真实求得的交点数组，显示真实输入片体（PK 原生 sheet）+ 交点采样；projection/pair-distance 显示真实输入几何；artificial-limit-failure 显示输入与真实失败；`displayScope=pk-only`（原用例是曲面求交，无 GM 实体建模）。
+  - **planar-edit 10**：`ProduceEdit` 在操作前捕获真实输入 body、在返回处捕获真实输出 body；`outside-default-size-box-negative` 显示双方真实 10000 单位输入体与真实 size-box 失败。
+  - **short-edge 2**：`self-fixed-probes` 真实输入 + 原 exit 134 失败；`imported-fixed-probes` 为真实 PK 导入侧 before/after（含真实选中边 128/105），GM 侧因原 134 未产出，状态 fail 如实。
+- **契约**：`Evaluation` 新增可选 `displayScope`（单侧显示显式声明）；validator 只对声明了 scope 的 step 放宽缺侧检查。
+- 新包 **4,042 文件 / 26,310,411 B（25.09 MiB，余 5,146,869 B）**，`data/index.json` SHA `26cbd451e80c9ea49e2827449f1cf6e0920d3669081f2f77b72780f0c9e5bab2`，manifest 362,671 B；gzip 绑定 3,457 成员。
+- 自测：本地浏览器实测 6 个新族（blend-operation PK-only、nested/extended 双侧选中面、planar-edit 输入/输出与被替换角色、size-box 负例、imported PK-only），463 目录项、390px 抽屉、无 JS 错误；线上 verify-portal **20/20**；`ValidateWebProgress` 472 案 2,248 mesh 0 error；两份 overview 审计 0 error。
+- release 仍为 `ui-018-tools-9c2e2654-full3d`（UI 字节未变，uiHash `7e7ae256…`）；timer 幂等 `UI_SKIP_SAME`；旧数据整包归档 `data-archive-20261112T162755Z`。
+- 仍未改变：不声称算法/数值全绿、普遍或因果加速、性能资格、PK 总目标或独立 review；性能分层编译统一政策待 Mac owner 到达后消费统一入口，本轮未做新性能实验、未改 JIT/容差/Native。
