@@ -1,6 +1,7 @@
 using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Generated;
+using ProjectGmKernel.Native.Geometry.Bounds;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Runtime;
 using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
@@ -45,6 +46,66 @@ internal static class OperationIntersection
         if(scale==0)return 0;if(!double.IsFinite(scale))return double.PositiveInfinity;
         var x=v.X/scale;var y=v.Y/scale;var z=v.Z/scale;return scale*Math.Sqrt(x*x+y*y+z*z);
     }
+    // The nonnegative B-spline basis only gives a Cartesian control hull
+    // for finite poles with strictly positive rational weights on its knot spans.
+    internal static bool HasFinitePositiveSplineHull(in BSurfaceView source)
+    {
+        if(source.UDegree<0||source.VDegree<0||source.UVertexCount<=source.UDegree||source.VVertexCount<=source.VDegree
+            ||source.Dimension!=(source.Rational?4:3)||source.Vertices.Length!=source.UVertexCount*source.VVertexCount*source.Dimension
+            ||source.UKnots.Length!=source.UVertexCount+source.UDegree+1||source.VKnots.Length!=source.VVertexCount+source.VDegree+1)return false;
+        foreach(var value in source.Vertices)if(!double.IsFinite(value))return false;
+        if(source.Rational)for(var at=3;at<source.Vertices.Length;at+=source.Dimension)if(!(source.Vertices[at]>0))return false;
+        for(var i=0;i<source.UKnots.Length;i++)if(!double.IsFinite(source.UKnots[i])||i>0&&source.UKnots[i]<source.UKnots[i-1])return false;
+        for(var i=0;i<source.VKnots.Length;i++)if(!double.IsFinite(source.VKnots[i])||i>0&&source.VKnots[i]<source.VKnots[i-1])return false;
+        return true;
+    }
+
+    // RegularSurfacePatch searches every stored CHART cell. A bound of a
+    // smaller SurfaceRecord domain cannot exclude that consumer's candidates.
+    internal static bool CoversBlendRayDomain(in NestedBlendProgram program,BlendSurfaceIndex surface,in SurfaceParameterBox boxedDomain)
+    {
+        if(surface<0||surface>=program.Surfaces.Length||!program.Surfaces[surface].IsBlend
+            ||!double.IsFinite(boxedDomain.U0)||!double.IsFinite(boxedDomain.U1)||!double.IsFinite(boxedDomain.V0)||!double.IsFinite(boxedDomain.V1)
+            ||boxedDomain.U1<boxedDomain.U0||boxedDomain.V1<boxedDomain.V0)return false;
+        var spine=program.Spines[program.Surfaces[surface].Spine];var charts=program.Charts.Slice(spine.ChartOffset,spine.ChartCount);
+        if(charts.Length<2)return false;
+        for(var i=0;i<charts.Length;i++)if(!double.IsFinite(charts[i].Parameter)||charts[i].Parameter<boxedDomain.U0||charts[i].Parameter>boxedDomain.U1
+            ||i>0&&charts[i].Parameter<=charts[i-1].Parameter)return false;
+        return true;
+    }
+
+    // Exclude only the complete coefficient family of IntersectRegularRay's
+    // degree-one Bezier segment, including its outward-rounded endpoint.
+    internal static bool RayMissesBox(in IntervalBox3 box,in KernelVector3 origin,in KernelVector3 direction,double upper)
+    {
+        if(box.IsEmpty||!double.IsFinite(box.XLo)||!double.IsFinite(box.XHi)||!double.IsFinite(box.YLo)||!double.IsFinite(box.YHi)
+            ||!double.IsFinite(box.ZLo)||!double.IsFinite(box.ZHi)||!IsFinite(origin)||!IsFinite(direction)||!double.IsFinite(upper)||!(upper>0))return false;
+        var dx=(new IntervalNumber(origin.X)+new IntervalNumber(direction.X)*upper)-origin.X;
+        var dy=(new IntervalNumber(origin.Y)+new IntervalNumber(direction.Y)*upper)-origin.Y;
+        var dz=(new IntervalNumber(origin.Z)+new IntervalNumber(direction.Z)*upper)-origin.Z;
+        if(!dx.Finite||!dy.Finite||!dz.Finite)return false;
+        var first=0.0;var last=1.0;
+        return !RaySlab(box.XLo,box.XHi,origin.X,dx,ref first,ref last)
+            ||!RaySlab(box.YLo,box.YHi,origin.Y,dy,ref first,ref last)
+            ||!RaySlab(box.ZLo,box.ZHi,origin.Z,dz,ref first,ref last);
+    }
+
+    private static bool RaySlab(double lower,double upper,double origin,IntervalNumber delta,ref double first,ref double last)
+    {
+        // Returned Isolate anchors stay in the original cell even when the
+        // existence proof uses an extension. Keep every anchor satisfying its
+        // existing component residual gate, not just exact intersections.
+        var tolerance=ParametricSurfaceIntersection.RootResidualTolerance;
+        var slab=(new IntervalNumber(lower,upper)+new IntervalNumber(-tolerance,tolerance))-origin;
+        if(!slab.Finite)return true;
+        var swept=IntervalNumber.Hull(0,delta);
+        if(swept.Upper<slab.Lower||swept.Lower>slab.Upper)return false;
+        if(delta.ContainsZero)return true;
+        var parameters=slab/delta;if(!parameters.Finite)return true;
+        first=Math.Max(first,parameters.Lower);last=Math.Min(last,parameters.Upper);
+        return last>=first;
+    }
+
     internal static double ParameterTolerance(double a, double b) => 2e-12 * Math.Max(1, Math.Max(Math.Abs(a), Math.Abs(b)));
 
     internal static bool AddPoint(Span<OperationIntersectionPoint> output, ref BufferCount count,

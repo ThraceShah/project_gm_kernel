@@ -280,3 +280,12 @@ XT是同一实际oracle缓存目录的companion，未增加运行时XT loader ob
 该包没有包含私有schema/PK动态库，复现仍先按统一私有环境ensure与固定PKToy准备。
 公共extent资格、最终稳定源的集中全回归、独立Native/math和整体性能仍在主线继续，
 不会在检查点包或小提交处结算原目标。
+
+固定 ray patch `5c8d0427e9600ccef13e9d94d72d19ae0d9bf472` 已按单commit最小
+差异合入本候选，没有覆盖Reader当前签名/ConeTorus或重复UV。其资格仅针对实际
+ray consumer，不解除Cone另一侧BSurface/Blend的unknown。原Mac 86项与跨类开发
+观测仍属其原source，见 `Native_Ray_Candidate_Exclusion.md`。
+新统一组合实际 `ray-unified-focused.log/.exit` 103/103、exit0；
+`ray-unified-rolling.log/.exit` 六类独立Fix/Boolean及既有生命周期几何均通过，
+mass U保留、原exit2。未据两次日志秒数作正式性能比较，也未当作最终全suite或独验。
+公共extent资格由Mac从此共同源继续，原目标仍在执行。
