@@ -30,7 +30,8 @@ public class NestedBlendSplineCacheTests
                 var program=KernelRuntime.GetNestedBlendProgram(data);Span<IntervalNumber> expected=stackalloc IntervalNumber[9],actual=stackalloc IntervalNumber[9];
                 var u=record.UMin+(record.UMax-record.UMin)*.47;var cell=new SurfaceParameterBox(u,u+.002*(record.UMax-record.UMin),.2,.8);
                 JointNestedBlendEvaluation.ReuseSplineContactBounds=false;Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.Bound(program,data.ProgramRoot,cell,expected));
-                JointNestedBlendEvaluation.ReuseSplineContactBounds=true;Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.Bound(program,data.ProgramRoot,cell,actual));
+                JointNestedBlendEvaluation.ReuseSplineContactBounds=true;JointNestedBlendEvaluation.TestLocalSplineJetHits=0;Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.Bound(program,data.ProgramRoot,cell,actual));
+                if(!curvedWall)Assert.True(JointNestedBlendEvaluation.TestLocalSplineJetHits>0);
                 for(var i=0;i<9;i++){Assert.Equal(expected[i].Lower,actual[i].Lower);Assert.Equal(expected[i].Upper,actual[i].Upper);}
             }
             finally{CommandScratch.Unbind(KernelRuntime.State.Session,0);}
@@ -65,6 +66,19 @@ public class NestedBlendSplineCacheTests
         }
     }
 
+    [Fact]
+    public void AFailedRationalJetRefreshCannotKeepThePreviousKeyReady()
+    {
+        var program=Program(true,out var source,out _);source.UPeriodic=true;
+        Assert.Equal(AlgorithmStatus.NotConverged,JointNestedBlendEvaluation.TestFailedSplineContactRefresh(program,source,new(.2,.3),new(.6,.7),new(1e15),new(.6,.7),out var stale));
+        Assert.False(stale);
+    }
+    [Fact]
+    public void BinaryDifferentZeroParametersDoNotShareTheEntry()
+    {
+        var program=Program(false,out var source,out _);var u=new IntervalNumber(0.0);var v=new IntervalNumber(.6,.7);
+        Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.TestSplineContactReuse(program,source,source,u,v,new(new IntervalNumber(-0.0),1),new(v,0),true,out _,out _,out _,out var hit));Assert.False(hit);
+    }
     private static NestedBlendProgram Program(bool rational,out BlendSurfaceInstruction first,out BlendSurfaceInstruction second)
     {
         var dim=rational?4:3;var stride=9*dim+12;var data=new double[2*stride];

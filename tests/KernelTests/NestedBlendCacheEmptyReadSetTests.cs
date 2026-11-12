@@ -16,7 +16,7 @@ public class NestedBlendCacheEmptyReadSetTests
     private delegate bool UvPredicate<TNode>(ReadOnlySpan<TNode> nodes);
     private delegate AlgorithmStatus Jacobian<TNode,TContact>(in NestedBlendProgram program,ReadOnlySpan<TNode> nodes,
         ReadOnlySpan<IntervalNumber> boxes,IntervalNumber parameter,Span<IntervalNumber> matrix,
-        Span<IntervalDual> variables,Span<IntervalDual> equations,ReadOnlySpan<BufferOffset> charts,Span<TContact> cache,bool cartesianSpline=false);
+        Span<IntervalDual> variables,Span<IntervalDual> equations,ReadOnlySpan<BufferOffset> charts,Span<TContact> cache,bool cartesianSpline=false,bool localSplineScope=false);
 
     [Fact]
     public void GuardScansBothSidesOfEveryOccurrenceAndTreatsAnyNonnegativeIndexAsLive()

@@ -21,14 +21,17 @@ internal static partial class JointNestedBlendEvaluation
     }
 
     private static bool SplineContactMatches(in IntervalSplineContact contact,in BlendSurfaceInstruction source,IntervalNumber u,IntervalNumber v)
-        =>contact.Ready&&contact.U.Lower==u.Lower&&contact.U.Upper==u.Upper&&contact.V.Lower==v.Lower&&contact.V.Upper==v.Upper
+        =>contact.Ready&&BitConverter.DoubleToInt64Bits(contact.U.Lower)==BitConverter.DoubleToInt64Bits(u.Lower)
+            &&BitConverter.DoubleToInt64Bits(contact.U.Upper)==BitConverter.DoubleToInt64Bits(u.Upper)
+            &&BitConverter.DoubleToInt64Bits(contact.V.Lower)==BitConverter.DoubleToInt64Bits(v.Lower)
+            &&BitConverter.DoubleToInt64Bits(contact.V.Upper)==BitConverter.DoubleToInt64Bits(v.Upper)
             &&contact.ScalarOffset==source.ScalarOffset&&contact.UDegree==source.UDegree&&contact.VDegree==source.VDegree
             &&contact.UCount==source.UCount&&contact.VCount==source.VCount&&contact.Dimension==source.Dimension
             &&contact.Rational==source.Rational&&contact.UPeriodic==source.UPeriodic&&contact.VPeriodic==source.VPeriodic;
 
     private static AlgorithmStatus CacheSplineContact(in NestedBlendProgram program,in BlendSurfaceInstruction source,IntervalNumber u,IntervalNumber v,ref IntervalSplineContact contact)
     {
-        var status=IntervalSplineBounds(program,source,u,v,contact.Values);if(status!=AlgorithmStatus.Success)return status;
+        contact.Ready=false;var status=IntervalSplineBounds(program,source,u,v,contact.Values);if(status!=AlgorithmStatus.Success)return status;
         contact.U=u;contact.V=v;contact.ScalarOffset=source.ScalarOffset;contact.UDegree=source.UDegree;contact.VDegree=source.VDegree;
         contact.UCount=source.UCount;contact.VCount=source.VCount;contact.Dimension=source.Dimension;contact.Rational=source.Rational;
         contact.UPeriodic=source.UPeriodic;contact.VPeriodic=source.VPeriodic;contact.Ready=true;return AlgorithmStatus.Success;
@@ -91,6 +94,14 @@ internal static partial class JointNestedBlendEvaluation
     }
 
 #if KERNEL_TEST_HOOKS
+    [ThreadStatic] internal static long TestLocalSplineJetHits;
+    internal static AlgorithmStatus TestFailedSplineContactRefresh(in NestedBlendProgram program,in BlendSurfaceInstruction source,
+        IntervalNumber u,IntervalNumber v,IntervalNumber failedU,IntervalNumber failedV,out bool staleHit)
+    {
+        Span<IntervalSplineContact> cache=stackalloc IntervalSplineContact[1];cache.Clear();staleHit=false;
+        var status=CacheSplineContact(program,source,u,v,ref cache[0]);if(status!=AlgorithmStatus.Success)return status;
+        status=CacheSplineContact(program,source,failedU,failedV,ref cache[0]);staleHit=SplineContactMatches(cache[0],source,u,v);return status;
+    }
     internal static AlgorithmStatus TestSplineContactReuse(in NestedBlendProgram program,in BlendSurfaceInstruction cachedSource,in BlendSurfaceInstruction source,
         IntervalNumber cachedU,IntervalNumber cachedV,IntervalDual u,IntervalDual v,bool reuse,
         out IntervalVector point,out IntervalVector du,out IntervalVector dv,out bool hit)
