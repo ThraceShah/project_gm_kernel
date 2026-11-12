@@ -23,6 +23,10 @@ internal static class SurfaceIsoPlaneRoots
     internal enum IsolationFailure:byte{None,CurveBound,MeanValue,NewtonEmpty,NewtonDerivative,NewtonBudget,Subdivision,CellBudget,DomainCoverage}
     [ThreadStatic] internal static IsolationFailure LastFailure;
     [ThreadStatic] internal static IntervalNumber LastUnresolvedInterval,LastRequestedInterval,LastLeft,LastRight,LastDerivative;
+#if KERNEL_TEST_HOOKS
+    internal static bool BisectionRepresentatives;
+    [ThreadStatic] internal static long TestRepresentativeEvaluations;
+#endif
     internal static AlgorithmStatus Find(in SurfaceIntersectionPatch curve,in AnalyticSurface plane,double first,double last,
         Span<OperationIntersectionPoint> output,ref BufferCount count,double tolerance=1e-10,bool strictSeparation=false,
         Span<ScalarRootIsolation> isolation=default,RootIsolationUse use=RootIsolationUse.SurfaceBoundary)
@@ -92,14 +96,29 @@ internal static class SurfaceIsoPlaneRoots
                         // The sign bracket and derivative already prove the
                         // root. Legacy CHART producers choose a representative
                         // within that bracket at their existing spatial error;
-                        // a rounded midpoint sign must not discard the root.
-                        var a=lo;var b=hi;var negativeLeft=left.Upper<0;
+                        // a rounded representative sign must not discard the root.
+                        var a=lo;var b=hi;var negativeLeft=left.Upper<0;var next=a+(b-a)*.5;
                         for(var iteration=0;iteration<48;iteration++)
                         {
-                            parameter=a+(b-a)*.5;status=curve.Bound(new(parameter,parameter,0,0),at);if(status!=AlgorithmStatus.Success)return status;
+#if KERNEL_TEST_HOOKS
+                            TestRepresentativeEvaluations++;
+#endif
+                            parameter=next;status=curve.Bound(new(parameter,parameter,0,0),at);if(status!=AlgorithmStatus.Success)return status;
                             var value=Distance(at,plane);if(value.Magnitude<Math.Min(2e-12,tolerance)){found=true;break;}
                             if(value.ContainsZero)break;
                             if((value.Upper<0)==negativeLeft)a=parameter;else b=parameter;
+                            next=a+(b-a)*.5;
+#if KERNEL_TEST_HOOKS
+                            if(BisectionRepresentatives)continue;
+#endif
+                            // A point Newton step proposes a native parameter;
+                            // strict signs keep the original root bracket.
+                            var slope=AnalyticLevelSet.Derivative(at,plane,3);
+                            if(slope.Finite&&!slope.ContainsZero)
+                            {
+                                var proposal=parameter-value.Midpoint/slope.Midpoint;
+                                if(double.IsFinite(proposal)&&proposal>a&&proposal<b&&proposal!=parameter)next=proposal;
+                            }
                         }
                         if(!found)
                         {
