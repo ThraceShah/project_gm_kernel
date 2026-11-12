@@ -1,6 +1,7 @@
 using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Geometry.Bounds;
+using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Geometry.Intersection;
 
 namespace ProjectGmKernel.Native.Runtime;
@@ -15,7 +16,7 @@ internal static unsafe partial class KernelRuntime
         if(slot<0)return AlgorithmStatus.InvalidInput;
         if(Surfaces[slot].Class==SurfaceClass.Cylinder)return CertifiedCylindricalFaceExtent(face,out extent);
         if(Surfaces[slot].Class==SurfaceClass.Cone)return CertifiedConicalFaceExtent(face,out extent);
-        if(Surfaces[slot].Class!=SurfaceClass.Plane)return RegularSurfaceExtent(slot,out extent);
+        if(Surfaces[slot].Class!=SurfaceClass.Plane)return NativeDefinedSurfaceExtent(slot,out extent);
         Span<IntervalNumber> poles=stackalloc IntervalNumber[4*17],bounds=stackalloc IntervalNumber[9];
         var first=true;var loop=Faces[face].FirstLoop;
         for(var l=0;l<Faces[face].LoopCount;l++,loop=Loops[loop].NextInFace)
@@ -49,19 +50,84 @@ internal static unsafe partial class KernelRuntime
         return first?AlgorithmStatus.Unsupported:AlgorithmStatus.Success;
     }
 
-    private static bool RegularFiniteConicalPairSeparated(FaceSlot first,FaceSlot second,double tolerance)
+    private static bool RegularFinitePairSeparated(FaceSlot first,FaceSlot second,double tolerance,ref ThirdFaceBounds a,ref ThirdFaceBounds b)
     {
-        var aKind=Surfaces[GetSurfaceSlotByTag(Faces[first].SurfTag)].Class;
-        var bKind=Surfaces[GetSurfaceSlotByTag(Faces[second].SurfTag)].Class;
-        if(aKind!=SurfaceClass.Cone&&bKind!=SurfaceClass.Cone)return false;
-        // Only these complete face-boundary certificates are available here.
-        // A generic support extent success is not a finite consumer proof.
-        if(aKind is not (SurfaceClass.Plane or SurfaceClass.Cylinder or SurfaceClass.Cone)
-            ||bKind is not (SurfaceClass.Plane or SurfaceClass.Cylinder or SurfaceClass.Cone))return false;
-        if(!TryThirdFacePrecision(first,ref tolerance)||!TryThirdFacePrecision(second,ref tolerance)
-            ||RegularFiniteFaceExtent(first,out var a)!=AlgorithmStatus.Success
-            ||RegularFiniteFaceExtent(second,out var b)!=AlgorithmStatus.Success)return false;
-        return ThirdFaceBoxesDisjoint(a,b,tolerance);
+        if(!a.Checked)
+        {
+            a.Checked=true;a.Margin=tolerance;
+            a.Available=TryThirdFacePrecision(first,ref a.Margin)&&RegularFiniteFaceExtent(first,out a.Box)==AlgorithmStatus.Success;
+        }
+        if(!b.Checked)
+        {
+            b.Checked=true;b.Margin=tolerance;
+            b.Available=TryThirdFacePrecision(second,ref b.Margin)&&RegularFiniteFaceExtent(second,out b.Box)==AlgorithmStatus.Success;
+        }
+        if(!a.Available||!b.Available)return false;
+        var margin=(new IntervalNumber(a.Margin)+b.Margin).Upper;
+        return double.IsFinite(margin)&&ThirdFaceBoxesDisjoint(a.Box,b.Box,margin);
+    }
+
+    // A valid native face is a subset of its surface definition (FD 18.3,
+    // 30.6, 96.1.4). Evaluation's linear continuation is not a model domain.
+    // This proof is independent of the patch family an intersection searches.
+    internal static AlgorithmStatus NativeDefinedSurfaceExtent(SurfaceSlot slot,out IntervalBox3 extent)
+    {
+        extent=default;if(slot<0)return AlgorithmStatus.InvalidInput;
+        var record=Surfaces[slot];
+        if(record.Class==SurfaceClass.BSurface)
+            return BSurfaceDomainBounds.Position(GetBSurfaceView(BSurfaceDataStore[record.DataIndex]),
+                new(record.UMin,record.UMax,record.VMin,record.VMax),allowLinearExtension:false,out extent);
+        if(TryPrepareSurface(record,out var analytic))
+        {
+            if(analytic.Kind==SurfaceClass.Sphere){extent=AnalyticBallBounds(analytic.Origin,analytic.Radius);return AlgorithmStatus.Success;}
+            if(analytic.Kind==SurfaceClass.Torus)
+            {
+                var radius=(new IntervalNumber(Math.Abs(analytic.Radius))+Math.Abs(analytic.Secondary)).Upper;
+                if(!double.IsFinite(radius))return AlgorithmStatus.NumericalFailure;
+                extent=AnalyticBallBounds(analytic.Origin,radius);return AlgorithmStatus.Success;
+            }
+            return AlgorithmStatus.Unsupported;
+        }
+        if(record.Class!=SurfaceClass.BlendSurface)return AlgorithmStatus.Unsupported;
+        var data=BlendedEdgeDataPool[record.DataIndex];var program=GetNestedBlendProgram(data,record);
+        var spine=program.Spines[program.Surfaces[data.ProgramRoot].Spine];var charts=program.Charts.Slice(spine.ChartOffset,spine.ChartCount);
+        if(charts.Length<2||!double.IsFinite(record.UMin)||!double.IsFinite(record.UMax)||!(record.UMax>record.UMin)
+            ||!double.IsFinite(record.VMin)||!double.IsFinite(record.VMax)||record.VMin<0||record.VMax>1||!(record.VMax>record.VMin))return AlgorithmStatus.Unsupported;
+        for(var i=0;i<charts.Length;i++)
+            if(!double.IsFinite(charts[i].Parameter)||i>0&&charts[i].Parameter<=charts[i-1].Parameter)return AlgorithmStatus.Unsupported;
+        if(record.UMin<charts[0].Parameter||record.UMax>charts[^1].Parameter)return AlgorithmStatus.Unsupported;
+        return BlendExtent(program,data.ProgramRoot,new(record.UMin,record.UMax,record.VMin,record.VMax),out extent);
+    }
+
+    internal static bool RegularPointOutsideNativeSupport(FaceSlot face,in KernelVector3 point,double tolerance)
+    {
+        if(face<0||!double.IsFinite(tolerance)||tolerance<0)return false;
+        tolerance=Math.Max(tolerance,Faces[face].Tolerance);
+        if(!TryThirdFacePrecision(face,ref tolerance)
+            ||NativeDefinedSurfaceExtent(GetSurfaceSlotByTag(Faces[face].SurfTag),out var box)!=AlgorithmStatus.Success)return false;
+        return point.X<(new IntervalNumber(box.XLo)-tolerance).Lower||point.X>(new IntervalNumber(box.XHi)+tolerance).Upper
+            ||point.Y<(new IntervalNumber(box.YLo)-tolerance).Lower||point.Y>(new IntervalNumber(box.YHi)+tolerance).Upper
+            ||point.Z<(new IntervalNumber(box.ZLo)-tolerance).Lower||point.Z>(new IntervalNumber(box.ZHi)+tolerance).Upper;
+    }
+
+    private static bool TryNativeSolidExtent(BodyTag body,double tolerance,out IntervalBox3 extent)
+    {
+        extent=default;var slot=TagRec(body).Slot;var record=Bodies[slot];
+        if(Xt.IsOpaque(slot)||record.BodyType!=Generated.ParasolidConstants.PK_BODY_type_solid_c
+            ||record.FaceCountBody<=0||record.RegionCount<2||Regions[record.FirstRegion].IsSolid!=0)return false;
+        var face=record.FirstFaceBody;var first=true;
+        for(var i=0;i<record.FaceCountBody;i++,face=Faces[face].NextInBody)
+        {
+            var margin=tolerance;
+            if(!TryThirdFacePrecision(face,ref margin)||RegularFiniteFaceExtent(face,out var box)!=AlgorithmStatus.Success)return false;
+            var x=new IntervalNumber(box.XLo,box.XHi)+new IntervalNumber(-margin,margin);
+            var y=new IntervalNumber(box.YLo,box.YHi)+new IntervalNumber(-margin,margin);
+            var z=new IntervalNumber(box.ZLo,box.ZHi)+new IntervalNumber(-margin,margin);
+            if(!x.Finite||!y.Finite||!z.Finite)return false;
+            extent=first?new(x.Lower,x.Upper,y.Lower,y.Upper,z.Lower,z.Upper)
+                :new(Math.Min(extent.XLo,x.Lower),Math.Max(extent.XHi,x.Upper),Math.Min(extent.YLo,y.Lower),Math.Max(extent.YHi,y.Upper),Math.Min(extent.ZLo,z.Lower),Math.Max(extent.ZHi,z.Upper));first=false;
+        }
+        return !first;
     }
 
     private static void IncludeRegularExtent(ref IntervalBox3 extent,ref bool first,ReadOnlySpan<IntervalNumber> bounds)

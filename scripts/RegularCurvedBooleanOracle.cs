@@ -36,7 +36,7 @@ using(host)unsafe
                 Console.WriteLine($"BOUNDARY_TRACE stage={t.Stage} surface={t.Surface} curve={t.Curve} other={t.ProductCurve} edge={t.Edge} next={t.NextEdge} events={t.StartEvent}/{t.EndEvent} angles={t.StartAngle:R}/{t.EndAngle:R}");
         };
         var passed=0;var failures=0;var persistenceDifferences=0;
-        foreach(var kind in new[]{"block","nurbs","closed-cut","disjoint","enclosed-tool","enclosed-target","two-tools","mixed-disjoint","continuous","reloaded","reloaded-block","same-domain","same-domain-reloaded","same-domain-partial","same-domain-partial-reloaded"})
+        foreach(var kind in new[]{"block","nurbs","closed-cut","disjoint","disjoint-cone","disjoint-torus","enclosed-tool","enclosed-target","two-tools","mixed-disjoint","continuous","reloaded","reloaded-block","same-domain","same-domain-reloaded","same-domain-partial","same-domain-partial-reloaded"})
         foreach(var function in new[]{PK_boolean_unite_c,PK_boolean_intersect_c,PK_boolean_subtract_c})
         {
             var name=$"{kind}-{function}";if(!WebProgressCapture.Select(name))continue;if(filter!=null&&!name.Contains(filter,StringComparison.Ordinal))continue;
@@ -105,6 +105,12 @@ static unsafe int[] Produce(bool own,string kind,int function,double tolerance=1
     else if(kind=="nurbs")tool=Roof(own,.3,.2,.05,.2);
     else if(kind=="closed-cut")tool=Block(own,.5,.5,1.08,2,2,1);
     else if(kind=="disjoint")tool=Block(own,3,3,.25,1,1,1);
+    else if(kind is "disjoint-cone" or "disjoint-torus")
+    {
+        var basis=new PK_AXIS2_sf_t{location=new(4,4,.25),axis=new(.6,0,.8),ref_direction=new(0,1,0)};
+        if(kind=="disjoint-cone")Check(own?KernelRuntime.BodyCreateSolidCone(.5,1,.2,(M.PK_AXIS2_sf_s*)&basis,&tool):PK_BODY_create_solid_cone(.5,1,.2,&basis,&tool),"independent disjoint conical tool");
+        else Check(own?KernelRuntime.BodyCreateSolidTorus(.5,.1,(M.PK_AXIS2_sf_s*)&basis,&tool):PK_BODY_create_solid_torus(.5,.1,&basis,&tool),"independent disjoint toroidal tool");
+    }
     else if(kind=="enclosed-tool")tool=Block(own,.5,.5,.25,.2,.2,.2);
     else if(kind=="enclosed-target")tool=Block(own,.5,.5,-.25,3,3,3);
     else tool=Block(own,.25,.25,.25,1,1,1);
@@ -171,7 +177,7 @@ static unsafe int[] Produce(bool own,string kind,int function,double tolerance=1
                     Check(own?(cls==PK_CLASS_face?KernelRuntime.BodyAskFaces(inputs[b],&n,&topology):cls==PK_CLASS_edge?KernelRuntime.BodyAskEdges(inputs[b],&n,&topology):KernelRuntime.BodyAskVertices(inputs[b],&n,&topology))
                         :(cls==PK_CLASS_face?PK_BODY_ask_faces(inputs[b],&n,&topology):cls==PK_CLASS_edge?PK_BODY_ask_edges(inputs[b],&n,&topology):PK_BODY_ask_vertices(inputs[b],&n,&topology)),"snapshot original tracking topology");
                     try{for(var t=0;t<n;t++)originalOwners.Add(topology[t],(b,cls));}
-                    finally{Check(own?KernelRuntime.MemoryFree(topology):PK_MEMORY_free(topology),"free original tracking topology");}
+                    finally{if(topology!=null)Check(own?KernelRuntime.MemoryFree(topology):PK_MEMORY_free(topology),"free original tracking topology");}
                 }
             }
         }
@@ -185,7 +191,8 @@ static unsafe int[] Produce(bool own,string kind,int function,double tolerance=1
         try
         {
             var output=error==0?new ReadOnlySpan<int>(result.bodies,result.n_bodies).ToArray():[];
-            Console.WriteLine($"TRACK_API side={(own?"gm":"pk")} case={kind}-{function} error={error} records={tracking.n_track_records}");
+            Console.WriteLine($"TRACK_API side={(own?"gm":"pk")} case={kind}-{function} error={error} operation_result={result.result} records={tracking.n_track_records}");
+            if(error==0&&trackingEnabled)trackingShape?.Add("operation-result/"+result.result);
             var seenProducts=new HashSet<int>();
             for(var i=0;i<tracking.n_track_records;i++)
             {

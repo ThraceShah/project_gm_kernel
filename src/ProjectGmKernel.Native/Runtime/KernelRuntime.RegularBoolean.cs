@@ -59,12 +59,13 @@ internal static unsafe partial class KernelRuntime
             error=ReadRegularBoundaryAssociations(input,ref model);if(error!=0)return error;
             Span<SheetCutCurve> supportCuts=stackalloc SheetCutCurve[GeneralIntersectionBranchLimit];var familyCount=0;var cutCount=0;
             RegularAxialContact axialContact=default;var haveAxialContact=false;
+            Span<ThirdFaceBounds> pairBounds=stackalloc ThirdFaceBounds[nf];pairBounds.Clear();
             Span<SurfaceIntersectionNode> supportPoints=stackalloc SurfaceIntersectionNode[64];
             for(var a=0;a<nf;a++)for(var b=a+1;b<nf;b++)
             {
                 if(owners[a]==owners[b])continue;ModelingPerformance.Pair();LastRegularBooleanStage=RegularBooleanStage.Cuts;ModelingPerformance.Stage(RegularBooleanStage.Cuts);LastRegularBooleanFace=a;LastRegularBooleanOtherFace=b;
                 if(RegularPlaneFacesSeparated(input,a,b,model.Tolerance))continue;
-                if(RegularFiniteConicalPairSeparated(sources[a],sources[b],model.Tolerance))continue;
+                if(RegularFinitePairSeparated(sources[a],sources[b],model.Tolerance,ref pairBounds[a],ref pairBounds[b]))continue;
                 if(RegularNaturalNurbsSeparatedFromPlane(input,a,b,model.Tolerance)||RegularNaturalNurbsSeparatedFromPlane(input,b,a,model.Tolerance))continue;
                 var first=inputFaces[a].Surface;var second=inputFaces[b].Surface;var family=-1;
                 if(RegularCylinderFaceSeparatedFromPlane(sources[a],second,model.Tolerance)

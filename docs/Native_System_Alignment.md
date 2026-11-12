@@ -532,3 +532,48 @@ SP/Offset共享、借用ICurve的新副本回收及原输入保留、warm成面+
 heap；此前 `native-owner-final-focused` 131/131覆盖分割/part/lifecycle，另存原源。
 原完整Mark前后对照、错误5048环境执行及被纠正的旧失败日志均保留。当前仍须固定
 新源集中做真实PK、完整集成与原剩余finite-face/分类能力，不据这些局部计数结算整体。
+
+### 原生定义域、有限face与完整闭合实体
+
+官方FD18.3/30.6、FD96.1.4把B曲面的自然边界定义为surface定义的边界；它不等于
+求值器允许的线性域外延拓。现将finite face消费者从RegularSurfacePatch的搜索
+范围移到独立NativeDefinedSurfaceExtent：原生BSurface域显式禁止非周期延拓，
+正权控制包围覆盖该定义；Blend使用原record native u/v及实际CHART覆盖条件，
+不再因搜索遍历较宽的CHART而偷换face定义；Sphere/Torus用完整解析包围，Torus
+采用abs(major)+abs(minor)，也不把负major的合法范围误套为正major圆环。
+这是有效native B-rep的定义包围证明，未把采样当连续面证明。无完整资格时不排除。
+
+Boolean候选对统一使用完整finite face证明，复用既有bounds记录并在当前不可变
+输入视图内惰性缓存，每face一次。两侧实际face/edge/vertex precision分别纳入，
+以向外舍入的两侧margin之和判分离；未增SSI/root预算。点到support的初筛同样
+取得实际source face精度，较宽精度的点不会被固定1e-8的box门提前丢弃；最终
+有限winding、几何求值及操作质量门保持独立。这没有证明原510近边界分类已全部
+一致。`native-defined-precision-v2` raw0为真实PK设置顶点precision后原XT直读GM，
+八个合法plain/rational及native gauge输入的fresh full/strict及精度包围负例通过；
+同一执行24域请求/两次成面/删源合同一致，16个bad_uvbox负例保留。
+
+新增异类分离场景暴露原有loopless读取缺口：完整环面合法地没有edge loop，
+ReadRegularBoundaries此前返回5000。官方Overview 3及XT §4定义solid为有限体积，
+外部无限region必须是void。因此对两个已验证native solid，只在每个face的完整
+原生包围连同精度都可得且整body包围严格分离时，直接按no-clash合同保留/删除
+原body，复用原平面路径的结算函数；保留原tag、空basic tracking和原operation
+result。不重建未变拓扑，不据顶点盒替整个face。盒重叠、接触、未知资格仍进入
+原求解链；环面相交建模、apple/lemon分类及任意loopless多面体未因此宣称完成。
+
+完整单face正向ring torus的分类直接使用其原生meridian circle距离，返回真实
+face或material/void region，包含对称轴/中孔；条件明确排除自交类型、有限trim和
+多region组合。`native-closed-solid-v1` raw0为六个oblique-frame/镜像/三尺度组合，
+独立两侧copy/delete、真实变换、各自XT回读后54个inside/hole/outside/on查询，
+enclosure和topology class一致，所有fresh full/strict通过。没有把世界坐标样本
+用作算法分派。`native-defined-torus-complete-v2` 三种Boolean的geometry/full/strict、
+各结果125点查询、basic tracking、原topology保留数及operation result一致，raw2仅
+原积分证书U；先前no-loop建模失败raw134及随后NULL空拓扑数组释放的oracle错误
+906都另存，未以checker退出0补签。解析原型及Native solid定义的依据来自实际
+官方文档；距离公式由原生Torus定义推导，不声称恢复了PK内部完整分类求解器。
+
+NativeClosedSolid与上述Torus Boolean实际Native为
+`1345c23b474994b7780c25c8616f8e8d0000c79c68beb98ab05a75a57b24f686`。
+此前四族各二次独立Fix/Boolean全部full/strict通过、raw2，实际Native
+`20a13c989e01b82538f25a8ffbbd9da3e2d6320407422d07753fb93b83176bf0`，
+不作为随后完整闭合体增量的性能资格。局部managed 108/108，以及最后12个native
+定义/宽精度/零heap/闭合体/三操作tag与mark合同测试raw0；最后源仍需完整集中回归。

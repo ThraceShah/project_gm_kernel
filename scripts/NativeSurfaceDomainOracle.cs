@@ -24,6 +24,7 @@ using(host)unsafe
     try
     {
         if(args.Contains("--blend-owner",StringComparer.Ordinal)) { BlendOwnership(sharedFree,args.Contains("--attached-support",StringComparer.Ordinal),args.Contains("--mark",StringComparer.Ordinal)); return; }
+        if(args.Contains("--closed-solid",StringComparer.Ordinal)){ClosedSolid(output);return;}
         var mismatches=0;var ownershipDifferences=0;var runs=0;double* poles=stackalloc double[36];double* uk=stackalloc double[2];double* vk=stackalloc double[2];int* mult=stackalloc int[2]{3,3};
         double* uvPoles=stackalloc double[4];double* uvKnots=stackalloc double[2]{0,1};int* uvMult=stackalloc int[2]{2,2};
         Console.WriteLine("SOURCE_OWNERSHIP_MODE "+(sharedFree?"surface-has-free-SP-owner":"independent-orphan-surface"));
@@ -71,6 +72,7 @@ using(host)unsafe
                     }
                     if(secondPe==0&&secondGe==0){var secondFresh=Receive(Transmit(true,secondActual));CheckBody(secondReference,stem+" second native owner");CheckBody(secondFresh,stem+" second fresh GM");ParasolidBodyCompare.AssertEquivalent(secondReference,secondFresh,stem+" second owner");Check(PK_ENTITY_delete(1,&secondFresh),"delete second fresh");}
                     if(secondReference!=0)Check(PK_ENTITY_delete(1,&secondReference),"delete second native body");if(secondActual!=0)Check(KernelRuntime.EntityDelete(1,&secondActual),"delete second managed body");
+                    if(args.Contains("--precision-extent",StringComparer.Ordinal))PrecisionExtent(reference,Path.Combine(output,stem+"-native-precision-input.x_t"));
                 }
                 if(reference!=0)Check(PK_ENTITY_delete(1,&reference),"native body delete");if(actual!=0)Check(KernelRuntime.EntityDelete(1,&actual),"managed body delete");
                 PK_LOGICAL_t nativeAlive;Check(PK_ENTITY_is(referenceSource,&nativeAlive),"native source lifetime");var ownAlive=KernelRuntime.IsValidTag(source);
@@ -172,6 +174,69 @@ static unsafe PK_SURF_t PrintSp(string stage,bool own,int curve,int source)
     return definition.surf;
 }
 static unsafe int Receive(byte[] bytes){fixed(byte* p=bytes){var block=new PK_MEMORY_block_t(null,(ulong)bytes.Length,p);var options=new PK_PART_receive_o_t{transmit_format=PK_transmit_format_text_c};int count;int* parts;Check(PK_PART_receive_b(block,&options,&count,&parts),"native receive");try{if(count!=1)throw new InvalidOperationException("one body");return parts[0];}finally{PK_MEMORY_free(parts);}}}
+static unsafe void PrecisionExtent(PK_BODY_t reference,string path)
+{
+    int count;int* vertices;Check(PK_BODY_ask_vertices(reference,&count,&vertices),"native precision vertices");
+    try{if(count==0)throw new InvalidOperationException("bounded sheet vertices");Check(PK_VERTEX_set_precision(vertices[0],.02),"actual native vertex precision");}
+    finally{PK_MEMORY_free(vertices);}
+    CheckBody(reference,"native precision input");var bytes=Transmit(false,reference);File.WriteAllBytes(path,bytes);
+    var body=ReceiveOwn(bytes);
+    try
+    {
+        if(!KernelRuntime.TryResolveBodySlot(body,out var slot)||KernelRuntime.Xt.IsOpaque(slot))throw new InvalidOperationException("editable precision sheet");
+        var face=KernelRuntime.Bodies[slot].FirstFaceBody;var surface=KernelRuntime.GetSurfaceSlotByTag(KernelRuntime.Faces[face].SurfTag);
+        var status=KernelRuntime.NativeDefinedSurfaceExtent(surface,out var box);if(status!=ProjectGmKernel.Native.Computation.AlgorithmStatus.Success)throw new InvalidOperationException("native definition extent "+status);
+        var near=new KernelVector3{X=box.XHi+.01,Y=.5,Z=0};var far=near;far.X=box.XHi+.04;
+        var nearRejected=KernelRuntime.RegularPointOutsideNativeSupport(face,near,1e-8);var farRejected=KernelRuntime.RegularPointOutsideNativeSupport(face,far,1e-8);
+        Console.WriteLine($"NATIVE_PRECISION_EXTENT near_rejected={nearRejected} far_rejected={farRejected} scope=conservative-candidate-certificate");
+        if(nearRejected||!farRejected)throw new InvalidOperationException("native precision omitted from finite support exclusion");
+        var fresh=Receive(Transmit(true,body));try{CheckBody(fresh,"fresh native-precision GM");ParasolidBodyCompare.AssertEquivalent(reference,fresh,"native precision finite extent");}finally{PK_ENTITY_delete(1,&fresh);}
+    }
+    finally{Check(KernelRuntime.EntityDelete(1,&body),"delete precision receive");}
+}
+static unsafe PK_BODY_t ReceiveOwn(byte[] bytes)
+{
+    fixed(byte* p=bytes)
+    {
+        var block=new M.PK_MEMORY_block_s{n_bytes=(nuint)bytes.Length,bytes=p};var options=new M.PK_PART_receive_o_s{o_t_version=1,transmit_format=PK_transmit_format_text_c};int* parts;
+        int count;
+        Check(KernelRuntime.PartReceiveB(block,&options,&count,&parts),"direct managed native-precision receive");
+        try{if(count!=1)throw new InvalidOperationException("one managed body");return parts[0];}finally{KernelRuntime.MemoryFree(parts);}
+    }
+}
+static unsafe void ClosedSolid(string output)
+{
+    var queries=0;
+    foreach(var scale in new[]{.125,1.7,8.0})foreach(var mirror in new[]{false,true})
+    {
+        var label=$"closed-torus-{scale:R}-mirror-{mirror}";var basis=new PK_AXIS2_sf_t{axis=new(.6,0,.8),ref_direction=new(0,1,0)};int reference,body,copy;
+        Check(PK_BODY_create_solid_torus(2,.5,&basis,&reference),"independent native torus");Check(KernelRuntime.BodyCreateSolidTorus(2,.5,(M.PK_AXIS2_sf_s*)&basis,&body),"independent managed torus");
+        Check(PK_ENTITY_copy(reference,&copy),"native solid copy");Check(PK_ENTITY_delete(1,&reference),"native solid source delete");reference=copy;
+        Check(KernelRuntime.EntityCopy(body,&copy),"managed solid copy");Check(KernelRuntime.EntityDelete(1,&body),"managed solid source delete");body=copy;
+        var form=new M.PK_TRANSF_sf_s();form.matrix[0]=(mirror?-1:1)*scale;form.matrix[5]=form.matrix[10]=scale;form.matrix[15]=1;form.matrix[3]=3;form.matrix[7]=5;form.matrix[11]=7;
+        Transform(false,reference,form);Transform(true,body,form);
+        var actual=Transmit(true,body);var expected=Transmit(false,reference);File.WriteAllBytes(Path.Combine(output,label+"-gm.x_t"),actual);File.WriteAllBytes(Path.Combine(output,label+"-pk.x_t"),expected);
+        var fresh=Receive(actual);try{CheckBody(fresh,label+" GM fresh");CheckBody(reference,label+" reference");ParasolidBodyCompare.AssertEquivalent(reference,fresh,label);}finally{PK_ENTITY_delete(1,&fresh);}
+        Check(KernelRuntime.EntityDelete(1,&body),"managed torus reload source delete");body=ReceiveOwn(actual);
+        Check(PK_ENTITY_delete(1,&reference),"native torus reload source delete");reference=Receive(expected);
+        foreach(var (x,y,z) in new[]{(0.0,0.0,0.0),(0.0,2.0,0.0),(0.0,3.0,0.0),(0.0,1.0,0.0),(0.0,2.5,0.0),(0.0,1.5,0.0),(.3,2.0,.4),(0.0,2.4999,0.0),(0.0,2.5001,0.0)})
+        {
+            var point=new PK_VECTOR_t(3+(mirror?-1:1)*scale*x,5+scale*y,7+scale*z);int nativeEnclosure,ownEnclosure,nativeTopology,ownTopology,nativeClass,ownClass;
+            Check(PK_BODY_contains_vector(reference,point,&nativeEnclosure,&nativeTopology),"native complete torus query");Check(KernelRuntime.BodyContainsVector(body,*(M.PK_VECTOR_s*)&point,&ownEnclosure,&ownTopology),"managed complete torus query");
+            Check(PK_ENTITY_ask_class(nativeTopology,&nativeClass),"native query topology");Check(KernelRuntime.EntityAskClass(ownTopology,&ownClass),"managed query topology");queries++;
+            Console.WriteLine($"CLOSED_SOLID_QUERY {label} input={x:R}/{y:R}/{z:R} native={nativeEnclosure}/{nativeClass} managed={ownEnclosure}/{ownClass}");
+            if(nativeEnclosure!=ownEnclosure||nativeClass!=ownClass)throw new InvalidOperationException("closed torus material or boundary classification differs");
+        }
+        Check(KernelRuntime.EntityDelete(1,&body),"delete reloaded managed solid");Check(PK_ENTITY_delete(1,&reference),"delete reloaded native solid");
+    }
+    Console.WriteLine($"CLOSED_SOLID_PASS native_queries={queries} lifecycle=oblique-frame-copy-delete-mirror-scale-native-XT-reload");
+}
+static unsafe void Transform(bool own,PK_BODY_t body,M.PK_TRANSF_sf_s form)
+{
+    int tag;Check(own?KernelRuntime.TransfCreate(&form,&tag):PK_TRANSF_create((PK_TRANSF_sf_t*)&form,&tag),"solid mirror-scale transform");int count;int* replacements;PK_LOGICAL_t* exact;
+    Check(own?KernelRuntime.BodyTransform(body,tag,0,&count,&replacements,(byte**)&exact):PK_BODY_transform(body,tag,0,&count,&replacements,&exact),"transform complete native solid");
+    if(replacements!=null)Check(own?KernelRuntime.MemoryFree(replacements):PK_MEMORY_free(replacements),"free solid replacements");if(exact!=null)Check(own?KernelRuntime.MemoryFree(exact):PK_MEMORY_free(exact),"free solid exactness");Check(own?KernelRuntime.EntityDelete(1,&tag):PK_ENTITY_delete(1,&tag),"delete solid transform");
+}
 static unsafe PK_SURF_t Support(bool own,PK_BODY_t body){int n;int* faces;Check(own?KernelRuntime.BodyAskFaces(body,&n,&faces):PK_BODY_ask_faces(body,&n,&faces),"faces for source identity");try{if(n!=1)throw new InvalidOperationException("one regular sheet face");PK_SURF_t surface;Check(own?KernelRuntime.FaceAskSurf(faces[0],&surface):PK_FACE_ask_surf(faces[0],&surface),"face geometry identity");return surface;}finally{if(own)KernelRuntime.MemoryFree(faces);else PK_MEMORY_free(faces);}}
 static unsafe void ReleaseNative(PK_ENTITY_t tag){PK_LOGICAL_t alive;Check(PK_ENTITY_is(tag,&alive),"native cleanup ownership query");if(alive==PK_LOGICAL_true)Check(PK_ENTITY_delete(1,&tag),"native live orphan cleanup");}
 static unsafe void ReleaseOwn(PK_ENTITY_t tag){if(KernelRuntime.IsValidTag(tag))Check(KernelRuntime.EntityDelete(1,&tag),"managed live orphan cleanup");}

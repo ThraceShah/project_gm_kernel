@@ -116,6 +116,13 @@ internal static unsafe partial class KernelRuntime
         if (analyticHandled) return analyticError;
         var rotationalError = TryRotationalBoolean(inputs, options, tracking, result, out var rotationalHandled);
         if (rotationalHandled) return rotationalError;
+        // Native solids have finite material and an infinite void exterior.
+        // A complete face enclosure proves no clash without reconstructing
+        // unchanged topology, including closed faces with no edge loops.
+        if(inputs.Length==2&&TryNativeSolidExtent(inputs[0],options->default_tol,out var firstExtent)
+            &&TryNativeSolidExtent(inputs[1],options->default_tol,out var secondExtent)
+            &&ThirdFaceBoxesDisjoint(firstExtent,secondExtent,0))
+            return CompleteSeparatedBoolean(inputs,options->function,result);
         var scratch = CommandScratch.Current;
         var memory = scratch.Take(120000);
         if (memory.IsEmpty) return ParasolidConstants.PK_ERROR_memory_full;
@@ -190,20 +197,7 @@ internal static unsafe partial class KernelRuntime
             // on union and the target on subtraction, as the SDK does.
             if (!hasClash && toolCount == 1)
             {
-                var n = options->function == ParasolidConstants.PK_boolean_unite_c ? 2
-                    : options->function == ParasolidConstants.PK_boolean_subtract_c ? 1 : 0;
-                var returned = n == 0 ? null : AllocateReturnSlice(n);
-                if (n > 0 && returned == null) return ParasolidConstants.PK_ERROR_memory_full;
-                if (n > 0) returned[0] = target;
-                if (n > 1) returned[1] = tools[0];
-                if (n < 2)
-                {
-                    error = EntityDelete(toolCount, tools);
-                    if (error == 0 && n == 0) error = EntityDelete(1, &target);
-                    if (error != 0) return error;
-                }
-                *result = new PK_boolean_r_s { result = ParasolidConstants.PK_boolean_result_no_clash_c, n_bodies = n, bodies = returned };
-                return 0;
+                return CompleteSeparatedBoolean(inputs,options->function,result);
             }
             Span<EntityTag> products = stackalloc EntityTag[PlanarFaceCapacity];
             Span<FaceTag> faceProducts = stackalloc FaceTag[nf]; faceProducts.Clear();
@@ -238,6 +232,26 @@ internal static unsafe partial class KernelRuntime
             return 0;
         }
         finally { scratch.Return(memory); }
+    }
+
+    private static int CompleteSeparatedBoolean(ReadOnlySpan<BodyTag> inputs,KernelBooleanFunction function,PK_boolean_r_s* result)
+    {
+        var count=function==ParasolidConstants.PK_boolean_unite_c?2:function==ParasolidConstants.PK_boolean_subtract_c?1:0;
+        var returned=count==0?null:AllocateReturnSlice(count);
+        if(count>0&&returned==null)return ParasolidConstants.PK_ERROR_memory_full;
+        var success=false;
+        try
+        {
+            if(count>0)returned[0]=inputs[0];if(count>1)returned[1]=inputs[1];
+            if(count<2)
+            {
+                var tool=inputs[1];var error=EntityDelete(1,&tool);
+                if(error==0&&count==0){var target=inputs[0];error=EntityDelete(1,&target);}
+                if(error!=0)return error;
+            }
+            *result=new(){result=ParasolidConstants.PK_boolean_result_no_clash_c,n_bodies=count,bodies=returned};success=true;return 0;
+        }
+        finally{if(!success&&returned!=null)MemoryFree(returned);}
     }
 
     private static bool HavePlanarBooleanTools(ReadOnlySpan<BodyTag> tools)

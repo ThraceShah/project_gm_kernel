@@ -697,7 +697,7 @@ internal static unsafe partial class KernelRuntime
                         Surface=input.Faces[first].Surface,OtherSurface=input.Faces[second].Surface});
                     return EvaluationError(status);
                 }
-                if(RegularPointOutsideSupport(input.Faces[first].Surface,point[0])||RegularPointOutsideSupport(input.Faces[second].Surface,point[0]))continue;
+                if(RegularPointOutsideNativeSupport(sourceFaces[first],point[0],model.Tolerance)||RegularPointOutsideNativeSupport(sourceFaces[second],point[0],model.Tolerance))continue;
                 LastRegularClipStage=RegularClipStage.FirstUv;
                 error=FiniteBoundarySurfaceParameters(input.Faces[first].Surface,curve,at,point[0],sectionCharts,out var a);
                 if(error==ParasolidConstants.PK_ERROR_not_on_surface)continue;if(error!=0)return error;
@@ -928,12 +928,6 @@ internal static unsafe partial class KernelRuntime
             return SheetCurveUV(surface,curve,parameter,true,out uv,out _,out _);
         var found=IntersectionSurfaceParameters(Surfaces[GetSurfaceSlotByTag(surface)],point,out uv);
         return found==AlgorithmStatus.InvalidInput?ParasolidConstants.PK_ERROR_not_on_surface:IntersectionError(found);
-    }
-
-    private static bool RegularPointOutsideSupport(SurfTag surface,in KernelVector3 point)
-    {
-        if(RegularSurfaceExtent(GetSurfaceSlotByTag(surface),out var box)!=AlgorithmStatus.Success)return false;
-        return point.X<box.XLo-1e-8||point.X>box.XHi+1e-8||point.Y<box.YLo-1e-8||point.Y>box.YHi+1e-8||point.Z<box.ZLo-1e-8||point.Z>box.ZHi+1e-8;
     }
 
     private static int SplitRegularSourceEdges(in RegularBoundaryView input,ReadOnlySpan<EdgeSlot> original,

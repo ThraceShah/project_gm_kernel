@@ -182,6 +182,7 @@ internal static unsafe partial class KernelRuntime
 
     private static bool TryThirdFacePrecision(FaceSlot face,ref double precision)
     {
+        precision=Math.Max(precision,Faces[face].Tolerance);
         var loop=Faces[face].FirstLoop;
         for(var l=0;l<Faces[face].LoopCount;l++,loop=Loops[loop].NextInFace)
         {

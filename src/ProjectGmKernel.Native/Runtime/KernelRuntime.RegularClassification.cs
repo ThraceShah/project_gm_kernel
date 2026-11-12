@@ -76,7 +76,7 @@ internal static unsafe partial class KernelRuntime
             {
                 if((preferredSupport!=0&&SameSheetSupport(faces[i].Surface,preferredSupport))!=(pass==0))continue;
                 LastRegularClassificationEntity=Faces[sources[i]].Header.Tag;
-                var support=faces[i].Surface;if(RegularPointOutsideSupport(support,point))continue;
+                var support=faces[i].Surface;if(RegularPointOutsideNativeSupport(sources[i],point,1e-8))continue;
                 if(RegularPointAwayFromBSurface(GetSurfaceSlotByTag(support),point))continue;
                 var uv=new PK_UV_s();
                 if(Surfaces[GetSurfaceSlotByTag(support)].Class==SurfaceClass.Sphere&&TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(support)],out var sphere))

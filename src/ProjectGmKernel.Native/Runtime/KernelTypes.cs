@@ -46,6 +46,7 @@ global using FaceTag = int;
 // Values match PK_*_t for zero-cost conversion at API boundary.
 global using KernelBodyType = int;       // PK_BODY_type_t
 global using KernelBodyConfig = int;     // PK_BODY_config_t
+global using KernelBooleanFunction = int; // PK_boolean_function_t
 global using KernelSense = int;          // PK_TOPOL_sense_t
 global using KernelBCurveForm = int;     // PK_BCURVE_form_t
 global using KernelBSurfaceForm = int;   // PK_BSURF_form_t
