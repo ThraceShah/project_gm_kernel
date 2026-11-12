@@ -437,3 +437,17 @@ CHART合同。`native-uv-stable-chart-remodel.log/.exit` 三族×三尺度的九
 该实际生产Native为
 `45b1d2e6a29c1c1d55931fa62f0db3b2516f37305f86b73b819c01c7fcc7bc0d`。
 全部是owner实测；整体任务、剩余finite-face域资格和最终集中独验仍在执行。
+
+稳定源83649的首次完整回归未完成：原log/exit保留于
+`temp_docs/native-system-alignment/83649-full-managed.*`，raw exit1，runner实际记录
+1166项完成通过后host aborted。owner对已核实自有testhost PID2950337主动SIGTERM，
+不是新模型失败或整suite通过。约十分钟时的一次有界dotnet-stack观察定位在
+FilletInputClassificationTests的输入Boolean：SSI已有native UV，但
+ChartSupportWitness→NestedBlendSeries.Spine→NestedSpline.Distance仍重新做全局
+BSplineProjection。该单次栈是实际调用链，不能解释成各帧排他CPU比例。
+
+这里直接改用既有JointNestedBlendEvaluation.EvaluateSpine消费原native u及保存的
+支持UV，保持Blend radial normal定义、NormalSense及误差检查。没有删nearest证书，
+没有换参数或创建新的求解器。实际 `native-chart-witness-managed.log/.exit`
+22/22、exit0，覆盖原来昂贵的回读/再Cut分类、100/200尺度接触查询、Blend求交及
+精度控制；仍需随后固定源的完整回归、真实PK及集中性能验证。

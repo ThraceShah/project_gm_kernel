@@ -317,8 +317,9 @@ internal static unsafe partial class KernelRuntime
             var node=program.Surfaces[surface];KernelVector3 direction;
             if(node.IsBlend)
             {
-                status=NestedBlendSeriesEvaluation.Spine(program,node.Spine,u,0,0,out var center);if(status!=AlgorithmStatus.Success)return status;
-                direction=Scale(Unit(Sub(jets[0],center.Value)),node.NormalSense);
+                Span<KernelVector3> center=stackalloc KernelVector3[1];
+                status=JointNestedBlendEvaluation.EvaluateSpine(program,node.Spine,u,0,center);if(status!=AlgorithmStatus.Success)return status;
+                direction=Scale(Unit(Sub(jets[0],center[0])),node.NormalSense);
             }
             else if(node.IsBSpline)direction=Scale(Unit(EvaluationMath.Cross(jets[layout.GetIndex(1,0)],jets[layout.GetIndex(0,1)])),node.NormalSense);
             else
