@@ -322,7 +322,6 @@ static unsafe (int[],int[]) ProduceBlendPair(int operation)
     }
     if(nativeBox.param[0]>nativeBox.param[2])(nativeBox.param[0],nativeBox.param[2])=(nativeBox.param[2],nativeBox.param[0]);
     int ownBody,nativeBody;Check(KernelRuntime.SurfMakeSheetBody(own,ownBox,&ownBody),"own Blend sheet");Check(PK_SURF_make_sheet_body(native,nativeBox,&nativeBody),"native Blend sheet");
-    Check(KernelRuntime.EntityDelete(1,&own),"own source deletion");
     var uv=new M.PK_UV_s();uv.param[0]=(ownBox.param[0]+ownBox.param[2])*.5;uv.param[1]=.5;var point=new M.PK_VECTOR_s();
     Require(KernelRuntime.TryResolveBodySlot(ownBody,out var ownSlot),"own sheet slot");
     Check(KernelRuntime.SurfEval(KernelRuntime.Faces[KernelRuntime.Bodies[ownSlot].FirstFaceBody].SurfTag,uv,0,0,0,&point),"Blend cutter witness");

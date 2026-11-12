@@ -209,10 +209,10 @@ internal static unsafe partial class KernelRuntime
         var u0 = box.param[0]; var u1 = box.param[2]; var v0 = box.param[1]; var v1 = box.param[3];
         if (!double.IsFinite(u0) || !double.IsFinite(u1) || !double.IsFinite(v0) || !double.IsFinite(v1) || !(u1 > u0) || !(v1 > v0))
             return ParasolidConstants.PK_ERROR_bad_parameter;
-        ref readonly var support = ref Surfaces[slot];
+        var support = Surfaces[slot];
         if (support.Class is SurfaceClass.BSurface or SurfaceClass.BlendSurface)
         {
-            if (u0 < support.UMin || u1 > support.UMax || v0 < support.VMin || v1 > support.VMax) return ParasolidConstants.PK_ERROR_bad_parameter;
+            if (u0 < support.UMin || u1 > support.UMax || v0 < support.VMin || v1 > support.VMax) return ParasolidConstants.PK_ERROR_bad_uvbox;
         }
         else if (support.Class is not (SurfaceClass.Plane or SurfaceClass.Cylinder or SurfaceClass.Cone or SurfaceClass.Sphere or SurfaceClass.Torus))
             return ParasolidConstants.PK_ERROR_not_implemented;
@@ -226,7 +226,14 @@ internal static unsafe partial class KernelRuntime
         Span<ModelingLoop> loops = stackalloc ModelingLoop[1];
         Span<ModelingFace> faces = stackalloc ModelingFace[1];
         Span<KernelVector3> jet = stackalloc KernelVector3[4]; SurfaceDerivativeLayout.TryCreate(1, 1, out var layout);
-        var cloneError = TryCloneEntityCore(surface, out var clone); if (cloneError != 0) return cloneError;
+        // A free independent surface becomes defining geometry of the first
+        // body. Geometry already used by another owner must remain with it.
+        SurfTag attached = surface;
+        if (support.OwnerCount != 0 || support.GeometricOwnerCount != 0 || GetConstructionBody(surface) >= 0)
+        {
+            var cloneError = TryCloneEntityCore(surface, out attached); if (cloneError != 0) return cloneError;
+        }
+        else if (!SnapshotGeometry(PoolKind.Surface, slot)) return ParasolidConstants.PK_ERROR_memory_full;
         for (var i = 0; i < 4; i++)
         {
             var u = i is 1 or 2 ? u1 : u0; var v = i >= 2 ? v1 : v0;
@@ -240,15 +247,16 @@ internal static unsafe partial class KernelRuntime
         {
             var constantU = (i & 1) != 0; var fixedValue = i == 0 ? v0 : i == 1 ? u1 : i == 2 ? v1 : u0;
             var start = constantU ? v0 : u0; var end = constantU ? v1 : u1;
-            var error = FreeformIsoparam(clone, constantU, fixedValue, start, end, out var curve, out var a, out var b);
+            var error = FreeformIsoparam(attached, constantU, fixedValue, start, end, out var curve, out var a, out var b);
             if (error != 0) return error;
             Curves[GetCurveSlotByTag(curve)].Sense = i < 2 ? ParasolidConstants.PK_TOPOL_sense_positive_c : ParasolidConstants.PK_TOPOL_sense_negative_c;
             edges[i] = new ModelingEdge { Curve = curve, StartVertex = i, EndVertex = (i + 1) % 4, Start = a, End = b };
             coedges[i] = new ModelingCoedge { Edge = i, Forward = 1 };
         }
         loops[0] = new ModelingLoop { FirstCoedge = 0, CoedgeCount = 4 };
-        faces[0] = new ModelingFace { Surface = clone, Sense = ParasolidConstants.PK_TOPOL_sense_positive_c, FirstLoop = 0, LoopCount = 1 };
+        faces[0] = new ModelingFace { Surface = attached, Sense = ParasolidConstants.PK_TOPOL_sense_positive_c, FirstLoop = 0, LoopCount = 1 };
         var finish = BuildModelingBrep(points, edges, coedges, loops, faces, false, out var result);
+        if (finish == 0) finish = TryAdoptDependentGeometry(attached);
         if (finish == 0) *body = result; return finish;
     }
 

@@ -469,3 +469,31 @@ wire生命周期验证raw exit0。四项执行及原始XT绑定的实际Native S
 SHA `c7d58d06ec750e55a6e734a4965272cb20633d5623dd6490eefec8279008151f`。
 包内源archive与两个GM DLL/PDB逐编译文档核对；JIT ABBA原日志另标1bbf源，
 未纳入厂商库或诊断工具目录。这个可复核checkpoint不表示原总体建模目标完成。
+
+### 原生曲面成面与自由定义的拥有关系
+
+官方FD19.6规定非周期sheet参数两端都须在曲面的原生范围内，周期参数起点在范围
+内且跨度不超过一周期。FD30.6说明FACE_find_uvbox应覆盖整个有限face，不能把
+任意搜索patch的box当成它的证明。静态实际链为SURF_make_sheet_body→
+PRI_surf_create_sheet_body→PRI_create_sheet_body，其中前层含GDS_duplicate及
+MOD_unshare_geom_from_world，后层含MOD_owner_of_geometry、参数空间分类及多种
+sheet构造器。静态存在复制调用不证明每次都会复制；以下分支来自38.0.150动态观察。
+
+普通/正权有理B曲面×unit/shifted原生UV×六种域请求，原实现16个越界请求将
+PK的5038 bad_uvbox误报120，八个合法请求总复制并让源在body删除后错误存活。
+现在合法独立自由源采用原对象，已有face或自由SP几何owner的源复制，拒绝越界
+保留源；源record在新分配前按值保存，既有拥有关系先journal再发布。
+`native-adoption-v1`、`native-shared-adoption-v2` 两个实际24请求报告均raw exit0，
+合法首/次成面分别独立PK full/strict，删源生命周期一致。已有consumer不再把
+被采用的surface当成orphan删除；曲面裁剪、分割、回滚、零heap及成面共79测试
+实际通过，raw exit0。首轮测试中的旧orphan计数和主动删除假设已按真实PK纠正，
+原失败日志保持，未改成忽略API错误。
+
+Blend观察另揭露下一层差异：独立自由Blend首次成面也采用root并在删body时删除
+其原生定义closure；SurfCreateBlend本身引用输入surface，不是无条件复制。
+输入已有body时，Blend归入该part的construction定义，随后make_sheet复制root。
+自由SP同时引用Blend的support时，PK成面保留原Blend/support身份，并将外部SP
+改引复制support，删body后SP及其几何仍可求值；GM旧rolling构造先复制所有
+support，掩盖了这个unshare分支。`blend-adoption-v1/v2`、
+`blend-shared-adoption-v3`、`blend-owned-support-v1` 为实际观察，不作为GM该完整
+依赖合同通过的收据；该共同对象图差异仍在实现中。

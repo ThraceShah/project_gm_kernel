@@ -86,7 +86,7 @@ public unsafe class SphericalFaceDomainTests:IDisposable
     {
         var definition=new PK_SPHERE_sf_s{radius=1};definition.basis_set.axis.coord[2]=1;definition.basis_set.ref_direction.coord[0]=1;int sphere;
         Assert.Equal(0,KernelRuntime.SphereCreate(&definition,&sphere));var box=new PK_UVBOX_s();box.param[0]=.15;box.param[1]=.2;box.param[2]=1.15;box.param[3]=.9;int body;
-        Assert.Equal(0,KernelRuntime.SurfMakeSheetBody(sphere,box,&body));Assert.Equal(0,KernelRuntime.EntityDelete(1,&sphere));
+        Assert.Equal(0,KernelRuntime.SurfMakeSheetBody(sphere,box,&body));
         if(pole)
         {
             Write(&definition.basis_set.axis,Vector(Math.Cos(.55)*Math.Cos(.65),Math.Cos(.55)*Math.Sin(.65),Math.Sin(.55)));

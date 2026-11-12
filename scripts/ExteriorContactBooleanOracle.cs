@@ -117,7 +117,6 @@ static unsafe int BowlSolid(bool own)
             }
         }
         var surface=Surface(own,poles,nu,nv);Check(own?KernelRuntime.SurfMakeSheetBody(surface,*(M.PK_UVBOX_s*)&box,sheets+face):PK_SURF_make_sheet_body(surface,box,sheets+face),"bounded source sheet");
-        if(own)Check(KernelRuntime.EntityDelete(1,&surface),"release original support");
     }
     var options=new PK_BODY_sew_bodies_o_t{prefered_body_type=PK_BODY_sewing_solid_c,treat_as_manifold=PK_LOGICAL_true,number_of_iterations=1};int n,nRemaining,nProblems;int* bodies;int* remaining;PK_BODY_problem_group_t* problems;
     Check(own?KernelRuntime.BodySewBodies(6,sheets,1e-9,(M.PK_BODY_sew_bodies_o_s*)&options,&n,&bodies,&nRemaining,&remaining,&nProblems,(M.PK_BODY_problem_group_s**)&problems):PK_BODY_sew_bodies(6,sheets,1e-9,&options,&n,&bodies,&nRemaining,&remaining,&nProblems,&problems),"sew bowl solid");

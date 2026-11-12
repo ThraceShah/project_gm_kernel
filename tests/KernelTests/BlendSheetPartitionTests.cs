@@ -109,7 +109,7 @@ public unsafe class BlendSheetPartitionTests:IDisposable
     {
         var surface=BlendIntersectionTests.CreateBlend();var box=new PK_UVBOX_s();box.param[0]=box.param[1]=.1;box.param[2]=box.param[3]=.9;
         int body;Assert.Equal(0,KernelRuntime.SurfMakeSheetBody(surface,box,&body));
-        Assert.Equal(0,KernelRuntime.EntityDelete(1,&surface));return body;
+        return body;
     }
     private static int Plane(int axis,double at)
     {

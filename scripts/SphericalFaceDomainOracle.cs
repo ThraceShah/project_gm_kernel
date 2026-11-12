@@ -44,7 +44,6 @@ static unsafe int Produce(bool own,string kind)
     Check(own?KernelRuntime.SphereCreate((M.PK_SPHERE_sf_s*)&sf,&surface):PK_SPHERE_create(&sf,&surface),"sphere");
     var box=new M.PK_UVBOX_s();box.param[0]=.15;box.param[1]=.2;box.param[2]=1.15;box.param[3]=.9;int target;
     Check(own?KernelRuntime.SurfMakeSheetBody(surface,box,&target):PK_SURF_make_sheet_body(surface,*(PK_UVBOX_t*)&box,&target),"finite sphere sheet");
-    if(own)Check(KernelRuntime.EntityDelete(1,&surface),"delete original orphan sphere");
     if(kind.EndsWith("pole-frame",StringComparison.Ordinal))
     {
         sf.basis_set.axis=new(Math.Cos(.55)*Math.Cos(.65),Math.Cos(.55)*Math.Sin(.65),Math.Sin(.55));sf.basis_set.ref_direction=new(-Math.Sin(.65),Math.Cos(.65),0);

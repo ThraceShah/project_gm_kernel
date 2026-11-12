@@ -141,6 +141,30 @@ public unsafe class FreeformModelingTests : IDisposable
         Assert.Equal(ParasolidConstants.PK_BODY_type_sheet_c, record.BodyType); CheckBody(body);
     }
 
+    [Fact]
+    public void SheetAdoptionCopiesOnlyForExistingOwnersAndRollsBackSourceMetadata()
+    {
+        var curve = Curve(2, new double[] { 0, 0, 0, 1, 2, .5, 2, 0, 1 }, new double[] { 0, 1 }, new[] { 3, 3 });
+        var path = new PK_VECTOR_s(); Set(&path, 0, 0, 3); int surface, body, second, mark;
+        Assert.Equal(0, KernelRuntime.BCurveSweep(curve, path, &surface));
+        var slot = KernelRuntime.GetSurfaceSlotByTag(surface);
+        Assert.Equal(0, KernelRuntime.MarkCreate(&mark));
+        var before = (KernelRuntime.Bodies.AliveCount, KernelRuntime.Curves.AliveCount, KernelRuntime.Surfaces.AliveCount);
+        Assert.Equal(ParasolidConstants.PK_ERROR_bad_uvbox, KernelRuntime.SurfMakeSheetBody(surface, Box(-.1, .1, .8, .9), &body));
+        Assert.Equal(0, body); Assert.Equal(before, (KernelRuntime.Bodies.AliveCount, KernelRuntime.Curves.AliveCount, KernelRuntime.Surfaces.AliveCount));
+        Assert.Equal(0, KernelRuntime.SurfMakeSheetBody(surface, Box(.2, .1, .8, .9), &body));
+        Assert.Equal(surface, KernelRuntime.Faces[Record(body).FirstFaceBody].SurfTag);
+        Assert.Equal(1, KernelRuntime.Surfaces[slot].OwnerCount);
+        Assert.Equal(0, KernelRuntime.SurfMakeSheetBody(surface, Box(.3, .2, .7, .8), &second));
+        Assert.NotEqual(surface, KernelRuntime.Faces[Record(second).FirstFaceBody].SurfTag);
+        Assert.Equal(0, KernelRuntime.EntityDelete(1, &second)); Assert.True(KernelRuntime.IsValidTag(surface));
+        Assert.Equal(0, KernelRuntime.MarkGoto(mark));
+        Assert.Equal(before, (KernelRuntime.Bodies.AliveCount, KernelRuntime.Curves.AliveCount, KernelRuntime.Surfaces.AliveCount));
+        Assert.Equal(0, KernelRuntime.Surfaces[slot].OwnerCount); Assert.Equal(-1, KernelRuntime.Surfaces[slot].OwnerFace);
+        Assert.Equal(0, KernelRuntime.SurfMakeSheetBody(surface, Box(.2, .1, .8, .9), &body));
+        Assert.Equal(0, KernelRuntime.EntityDelete(1, &body)); Assert.False(KernelRuntime.IsValidTag(surface));
+    }
+
     [Theory]
     [InlineData(false)] [InlineData(true)]
     public void CurvedParallelSweepBuildsClosedSolidWithHolesAndPreservesInputs(bool hole)

@@ -34,8 +34,8 @@ public unsafe class CurvedSheetPartitionTests : IDisposable
             Assert.Equal(SurfaceClass.BSurface, KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(surface)].Class);
             Assert.Equal(0, KernelRuntime.EntityDelete(1, &body));
             Assert.Equal(0, KernelRuntime.Curves.AliveCount);
-            // Original orphan support and the cutting plane remain independent.
-            Assert.Equal(2, KernelRuntime.Surfaces.AliveCount);
+            // The source support belonged to the sheet; only the cutter remains.
+            Assert.Equal(1, KernelRuntime.Surfaces.AliveCount);
         }
         finally { KernelRuntime.MemoryFree(edges); }
     }
@@ -57,7 +57,7 @@ public unsafe class CurvedSheetPartitionTests : IDisposable
             if (front != 0) Assert.Equal(0, KernelRuntime.EntityDelete(front, result.front_bodies.array));
             if (back != 0) Assert.Equal(0, KernelRuntime.EntityDelete(back, result.back_bodies.array));
             Assert.Equal(0, KernelRuntime.Bodies.AliveCount); Assert.Equal(0, KernelRuntime.Curves.AliveCount);
-            Assert.Equal(2, KernelRuntime.Surfaces.AliveCount);
+            Assert.Equal(1, KernelRuntime.Surfaces.AliveCount);
         }
         finally { KernelRuntime.SectionResultFree(&result); }
     }

@@ -349,7 +349,6 @@ static unsafe int Roof(bool own,double dx,double dy,double dz,double bulge)
         int surface;Check(own?KernelRuntime.BSurfCreate((M.PK_BSURF_sf_s*)&sf,&surface):PK_BSURF_create(&sf,&surface),"roof support");
         var box=new PK_UVBOX_t();box.param[2]=box.param[3]=1;
         Check(own?KernelRuntime.SurfMakeSheetBody(surface,*(M.PK_UVBOX_s*)&box,sheets+face):PK_SURF_make_sheet_body(surface,box,sheets+face),"roof face");
-        if(own)Check(KernelRuntime.EntityDelete(1,&surface),"own source support deletion");
     }
     var options=new PK_BODY_sew_bodies_o_t{prefered_body_type=PK_BODY_sewing_solid_c,treat_as_manifold=PK_LOGICAL_true,number_of_iterations=1};
     int count,remaining,problems;int* bodies;int* unsewn;PK_BODY_problem_group_t* groups;

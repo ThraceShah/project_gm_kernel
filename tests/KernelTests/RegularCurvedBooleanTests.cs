@@ -520,7 +520,7 @@ public unsafe class RegularCurvedBooleanTests:IDisposable
                 form=ParasolidConstants.PK_BSURF_form_arbitrary_c,u_knot_type=ParasolidConstants.PK_knot_non_uniform_c,v_knot_type=ParasolidConstants.PK_knot_non_uniform_c,
                 self_intersecting=ParasolidConstants.PK_self_intersect_false_c,convexity=ParasolidConstants.PK_convexity_unset_c};
             int surface;Assert.Equal(0,KernelRuntime.BSurfCreate(&definition,&surface));var box=new PK_UVBOX_s();box.param[2]=box.param[3]=1;
-            Assert.Equal(0,KernelRuntime.SurfMakeSheetBody(surface,box,sheets+face));Assert.Equal(0,KernelRuntime.EntityDelete(1,&surface));
+            Assert.Equal(0,KernelRuntime.SurfMakeSheetBody(surface,box,sheets+face));
         }
         var options=new PK_BODY_sew_bodies_o_s{o_t_version=8,treat_as_manifold=1,prefered_body_type=ParasolidConstants.PK_BODY_sewing_solid_c,
             duplicate_removal=ParasolidConstants.PK_BODY_sewing_remove_none_c,number_of_iterations=1,assembly_sewing=ParasolidConstants.PK_BODY_sewing_assy_no_c,

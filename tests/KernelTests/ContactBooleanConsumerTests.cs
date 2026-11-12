@@ -77,7 +77,7 @@ public unsafe class ContactBooleanConsumerTests:IDisposable
             var definition=new PK_BSURF_sf_s{u_degree=nu-1,v_degree=nv-1,n_u_vertices=nu,n_v_vertices=nv,vertex_dim=3,vertex=poles,n_u_knots=2,n_v_knots=2,
                 u_knot=knots,v_knot=knots,u_knot_mult=um,v_knot_mult=vm,form=ParasolidConstants.PK_BSURF_form_arbitrary_c,u_knot_type=ParasolidConstants.PK_knot_non_uniform_c,v_knot_type=ParasolidConstants.PK_knot_non_uniform_c,
                 self_intersecting=ParasolidConstants.PK_self_intersect_false_c,convexity=ParasolidConstants.PK_convexity_unset_c};int surface;
-            Assert.Equal(0,KernelRuntime.BSurfCreate(&definition,&surface));Assert.Equal(0,KernelRuntime.SurfMakeSheetBody(surface,box,sheets+face));Assert.Equal(0,KernelRuntime.EntityDelete(1,&surface));
+            Assert.Equal(0,KernelRuntime.BSurfCreate(&definition,&surface));Assert.Equal(0,KernelRuntime.SurfMakeSheetBody(surface,box,sheets+face));
         }
         var options=new PK_BODY_sew_bodies_o_s{o_t_version=8,prefered_body_type=ParasolidConstants.PK_BODY_sewing_solid_c,treat_as_manifold=1,number_of_iterations=1,
             duplicate_removal=ParasolidConstants.PK_BODY_sewing_remove_none_c,assembly_sewing=ParasolidConstants.PK_BODY_sewing_assy_no_c,general_sewing=ParasolidConstants.PK_BODY_sewing_gen_no_c,
