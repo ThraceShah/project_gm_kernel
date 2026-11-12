@@ -11,8 +11,11 @@ namespace ProjectGmKernel.Native.Runtime;
 [InlineArray(16)] internal struct ModelingStageTicks{private long value;}
 [InlineArray(16)] internal struct RootUseCounts{private long value;}
 internal enum RootIsolationUse:byte{Other,SpatialCurve,NativeSupportCoordinate,SurfaceBoundary,Contact,Meridian,Chain,Seam,SpatialLineBlend,SpatialConicBlend,SpatialImplicitBlend}
+[InlineArray(8)] internal struct EvaluationCostCounts{private long value;}
+internal enum EvaluationCost:byte{Point,Tube,Frame,IntervalJacobian,SplineJets,BezierHull,IntervalWeight,NumericSpline}
 internal struct ModelingProfile
 {
+    internal EvaluationCostCounts EvaluationCalls,EvaluationElapsed,EvaluationOwnElapsed;
     internal long ElapsedTicks,SsiCells,RootCells,Roots,BudgetFailures,SurfacePairs,WindingCalls;
     internal long BoundRequests,BoundEvaluations,BoundCacheHits,BoundFailureCacheHits,BoundTicks;
     internal long JacobianCalls,JacobianDirections,ResidualDirections,JacobianRecordBuilds,JacobianRecordNodes,JacobianRecordRebinds,DirectSplinePointColumns;
@@ -22,7 +25,7 @@ internal struct ModelingProfile
 
 // Optional diagnostics and certified bounds live for one immutable-input
 // modeling command only. No cache survives a transform, receive or edit.
-internal static unsafe class ModelingPerformance
+internal static unsafe partial class ModelingPerformance
 {
     internal static bool Enabled;
     internal static bool CacheEnabled=true;
@@ -82,6 +85,7 @@ internal static unsafe class ModelingPerformance
                     parent.BoundCacheHits+=child.BoundCacheHits;parent.BoundFailureCacheHits+=child.BoundFailureCacheHits;parent.BoundTicks+=child.BoundTicks;
                     parent.JacobianCalls+=child.JacobianCalls;parent.JacobianDirections+=child.JacobianDirections;parent.ResidualDirections+=child.ResidualDirections;parent.DirectSplinePointColumns+=child.DirectSplinePointColumns;
                     parent.JacobianRecordBuilds+=child.JacobianRecordBuilds;parent.JacobianRecordNodes+=child.JacobianRecordNodes;parent.JacobianRecordRebinds+=child.JacobianRecordRebinds;
+                    for(var i=0;i<8;i++){parent.EvaluationCalls[i]+=child.EvaluationCalls[i];parent.EvaluationElapsed[i]+=child.EvaluationElapsed[i];parent.EvaluationOwnElapsed[i]+=child.EvaluationOwnElapsed[i];}
                     for(var use=0;use<16;use++)
                     {
                         parent.RootCalls[use]+=child.RootCalls[use];parent.RootCellsByUse[use]+=child.RootCellsByUse[use];

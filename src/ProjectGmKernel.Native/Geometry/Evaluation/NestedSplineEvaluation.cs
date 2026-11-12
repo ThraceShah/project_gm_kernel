@@ -25,6 +25,7 @@ internal static class NestedSplineEvaluation
     internal static AlgorithmStatus Jets(in NestedBlendProgram program,in BlendSurfaceInstruction node,
         TaylorJet u,TaylorJet v,out TaylorVector point,out TaylorVector du,out TaylorVector dv)
     {
+        using var cost=new ModelingPerformance.EvaluationScope(EvaluationCost.SplineJets);
         point=du=dv=default;var order=Math.Max(u.Order,v.Order);var source=program.Spline(node);
         if(order>TaylorJet.MaxOrder||!double.IsFinite(u[0])||!double.IsFinite(v[0]))return AlgorithmStatus.InvalidInput;
         SurfaceDerivativeLayout.TryCreate(order+1,order+1,out var layout);Span<KernelVector3> jets=stackalloc KernelVector3[121];
@@ -51,6 +52,7 @@ internal static class NestedSplineEvaluation
     internal static AlgorithmStatus NumericJets(in NestedBlendProgram program,in BlendSurfaceInstruction node,
         double u,double v,Span<KernelVector3> jets)
     {
+        using var cost=new ModelingPerformance.EvaluationScope(EvaluationCost.NumericSpline);
         var source=program.Spline(node);SurfaceDerivativeLayout.TryCreate(2,2,out var layout);
         return BSurfaceEvaluation.Evaluate(source,u,v,layout,program.Workspace,jets);
     }

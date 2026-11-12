@@ -74,6 +74,7 @@ internal static partial class JointNestedBlendEvaluation
         bool nearest,in TaylorVector path,out TaylorJet distance,out TaylorVector normal,Span<double> contacts=default,BufferOffset boundary=-1,double boundaryValue=0,
         Span<TaylorJet> snapshot=default,Span<Occurrence> nodeSnapshot=default,Span<BufferCount> counts=default)
     {
+        using var cost=new ModelingPerformance.EvaluationScope(EvaluationCost.Point);
         distance=default;normal=default;
         if(!nearest&&(layout.UOrder>2||layout.VOrder>2||output.Length<layout.Count)||layout.UOrder>TaylorJet.MaxOrder)return AlgorithmStatus.Unsupported;
         if(!double.IsFinite(u)||!double.IsFinite(v))return AlgorithmStatus.InvalidInput;

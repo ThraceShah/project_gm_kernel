@@ -150,6 +150,7 @@ internal static partial class JointNestedBlendEvaluation
         Span<double> anchorContacts=default,Span<IntervalNumber> acceleration=default,KernelVector3 accelerationNormal=default,
         Span<BufferOffset> captureCharts=default,ReadOnlySpan<BufferOffset> requireCharts=default)
     {
+        using var cost=new ModelingPerformance.EvaluationScope(EvaluationCost.Tube);
         var plain=reachBudget.IsEmpty&&curvature.IsEmpty&&supportParameter.IsEmpty&&captureWitness.IsEmpty&&requireWitness.IsEmpty&&rootChart<0
             &&anchorContacts.IsEmpty&&acceleration.IsEmpty&&captureCharts.IsEmpty&&requireCharts.IsEmpty;
         if(plain&&output.Length>=9&&ReadTube(program,surface,spine,domain,output,out var reused))return reused;
@@ -410,6 +411,7 @@ internal static partial class JointNestedBlendEvaluation
     private static AlgorithmStatus IntervalJacobian(in NestedBlendProgram program,ReadOnlySpan<Occurrence> nodes,ReadOnlySpan<IntervalNumber> boxes,
         IntervalNumber parameter,Span<IntervalNumber> matrix,Span<IntervalDual> variables,Span<IntervalDual> equations,ReadOnlySpan<BufferOffset> fixedCharts,Span<IntervalSplineContact> cache,bool cartesianSpline=false)
     {
+        using var cost=new ModelingPerformance.EvaluationScope(EvaluationCost.IntervalJacobian);
         var n=boxes.Length;ModelingPerformance.Jacobian(n);for(var i=0;i<n;i++)variables[i]=new(boxes[i],0);
         if(HasAnyUv(nodes))cache.Clear();
         foreach(var node in nodes)for(var side=0;side<2;side++)
@@ -463,6 +465,7 @@ internal static partial class JointNestedBlendEvaluation
     private static AlgorithmStatus IntervalFrame(in NestedBlendProgram program,BlendSurfaceIndex surface,ReadOnlySpan<Occurrence> nodes,
         ReadOnlySpan<IntervalDual> variables,IntervalDual v,out IntervalVector point,ReadOnlySpan<IntervalSplineContact> cache=default)
     {
+        using var cost=new ModelingPerformance.EvaluationScope(EvaluationCost.Frame);
         point=default;var root=program.Surfaces[surface];var status=IntervalNormal(program,root.First,nodes,0,variables,out _,out var n0,cache);if(status!=AlgorithmStatus.Success)return status;
         status=IntervalNormal(program,root.Second,nodes,0,variables,out _,out var n1,cache);if(status!=AlgorithmStatus.Success)return status;
         var radius=Math.Abs(root.Range0);var x=n1*(-root.Range1/radius);var end=n0*(-root.Range0/radius);if(root.ReverseSection)(x,end)=(end,x);

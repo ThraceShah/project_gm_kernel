@@ -213,6 +213,7 @@ internal static class BezierSurfaceBounds
     private static void HomogeneousDerivativeHull(in BezierSurfacePatch patch, in SurfaceParameterBox box,
         bool alongU, Span<IntervalNumber> hull)
     {
+        using var cost=new ProjectGmKernel.Native.Runtime.ModelingPerformance.EvaluationScope(ProjectGmKernel.Native.Runtime.EvaluationCost.BezierHull);
         if ((alongU ? patch.UDegree : patch.VDegree) == 0) { hull.Clear(); return; }
         var p = patch.UDegree; var q = patch.VDegree; var dp = alongU ? p - 1 : p; var dq = alongU ? q : q - 1;
         var size=Math.Min(MaxScalars,4*(dp+1)*(dq+1));

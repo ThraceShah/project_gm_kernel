@@ -65,6 +65,7 @@ internal static class RollingSectionEvaluation
 
     private static AlgorithmStatus Weight(IntervalDual q,IntervalDual v,out IntervalDual value)
     {
+        using var cost=new ModelingPerformance.EvaluationScope(EvaluationCost.IntervalWeight);
         value=default;if(q.Value.Lower<0||q.Value.Upper>=2)return AlgorithmStatus.NotConverged;
         var terms=q.Value.Upper<=1?64:128;if(v.Value.Magnitude>terms)return AlgorithmStatus.NotConverged;
         var term=v;value=term;
