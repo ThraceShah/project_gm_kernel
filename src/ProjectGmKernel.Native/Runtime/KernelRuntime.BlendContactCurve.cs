@@ -195,6 +195,9 @@ internal static unsafe partial class KernelRuntime
     private static AlgorithmStatus IntersectBlendContactPlane(CurveSlot curve,double first,double last,in AnalyticSurface plane,
         Span<OperationIntersectionPoint> output,out BufferCount count)
     {
+        // This call only reads contact/support geometry and publishes numeric
+        // roots. Its proof workspace ends before the caller edits any geometry.
+        ModelingPerformance.Context proof;using var phase=new ModelingPerformance.Scope(&proof,immutableGeometry:true,reuseCurrent:true);
         count=0;var data=ICurveDataPool[Curves[curve].DataIndex];
         if(TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(data.Surface0Tag)],out var support)&&support.Kind==SurfaceClass.Plane
             &&OperationIntersection.Norm(ProfileCross(support.Axis,plane.Axis))<1e-14&&Math.Abs(Dot(Sub(support.Origin,plane.Origin),plane.Axis))<1e-12)

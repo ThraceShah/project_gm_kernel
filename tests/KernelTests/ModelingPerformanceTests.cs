@@ -118,6 +118,72 @@ public unsafe class ModelingPerformanceTests:IDisposable
     }
 
     [Fact]
+    public void PurePlanningInsideImmutableParentKeepsTheExistingWorkspaceAndCountsWorkOnce()
+    {
+        ModelingPerformance.Context parent=default,unused=default;Span<IntervalNumber> values=stackalloc IntervalNumber[9];values.Clear();
+        using(var operation=new ModelingPerformance.Scope(&parent,immutableGeometry:true))
+        {
+            var tubes=ModelingPerformance.JointTubeWorkspace();var pointer=parent.Tubes;
+            ModelingPerformance.StoreBound(200,17,1,4,false,new(0,1,0,1),values,AlgorithmStatus.Success,double.NaN);
+            var entries=parent.Entries;
+            using(var phase=new ModelingPerformance.Scope(&unused,immutableGeometry:true,reuseCurrent:true))
+            {
+                Assert.True(ModelingPerformance.TryBound(200,17,1,4,false,new(0,1,0,1),values,out _,double.NaN));
+                Assert.Equal(tubes.Length,ModelingPerformance.JointTubeWorkspace().Length);
+                Assert.True(parent.Tubes==pointer);Assert.True(parent.Entries==entries);Assert.True(unused.Tubes==null&&unused.Entries==null);
+                ModelingPerformance.Cell(root:true);
+            }
+            Assert.True(parent.Tubes==pointer);Assert.True(parent.Entries==entries);
+            Assert.True(ModelingPerformance.TryBound(200,17,1,4,false,new(0,1,0,1),values,out _,double.NaN));
+        }
+        Assert.Equal(1,ModelingPerformance.Last.RootCells);Assert.Equal(2,ModelingPerformance.Last.BoundCacheHits);
+        Assert.True(ModelingPerformance.JointTubeWorkspace().IsEmpty);
+    }
+
+    [Fact]
+    public void PurePlanningInMutableParentEndsItsProofAndPreservesTheActualRootUse()
+    {
+        ModelingPerformance.Context parent=default,proof=default;Span<IntervalNumber> values=stackalloc IntervalNumber[9];values.Clear();
+        using(var operation=new ModelingPerformance.Scope(&parent))
+        using(var contact=new ModelingPerformance.RootIsolationScope(RootIsolationUse.Contact))
+        {
+            for(var step=0;step<2;step++)
+            {
+                using(var phase=new ModelingPerformance.Scope(&proof,immutableGeometry:true,reuseCurrent:true))
+                {
+                    Assert.False(ModelingPerformance.TryBound(200,17,1,4,false,new(0,1,0,1),values,out _,double.NaN));
+                    ModelingPerformance.StoreBound(200,17,1,4,false,new(0,1,0,1),values,AlgorithmStatus.Success,double.NaN);
+                    Assert.True(ModelingPerformance.TryBound(200,17,1,4,false,new(0,1,0,1),values,out _,double.NaN));
+                    ModelingPerformance.Cell(root:true);Assert.True(proof.CacheAllowed);Assert.True(parent.Entries==null);
+                }
+                Assert.True(ModelingPerformance.JointTubeWorkspace().IsEmpty);Assert.False(parent.CacheAllowed);
+            }
+        }
+        Assert.Equal(2,ModelingPerformance.Last.RootCells);Assert.Equal(2,ModelingPerformance.Last.RootCellsByUse[(int)RootIsolationUse.Contact]);
+        Assert.Equal(1,ModelingPerformance.Last.RootCalls[(int)RootIsolationUse.Contact]);Assert.Equal(2,ModelingPerformance.Last.BoundCacheHits);
+    }
+
+    [Theory]
+    [InlineData(false,false)]
+    [InlineData(true,true)]
+    public void PurePlanningWithoutOptionalStorageKeepsTheOriginalBound(bool enabled,bool failAllocation)
+    {
+        var program=new NestedBlendProgram(NestedBlendSeriesTests.Surfaces(),NestedBlendSeriesTests.Spines(),NestedBlendSeriesTests.Charts());
+        var patch=new SurfaceIntersectionPatch(new SurfaceIntersectionPatch(program,4,new(.2,.4,.1,.9)),200,17,1);
+        Span<IntervalNumber> expected=stackalloc IntervalNumber[9],actual=stackalloc IntervalNumber[9];var box=new SurfaceParameterBox(.2,.3,.2,.8);
+        Assert.Equal(AlgorithmStatus.Success,patch.Bound(box,expected));ModelingPerformance.CacheEnabled=enabled;
+        if(failAllocation)KernelRuntime.InjectAllocationFailure(0);
+        ModelingPerformance.Context parent=default,proof=default;
+        using(var operation=new ModelingPerformance.Scope(&parent))
+        using(var phase=new ModelingPerformance.Scope(&proof,immutableGeometry:true,reuseCurrent:true))
+        {
+            Assert.Equal(AlgorithmStatus.Success,patch.Bound(box,actual));Assert.Equal(AlgorithmStatus.Success,patch.Bound(box,actual));
+            for(var i=0;i<9;i++){Assert.Equal(expected[i].Lower,actual[i].Lower);Assert.Equal(expected[i].Upper,actual[i].Upper);}
+        }
+        Assert.Equal(2,ModelingPerformance.Last.BoundEvaluations);Assert.Equal(0,ModelingPerformance.Last.BoundCacheHits);
+    }
+
+    [Fact]
     public void DeterministicAnalyticFailureIsMemoizedWithoutPublishingValuesAndSplineViewsAreRecomputed()
     {
         var z=new KernelVector3{Z=1};var x=new KernelVector3{X=1};var length=Math.Sqrt(.4);

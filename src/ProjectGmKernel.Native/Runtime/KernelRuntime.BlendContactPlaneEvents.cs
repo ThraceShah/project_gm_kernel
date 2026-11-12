@@ -16,13 +16,16 @@ internal static unsafe partial class KernelRuntime
     private static bool TryBlendContactPlaneEvents(in ICurveData data,in ModelingEdge edge,in AnalyticSurface plane,
         Span<OperationIntersectionPoint> roots,Span<ScalarRootIsolation> isolation,Span<double> spatialErrors,out BufferCount count)
     {
+        // Root isolation, gauge certification and projection read the same
+        // live support throughout; only caller-owned numeric outputs are written.
+        ModelingPerformance.Context proof;using var phase=new ModelingPerformance.Scope(&proof,immutableGeometry:true,reuseCurrent:true);
         count=0;var n=data.ChartCount;
         var map=BlendContactMap(data);var station=map[..n];var t=map.Slice(n,n);var scales=map.Slice(2*n,n-1);
         var chords=MemoryMarshal.Cast<double,KernelVector3>(map[(3*n-1)..]);
         var positions=MemoryMarshal.Cast<double,KernelVector3>(HvecSpan(data).Slice(3*data.StartLimit.HvecCount,3*n));
         var support=Surfaces[GetSurfaceSlotByTag(data.Surface1Tag)];
         var blend=BlendedEdgeDataPool[support.DataIndex];
-        var program=GetNestedBlendProgram(blend);var v=BlendContactV(data);
+        var program=GetNestedBlendProgram(blend,support);var v=BlendContactV(data);
         var lower=Math.Min(station[0],station[^1]);var upper=Math.Max(station[0],station[^1]);
         if(!(upper>lower))return false;
         var patch=new SurfaceIntersectionPatch(program,blend.ProgramRoot,new(lower,upper,v,v));

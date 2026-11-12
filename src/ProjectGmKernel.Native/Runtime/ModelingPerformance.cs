@@ -58,15 +58,21 @@ internal static unsafe class ModelingPerformance
     {
         private readonly Context* previous;
         private readonly Context* context;
-        internal Scope(Context* target,bool immutableGeometry=false)
+        internal Scope(Context* target,bool immutableGeometry=false,bool reuseCurrent=false)
         {
+            // A pure planning call may already belong to an immutable parent.
+            // Keep that parent's workspace; otherwise own a shorter proof phase.
+            if(reuseCurrent&&immutableGeometry&&current!=null&&current->CacheAllowed)
+            {context=null;previous=null;return;}
             context=target;previous=current;*target=default;target->Capture=Enabled;
+            if(reuseCurrent&&previous!=null)target->RootUse=previous->RootUse;
             if(target->Capture)target->Started=target->StageStarted=Stopwatch.GetTimestamp();
             target->CacheAllowed=CacheEnabled&&immutableGeometry;
             current=target;
         }
         public void Dispose()
         {
+            if(context==null)return;
             if(context->Capture)
             {
                 var ended=Stopwatch.GetTimestamp();context->Profile.Stages[(int)context->Stage]+=ended-context->StageStarted;

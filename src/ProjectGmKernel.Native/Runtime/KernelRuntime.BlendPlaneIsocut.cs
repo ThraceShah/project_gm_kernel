@@ -26,22 +26,11 @@ internal static unsafe partial class KernelRuntime
         TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(planeTag)],out var plane);
         if(CertifyExplicitRollingBallPlaneSeparation(record,plane))
         {handled=true;LastBlendPlaneCutStage=BlendPlaneCutStage.Empty;return 0;}
-        // Procedural patches carry their own certified parameter boxes; they
-        // do not need a single global tube bound before chart subdivision.
-        AlgorithmStatus status;
-        Span<OperationIntersectionPoint> first=stackalloc OperationIntersectionPoint[64],second=stackalloc OperationIntersectionPoint[64];var nf=0;var ns=0;
-        status=CertifyBlendPlaneRange(record,plane,false,out var positive,out var negative);if(status!=AlgorithmStatus.Success)return 0;
-        if(positive||negative){handled=true;LastBlendPlaneCutStage=BlendPlaneCutStage.Empty;return 0;}
-        LastBlendPlaneCutStage=BlendPlaneCutStage.Monotonicity;
-        status=CertifyBlendPlaneRange(record,plane,true,out var increasing,out var decreasing);if(status!=AlgorithmStatus.Success)return 0;
-        if(!increasing&&!decreasing)return 0;
-        LastBlendPlaneCutStage=BlendPlaneCutStage.Contacts;
-        status=SolveMonotoneBlendPlaneContact(record,plane,record.VMin,first,out nf);if(status!=AlgorithmStatus.Success)return 0;
-        status=SolveMonotoneBlendPlaneContact(record,plane,record.VMax,second,out ns);if(status!=AlgorithmStatus.Success)return 0;
-        LastBlendPlaneFirstRoots=nf;LastBlendPlaneSecondRoots=ns;
-        if(nf!=1||ns!=1||Math.Abs(first[0].First-second[0].First)>1e-10)return 0;
+        if(!TryCertifyBlendPlaneIsocut(record,plane,out var empty,out var u))return 0;
+        if(empty){handled=true;return 0;}
+        // All borrowed views and the local proof phase have ended. Creating
+        // the circle and publishing its finite chart may now modify geometry.
         LastBlendPlaneCutStage=BlendPlaneCutStage.Section;
-        var u=(first[0].First+second[0].First)*.5;
         var error=NestedBlendIsoparam(surface,true,u,record.VMin,record.VMax,out var circle,out var lower,out var upper);if(error!=0)return error;
         var data=CircleDataPool[Curves[GetCurveSlotByTag(circle)].DataIndex];
         if(OperationIntersection.Norm(ProfileCross(Vector(data.AxisX,data.AxisY,data.AxisZ),plane.Axis))>1e-12
@@ -54,6 +43,25 @@ internal static unsafe partial class KernelRuntime
         cuts[0]=new(){Curve=circle,First=lower,Last=upper};
         section=MakeFiniteSectionChart(surface,circle,u,lower,upper,record.VMin,record.VMax,planeTag);
         count=1;handled=true;LastBlendPlaneCutStage=BlendPlaneCutStage.Ready;return 0;
+    }
+
+    private static bool TryCertifyBlendPlaneIsocut(in SurfaceRecord record,in AnalyticSurface plane,out bool empty,out double u)
+    {
+        empty=false;u=0;
+        ModelingPerformance.Context proof;using var phase=new ModelingPerformance.Scope(&proof,immutableGeometry:true,reuseCurrent:true);
+        var data=BlendedEdgeDataPool[record.DataIndex];var program=GetNestedBlendProgram(data,record);
+        Span<OperationIntersectionPoint> first=stackalloc OperationIntersectionPoint[64],second=stackalloc OperationIntersectionPoint[64];
+        var status=CertifyBlendPlaneRange(record,program,data.ProgramRoot,plane,false,out var positive,out var negative);if(status!=AlgorithmStatus.Success)return false;
+        if(positive||negative){empty=true;LastBlendPlaneCutStage=BlendPlaneCutStage.Empty;return true;}
+        LastBlendPlaneCutStage=BlendPlaneCutStage.Monotonicity;
+        status=CertifyBlendPlaneRange(record,program,data.ProgramRoot,plane,true,out var increasing,out var decreasing);if(status!=AlgorithmStatus.Success)return false;
+        if(!increasing&&!decreasing)return false;
+        LastBlendPlaneCutStage=BlendPlaneCutStage.Contacts;
+        status=SolveMonotoneBlendPlaneContact(record,program,data.ProgramRoot,plane,record.VMin,first,out var nf);if(status!=AlgorithmStatus.Success)return false;
+        status=SolveMonotoneBlendPlaneContact(record,program,data.ProgramRoot,plane,record.VMax,second,out var ns);if(status!=AlgorithmStatus.Success)return false;
+        LastBlendPlaneFirstRoots=nf;LastBlendPlaneSecondRoots=ns;
+        if(nf!=1||ns!=1||Math.Abs(first[0].First-second[0].First)>1e-10)return false;
+        u=(first[0].First+second[0].First)*.5;return true;
     }
 
     private static bool CertifyExplicitRollingBallPlaneSeparation(in SurfaceRecord surface,in AnalyticSurface plane)
@@ -71,14 +79,14 @@ internal static unsafe partial class KernelRuntime
     // Called only after a complete strip certificate proved strict u
     // monotonicity. Endpoint signs prove existence; Newton is a candidate
     // locator and a final interval residual is still required to publish it.
-    private static AlgorithmStatus SolveMonotoneBlendPlaneContact(in SurfaceRecord surface,in AnalyticSurface plane,double v,
+    private static AlgorithmStatus SolveMonotoneBlendPlaneContact(in SurfaceRecord surface,in NestedBlendProgram program,BufferOffset root,in AnalyticSurface plane,double v,
         Span<OperationIntersectionPoint> output,out BufferCount count)
     {
-        count=0;var data=BlendedEdgeDataPool[surface.DataIndex];var program=GetNestedBlendProgram(data);
+        count=0;
         Span<IntervalNumber> bounds=stackalloc IntervalNumber[9];
-        var status=JointNestedBlendEvaluation.Bound(program,data.ProgramRoot,new(surface.UMin,surface.UMin,v,v),bounds);if(status!=AlgorithmStatus.Success)return status;
+        var status=JointNestedBlendEvaluation.Bound(program,root,new(surface.UMin,surface.UMin,v,v),bounds);if(status!=AlgorithmStatus.Success)return status;
         var left=(bounds[0]-plane.Origin.X)*plane.Axis.X+(bounds[1]-plane.Origin.Y)*plane.Axis.Y+(bounds[2]-plane.Origin.Z)*plane.Axis.Z;
-        status=JointNestedBlendEvaluation.Bound(program,data.ProgramRoot,new(surface.UMax,surface.UMax,v,v),bounds);if(status!=AlgorithmStatus.Success)return status;
+        status=JointNestedBlendEvaluation.Bound(program,root,new(surface.UMax,surface.UMax,v,v),bounds);if(status!=AlgorithmStatus.Success)return status;
         var right=(bounds[0]-plane.Origin.X)*plane.Axis.X+(bounds[1]-plane.Origin.Y)*plane.Axis.Y+(bounds[2]-plane.Origin.Z)*plane.Axis.Z;
         var u=surface.UMin;
         if(left.Magnitude<=1e-10)u=surface.UMin;
@@ -90,7 +98,7 @@ internal static unsafe partial class KernelRuntime
             Span<KernelVector3> jet=stackalloc KernelVector3[2];var found=false;
             for(var i=0;i<20;i++)
             {
-                status=JointNestedBlendEvaluation.Evaluate(program,data.ProgramRoot,u,v,layout,jet);if(status!=AlgorithmStatus.Success)return status;
+                status=JointNestedBlendEvaluation.Evaluate(program,root,u,v,layout,jet);if(status!=AlgorithmStatus.Success)return status;
                 var distance=Dot(Sub(jet[0],plane.Origin),plane.Axis);if(Math.Abs(distance)<1e-12){found=true;break;}
                 var derivative=Dot(jet[1],plane.Axis);if(Math.Abs(derivative)<1e-14)return AlgorithmStatus.NotConverged;
                 u=Math.Clamp(u-distance/derivative,surface.UMin,surface.UMax);
@@ -98,18 +106,18 @@ internal static unsafe partial class KernelRuntime
             if(!found)return AlgorithmStatus.NotConverged;
         }
         else return AlgorithmStatus.NotConverged;
-        status=JointNestedBlendEvaluation.Bound(program,data.ProgramRoot,new(u,u,v,v),bounds);if(status!=AlgorithmStatus.Success)return status;
+        status=JointNestedBlendEvaluation.Bound(program,root,new(u,u,v,v),bounds);if(status!=AlgorithmStatus.Success)return status;
         var residual=(bounds[0]-plane.Origin.X)*plane.Axis.X+(bounds[1]-plane.Origin.Y)*plane.Axis.Y+(bounds[2]-plane.Origin.Z)*plane.Axis.Z;
         if(residual.Magnitude>1e-10)return AlgorithmStatus.NotConverged;
         var point=new KernelVector3{X=bounds[0].Midpoint,Y=bounds[1].Midpoint,Z=bounds[2].Midpoint};
         return OperationIntersection.AddPoint(output,ref count,point,u,0,IntersectionVectorKind.Simple)?AlgorithmStatus.Success:AlgorithmStatus.OutputTooSmall;
     }
 
-    private static AlgorithmStatus CertifyBlendPlaneRange(in SurfaceRecord surface,in AnalyticSurface plane,bool derivative,
+    private static AlgorithmStatus CertifyBlendPlaneRange(in SurfaceRecord surface,in NestedBlendProgram program,BufferOffset root,in AnalyticSurface plane,bool derivative,
         out bool positive,out bool negative)
     {
-        positive=negative=true;var data=BlendedEdgeDataPool[surface.DataIndex];var program=GetNestedBlendProgram(data);
-        var spine=program.Spines[program.Surfaces[data.ProgramRoot].Spine];var charts=program.Charts.Slice(spine.ChartOffset,spine.ChartCount);
+        positive=negative=true;
+        var spine=program.Spines[program.Surfaces[root].Spine];var charts=program.Charts.Slice(spine.ChartOffset,spine.ChartCount);
         Span<SurfaceParameterBox> cells=stackalloc SurfaceParameterBox[128];Span<BufferCount> depths=stackalloc BufferCount[128];
         Span<IntervalNumber> bounds=stackalloc IntervalNumber[9];var visited=0;
         for(var i=0;i<charts.Length-1;i++)
@@ -119,7 +127,7 @@ internal static unsafe partial class KernelRuntime
             {
                 if(++visited>8192)return AlgorithmStatus.NotConverged;
                 var index=--pending;var cell=cells[index];var depth=depths[index];
-                var status=JointNestedBlendEvaluation.Bound(program,data.ProgramRoot,cell,bounds);
+                var status=JointNestedBlendEvaluation.Bound(program,root,cell,bounds);
                 if(status==AlgorithmStatus.Success)
                 {
                     var value=derivative?bounds[3]*plane.Axis.X+bounds[4]*plane.Axis.Y+bounds[5]*plane.Axis.Z
