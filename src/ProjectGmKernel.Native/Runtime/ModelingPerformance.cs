@@ -28,6 +28,8 @@ internal static unsafe class ModelingPerformance
     internal static bool CacheEnabled=true;
     [ThreadStatic] internal static ModelingProfile Last;
     [ThreadStatic] private static Context* current;
+    [ThreadStatic] private static long jointProbeScope;
+    internal static (long Scope,bool Immutable,KernelRuntime.RegularBooleanStage Stage,RootIsolationUse RootUse) JointProbeContext=>current==null?(0,false,KernelRuntime.RegularBooleanStage.None,RootIsolationUse.Other):(current->JointProbeScope,current->CacheAllowed,current->Stage,current->RootUse);
     private const BufferCount CacheCapacity=32768,CacheProbeLimit=32;
 
     internal struct Context
@@ -36,7 +38,7 @@ internal static unsafe class ModelingPerformance
         internal JointTubeEntry* Tubes;
         internal bool TubeAttempted;
         internal bool Capture,CacheAllowed,CacheAttempted;
-        internal long Started,StageStarted;
+        internal long Started,StageStarted,JointProbeScope;
         internal KernelRuntime.RegularBooleanStage Stage;
         internal RootIsolationUse RootUse;
         internal ModelingProfile Profile;
@@ -60,7 +62,7 @@ internal static unsafe class ModelingPerformance
         private readonly Context* context;
         internal Scope(Context* target,bool immutableGeometry=false)
         {
-            context=target;previous=current;*target=default;target->Capture=Enabled;
+            context=target;previous=current;*target=default;target->Capture=Enabled;target->JointProbeScope=++jointProbeScope;
             if(target->Capture)target->Started=target->StageStarted=Stopwatch.GetTimestamp();
             target->CacheAllowed=CacheEnabled&&immutableGeometry;
             current=target;
@@ -177,15 +179,7 @@ internal static unsafe class ModelingPerformance
         entry.Tag=tag;entry.Generation=generation;entry.Sense=sense;entry.Root=root;entry.Kind=kind;entry.Box=box;entry.Status=status;entry.FailureScale=failureScale;
         if(status==AlgorithmStatus.Success)output[..9].CopyTo(entry.Values);
     }
-    internal static Span<JointTubeEntry> JointTubeWorkspace()
-    {
-        const BufferCount capacity=128;
-        if(current==null||!current->CacheAllowed)return default;
-        if(current->Tubes!=null)return new(current->Tubes,capacity);
-        if(current->TubeAttempted)return default;current->TubeAttempted=true;
-        current->Tubes=(JointTubeEntry*)KernelRuntime.State.Session->Memory->TryAllocate((nuint)(capacity*sizeof(JointTubeEntry)));
-        if(current->Tubes==null)return default;var entries=new Span<JointTubeEntry>(current->Tubes,capacity);entries.Clear();return entries;
-    }
+    internal static Span<JointTubeEntry> JointTubeWorkspace()=>default; // Diagnostic baseline: identity prepared, reuse disabled.
     private static bool EnsureEntries()
     {
         if(current->Entries!=null)return true;
