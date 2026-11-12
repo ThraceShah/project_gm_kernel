@@ -16,4 +16,4 @@ ModelingPerformance.Scope增加显式reuseCurrent选项：已在不可变父阶�
 
 最初定向验证77/77、0fail、原exit0，包含原完整RegularSolidBlend/BlendSheetPartition/BlendContactEndpoint/BlendIntersection/NestedBlendCacheEmptyReadSet消费者、JointTube与ModelingPerformance检查。新增控制覆盖父workspace保持、退出后的原生证据失效、RootUse继承且只计一次、缓存关闭/可选分配失败仍逐位得到原包围界。原日志、TRX和源码diff在 `temp_docs/cut-planning/`。
 
-当前仅为已验证小步源码进展；完整产品质量、实际完整建模收益及下一集中交付仍待执行和独立接受。后续使用当前runner/Compare/Mass/Capture及真实PK，原Unresolved/Missing/raw2分别保留，不用局部工作计数预签速度或PK目标。
+后续实际完整套件2023/2023和八组当前真实PK质量记录见 `docs/Cut_Planning_Quality_Receipt.md`。唯一完整时间窗未证明值得保留的完整建模收益：NURBS仅−2.602%、curved观察+22.897%，本方向不进入正式候选，详见 `docs/Rejected_Cut_Planning_Performance.md`。源码与质量/窗口原件保留，不为择优重测；后续仍从已接受Joint185/Native116出发。
