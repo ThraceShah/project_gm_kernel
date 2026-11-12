@@ -12,6 +12,7 @@
  */
 import { chromium } from 'playwright-core';
 import path from 'path';
+import zlib from 'zlib';
 import fs from 'fs';
 import os from 'os';
 import { fileURLToPath } from 'url';
@@ -105,6 +106,14 @@ async function viewerStats(page) {
   );
 }
 
+// Static data members may be explicit gzip transport (.gz). Decode to the exact
+// producer bytes; a corrupt member is a hard failure, never a skipped check.
+async function readLiveJson(response, relPath) {
+  const buf = Buffer.from(await response.body());
+  const text = relPath.endsWith('.gz') ? zlib.gunzipSync(buf).toString('utf8') : buf.toString('utf8');
+  return JSON.parse(text);
+}
+
 async function verifyPortalLive() {
   console.log(`[PortalVerify] browser: ${chromePath}`);
   console.log(`[PortalVerify] live URL: ${liveUrl}`);
@@ -134,7 +143,7 @@ async function verifyPortalLive() {
     const latestSummary = indexJson.runs.find((r) => r.id === latestRunId);
     const manifestRes = await page.request.get(`${liveUrl}data/${latestSummary.manifest}`);
     check('https: latest manifest 200', manifestRes.ok(), String(manifestRes.status()));
-    const manifest = await manifestRes.json();
+    const manifest = await readLiveJson(manifestRes, latestSummary.manifest);
     const counts = { pass: 0, fail: 0, missing: 0, unsupported: 0 };
     for (const c of manifest.cases) counts[c.status] = (counts[c.status] || 0) + 1;
     console.log(`[PortalVerify] latest run ${latestRunId}: ${JSON.stringify(counts)} total=${manifest.cases.length}`);
@@ -194,7 +203,13 @@ async function verifyPortalLive() {
       const inertiaFail = failCase.checks.find((k) => k.status === 'fail' && /Inertia/.test(k.label || ''));
       check('live: fail value visible', failText.includes(inertiaFail.absDelta.toExponential(7).split('e')[0]));
       check('live: fail threshold visible', failText.includes(String(inertiaFail.threshold)), String(inertiaFail.threshold));
-      check('live: fail ratio empty', failText.includes('比率: N/A') && !/\b0(\.0+)?x\b/.test(failText));
+      // A fail case may have no timing measurement at all (nothing is shown) or a
+      // measurement with a withheld ratio (shown as N/A). What must never happen
+      // is a fabricated numeric ratio such as "0x".
+      const anyNumericRatio = /\b\d+(\.\d+)?x\b/.test(failText);
+      const ratioWord = failText.includes('比率');
+      const ratioNa = /比率[:：]\s*N\/A/.test(failText);
+      check('live: fail ratio empty (absent or N/A, never 0x)', !anyNumericRatio && (!ratioWord || ratioNa), `ratioWord=${ratioWord} na=${ratioNa} numeric=${anyNumericRatio}`);
       await page.screenshot({ path: path.join(tempDocsDir, 'webui_v2_live_fail.png') });
     } else {
       check('live: an inertia fail case exists', false, 'not found in live manifest');
