@@ -12,6 +12,6 @@ ab完整18项几何jet只在同一BoundSegment实际固定program/occurrence/fix
 
 关键控制 **199/199/0fail/0skip/原0/17s**，复用原195与4个a908控制，在真实新组合上覆盖两restriction表达/两seed方案的原global gap、knownminimum/原UV、正rational/多谷/端点与finite域、完整jets/nearest/矩阵/失败/缓存readset、别名和0alloc。没有改期望或为每字段重开独验。连续证明依据是已接受函数合同的组合，不是有限控制泛化。
 
-一次完整NURBS开发CCC271 vs当前组合已执行，各6fresh GM/PK/24API0/两raw2；五暖中位282.1259→183.4591ms（观察−34.973%），候选冷与首暖更慢/全部PK点保留。新组合完整2043/2043、build0/test0、2m18自然结束，八质量无新增hardfail/CaptureErrors，未回填任何单独历史执行；详 `docs/Accepted_Optimization_Integration_Quality.md`。下一一次固定CCC基线的必要五操作窗和一次集中重大集成独验，重验只针对真实新源，不补旧suite或发布材料。仍不能签整体PK/main/上线完成；原79920继续、不worker_done/不等门户新scope。
+一次完整NURBS开发CCC271 vs当前组合已执行，各6fresh GM/PK/24API0/两raw2；五暖中位282.1259→183.4591ms（观察−34.973%），候选冷与首暖更慢/全部PK点保留。新组合完整2043/2043、build0/test0、2m18自然结束，八质量无新增hardfail/CaptureErrors，未回填任何单独历史执行；详 `docs/Accepted_Optimization_Integration_Quality.md`。唯一固定CCC窗口已完成，NURBS观察−25.602%但shortedge+26.555%、curved+5.002%、sphere+15.150%全保留，详 `docs/Accepted_Optimization_Integration_Controlled_Measurement.md`；可交一次集中重大组合验收，不补旧suite/发布材料或追有利点。用户relay7e58429ce6f5纠正后，随后转向完整PK→GM处理链结构差异及通用根本改动，不自动再串接小算式/cache同套循环。仍不能签整体PK/main/上线完成；原79920继续、不worker_done/不等门户新scope。
 
 原件 `temp_docs/accepted-integration/`。CCC原quality标签acceptedBaseline/costDiagnosticScope残留勘误另存diag/accepted-ab-cost3504c4f3的 `docs/Bezier_Restriction_Metadata_Erratum.md` 与机器收据，原receipt/ZIP不改；本组合后续新metadata应直接标真实CCC271基线，不沿用旧标签。无Windows/AOT，当前不签完整数值/性能资格或CPU因果。
