@@ -24,6 +24,7 @@ internal readonly ref struct SurfaceIntersectionPatch
     private readonly bool isBlend;
     private readonly bool isSpine;
     private readonly byte supportParameterSide;
+    private readonly bool supportParameterUv;
     private readonly byte isoAxis, sweepAxis;
     private readonly double isoParameter;
     private readonly bool parameterLine;
@@ -58,6 +59,9 @@ internal readonly ref struct SurfaceIntersectionPatch
     // Its X value is a supporting Blend's u; it is not spatial geometry.
     internal SurfaceIntersectionPatch(NestedBlendProgram program,BlendSpineIndex spine,BufferOffset side,double lower,double upper)
         :this(program,spine,lower,upper){supportParameterSide=(byte)(side+1);}
+    // (native u,native v,0), solely a read-only scalar-root calculation view.
+    internal SurfaceIntersectionPatch(NestedBlendProgram program,BlendSpineIndex spine,BufferOffset side,double lower,double upper,bool includeV)
+        :this(program,spine,side,lower,upper){supportParameterUv=includeV;}
     internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,Span<SurfaceBoundCacheEntry> entries,bool pinned=false)
     {this=source;cache=entries;pinnedCache=pinned;}
     internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,GeomTag tag,EntityGeneration generation,KernelSense sense)
@@ -72,7 +76,7 @@ internal readonly ref struct SurfaceIntersectionPatch
     {this=source;provenCell=cell;hasCellProof=true;}
     internal AlgorithmStatus BoundCell(in SurfaceParameterBox cell,Span<IntervalNumber> output,out SurfaceIntersectionPatch certified)
     {
-        certified=this;var status=Bound(cell,output);if(status!=AlgorithmStatus.Success||output.Length<9||isoAxis!=0||sweepAxis!=0||parameterLine||!curveDomains.IsEmpty)return status;
+        certified=this;var status=Bound(cell,output);if(status!=AlgorithmStatus.Success||output.Length<9||isoAxis!=0||sweepAxis!=0||parameterLine||supportParameterSide!=0||!curveDomains.IsEmpty)return status;
         for(var i=0;i<9;i++)if(!output[i].Finite)return status;
         certified=new(this,cell);return status;
     }
@@ -106,14 +110,18 @@ internal readonly ref struct SurfaceIntersectionPatch
         }
         if(supportParameterSide!=0)
         {
-            if(ModelingPerformance.TryBound(cacheTag,cacheGeneration,cacheSense,surface,true,box,output,out var cached,double.NaN,supportParameterSide))return cached;
-            Span<IntervalNumber> parameter=stackalloc IntervalNumber[2];
+            if(normalOffset!=0||isoAxis!=0||sweepAxis!=0||parameterLine||output.Length<9)return AlgorithmStatus.Unsupported;
+            var demand=(byte)(supportParameterSide+(supportParameterUv?8:0));
+            if(ModelingPerformance.TryBound(cacheTag,cacheGeneration,cacheSense,surface,true,box,output,out var cached,double.NaN,demand))return cached;
+            Span<IntervalNumber> parameter=stackalloc IntervalNumber[4];
             var started=ModelingPerformance.StartBound();
-            var found=JointNestedBlendEvaluation.BoundSpineSupportU(blend,surface,box.U0,box.U1,supportParameterSide-1,parameter);
+            var found=supportParameterUv?JointNestedBlendEvaluation.BoundSpineSupportUv(blend,surface,box.U0,box.U1,supportParameterSide-1,parameter)
+                :JointNestedBlendEvaluation.BoundSpineSupportU(blend,surface,box.U0,box.U1,supportParameterSide-1,parameter[..2]);
             ModelingPerformance.EndBound(started);
             if(found!=AlgorithmStatus.Success)return found;
             output[..9].Clear();output[0]=parameter[0];output[3]=parameter[1];
-            ModelingPerformance.StoreBound(cacheTag,cacheGeneration,cacheSense,surface,true,box,output,AlgorithmStatus.Success,double.NaN,supportParameterSide);return found;
+            if(supportParameterUv){output[1]=parameter[2];output[4]=parameter[3];}
+            ModelingPerformance.StoreBound(cacheTag,cacheGeneration,cacheSense,surface,true,box,output,AlgorithmStatus.Success,double.NaN,demand);return found;
         }
         if(normalOffset!=0&&isBlend)return AlgorithmStatus.Unsupported;
         var mapped=isoAxis==1?new SurfaceParameterBox(isoParameter,isoParameter,box.U0,box.U1)
@@ -193,7 +201,7 @@ internal readonly ref struct SurfaceIntersectionPatch
     // recomputed with Bound; estimates never reject a search cell.
     internal AlgorithmStatus Estimate(double u,double v,Span<IntervalNumber> output)
     {
-        if(!isBlend||isoAxis!=0||sweepAxis!=0||parameterLine)return Bound(new(u,u,v,v),output);
+        if(!isBlend||isoAxis!=0||sweepAxis!=0||parameterLine||supportParameterSide!=0)return Bound(new(u,u,v,v),output);
         Span<KernelVector3> jets=stackalloc KernelVector3[4];SurfaceDerivativeLayout.TryCreate(1,1,out var layout);
         var status=isSpine?JointNestedBlendEvaluation.EvaluateSpine(blend,surface,u,1,jets):JointNestedBlendEvaluation.Evaluate(blend,surface,u,v,layout,jets);if(status!=AlgorithmStatus.Success)return status;
         for(var i=0;i<3;i++){var p=i==0?jets[0]:i==1?jets[isSpine?1:2]:isSpine?default:jets[1];output[3*i]=p.X;output[3*i+1]=p.Y;output[3*i+2]=p.Z;}return AlgorithmStatus.Success;

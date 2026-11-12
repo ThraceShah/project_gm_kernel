@@ -343,7 +343,7 @@ internal static class ParametricICurveEvaluation
                 return AlgorithmStatus.NotConverged;
             }
             if ((nextParameter - target) * direction > 0) nextParameter = target;
-            var advance = Math.Abs(PlaneResidual(in view, segment, nextParameter, in current[0]));
+            var advance = Math.Abs(PlaneResidual(in view, segment, nextParameter, state,in current[0]));
             var cosine = Math.Abs(Dot(view.ChartChordUnits[segment], tangent));
             if (!(cosine > OriginalChartParameterMap.MinCosine) || !double.IsFinite(advance))
                 return AlgorithmStatus.Singular;
@@ -511,7 +511,7 @@ internal static class ParametricICurveEvaluation
         var implicitValue=implicitJet.Value;
         if(implicitSurface.Kind==SurfaceClass.Plane&&SplinePlaneResidual.TryEvaluate(support.BSpline,implicitSurface,state[offset],state[offset+1],out var stableValue))implicitValue=stableValue;
         f[0] = implicitValue / divisor;
-        f[1] = PlaneResidual(in view, segment, t, in parametricJet[0]);
+        f[1] = PlaneResidual(in view, segment, t, state,in parametricJet[0]);
         jacobian[0] = Dot(gradient, su); jacobian[1] = Dot(gradient, sv);
         jacobian[2] = Dot(view.ChartChordUnits[segment], su); jacobian[3] = Dot(view.ChartChordUnits[segment], sv);
         return AlgorithmStatus.Success;
@@ -608,7 +608,7 @@ internal static class ParametricICurveEvaluation
         Span<double> d2 = stackalloc double[4]
         {
             second1.X - second0.X, second1.Y - second0.Y, second1.Z - second0.Z,
-            -Dot(view.ChartChordUnits[segment], second0),
+            -Dot(view.ChartChordUnits[segment],view.Surface0.IsBSurface?second0:second1),
         };
         solved = SolveFactored(factor, 4, columnScales, pivots, d2);
         if (solved != AlgorithmStatus.Success) return solved;
@@ -641,12 +641,14 @@ internal static class ParametricICurveEvaluation
             if(plane.Kind==SurfaceClass.Plane&&SplinePlaneResidual.TryCorrectDifference(spline.BSpline,plane,state[offset],state[offset+1],state[2-offset],state[3-offset],splineFirst,Vector(f[0],f[1],f[2]),out var stable))
             {f[0]=stable.X;f[1]=stable.Y;f[2]=stable.Z;}
         }
-        f[3] = PlaneResidual(in view, segment, t, in jet0[0]);
+        var chartPoint=view.Surface0.IsBSurface?jet0[0]:jet1[0];
+        f[3] = PlaneResidual(in view, segment, t, state,in chartPoint);
         j[0] = su0.X; j[1] = sv0.X; j[2] = -su1.X; j[3] = -sv1.X;
         j[4] = su0.Y; j[5] = sv0.Y; j[6] = -su1.Y; j[7] = -sv1.Y;
         j[8] = su0.Z; j[9] = sv0.Z; j[10] = -su1.Z; j[11] = -sv1.Z;
-        j[12] = Dot(view.ChartChordUnits[segment], su0); j[13] = Dot(view.ChartChordUnits[segment], sv0);
-        j[14] = j[15] = 0;
+        var chartFirst=view.Surface0.IsBSurface;
+        j[12] = chartFirst?Dot(view.ChartChordUnits[segment],su0):0;j[13] = chartFirst?Dot(view.ChartChordUnits[segment],sv0):0;
+        j[14] = chartFirst?0:Dot(view.ChartChordUnits[segment],su1);j[15] = chartFirst?0:Dot(view.ChartChordUnits[segment],sv1);
     }
 
     private static bool TryTangent(in ICurveView view, ReadOnlySpan<double> state,
@@ -876,9 +878,13 @@ internal static class ParametricICurveEvaluation
             Scale(Scale(Scale(jet[layout.GetIndex(1, 1)], du), dv), 2)),
             Scale(Scale(jet[layout.GetIndex(0, 2)], dv), dv));
 
-    private static double PlaneResidual(in ICurveView view, BufferOffset segment, double t, in KernelVector3 point)
-        => OriginalChartParameterMap.PlaneResidual(view.ChartPositions, view.ChartParameters,
-            view.ChartScales, view.ChartChordUnits, segment, t, in point);
+    private static double PlaneResidual(in ICurveView view, BufferOffset segment, double t,ReadOnlySpan<double> state,in KernelVector3 point)
+    {
+        var first=view.Surface0.IsBSurface;var support=first?view.Surface0:view.Surface1;var offset=first?0:2;
+        if(support.IsBSurface&&SplinePlaneResidual.TryChartResidual(support.BSpline,state[offset],state[offset+1],view.ChartPositions[segment],
+            view.ChartChordUnits[segment],view.ChartParameters[segment],t,view.ChartScales[segment],out var residual))return residual;
+        return OriginalChartParameterMap.PlaneResidual(view.ChartPositions,view.ChartParameters,view.ChartScales,view.ChartChordUnits,segment,t,point);
+    }
 
     private static bool Charge(ref EvaluationBudget budget, out ICurveEvalDetail detail)
     {

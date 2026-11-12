@@ -116,9 +116,15 @@ using(host)unsafe
                         if(args.Contains("--contact-query-controls",StringComparer.Ordinal))
                             try{ContactQueries(own,reference,directory,name);}catch(Exception ex){failures++;Console.WriteLine("FAIL finite contact queries: "+ex.Message);}
                     }
-                    if(name=="plane-nurbs"&&(!roundingOnly||lifecycleOnly))
+                    if((name=="plane-nurbs"||args.Contains("--lifecycle-remodel",StringComparer.Ordinal))&&(!roundingOnly||lifecycleOnly))
                     {
-                        try{CheckLifecycle(own,reference,directory);}catch(Exception ex){failures++;Console.WriteLine("FAIL independent lifecycle: "+ex.Message);}
+                        try
+                        {
+                            var remodel=args.Contains("--lifecycle-remodel",StringComparer.Ordinal);
+                            foreach(var scale in remodel?new[]{.125,1.7,8}:new[]{2.0})
+                                CheckLifecycle(own,reference,directory,remodel?name+"-scale-"+scale.ToString("R",CultureInfo.InvariantCulture):name,cutX,scale,remodel);
+                        }
+                        catch(Exception ex){failures++;Console.WriteLine("FAIL independent lifecycle: "+ex.Message);}
                     }
                     if(!roundingOnly&&!lifecycleOnly)
                     {
@@ -129,13 +135,13 @@ using(host)unsafe
                                 var reloaded=ReceiveManaged(Transmit(own));Check(KernelRuntime.EntityDelete(1,&own),"delete the pre-reload bored fillet");own=reloaded;
                                 CheckCapBoreRings(own,reference);
                             }
-                            reference=Cut(false,reference,cutX);CheckBody(reference,name+" reference fillet cut");
+                            reference=Cut(false,reference,cutX,evidenceDirectory:directory,evidenceLabel:name+"-direct");CheckBody(reference,name+" reference fillet cut");
                             var verifySection=requireCutSection&&(name is "affine-plane-nurbs" or "plane-nurbs");
                             traceCutSection=verifySection;
                             if(traceCutSection){cutCharts.Clear();cutCrossings.Clear();cutProducts.Clear();cutEnds.Clear();}
                             var savedProofGuard=KernelRuntime.ForbidSpatialBoundaryReuse;
                             if(verifySection)KernelRuntime.ForbidSpatialBoundaryReuse=true;
-                            try{own=Cut(true,own,cutX);}
+                            try{own=Cut(true,own,cutX,evidenceDirectory:directory,evidenceLabel:name+"-direct");}
                             finally{KernelRuntime.ForbidSpatialBoundaryReuse=savedProofGuard;traceCutSection=false;}
                             if(remoteCapBore)CheckCapBoreRings(own,reference);
                             if(verifySection)
@@ -446,10 +452,22 @@ static unsafe void CheckCapBoreRings(int own,int reference)
     }
 }
 
-static unsafe int Cut(bool own,int body,double x)
+static unsafe int Cut(bool own,int body,double x,PK_TRANSF_t transform=0,string? evidenceDirectory=null,string? evidenceLabel=null)
 {
     // The default station is the symmetry plane of both supports.
     var tool=Block(own,x+.5,.5,-.1,1,2,2);var options=new PK_BODY_boolean_o_t{function=PK_boolean_subtract_c,default_tol=1e-7,tracking=PK_LOGICAL_false};int n;int* bodies;
+    if(transform!=0)
+    {
+        int count;int* replaced;PK_LOGICAL_t* exact;
+        Check(own?KernelRuntime.BodyTransform(tool,transform,0,&count,&replaced,(byte**)&exact):PK_BODY_transform(tool,transform,0,&count,&replaced,&exact),"transform independent finite cutting tool");
+        Free(own,replaced);Free(own,exact);
+    }
+    if(evidenceDirectory!=null)
+    {
+        var prefix=Path.Combine(evidenceDirectory,evidenceLabel+"-"+(own?"gm":"pk"));
+        File.WriteAllBytes(prefix+"-target-input.x_t",own?Transmit(body):TransmitNative(body));
+        File.WriteAllBytes(prefix+"-tool-input.x_t",own?Transmit(tool):TransmitNative(tool));
+    }
     WebProgressCapture.Before(own,body,[],"PK_BODY_boolean",[tool]);WebProgressCapture.BooleanParameters(own,options);
     var started=Stopwatch.GetTimestamp();
     var error=own?KernelRuntime.BodyBoolean(body,1,&tool,(M.PK_BODY_boolean_o_s*)&options,&n,&bodies):PK_BODY_boolean(body,1,&tool,&options,&n,&bodies);
@@ -496,7 +514,7 @@ static unsafe int ReceiveManaged(byte[] bytes)
         try{Require(n==1,"one self received fillet solid");return parts[0];}finally{Free(true,parts);}
     }
 }
-static unsafe void CheckLifecycle(int own,int reference,string directory)
+static unsafe void CheckLifecycle(int own,int reference,string directory,string name,double cutX,double scale,bool remodel)
 {
     var started=Stopwatch.GetTimestamp();
     var before=(KernelRuntime.Bodies.AliveCount,KernelRuntime.Curves.AliveCount,KernelRuntime.Surfaces.AliveCount,KernelRuntime.Points.AliveCount,KernelRuntime.ReturnOutstandingBlocks);
@@ -515,15 +533,28 @@ static unsafe void CheckLifecycle(int own,int reference,string directory)
         }
         Check(KernelRuntime.EntityCopy(imported,&copy),"copy self received fillet");Check(KernelRuntime.EntityDelete(1,&imported),"delete self received source");imported=0;
         Check(PK_ENTITY_copy(reference,&referenceCopy),"copy independent PK fillet");
-        var form=new M.PK_TRANSF_sf_s();form.matrix[0]=-2;form.matrix[5]=form.matrix[10]=2;form.matrix[15]=1;form.matrix[3]=3;form.matrix[7]=5;form.matrix[11]=7;
+        var form=new M.PK_TRANSF_sf_s();form.matrix[0]=-scale;form.matrix[5]=form.matrix[10]=scale;form.matrix[15]=1;form.matrix[3]=3;form.matrix[7]=5;form.matrix[11]=7;
+        if(remodel){form.matrix[0]=-.6*scale;form.matrix[1]=-.8*scale;form.matrix[4]=-.8*scale;form.matrix[5]=.6*scale;}
         Check(KernelRuntime.TransfCreate(&form,&transform),"self mirror-scale transform");Check(PK_TRANSF_create((PK_TRANSF_sf_t*)&form,&referenceTransform),"PK mirror-scale transform");
         int n;int* replaced;byte* exact;Check(KernelRuntime.BodyTransform(copy,transform,0,&n,&replaced,&exact),"self copied fillet mirror-scale");Free(true,replaced);Free(true,exact);
         PK_LOGICAL_t* nativeExact;Check(PK_BODY_transform(referenceCopy,referenceTransform,0,&n,&replaced,&nativeExact),"independent PK copied fillet mirror-scale");Free(false,replaced);Free(false,nativeExact);
-        DumpNativeXt(referenceCopy,directory,"plane-nurbs-lifecycle-reference");
-        var query=new PK_VECTOR_t(2.2,5.8,8);int actual,expected,topology;
+        DumpNativeXt(referenceCopy,directory,name+"-lifecycle-reference");
+        var query=new PK_VECTOR_t(3-.25*scale,5+.25*scale,7+.25*scale);
+        if(remodel){query.coord[0]=3-.35*scale;query.coord[1]=5-.05*scale;}
+        int actual,expected,topology;
         Check(KernelRuntime.BodyContainsVector(copy,*(M.PK_VECTOR_s*)&query,&actual,&topology),"self lifecycle material classification");
         Check(PK_BODY_contains_vector(referenceCopy,query,&expected,&topology),"PK lifecycle material classification");Require(actual==expected&&actual==PK_enclosure_inside_c,"lifecycle material classification");
-        CompareFresh(copy,referenceCopy,"plane-nurbs-lifecycle",directory);
+        CompareFresh(copy,referenceCopy,name+"-lifecycle",directory);
+        if(remodel)
+        {
+            var reloaded=ReceiveManaged(Transmit(copy));Check(KernelRuntime.EntityDelete(1,&copy),"delete transformed copy before editable reload");copy=reloaded;
+            Exception? ownFailure=null,nativeFailure=null;
+            try{copy=Cut(true,copy,cutX,transform,directory,name+"-lifecycle-remodel");}catch(Exception ex){ownFailure=ex;Console.WriteLine("LIFECYCLE_REMODEL_GM_FAILURE "+name+" "+ex.Message);}
+            try{referenceCopy=Cut(false,referenceCopy,cutX,referenceTransform,directory,name+"-lifecycle-remodel");}catch(Exception ex){nativeFailure=ex;Console.WriteLine("LIFECYCLE_REMODEL_PK_FAILURE "+name+" "+ex.Message);}
+            if(ownFailure!=null||nativeFailure!=null)throw new AggregateException(new[]{ownFailure,nativeFailure}.OfType<Exception>());
+            CompareFresh(copy,referenceCopy,name+"-lifecycle-remodel",directory);
+            Console.WriteLine($"LIFECYCLE_REMODEL_PASS {name} scale={scale:R} reflected_rotation=True independent_transformed_tool=True");
+        }
     }
     finally
     {

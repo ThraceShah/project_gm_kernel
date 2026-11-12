@@ -20,6 +20,44 @@ public class ParametricICurveTests
         SurfaceClass.Plane, Vector(0, 0, 0), Vector(0, 1, 0), Vector(1, 0, 0));
 
     [Theory]
+    [InlineData(false,false,.125)] [InlineData(false,true,.125)]
+    [InlineData(true,false,.125)] [InlineData(true,true,.125)]
+    [InlineData(false,false,1.7)] [InlineData(false,true,1.7)]
+    [InlineData(true,false,1.7)] [InlineData(true,true,1.7)]
+    [InlineData(false,false,8)] [InlineData(false,true,8)]
+    [InlineData(true,false,8)] [InlineData(true,true,8)]
+    public void HomogeneousChartEquationRetainsBothTracksAndD2AfterReflectedRotation(bool rational,bool reversed,double scale)
+    {
+        var geometry=rational?RationalCircle(false):Parabola();var dimension=rational?4:3;var poles=(double[])geometry.Vertices.Clone();
+        for(var i=0;i<poles.Length;i+=dimension)
+        {
+            var w=rational?poles[i+3]:1;var x=poles[i];var y=poles[i+1];var z=poles[i+2];
+            poles[i]=scale*(-.6*x-.8*y)+3*w;poles[i+1]=scale*(-.8*x+.6*y)+5*w;poles[i+2]=scale*z+7*w;
+        }
+        var positions=geometry.Positions.Select(p=>Frame(p,scale,true)).ToArray();var chords=geometry.Chords.Select(p=>Frame(p,1,false)).ToArray();
+        var scales=geometry.Scales.Select(s=>s/scale).ToArray();var witnesses=new SampleWitness[positions.Length];
+        var plane=new AnalyticSurface(SurfaceClass.Plane,Vector(3,5,7),Vector(.8,-.6,0),Vector(-.6,-.8,0));
+        for(var i=0;i<positions.Length;i++)
+        {
+            Assert.Equal(AlgorithmStatus.Success,OperationIntersection.Parameters(plane,positions[i],out var u,out var v));
+            witnesses[i]=reversed?new(u,v,geometry.Uv[i],0,0,SampleWitness.HasUv0|SampleWitness.HasUv1):new(geometry.Uv[i],0,u,v,0,SampleWitness.HasUv0|SampleWitness.HasUv1);
+        }
+        var surface=new BSurfaceView(geometry.Degree,1,poles.Length/(2*dimension),2,dimension,rational,false,false,poles,geometry.UKnots,geometry.VKnots);
+        var support=new ICurveSupportView(surface,new double[BSurfaceEvaluation.WorkspaceSize(geometry.Degree,1,2,2)]);var other=new ICurveSupportView(plane);
+        var sense=ParasolidConstants.PK_TOPOL_sense_positive_c;
+        var view=reversed?new ICurveView(other,sense,support,sense,positions,geometry.Parameters,scales,chords,witnesses):new ICurveView(support,sense,other,sense,positions,geometry.Parameters,scales,chords,witnesses);
+        Span<KernelVector3> actual=stackalloc KernelVector3[3];
+        foreach(var plan in new[]{ICurveConstraintPlan.P2,ICurveConstraintPlan.P4})for(var segment=0;segment<scales.Length;segment++)
+        {
+            var t=geometry.Parameters[segment]+.47*(geometry.Parameters[segment+1]-geometry.Parameters[segment]);
+            Assert.Equal(AlgorithmStatus.Success,ICurveEvaluation.EvaluateWithPlan(view,t,2,plan,actual,out _));
+            var reference=geometry.Reference(t,segment);for(var order=0;order<3;order++)reference[order]=Frame(reference[order],scale,order==0);
+            AssertJet(reference,actual);
+        }
+        static KernelVector3 Frame(KernelVector3 p,double size,bool point)=>Vector(size*(-.6*p.X-.8*p.Y)+(point?3:0),size*(-.8*p.X+.6*p.Y)+(point?5:0),size*p.Z+(point?7:0));
+    }
+
+    [Theory]
     [InlineData(false, 2)]
     [InlineData(true, 2)]
     [InlineData(false, 1)]

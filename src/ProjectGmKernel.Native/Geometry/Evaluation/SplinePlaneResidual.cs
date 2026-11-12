@@ -12,6 +12,23 @@ internal static class SplinePlaneResidual
         var found=Evaluate(surface,plane,u,v,out var wide);value=wide.Value;return found&&double.IsFinite(value);
     }
 
+    // The native CHART equation is dot(S-anchor,chord)-(t-t0)/scale.
+    // Apply the linear functional to homogeneous poles before rounding S to
+    // world XYZ, and keep the original parameter subtraction in two parts.
+    internal static bool TryChartResidual(in BSurfaceView surface,double u,double v,in KernelVector3 anchor,in KernelVector3 chord,
+        double first,double parameter,double scale,out double value)
+    {
+        value=double.NaN;if(!(scale>0)||!double.IsFinite(scale)||!double.IsFinite(first)||!double.IsFinite(parameter))return false;
+        var plane=new AnalyticSurface(SurfaceClass.Plane,anchor,chord,default);
+        if(!Evaluate(surface,plane,u,v,out var projection))return false;
+        var delta=new Wide(parameter)-new Wide(first);
+        if(scale<1)
+        {
+            var shift=-Math.ILogB(scale)-1;scale=Math.ScaleB(scale,shift);delta=delta.ScaleByPowerOfTwo(shift);
+        }
+        value=(projection-delta/new Wide(scale)).Value;return double.IsFinite(value);
+    }
+
     internal static bool TryCorrectDifference(in BSurfaceView surface,in AnalyticSurface plane,double u,double v,
         double planeU,double planeV,bool splineFirst,in KernelVector3 original,out KernelVector3 corrected)
     {
@@ -75,6 +92,7 @@ internal static class SplinePlaneResidual
     {
         private readonly double hi=high,lo=low;
         internal double Value=>hi+lo;
+        internal Wide ScaleByPowerOfTwo(int exponent)=>new(Math.ScaleB(hi,exponent),Math.ScaleB(lo,exponent));
         public static Wide operator +(Wide a,Wide b)
         {
             var s=a.hi+b.hi;var v=s-a.hi;var e=(a.hi-(s-v))+(b.hi-v)+a.lo+b.lo;var h=s+e;return new(h,e-(h-s));

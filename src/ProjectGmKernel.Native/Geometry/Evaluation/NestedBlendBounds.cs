@@ -273,9 +273,16 @@ internal static partial class JointNestedBlendEvaluation
         var parameterIndex=-1;BufferOffset parameterChild=-1;
         if(!supportParameter.IsEmpty)
         {
-            parameterChild=parameterSide==0?nodes[0].FirstChild:nodes[0].SecondChild;
-            if(parameterChild<0)return AlgorithmStatus.Unsupported;
-            parameterIndex=nodes[parameterChild].Offset+3;supportParameter[0]=boxes[parameterIndex];
+            var root=program.Spines[spine];var support=program.Surfaces[parameterSide==0?root.First:root.Second];
+            if(support.IsBSpline)parameterIndex=parameterSide==0?nodes[0].FirstUv:nodes[0].SecondUv;
+            else
+            {
+                parameterChild=parameterSide==0?nodes[0].FirstChild:nodes[0].SecondChild;
+                if(parameterChild<0)return AlgorithmStatus.Unsupported;
+                parameterIndex=nodes[parameterChild].Offset+3;
+            }
+            if(parameterIndex<0)return AlgorithmStatus.Unsupported;
+            supportParameter[0]=boxes[parameterIndex];
         }
         if(!reachBudget.IsEmpty)
         {
@@ -308,6 +315,8 @@ internal static partial class JointNestedBlendEvaluation
             if(supportParameter.Length==2)return AlgorithmStatus.Success;
             for(var i=0;i<n;i++)variables[i]=new(boxes[i],image[i]);
             var root=program.Spines[spine];var support=program.Surfaces[parameterSide==0?root.First:root.Second];
+            if(support.IsBSpline)
+            {supportParameter[2]=boxes[parameterIndex+1];supportParameter[3]=image[parameterIndex+1];return AlgorithmStatus.Success;}
             status=BoundSpineSupportSection(program,nodes,variables[..n],parameterChild,support,splineCache,out var section);
             if(status!=AlgorithmStatus.Success)return status;
             supportParameter[2]=section.Value;supportParameter[3]=section.Derivative;

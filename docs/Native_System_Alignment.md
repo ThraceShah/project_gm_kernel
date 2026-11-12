@@ -386,3 +386,54 @@ PGO/QuickJit/QuickJitForLoops固定1、ReadyToRun固定0，只有TieredCompilati
 依据为官方[编译运行配置](https://learn.microsoft.com/en-us/dotnet/core/runtime-config/compilation)
 及[动态PGO说明](https://devblogs.microsoft.com/dotnet/announcing-net-6/)。
 本段只记录已准备的有界执行合同，尚无选择结论，也不回签历史未显式记录的默认环境。
+
+## 原生UV裁剪与CHART方程的共同链
+
+统一运行配置已实际选择并落地，见 [运行策略](Native_Runtime_Policy.md)。此后真实
+PK/GM脚本经 `scripts/RunNativeOracle.cs` 启动，固定整组设置，不按case换JIT。
+
+滚动接触原来把已有native UV再次变成两条空间曲线求交。现在直接复用joint solve
+已经证明的支持UV及其native-station导数：`BoundSpineSupportUv` 同时支持BSurface
+和已有非周期Blend参数视图，原nearest/contraction及预算不变。临时计算视图为
+(u,v,0)，只用于UV-ray标量根隔离，不是新的持久几何；offset/iso/sweep组合不准入，
+不继承XYZ或标量u缓存条目，不给它二维cell proof。Estimate也按同一参数视图求值。
+接触曲线使用实际整个保存station域求根，再按原CHART关联返回自身native t，
+不以两个端点的局部反求估计缩掉未知分支。隔离器按证书去重后，结果直接逐根发布，
+不再次用XYZ epsilon归并已证明不同的根。原finite endpoint分类合同仍单独保留，
+这不等于所有native精度边界或所有trim face已完成。
+
+实际 `native-uv-scalar-v2.log/.exit` 四族各两次fresh模型，独立Fix、Boolean、
+真实XT full/strict及既有plane/NURBS生命周期通过，原exit2、mass U另列。
+该开发执行的实际Native为
+`e1e3da424053ac1ee1b5cf73910f38ed07cccd764a4d33a5c8ed27bcbb272ea7`；
+16次GM API合计32113.431ms，相同平台/配置的先前两个TC1进程分别63214.930和
+62528.253ms。它是该开发assembly的整操作观测，后续CHART改动仍需在固定最终源
+集中测量，不能把约49%的开发差值升级成后续全部assembly或独立性能接受。
+
+扩大到复制/删源/反射旋转/尺度/回读后再建模时，确实暴露了凹NURBS/NURBS后续
+Boolean 5018；上游Fix和变换后的strict/full已通过，不连坐改判。5018按实际生成
+头文件是eval_failure，早期口头bad_loop描述已纠正。独立PK同operation返回0，
+冻结真实输入SHA为
+`e12dbabfd4afa65689e3bb415212cfdddb5d779c5be0ffa76b87ab6870c78fed` 和
+`12bc647a68422b83e4c75145fc7cf52a9a93468bacea8a2bd5c396737f673ec1`。
+逐步定位后实际失败是新生成BSurface/Plane ICURVE的内部witness求值，非先前日志
+残留的UV tangent；其原report为P4、segment4、52iterations、residual约5.57e-16、
+AmbiguousBranch。原始失败及环境127保持原字节，没有用重跑覆盖。
+
+CHART的原方程是dot(S-anchor,chord)-(t-t0)/scale。旧路径先把S舍入为世界XYZ，
+补偿减法也不能恢复在这个舍入中丢掉的值。现在对native齐次控制系数先计算同一
+线性泛函，并在两分量精度中减去原native参数步；不移动anchor、不改原t或scale。
+P2、P4及最终发布使用同一方程；反支持顺序时P4 Jacobian和D2右端同步选择实际
+BSurface列。物理D0误差、UV分支一致性和独立双端continuation门槛保持不变，
+没有增预算或放宽旧标准。代码及同输入前后结果支持舍入路径这一根因；这不是对
+PK内部使用同样求解器的断言。
+
+`concave-native-uv-stable-chart.log/.exit` 冻结同字节Boolean两侧0/1product，
+GM fresh XT full/strict通过，exit0；该脚本仅验几何操作，没有积分，不冒称物性通过。
+`native-stable-chart-cross-family-managed.log/.exit` 93/93、exit0，含plain/rational、
+双支撑顺序、native gauge、反射旋转三尺度、P2/P4 D0–D2、细薄分支负例及subnormal
+CHART合同。`native-uv-stable-chart-remodel.log/.exit` 三族×三尺度的九个完整生命周期
+再Boolean及各族直接Fix/Boolean均full/strict通过，原exit2，mass U保留。
+该实际生产Native为
+`45b1d2e6a29c1c1d55931fa62f0db3b2516f37305f86b73b819c01c7fcc7bc0d`。
+全部是owner实测；整体任务、剩余finite-face域资格和最终集中独验仍在执行。

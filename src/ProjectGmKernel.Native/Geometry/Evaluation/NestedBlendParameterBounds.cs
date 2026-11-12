@@ -14,7 +14,7 @@ internal static partial class JointNestedBlendEvaluation
         BufferOffset side,Span<IntervalNumber> result)
         =>result.Length==2?BoundSpineSupportParameters(program,spine,first,last,side,result):AlgorithmStatus.InvalidInput;
 
-    // Output is (u, du/dt, v, dv/dt) in the actual supporting Blend chart.
+    // Output is (u, du/dt, v, dv/dt) in the actual supporting native chart.
     internal static AlgorithmStatus BoundSpineSupportUv(in NestedBlendProgram program,BlendSpineIndex spine,double first,double last,
         BufferOffset side,Span<IntervalNumber> result)
         =>result.Length==4?BoundSpineSupportParameters(program,spine,first,last,side,result):AlgorithmStatus.InvalidInput;
@@ -24,7 +24,8 @@ internal static partial class JointNestedBlendEvaluation
     {
         if(spine<0||spine>=program.Spines.Length||side is <0 or >1||last<first)return AlgorithmStatus.InvalidInput;
         var definition=program.Spines[spine];var support=program.Surfaces[side==0?definition.First:definition.Second];
-        if(SpineParameterMap.Explicit(definition)||!support.IsBlend||SpineParameterMap.Periodic(program.Spines[support.Spine]))return AlgorithmStatus.Unsupported;
+        if(SpineParameterMap.Explicit(definition)||!support.IsBlend&&!support.IsBSpline
+            ||support.IsBlend&&SpineParameterMap.Periodic(program.Spines[support.Spine]))return AlgorithmStatus.Unsupported;
         var charts=Chart(program,spine);if(first<charts[0].Parameter||last>charts[^1].Parameter)return AlgorithmStatus.InvalidInput;
         Span<SurfaceParameterBox> pending=stackalloc SurfaceParameterBox[64];Span<BufferCount> depths=stackalloc BufferCount[64];
         Span<IntervalNumber> output=stackalloc IntervalNumber[9],parameter=stackalloc IntervalNumber[result.Length];

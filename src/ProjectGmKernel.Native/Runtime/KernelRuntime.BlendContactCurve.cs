@@ -262,8 +262,12 @@ internal static unsafe partial class KernelRuntime
             if(BlendContactParameter(data,point[0],u,out var t)!=0||!OperationIntersection.InInterval(t,edge.Start,edge.End))return AlgorithmStatus.Success;
             return OperationIntersection.AddPoint(output,ref count,point[0],along,t,IntersectionVectorKind.Simple)?AlgorithmStatus.Success:AlgorithmStatus.OutputTooSmall;
         }
-        var found=BlendContactInterval(data,edge.Start,edge.End,out var first,out var last);if(found!=AlgorithmStatus.Success)return found;
         var source=GetSurfaceSlotByTag(target);var contact=GetSurfaceSlotByTag(data.Surface1Tag);
+        var band=BlendedEdgeDataPool[Surfaces[contact].DataIndex];var program=GetNestedBlendProgram(band);
+        if(SameSheetSupport(target,data.Surface0Tag)&&Surfaces[source].Class==SurfaceClass.BSurface
+            &&!SpineParameterMap.Explicit(program.Spines[program.Surfaces[band.ProgramRoot].Spine]))
+            return IntersectSplineContactParameterRay(source,data,program,band.ProgramRoot,edge,query,du,dv,output,out count);
+        var found=BlendContactInterval(data,edge.Start,edge.End,out var first,out var last);if(found!=AlgorithmStatus.Success)return found;
         found=RegularSurfaceExtent(source,out var extent);if(found!=AlgorithmStatus.Success)return found;
         Span<IntervalNumber> ap=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars],bp=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars];
         Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[IntersectionPointCapacity];

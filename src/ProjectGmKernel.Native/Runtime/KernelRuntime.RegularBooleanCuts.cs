@@ -10,6 +10,8 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
+    internal enum RegularClipStage:byte{FirstBoundary,SecondBoundary,RootLocation,Witness,FirstUv,SecondUv,FirstTrim,SecondTrim,Publish}
+    [ThreadStatic] internal static RegularClipStage LastRegularClipStage;
     private struct RegularCutFamily{internal SurfTag First,Second;internal BufferOffset Start,PointStart;internal BufferCount Count,PointCount;internal SurfacePairRelation Relation;}
     private struct RegularFaceCut{internal BufferOffset First,Second;internal SheetCutCurve Cut;internal byte SecondIsBoundary;}
     private const byte NativePlaneCertificate=2;
@@ -549,8 +551,10 @@ internal static unsafe partial class KernelRuntime
         var transferCylinderConic=false;
         foreach(ref readonly var curve in curves)transferCylinderConic|=curve.Construction==CutConstruction.AnalyticCylinderPlaneConic;
         var originals=model.OriginalVertices[..model.NP];
+        LastRegularClipStage=RegularClipStage.FirstBoundary;
         var error=RegularBoundarySurfaceRoots(input,first,input.Faces[second].Surface,roots,ref nRoots,certificates,
             firstRollingFace>=0&&first<firstRollingFace&&second>=firstRollingFace,transferCylinderConic,originals);if(error!=0)return error;
+        LastRegularClipStage=RegularClipStage.SecondBoundary;
         error=RegularBoundarySurfaceRoots(input,second,input.Faces[first].Surface,roots,ref nRoots,certificates,
             firstRollingFace>=0&&second<firstRollingFace&&first>=firstRollingFace,transferCylinderConic,originals);if(error!=0)return error;
         LastSheetPartitionStage=SheetPartitionStage.CutClip;
@@ -562,6 +566,7 @@ internal static unsafe partial class KernelRuntime
         var firstSurface=input.Faces[first].Surface;var secondSurface=input.Faces[second].Surface;
         foreach(var provider in curves)
         {
+            LastRegularClipStage=RegularClipStage.RootLocation;
             var curve=provider;
             var n=0;
             var hasSection=TryFiniteSectionChart(sectionCharts,firstSurface,curve.Curve,curve.First,curve.Last,out var section)
@@ -684,14 +689,25 @@ internal static unsafe partial class KernelRuntime
                         return UnresolvedBoundaryStation(curve.Curve,-1,hi,bBound,lo,aBound);
                 }
                 else{at=lo+width*.3819660112501051;if(at>curve.Last)at=curve.First+at-curve.Last;}
-                var status=EvaluateCurveCore(in Curves[GetCurveSlotByTag(curve.Curve)],at,0,false,point,out _);if(status!=AlgorithmStatus.Success)return EvaluationError(status);
+                LastRegularClipStage=RegularClipStage.Witness;LastSheetPartitionStage=SheetPartitionStage.CurveEvaluation;LastSheetCurve=curve.Curve;LastSheetParameter=at;
+                var status=EvaluateCurveCore(in Curves[GetCurveSlotByTag(curve.Curve)],at,0,false,point,out _);LastSheetAlgorithmStatus=status;
+                if(status!=AlgorithmStatus.Success)
+                {
+                    TraceFiniteBoundary?.Invoke(new(){Stage=BoundaryTraceStage.UnresolvedEvaluation,Curve=curve.Curve,First=at,Last=at,
+                        Surface=input.Faces[first].Surface,OtherSurface=input.Faces[second].Surface});
+                    return EvaluationError(status);
+                }
                 if(RegularPointOutsideSupport(input.Faces[first].Surface,point[0])||RegularPointOutsideSupport(input.Faces[second].Surface,point[0]))continue;
+                LastRegularClipStage=RegularClipStage.FirstUv;
                 error=FiniteBoundarySurfaceParameters(input.Faces[first].Surface,curve,at,point[0],sectionCharts,out var a);
                 if(error==ParasolidConstants.PK_ERROR_not_on_surface)continue;if(error!=0)return error;
+                LastRegularClipStage=RegularClipStage.SecondUv;
                 error=FiniteBoundarySurfaceParameters(input.Faces[second].Surface,curve,at,point[0],sectionCharts,out var b);
                 if(error==ParasolidConstants.PK_ERROR_not_on_surface)continue;if(error!=0)return error;
+                LastRegularClipStage=RegularClipStage.FirstTrim;
                 error=RegularClipFaceContains(input,first,a,point[0],curve.Curve,at,sourceFaces,model.Tolerance,out var insideA,out var boundaryA);
                 if(error!=0)return error;if(!insideA)continue;
+                LastRegularClipStage=RegularClipStage.SecondTrim;
                 error=RegularClipFaceContains(input,second,b,point[0],curve.Curve,at,sourceFaces,model.Tolerance,out var insideB,out var boundaryB);
                 if(error!=0)return error;if(!insideB)continue;
                 if(boundaryA&&boundaryB)continue;
