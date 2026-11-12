@@ -1,5 +1,7 @@
 # 单次原生截面求根的固定数据准备实验
 
+**停止：唯一五操作窗口未保留目标收益，b095不进入基线、不继续复测或申请接受。完整原质量和数据保留，见 `docs/Rejected_Prepared_Native_Section_Work.md`。**
+
 从固定接受 `b8c74b95047577e52d1086b48b0b0a88ee3f4388` / e7f0a48 / Native6a843隔离。已实际fetch并全读 `59322ef758c4b3ffb4e740506cc2412191b59c8a` 的 `docs/Certified_Isoparametric_Independent_Review.md`、本树AGENTS/两架构及实际源码；新树初始diff空，private-env native ensure原0/ENV_READY，PK38.0.150/mac-arm64，未纳入查询或新norm移动源，不改原e7/b8/ad79和两ZIP。
 
 主成本依据是原完整shortedge仍有21063 rootcells/42913 bounds，先前真实同源请求记录固定u的BLEND边界为1676请求/10266 rootcells/19886 bound调用；这些是工作与来源，不是CPU或可删预算。e7需求裁剪只省了另一个方向AD，固定u中的原spine点、两支撑法向、cos/q或transverse/sine/y/arc仍每次求值重算。本实验在单次scalar Find中准备这些原表达式，native v相关的原三角或Weight/全值与微分尾界仍每次算，不改求根算法或换参数。

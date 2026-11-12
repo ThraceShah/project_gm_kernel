@@ -1,5 +1,7 @@
 # 单次原生截面准备b09589b完整质量
 
+**当前处置：候选因唯一窗口目标收益未保留而停止，不申请独立接受。本页记录的实际2034/2034及八组原质量保持，停止报告见 `docs/Rejected_Prepared_Native_Section_Work.md`。**
+
 固定计算 `b09589b229d4e250c2d57590844d24e8106d992b` / Native `88a7428f0d85fa065e9e3d0cff6c00a384261945` / src `fa1843a39e6b39bc403a31291ac30bb7e7d8d8f1`。基线固定接受b8c74b9/e7f0a48/Native6a843/review59322ef，已实际读全独审/本树AGENTS/两架构/实际生产diff，不动e7原包，未纳入移动查询或新norm。数学、source稳定期与caller-owned准备合同见 `docs/Prepared_Native_Section_Work.md`。
 
 Mac完整 **2034/2034、0fail/0skip、原build0/test0、5m39s自然结束**；TRX SHA `38449fcdbf3fdfe7bc24b44b12bc7e058f2bba34851c262c0f3e70960f07f6e2`。测试前后三DLL三PDB各文件hash相同，两清单字段不同不冒认为文件不同。定向190/190/原0/27s，控制固定u的所有九项逐位同e7、正反/小q/零/负角、CHART中间/边界/原数学外延、v盒/点/端点外延、不足storage/缺proof/要求越域不准入、热Bound零分配；完整有限plane求根on/off全point和完整root certificate一致且含解析v=2/3。旧185的证明、根、角点、预算、nearest、finite与圆角期望未改。控制hook实际命中仅签控制case，不外推ordinary命中率。
