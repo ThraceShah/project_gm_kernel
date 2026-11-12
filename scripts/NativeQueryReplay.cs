@@ -67,10 +67,16 @@ try
 finally
 {
     var assembly=typeof(KernelRuntime).Assembly;var dll=File.ReadAllBytes(assembly.Location);var pdb=Path.ChangeExtension(assembly.Location,".pdb");
+    using var process=System.Diagnostics.Process.GetCurrentProcess();var libraries=new JsonArray();
+    foreach(var module in process.Modules.Cast<System.Diagnostics.ProcessModule>().Where(x=>x.ModuleName.Contains("pskernel",StringComparison.Ordinal)).DistinctBy(x=>x.FileName))
+    {
+        var bytes=File.ReadAllBytes(module.FileName);libraries.Add((JsonNode)new JsonObject{["module"]=module.ModuleName,["path"]=Path.GetRelativePath(root,module.FileName),["bytes"]=bytes.Length,["sha256"]=Hash(bytes)});
+    }
+    if(libraries.Count==0)throw new InvalidOperationException("Actual mapped Parasolid library must be recorded");
     File.WriteAllBytes(Path.Combine(output,"ProjectGmKernel.Native.dll"),dll);if(File.Exists(pdb))File.Copy(pdb,Path.Combine(output,"ProjectGmKernel.Native.pdb"));
     File.WriteAllText(Path.Combine(output,"results.json"),new JsonObject{["originalLogPath"]=args[2],["originalLogBytes"]=sourceLog.Length,["originalLogSha256"]=Hash(sourceLog),
         ["scriptSha256"]=Hash(File.ReadAllBytes(Source())),["nativeDllSha256"]=Hash(dll),["nativeMvid"]=assembly.ManifestModule.ModuleVersionId.ToString(),
-        ["nativePdbSha256"]=File.Exists(pdb)?Hash(File.ReadAllBytes(pdb)):null,["sources"]=sources,["points"]=rows}.ToJsonString(new System.Text.Json.JsonSerializerOptions{WriteIndented=true}));
+        ["nativePdbSha256"]=File.Exists(pdb)?Hash(File.ReadAllBytes(pdb)):null,["actualMappedParasolidLibraries"]=libraries,["sources"]=sources,["points"]=rows}.ToJsonString(new System.Text.Json.JsonSerializerOptions{WriteIndented=true}));
 }
 byte[] Load(string name)
 {

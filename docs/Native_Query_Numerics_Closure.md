@@ -73,3 +73,31 @@
 `MassCertificationOracle.cs` 读取此前已核合法压印输入 `3047cc3e0d7366fdb655dfae534ad9bc0fe32183443f55cd333923ba891e6a99`，每次从同一原字节重新 receive。identity、.125、8、模型空间内轴置换加平移各测相同 XT 和真实 PK 压印两种情况；完整 BODY_check、oriented support 对应均保留。八个合法数值控制仍 U：identity 同字节的整体最大上界约 `3.34e-7`，压印约 `3.77e-7`，平移/旋转后分别约 `5.09e-7` / `5.73e-7`；没有把相同输入的先验身份或区间重叠变成目标精度认证。三个单位尺度的 2.1×2×2 对 2×2×2 真实尺寸负控均 Different，六个制造的向量 norm/单位控制按预期 Verified/Different，制造控制与实际 PK 报告分开。
 
 早期超出模型空间的平移控制 full BODY_check 失败 10 项，保留原退出码，不用于合法对照。原固定合法 PK 压印已证明旧点值门会拒绝纯细分，本轮既复用其原证据，也保留新的实际 PK 模量。当前明确可认证的正类包括本轮五类圆柱解析成品与其已验证生命周期，以及解析 block 控制；一般曲面/曲面细分后的 PK 宽误差包围仍未取得 `1e-7` 整体物性资格。没有通过增加工作量、改模型或误差球相交伪造全绿。
+
+## 固定计算候选的完整执行与交接
+
+计算候选为 `ab597e8a24b2ef23753507c8ca3e43d12edcc650`，包含查询提交 `4382d23b68997f52b7029d00700c2f783835a3ef`、有限拓扑提交 `8d29582dec6f9592d3f3854530ce1f549128bb66`。其后的证据工具与 JSON 不改变内核或物性合同。没有取入未接受 Mac 性能候选或触碰其 BezierSurfaceBounds/BSplineProjection 公共文件。
+
+`final-suite.log` / `.exit` / `final-suite/closure-complete.trx` 实际 **2025/2025，0 fail/skip，原 exit 0**，包含新增六例；约 6 分 27 秒。函数目录 175 descriptors、分配 IL guard 3072 方法 CLEAN。检查本轮已知 testhost PID 均已退出，没有全局 pkill 或 AOT 编译。用户级政策正文不含 marker 标签、含末尾换行的实际 SHA 与指定 `55f16ce0cf53bbb37ddd91920445f32468eb8e2b5b6e28f6fb90856810afcca1` 一致；未声称验证自动加载。
+
+| 稳定候选执行 | 原 exit | 实际状态 |
+| --- | ---: | --- |
+| final-axial | 0 | 五类独立构造与 copy/删源/镜像缩放/reload，所有额外直接材料查询通过；Capture 285 pass/0 missing |
+| final-fixed20 | 0 | 原五产品/原 20 XYZ，同字节四方查询 20/20；真实独立产品 strict/full 保留 |
+| final-self-direct / final-import-direct | 各 2 | canonical 510 四方分别 495V/15U、494V/16U，无 Different/API error；native 自差仍为原七行 |
+| final-self（附 Capture 的完整受影响生命周期） | 2 | copy/删源/镜像缩放/editable self reload、有限面/fin/材料检查通过；109 pass、19 missing，六次物性 U，15 个原点 On 分歧 |
+| final-import（附 Capture） | 2 | 20 pass、4 missing，一次物性 U，16 个原点 On 分歧 |
+| final-contact | 2 | 四个合法范围内有限 face 查询三方 On/face 一致，独立/full/strict 通过；18 pass、15 missing，物性 U |
+| final-negative | 0 | 负控执行成功：错误尺寸 Different、错误半径与有限 wire trim Rejected；Capture 的 15 fail 为预期反例，不能算正向建模失败或成功产品 |
+| final-native-mass | 2 | 八个合法 PK 数值控制 U，三个真实尺寸负控 Different，六个人工数学 norm/单位控制按预期 |
+| mass-review-final | 0 | 只读核固定 72 原报告并按当前合同重算，非重新执行 PK，更非 1080 项全部通过 |
+
+附 Capture 的两个 510 执行观察到 native 自差另含 row339，共八行；direct 执行仍为原七行。原 U 总数分别仍 15/16，四列和输入 XT/hash 原样记录，没有用展示执行覆盖 direct，也没有据此猜测 PK 内部原因。所有 62 个 direct 派生精度控制四方一致；两种 direct 各有 9 个实际有限边界归属证明，其余仍按各行原包围与失败区间保留未决。
+
+历史 `probes-self.log` / `probes-import.log` 原件及其 15/16 条差异的四列/XYZ、对应历史 XT 路径/长度/hash 已只读绑定。旧 self 日志没有持久保存其余 495 点的原始四列，交付中明确为缺失，不由“它们当时相等”的摘要或本轮重放补造；原 imported 四列表与此前 current imported 全 510 表均单独绑定并保留。
+
+交接的当前机器格式为 `docs/query-numerics-closure/results.json`，含逐操作、四组完整逐点当前列、历史实际差异列、逐分量标准前后判、真实 PK 与制造控制分列、全部原退出码、12 组 PE/PDB/source 绑定。`source-manifest.json` 与 `artifact-manifest.json` 分别绑定源码和 279 个实际制品；XT 与 DLL/PDB 本体仅在私有 `temp_docs/`，不提交厂商库。十个 producer 实际封存的 kernel/oracle PE-PDB 与每份 335 个 tracked Native 文档、六个 tracked oracle 文档逐 checksum 匹配；套件为封存输出 PE/PDB/source 核验，没有补造额外运行时 loader 观察。`final-fixed20` 还记录实际映射的 PK 库：Linux x64，91,444,112B，SHA `fc9ba50b40d7e9ee05e02f28c2a29e6ab75b9c91e6b6ba5ea588cf54149b9c52`。
+
+复放方式由每条 execution 的 `executedInvocation` 记录；运行前仍需统一私有环境 native ensure，输出名改为新名以保留原件。历史标准重判脚本固定核原 ZIP SHA，不作为生产旧格式兼容路径；收集器仅汇总已有执行，不代签其退出码或领域结论。
+
+线上只读初查：直接 Tailscale HTTPS 读取 `data/index.json` 原 200，SHA `4ce1b6f22e487c8db26656626681ece04939f73919ab5677c69357b1efd2c046`，整个目录仍为六个旧 run，latest=`20261112T002227Z-uperf1654`，未包含本候选。因此当前不能宣称已独立接受、已集成或已上线。默认网络代理首次 TLS EOF 的失败与直连成功分别留存；只对该 HttpClient 禁用外部代理，TLS 验证保持，未改全局配置。后续需交协调端集中关键独验/看板 owner 自测发布，再按实际新目录与资源 hash 读回核对，不能拿旧 run 卡片充当本轮上线。

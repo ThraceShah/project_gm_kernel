@@ -1,0 +1,3492 @@
+[
+  {
+    "path": "scripts/AbiSmoke.cs",
+    "bytes": 19626,
+    "sha256": "35b64a14565ef601f3e96647abbb563e80f6242740a844f0d3b1b56ccb018b01"
+  },
+  {
+    "path": "scripts/AllocationBanCheck.cs",
+    "bytes": 6810,
+    "sha256": "057f5adc69730e16fa9866d6e307744fac00839c8c6f1a95483f7cd267ce366a"
+  },
+  {
+    "path": "scripts/AllocationBaseline.cs",
+    "bytes": 4844,
+    "sha256": "d1335c4960c34c4fea00f909d1401c77e8ca0b793bcc967a0f5c6af030560edd"
+  },
+  {
+    "path": "scripts/AnalyticBooleanOracle.cs",
+    "bytes": 18226,
+    "sha256": "31672922ab315b2edc88de33339c9920ba7e72ac28ff93f3733c5e1865085cd3"
+  },
+  {
+    "path": "scripts/AnalyticSectionOracle.cs",
+    "bytes": 16508,
+    "sha256": "edf37b4ae1664f7f944c8ee00aee52d34e23203df69c1f44971a949a6caa1ae9"
+  },
+  {
+    "path": "scripts/BCurveAnalyticIntersectionOracle.cs",
+    "bytes": 23735,
+    "sha256": "23fc470efd6e30f512423a4df6ef9b26dae439aaaabaead284f7ca6566883b10"
+  },
+  {
+    "path": "scripts/BCurveEvaluationOracle.cs",
+    "bytes": 12404,
+    "sha256": "6d726308615924542899be3f0bda3eeb22d00752799f0d4e5402c08ac82d7c05"
+  },
+  {
+    "path": "scripts/BlendChainOracle.cs",
+    "bytes": 31146,
+    "sha256": "1a28d54801a838d52cacdec1013b12744ee8739b5a2b2b1f4865bb473fc578ab"
+  },
+  {
+    "path": "scripts/BlendCoverageOracle.cs",
+    "bytes": 12487,
+    "sha256": "d71b2e7c52f3a82c3c367ccd5e8f601c4a95bb801bc74c2597255c4da7e488cc"
+  },
+  {
+    "path": "scripts/BlendGeometryBenchmark.cs",
+    "bytes": 8309,
+    "sha256": "09a970f8fe80efc737258f2692f96decae9dd744097ecb66442b31862bb753c8"
+  },
+  {
+    "path": "scripts/BlendOperationOracle.cs",
+    "bytes": 21031,
+    "sha256": "1d9489ccb8de9c4f272e1d4651b1d9be0868743eb3bfae481bd45e2e2218f142"
+  },
+  {
+    "path": "scripts/BooleanOperationOracle.cs",
+    "bytes": 39339,
+    "sha256": "e08b757ef39053173ab9c2e8537709356d1edafc2d16fb1047bf7f610bbaa274"
+  },
+  {
+    "path": "scripts/BrepImportOracle.cs",
+    "bytes": 34599,
+    "sha256": "13e7c53d42e8986e062ce649a2bdb0edd035b621dcfff561ab3b1552ee757f18"
+  },
+  {
+    "path": "scripts/CaptureQualityContractCheck.cs",
+    "bytes": 5980,
+    "sha256": "51982ce3310369a56b4bf188edf7f0a6a8b2ffb8ad2fd061c3751cab421bef9f"
+  },
+  {
+    "path": "scripts/CheckParasolidSchemaDependencies.cs",
+    "bytes": 4567,
+    "sha256": "3df7ac4f861727f1f16f3756c7e62db836fa212afe00c0bdce6ae50cca1ac8e7"
+  },
+  {
+    "path": "scripts/CheckParasolidTypeCoverage.cs",
+    "bytes": 9911,
+    "sha256": "254beb92ab158d55e7a26f88027709526afe3327d2f95c32dd84bfc82fe4c45c"
+  },
+  {
+    "path": "scripts/CheckParasolidXtCorpusCoverage.cs",
+    "bytes": 13463,
+    "sha256": "221b34c2332705f55f76f531190a8f8db7d4d3f65049f8bae7d06eb4319d7434"
+  },
+  {
+    "path": "scripts/CheckParasolidXtGoldenFixtures.cs",
+    "bytes": 3254,
+    "sha256": "8c5741e62e9e2500abd4453141adc4aaaa30836b47cd338a449c80aa0f6dc79c"
+  },
+  {
+    "path": "scripts/ConeAxisProbe.cs",
+    "bytes": 22060,
+    "sha256": "442e32d1b0d99963acad5296ea22c1f43e13f60447d806b1616a773e9776e02b"
+  },
+  {
+    "path": "scripts/ConvexPlaneContactOracle.cs",
+    "bytes": 18968,
+    "sha256": "0e7f56b30a47ec73267d357b5942e62ef3827ce009c7b92a0f79dbb3524324e7"
+  },
+  {
+    "path": "scripts/CorpusManagedKernel.cs",
+    "bytes": 340,
+    "sha256": "ded4ab7b222653af61921823cbe40fe0f9296ee4ae31da26f0695cda21847999"
+  },
+  {
+    "path": "scripts/CorpusManagedKernelBodyWriter.cs",
+    "bytes": 1805,
+    "sha256": "8667d28345d64f083673761a0034bf2593876e2e6e793643c6d51f9cf6fcf30d"
+  },
+  {
+    "path": "scripts/CurvedSheetPartitionOracle.cs",
+    "bytes": 28521,
+    "sha256": "d12149d47f5bb13d44787ac72ad6afef30a5e71b58a96ad6bec37690cb51d636"
+  },
+  {
+    "path": "scripts/CylindricalFaceExtentOracle.cs",
+    "bytes": 15333,
+    "sha256": "f428874714a0c54f4ed0e0b930700b3eea3b43b3888aecde08e46108900d1080"
+  },
+  {
+    "path": "scripts/DiffXtSemanticFields.cs",
+    "bytes": 5188,
+    "sha256": "1009b157127ba996b2458a5d1ec00f9a51b4a88fe1fc3bba876b341422874d89"
+  },
+  {
+    "path": "scripts/Directory.Build.props",
+    "bytes": 2633,
+    "sha256": "574913b7297152cfe96f7e97042038564950fbd3d9854be27b9bdb0a19093ec0"
+  },
+  {
+    "path": "scripts/DisplayBridgeOracle.cs",
+    "bytes": 22562,
+    "sha256": "3ace84fa7dcafdca279496438563cc1632645bd3bd27bd9c03c4c92ffedae9b6"
+  },
+  {
+    "path": "scripts/DumpXtNodes.cs",
+    "bytes": 3114,
+    "sha256": "35b61d595d5292a75589aaa39bf7f1d5e7dc59954b04902e057404e3c6723afb"
+  },
+  {
+    "path": "scripts/ExteriorContactBooleanOracle.cs",
+    "bytes": 21988,
+    "sha256": "c1c6384fa76da83d2328c9d3c42b460fc40059c109cb1dcfb4e66664fe96dddd"
+  },
+  {
+    "path": "scripts/ExtractXtSchema.cs",
+    "bytes": 6826,
+    "sha256": "2d0a54e0673e0e626c46b9d62942f9395e905463345fc5864249b862157f53f8"
+  },
+  {
+    "path": "scripts/FinalizeWebProgressMetadata.cs",
+    "bytes": 3721,
+    "sha256": "8862f2cd70db741451d5f5b10e68dbb82ec267c1dfae854798fb9f8d6d3c59a1"
+  },
+  {
+    "path": "scripts/FinalizeWebProgressRoles.cs",
+    "bytes": 4256,
+    "sha256": "0f3502da0c2a9ae29cf89b983cb20f6c78a4c804b89e2f4ed040d9f01333ce01"
+  },
+  {
+    "path": "scripts/FreeformModelingOracle.cs",
+    "bytes": 46742,
+    "sha256": "ae074a67162eeba599f99e2dbfd997a220fd4dda2961707661b0e732d8c0d0eb"
+  },
+  {
+    "path": "scripts/GenerateApiLayer.cs",
+    "bytes": 81563,
+    "sha256": "1b6ae09588e22da7e2106fbaccf0e38edf35d40288b4e2016d23d266f2c1e296"
+  },
+  {
+    "path": "scripts/GenerateFunctionCatalog.cs",
+    "bytes": 4340,
+    "sha256": "34ce1bc848756511ce573f3a6c3b16170c05d98442351ce2a428696ba8e770d6"
+  },
+  {
+    "path": "scripts/GenerateParasolidApiCoverage.cs",
+    "bytes": 41546,
+    "sha256": "f86876b0c7b5e87a31132ce3e95f2581d1225c150b2beb585941663f47158b6e"
+  },
+  {
+    "path": "scripts/GenerateParasolidTypeMatrix.cs",
+    "bytes": 5168,
+    "sha256": "0f2bf99abbb3e864060bb9f6401734c5547ce7ad6444ed54729678a184912c96"
+  },
+  {
+    "path": "scripts/GenerateParasolidUnreachableAudit.cs",
+    "bytes": 7955,
+    "sha256": "56ec7c0dccfb0708f8c1858414a75f7e3d79bafe2d8b1441488e04a977de65ed"
+  },
+  {
+    "path": "scripts/GenerateParasolidXtCorpus.cs",
+    "bytes": 10863,
+    "sha256": "4c58ee6dab9e37b2248c182f484caea00f88f8d715109d2db8c3ce129af735f5"
+  },
+  {
+    "path": "scripts/GenerateXtSchema.cs",
+    "bytes": 73083,
+    "sha256": "798ad45efcc6ae431fdd08ee3012405a38e3ab6c02d26f70474c6a12e502ac3f"
+  },
+  {
+    "path": "scripts/GenerateXtSchemaDifferences.cs",
+    "bytes": 9382,
+    "sha256": "903254e26d01c4f8139d01063a9168bf851688b5323e90e9031bbfc755fcab0f"
+  },
+  {
+    "path": "scripts/GeometryPublicApiOracle.cs",
+    "bytes": 39759,
+    "sha256": "cc490eb12926f04feea86292bfb44e957ca9d349064ebcffd104b75cdfe46e94"
+  },
+  {
+    "path": "scripts/GeometryTransformOracle.cs",
+    "bytes": 35966,
+    "sha256": "aae436091244fbdbac014f572f5601b2c374abf6966996784b784c05ea557a80"
+  },
+  {
+    "path": "scripts/IcurveEvalBenchmark.cs",
+    "bytes": 11734,
+    "sha256": "bc7a1f41d5d71e8906db4b4982df22871408c66fdb12aff18bff22f138569f4f"
+  },
+  {
+    "path": "scripts/IcurveEvaluationOracle.cs",
+    "bytes": 68769,
+    "sha256": "610774b89592ba85af2040c783f5544fff86a99ff230fa62e84b49b3d16ae4f3"
+  },
+  {
+    "path": "scripts/IntersectionOperationOracle.cs",
+    "bytes": 55915,
+    "sha256": "36b30866af79eae563b367bdea97927b02af4254aca254415579d6854c727417"
+  },
+  {
+    "path": "scripts/LocalOperationOracle.cs",
+    "bytes": 61690,
+    "sha256": "b76675c8a2e3e508217aa6a72280ebace2434ee52430f76189f0eb1905a41457"
+  },
+  {
+    "path": "scripts/LocalTopologyChangeOracle.cs",
+    "bytes": 24001,
+    "sha256": "163576943e96912763e9198069834c6d97d010f99e59f6ca74d43f3d5649fe1a"
+  },
+  {
+    "path": "scripts/MassCertificationOracle.cs",
+    "bytes": 8773,
+    "sha256": "2b58dd0b7451897ab9a5200aac524e1e174b3909c3875a8214b6fb04d3532a3f"
+  },
+  {
+    "path": "scripts/MixedAnalyticBooleanOracle.cs",
+    "bytes": 14084,
+    "sha256": "753573d695b4ab4228c9407adc01adc50ed06da6b713deaecd3affce5ae85ccf"
+  },
+  {
+    "path": "scripts/MixedCurvedBooleanOracle.cs",
+    "bytes": 36802,
+    "sha256": "e2817ed437fb8dd30205a4aa7de33a0944c781d3676726f37658ef3f64add425"
+  },
+  {
+    "path": "scripts/ModelingPerformanceOracle.cs",
+    "bytes": 2137,
+    "sha256": "f3aa84b490d13d078e75eeef39fab63a231e037709659351de258d71eb48e1a4"
+  },
+  {
+    "path": "scripts/NativeAcceptanceContractOracle.cs",
+    "bytes": 13795,
+    "sha256": "4a720b03d1f1fa140fde695182b5ed1f3562f5dc707821cef9d54f0941e6df1e"
+  },
+  {
+    "path": "scripts/NativeAdvancedModelingSmoke.cs",
+    "bytes": 14225,
+    "sha256": "c7bdca8fc47db2d3fd1799c94d1e34b19c167a4f90f132215a468a30cfd32a34"
+  },
+  {
+    "path": "scripts/NativeConicPlaneProbe.cs",
+    "bytes": 4488,
+    "sha256": "9d252b9b5015a2dfa2f93c8117fa3eae5b2170eb8a9df3fbad79823b56c8f518"
+  },
+  {
+    "path": "scripts/NativeFiniteSsiBoundaryOracle.cs",
+    "bytes": 10472,
+    "sha256": "43fa03dcab77099cfb57aad764af8dee0a09433e40af273a52adae3ecab20cec"
+  },
+  {
+    "path": "scripts/NativeModelingQualityGateChecks.cs",
+    "bytes": 6259,
+    "sha256": "acffc46e37dc5f9e4de72b4b237429530c0bcd37f53b8864d3c80b4dce9c3533"
+  },
+  {
+    "path": "scripts/NativeModelingWorkComparison.cs",
+    "bytes": 26268,
+    "sha256": "78c98d884640d185c07337d4d34ec02bdb14f9d5fa3876cfef6c19831b75f6a5"
+  },
+  {
+    "path": "scripts/NativeQueryReplay.cs",
+    "bytes": 8785,
+    "sha256": "9e9713bdd25d312f8a38596d9d2971d2b85389000bd0c308b61a42b41598ab84"
+  },
+  {
+    "path": "scripts/NestedBlendBenchmark.cs",
+    "bytes": 11693,
+    "sha256": "bb01d060d592a4eec24c3b33f168da27204f0a144c963df1b42bd5136bb56671"
+  },
+  {
+    "path": "scripts/NestedBlendExtendedOracle.cs",
+    "bytes": 12159,
+    "sha256": "60ec447c098851174b7a2e492447b3bf01273feadc06253decf1585e9c6e9119"
+  },
+  {
+    "path": "scripts/NestedBlendOracle.cs",
+    "bytes": 40095,
+    "sha256": "b6f53147798896c23eb7a435822c9e4ef4b6fd72b83b2083280dde579c76480d"
+  },
+  {
+    "path": "scripts/ParametricICurveOracle.cs",
+    "bytes": 23501,
+    "sha256": "412aa6809d27f7bf7d8350f1905b81e4f8a50908476f496fc3c3c049ffc0f46e"
+  },
+  {
+    "path": "scripts/ParasolidAllSchemaOracle.cs",
+    "bytes": 11040,
+    "sha256": "f3fb036b76d2aaa040edb459c1c74641ebebea1f7b1c8fe6608bcd4468835818"
+  },
+  {
+    "path": "scripts/ParasolidBodyCompare.cs",
+    "bytes": 31155,
+    "sha256": "2ef5f2ff029fd3a6f800ca11f51308b387ea53e5af3557513a283d5d9d192987"
+  },
+  {
+    "path": "scripts/ParasolidBodyCompareOracle.cs",
+    "bytes": 14846,
+    "sha256": "a40098a911f295e35c79054745b4a3a17d0a715aea0ff5f860ae788656f83d3e"
+  },
+  {
+    "path": "scripts/ParasolidEvaluationOracle.cs",
+    "bytes": 63539,
+    "sha256": "c03ad7c47fd96c1f6b51a0cad15482e03c87177d04e16213d23415fc8d26ab52"
+  },
+  {
+    "path": "scripts/ParasolidMarkOracleStorage.cs",
+    "bytes": 2401,
+    "sha256": "c8b6def2157e761621554212d647b3dcce3df244629a3afc810361fee1f94d36"
+  },
+  {
+    "path": "scripts/ParasolidMassProperties.cs",
+    "bytes": 10701,
+    "sha256": "7e5863f623ef5783410ab621ec37cf451b46ce5e2aae62d704fba62bdb302d15"
+  },
+  {
+    "path": "scripts/ParasolidOracleSmoke.cs",
+    "bytes": 21553,
+    "sha256": "a0704aac2565b21195ac0bb3ae045c6a74f0ea8f09ebb843d83a58727f30eee1"
+  },
+  {
+    "path": "scripts/ParasolidPrimitiveCounts.cs",
+    "bytes": 5234,
+    "sha256": "4e2ebe75d9a997ab297aad75d3bb3df8d8f561b27f32c23492cc63e00d870681"
+  },
+  {
+    "path": "scripts/ParasolidPrimitiveOracle.cs",
+    "bytes": 7782,
+    "sha256": "6219e52b3b5ec9b79479090d54cca7236baae6b5c27caba1ed4a6d10235cd2cc"
+  },
+  {
+    "path": "scripts/ParasolidProbeAgreement.cs",
+    "bytes": 1046,
+    "sha256": "7ab86d369624832e4baea00b06e989f53b5ea3ba437e48fe298a619e4b2915cc"
+  },
+  {
+    "path": "scripts/ParasolidReceiveCheck.cs",
+    "bytes": 5436,
+    "sha256": "14ab9450186de1ca0a283448ea3ba9cc4f18d28873eda766109c18ef669ce677"
+  },
+  {
+    "path": "scripts/ParasolidSchemaCorpusMatrix.cs",
+    "bytes": 19998,
+    "sha256": "c9517b4537d9c3a661347e03b2a7e4c52e6c9d58d6adde0843a06f3ca5c7d659"
+  },
+  {
+    "path": "scripts/ParasolidScriptHost.cs",
+    "bytes": 12817,
+    "sha256": "62687b1f71d64b0255035a48885bf0718bd8787e6bf489ffe43f8707c49a3670"
+  },
+  {
+    "path": "scripts/ParasolidThreadOracle.cs",
+    "bytes": 10481,
+    "sha256": "65401beaebae42fba45cd23d4258ac0ec499dde4376df1a8b676b24c461f5b73"
+  },
+  {
+    "path": "scripts/ParasolidXtCorpusCases/AnalyticGeometry.cs",
+    "bytes": 16344,
+    "sha256": "f5d88c7bf925f6ad358a679fb0482a6794fcb3462605e170f7aeffa619d1e78b"
+  },
+  {
+    "path": "scripts/ParasolidXtCorpusCases/Assembly.cs",
+    "bytes": 10522,
+    "sha256": "41d01d223d43424eda27d58835941a147f220e02bd2e776e84047d7451dc5a4e"
+  },
+  {
+    "path": "scripts/ParasolidXtCorpusCases/AttributeMatrix.cs",
+    "bytes": 5093,
+    "sha256": "5851b2c06006d16d68989ea0bb73acf23bb61b165839b3455caf3bbe1f8af68c"
+  },
+  {
+    "path": "scripts/ParasolidXtCorpusCases/Attributes.cs",
+    "bytes": 21738,
+    "sha256": "33705fc4d735913acf4fbe67f4aac8b9c7cb47f76320b2a28b5290ce3c6924fc"
+  },
+  {
+    "path": "scripts/ParasolidXtCorpusCases/AuxGeometry.cs",
+    "bytes": 15787,
+    "sha256": "4037d73a467f145a1d21ff0b61dfe0d1cd88ce8e4435a7ccfb9fea54ad34e9a3"
+  },
+  {
+    "path": "scripts/ParasolidXtCorpusCases/BlendMatrix.cs",
+    "bytes": 36458,
+    "sha256": "8d1cc54125dfecc73bde50e9ac6e0e31c93708acabba88f2dca4d2fe35a2264f"
+  },
+  {
+    "path": "scripts/ParasolidXtCorpusCases/BodyBasics.cs",
+    "bytes": 18297,
+    "sha256": "4412ccbd72556a6020d4e018d8f9976ca78ed169f1e728127c6d9de019a2406f"
+  },
+  {
+    "path": "scripts/ParasolidXtCorpusCases/BodyTypes.cs",
+    "bytes": 5243,
+    "sha256": "7893559cbd57af4d9aa84f63fce208f4d2d5c62ce0da1f17125acc8e2e2a35ab"
+  },
+  {
+    "path": "scripts/ParasolidXtCorpusCases/ComplexGeometry.cs",
+    "bytes": 37836,
+    "sha256": "fb548842921c90d8e29536a6e3d8f74aa268bd64136a98c720e59bcfe1e3efd6"
+  },
+  {
+    "path": "scripts/ParasolidXtCorpusCases/DerivedSurfaceProfiles.cs",
+    "bytes": 6069,
+    "sha256": "ee95ac69376814d19253ba37ec9cfb09a1c849d877ce709f96106b421abc2f46"
+  },
+  {
+    "path": "scripts/ParasolidXtCorpusCases/Directory.Build.props",
+    "bytes": 1433,
+    "sha256": "ee2abe7232372721967cbdab13cea1ec931f3e601b7cb153c7f57fc6502a4f47"
+  },
+  {
+    "path": "scripts/ParasolidXtCorpusCases/FaceBlends.cs",
+    "bytes": 26398,
+    "sha256": "8e675332da9848e0736c75ff63d7983706311dffccfd9ef529ebdd5416a13f2d"
+  },
+  {
+    "path": "scripts/ParasolidXtCorpusCases/Groups.cs",
+    "bytes": 4207,
+    "sha256": "f35425c1fb0b94b58875c0ef6053e202f12ee9a675be3f3456ae48337b7229b6"
+  },
+  {
+    "path": "scripts/ParasolidXtCorpusCases/HelicalCurves.cs",
+    "bytes": 3706,
+    "sha256": "5211df263b1b54e21c2a540b53689dede8716df4d0c870970d89ed1ca24b2d22"
+  },
+  {
+    "path": "scripts/ParasolidXtCorpusCases/ICurveSurfaceMatrix.cs",
+    "bytes": 19331,
+    "sha256": "d3b7cbf08073bf8c8f4580b090264cc08b1e610eaaa7d34ae8a40d14f507f08b"
+  },
+  {
+    "path": "scripts/ParasolidXtCorpusCases/ManifoldTopology.cs",
+    "bytes": 21618,
+    "sha256": "91575e74148644bf598e543d85293757b1b6317941010b9b663c29c2989b27a8"
+  },
+  {
+    "path": "scripts/ParasolidXtCorpusCases/Mutators.cs",
+    "bytes": 17498,
+    "sha256": "c1372caba29387bd06fe45d24a11ef318d3e25bc31fba97360840a6c49fbe4e1"
+  },
+  {
+    "path": "scripts/ParasolidXtCorpusCases/PointBodies.cs",
+    "bytes": 1620,
+    "sha256": "1163210a6ba5e734264305f8c76b42380217bd80a846581712ef2b4db5858436"
+  },
+  {
+    "path": "scripts/ParasolidXtCorpusCases/RegionOperations.cs",
+    "bytes": 2499,
+    "sha256": "d8c6b0546d7840fa16d1af81b1ab32ae470cce322907995a19661248ae03d290"
+  },
+  {
+    "path": "scripts/ParasolidXtCorpusCases/SPCurveVariants.cs",
+    "bytes": 5172,
+    "sha256": "cd1cb85f141c9ec2c0e2a11472cb855d909436724d340c313742e7b8a646f841"
+  },
+  {
+    "path": "scripts/ParasolidXtCorpusCases/SheetBodies.cs",
+    "bytes": 3584,
+    "sha256": "cb207c029883380b704346e10777e9d5b6c80e689677226944502d747bfbf7d9"
+  },
+  {
+    "path": "scripts/ParasolidXtCorpusCases/SplineBoundaries.cs",
+    "bytes": 18978,
+    "sha256": "a946d59573d8451f097a15c1ed8692b2baa073d3e34557cbbaa0567d9b5d8678"
+  },
+  {
+    "path": "scripts/ParasolidXtCorpusCases/SplineStandardForms.cs",
+    "bytes": 37593,
+    "sha256": "c047be7b245b44d5356ff8d6176cf358258959e6522f8f8cd96bf20cff6ad209"
+  },
+  {
+    "path": "scripts/ParasolidXtCorpusCases/SurfaceDependencies.cs",
+    "bytes": 17310,
+    "sha256": "e94ae2c44ea796f8355a7138f968b13d6c39eaf993ee8603b5c2dc4800cf5940"
+  },
+  {
+    "path": "scripts/ParasolidXtCorpusCases/SurfacePairMatrix.cs",
+    "bytes": 17118,
+    "sha256": "c44d74a7094126f9d9beb57eca3b95bed618228bdbc7e689a6e4654164801a7a"
+  },
+  {
+    "path": "scripts/ParasolidXtCorpusCases/TRCurves.cs",
+    "bytes": 14291,
+    "sha256": "4eacd594b351a8bea0036a37bbf8a8eb2190f56f3dbde3a7b2d6c6037adec301"
+  },
+  {
+    "path": "scripts/ParasolidXtCorpusCases/TemplateSmoke.cs",
+    "bytes": 824,
+    "sha256": "78f190a92920c01755037fcf1096ce032892ab1e73a2060acc0d55fae6554296"
+  },
+  {
+    "path": "scripts/ParasolidXtCorpusCases/TopologyAdvanced.cs",
+    "bytes": 12543,
+    "sha256": "4a022f7a5d4e3312473bd53ca6cb9fef90ec1330acd99fb3af5777a66002e31f"
+  },
+  {
+    "path": "scripts/ParasolidXtCorpusCases/TopologyOperations.cs",
+    "bytes": 20772,
+    "sha256": "3a2e259b503fed806c25f39aebe7e35da84aabece6905da11f2fce09cea9d679"
+  },
+  {
+    "path": "scripts/ParasolidXtCorpusCases/UserFieldEight.cs",
+    "bytes": 3667,
+    "sha256": "517854c66c7f0f98133220f0aaa77027b948d8ca0e1d42f1dc32b4693d830192"
+  },
+  {
+    "path": "scripts/ParasolidXtCorpusCases/UserFieldSingle.cs",
+    "bytes": 1843,
+    "sha256": "b9ebc42e8a3c0a1a79139315d92f3629ac3a9660c64773a55b19f1812487b054"
+  },
+  {
+    "path": "scripts/ParasolidXtCorpusCases/UserFieldsMesh.cs",
+    "bytes": 20221,
+    "sha256": "633e5586b4af770f59b8187d636845b3c45c89f3d345702a6f2226930ced1935"
+  },
+  {
+    "path": "scripts/ParasolidXtCorpusHost.cs",
+    "bytes": 49470,
+    "sha256": "6e734103286bd9a93a8ca25d6f938de62595c231b21dff1e1ec6a0ab2b206ec7"
+  },
+  {
+    "path": "scripts/ParasolidXtFixtureOracle.cs",
+    "bytes": 12855,
+    "sha256": "f11e37e3a096bfb47d032d563f109fe62a00f8ffb1b483201d485af029e72255"
+  },
+  {
+    "path": "scripts/ParasolidXtSchemaInspector.cs",
+    "bytes": 747,
+    "sha256": "b90914582defd72c8601e98d9797974abe64d7bd08a07381534a9936e321dbbb"
+  },
+  {
+    "path": "scripts/PerfBaseline.cs",
+    "bytes": 5175,
+    "sha256": "8ee0415c4bc1950f9365c943fc43a2a281b6f7cd5bb650905cdc625cc2fb6792"
+  },
+  {
+    "path": "scripts/PlanarSheetOwnershipOracle.cs",
+    "bytes": 7156,
+    "sha256": "0c4f544c025f438916e0220a5e55cc596d6487cb947e2cd357e6edd680421e07"
+  },
+  {
+    "path": "scripts/PlanarTrackingOracle.cs",
+    "bytes": 24573,
+    "sha256": "16cde42859f2d2fbbff02daac362d6d0de46ee85713ec0fe083af979391753e6"
+  },
+  {
+    "path": "scripts/PrepareWebProgressSite.cs",
+    "bytes": 3052,
+    "sha256": "a7e8131fa12a75dc03bcb8423b227320dbe0c25c79a8316a6dfa2ff7a40239cd"
+  },
+  {
+    "path": "scripts/ProbeDisplayFacetTables.cs",
+    "bytes": 5464,
+    "sha256": "bfafdf1763db63916769038fc874b102fe572bdd5827e000192bfd6c9e0b939e"
+  },
+  {
+    "path": "scripts/ProbeDisplayLineContracts.cs",
+    "bytes": 4710,
+    "sha256": "98e0afd6ab6048674c871767261ecc3abe79716e505bff15b552200f0c4229c6"
+  },
+  {
+    "path": "scripts/ProbeIntersectionSense.cs",
+    "bytes": 5693,
+    "sha256": "fa9b95ad666dc9c9a59f6e5bd1e1d2f51f2d3e9f2c2790117c779c38b9e65cf1"
+  },
+  {
+    "path": "scripts/ProbeParasolidReceiveOptions.cs",
+    "bytes": 16931,
+    "sha256": "e53d317b4df22228394cb93274dc37d56fdd4d54532be4b5a8a4e4130083c7dc"
+  },
+  {
+    "path": "scripts/ProbeParasolidTransmitOptions.cs",
+    "bytes": 2886,
+    "sha256": "006cac537052e6f7061a1e78f4912acdf54df386fe25fecf7953a9df08dfe915"
+  },
+  {
+    "path": "scripts/ProbeParasolidTransmitVersions.cs",
+    "bytes": 4285,
+    "sha256": "129557eeb618ee878b9956575f8d9e14c6f50f13491ca578bf7132f55ffe47fb"
+  },
+  {
+    "path": "scripts/ProbeProfileContracts.cs",
+    "bytes": 5035,
+    "sha256": "9f93ba0ace0496094bc69dc6fd7860555bda6dde2d7011ac07c6574a7e7332ca"
+  },
+  {
+    "path": "scripts/ProbeReplaceSurf.cs",
+    "bytes": 8388,
+    "sha256": "96b172b9e219ef41380d04c6932e49641f2fb8e7487a35b5a757572735be1594"
+  },
+  {
+    "path": "scripts/ProbeSpCurveReference.cs",
+    "bytes": 3609,
+    "sha256": "6d1af29435e78382410ac8d7cd8f4a1452177d61dc16df94db758b1395d452af"
+  },
+  {
+    "path": "scripts/ProbeTopologyContracts.cs",
+    "bytes": 3165,
+    "sha256": "ba3f00fc11fefcf8c5f3b885dd69dcdf6d4911911b68e59d2eee2f0ceddd40a4"
+  },
+  {
+    "path": "scripts/ProbeTrimmedReference.cs",
+    "bytes": 2817,
+    "sha256": "eeed11a13d9cd477c3bef95270e60d20bd04f31e9e06c3333e0664ddd23a775f"
+  },
+  {
+    "path": "scripts/ProbeXtBodyTypeTokens.cs",
+    "bytes": 3570,
+    "sha256": "5477a9ed49db28e5035d75e103a0e6bd878b18bce93a0f15b4751a0e956c4df9"
+  },
+  {
+    "path": "scripts/ProbeXtGapRecipes.cs",
+    "bytes": 18463,
+    "sha256": "67a27f971cd4f4b8c3ab4e8a0dd156b15fa82e5bcafba260ba515c4c611ef671"
+  },
+  {
+    "path": "scripts/ProbeXtGeometryNodes.cs",
+    "bytes": 16070,
+    "sha256": "da84a242400c2b110dbfa14338385bd0d2ac806459552d37098d09016d3836ee"
+  },
+  {
+    "path": "scripts/ProbeXtLegacySheet.cs",
+    "bytes": 6480,
+    "sha256": "72009328bf11ac81d26c6c4e41ff8444641db03a6a6b018f584d6cb85ae6ccfd"
+  },
+  {
+    "path": "scripts/ProfileModelingOracle.cs",
+    "bytes": 23175,
+    "sha256": "70185691712ba240280e653c8c87e396654ec4d99190f52aabc6a185ebc8e56a"
+  },
+  {
+    "path": "scripts/PublishWebProgress.cs",
+    "bytes": 1270,
+    "sha256": "d0668be15c9c1332469ee6fc85f0b671abe4102785bcdd07546aa9240497fb76"
+  },
+  {
+    "path": "scripts/PublishWebProgressPortal.cs",
+    "bytes": 7906,
+    "sha256": "511c172fe402b80e5e160be7d22cb2c70df40ada019c1e4dfc7b7dd13075ef8a"
+  },
+  {
+    "path": "scripts/PublishXtToJsonEmbedded.cs",
+    "bytes": 7141,
+    "sha256": "c12783c2e3a59431a6c18d1f8477c9168c7e0070af6fed987378a65a83c43520"
+  },
+  {
+    "path": "scripts/RefreshWebProgress.cs",
+    "bytes": 20479,
+    "sha256": "307b89b453a44aff0c1e45659c6f2db5bf8aacae5fc75eaac63b0dcfe05a3d30"
+  },
+  {
+    "path": "scripts/RegularCurvedBooleanOracle.cs",
+    "bytes": 28181,
+    "sha256": "9cf7950ab72e7dfc85392376dac978ba6744969a32b5ca0ba180da07c50e1ded"
+  },
+  {
+    "path": "scripts/RegularSolidBlendOracle.cs",
+    "bytes": 51536,
+    "sha256": "a2b414ae01390414f6f10ea4174ce9a6a83c737d942bb8001cca30301e208fce"
+  },
+  {
+    "path": "scripts/ReviewMassCertification.cs",
+    "bytes": 6888,
+    "sha256": "af369bcdde8e59ed795f15e49bae47810fbfa3ed2c8f04ca624e59159715ab70"
+  },
+  {
+    "path": "scripts/RollingBooleanConsumerOracle.cs",
+    "bytes": 18099,
+    "sha256": "069d4feb98bd9ec703259f83eec4720282e3b72f4700a2edf01a228bc2cf3a1d"
+  },
+  {
+    "path": "scripts/RollingNetworkOracle.cs",
+    "bytes": 7531,
+    "sha256": "27024ec81423dac8decda51a9b31c1bb6fa85f91abc4305414d44b06e34b471a"
+  },
+  {
+    "path": "scripts/RotationalModelingOracle.cs",
+    "bytes": 29261,
+    "sha256": "34d0f0cb51628d8a3e05d3892b45ffc9145a9c0c0149c442d93ab86827d9dbf8"
+  },
+  {
+    "path": "scripts/ScanXtArtifacts.cs",
+    "bytes": 2494,
+    "sha256": "74ebce14d556e38f83b1188627144b9843ac35c54a2a1f32b748c136fc582921"
+  },
+  {
+    "path": "scripts/ShortEdgeBlendOracle.cs",
+    "bytes": 157180,
+    "sha256": "d473eb411b59f3fc3b31314ac3e33ac2471d92b1b39cbe6ef0630e1efc70af9f"
+  },
+  {
+    "path": "scripts/ShortEdgeNativeChartControl.cs",
+    "bytes": 16208,
+    "sha256": "6ca803090e0666610e85dc130d53f4cf9473a978b8569b3d2ab5f6cedcdc779b"
+  },
+  {
+    "path": "scripts/ShortEdgeNativeTrimIntegral.cs",
+    "bytes": 9207,
+    "sha256": "877f8a875427bbee0ba39a3dfb7d5a072b25bb263185bd451a9844913ff38be0"
+  },
+  {
+    "path": "scripts/ShortEdgeProductDiagnostic.cs",
+    "bytes": 14559,
+    "sha256": "f481742afe58b7c0aae1f743b58ca7e5ed59ea350349c362e8140a09438ae23f"
+  },
+  {
+    "path": "scripts/ShortEdgeTrimIntegralDiagnostic.cs",
+    "bytes": 9360,
+    "sha256": "f52bfbec17cc7dc529895b30651d2e7397383d4b72368fd35543d3c0fada3ee0"
+  },
+  {
+    "path": "scripts/SphericalFaceDomainOracle.cs",
+    "bytes": 14449,
+    "sha256": "ecec1aa98c10b6f28fdd7a4ef23561972896e51567343892b08a142cc8c9c89d"
+  },
+  {
+    "path": "scripts/SupportBlendChainOracle.cs",
+    "bytes": 27334,
+    "sha256": "e62dbceffc31a1c7175b84073b9575d6d52e5768e13cfab6af11341f8570bc7b"
+  },
+  {
+    "path": "scripts/TopologyDump.cs",
+    "bytes": 4300,
+    "sha256": "3568df7f0f4192bbff1e4c7808d3a194b66278d8fef36d6745dea201128e3cd1"
+  },
+  {
+    "path": "scripts/TrivalentBlendCornerOracle.cs",
+    "bytes": 47760,
+    "sha256": "092b3ffac80291e632aa5ea907388a19b17118ddd153ffdbd8d8b845a686b6c0"
+  },
+  {
+    "path": "scripts/TrivalentCornerMassDiagnostic.cs",
+    "bytes": 3485,
+    "sha256": "8dd7ff33e85f86629b55b98522c2be2d6d59824a98fba13ca12e2e0a74818074"
+  },
+  {
+    "path": "scripts/ValidateWebProgress.cs",
+    "bytes": 5240,
+    "sha256": "4fe9bcc3cfccf4efd8de979bd666beca2d1d7051e04d381d9d3a4db3f7319ec3"
+  },
+  {
+    "path": "scripts/ValidateXtSchemaModelCorpus.cs",
+    "bytes": 5509,
+    "sha256": "c6e684056e947f955fa17e3e7b8183414aaa397a3769f82adc559cc0349ac77d"
+  },
+  {
+    "path": "scripts/VerifyAdvancedModeling.cs",
+    "bytes": 3622,
+    "sha256": "d65a3a57e958dd1efccc3ad3f05ca57ec3e112934ab6a71d7998abfbb69c4010"
+  },
+  {
+    "path": "scripts/VerifyKernel.cs",
+    "bytes": 8060,
+    "sha256": "1617b7b361250b95406693d4076a93f31ac8ce026d223e4055a82d46e3da2265"
+  },
+  {
+    "path": "scripts/VerifyNestedBlend.cs",
+    "bytes": 1539,
+    "sha256": "0b399e02f068f5eb17acc86d1bc8a3bd9180d9434100e6928c9d43f585ba3928"
+  },
+  {
+    "path": "scripts/VerifyPublicModeling.cs",
+    "bytes": 5671,
+    "sha256": "83f83e42989d9c3de2f4ac8159e6ed2123b9060aa9dae875030dd42759152570"
+  },
+  {
+    "path": "scripts/VerifyXtGeneratedLayouts.cs",
+    "bytes": 4883,
+    "sha256": "09d0c4057bfe9cb40124a8553d2e80339b6ce135189b504c2028df72a2fab9bc"
+  },
+  {
+    "path": "scripts/VerifyXtNugetConsumer.cs",
+    "bytes": 3022,
+    "sha256": "a687a1da1a09bdd3c7a16e25d99187ba0bef488433ef5942045835146094ee6f"
+  },
+  {
+    "path": "scripts/WatchWebProgress.cs",
+    "bytes": 4029,
+    "sha256": "313c7922faf4085c9b4d1b3fe60f360f43b1b0d8f8cce61b561fdf4775a38da8"
+  },
+  {
+    "path": "scripts/WebProgressCapture.cs",
+    "bytes": 34278,
+    "sha256": "23824249e5d099b832bc4988390baee1cb3d9d652bcf29310e5a66843af9fbfa"
+  },
+  {
+    "path": "scripts/WebProgressDataValidation.cs",
+    "bytes": 8626,
+    "sha256": "53951ca69fd301aaea7ca22798561c551bc7adb33ec9040223707d6ab86c0f18"
+  },
+  {
+    "path": "scripts/WebProgressMetadata.cs",
+    "bytes": 3255,
+    "sha256": "be9c13609deec59311ff005d543fb931433a7b8bb3f18d4591acbfdcde981cc1"
+  },
+  {
+    "path": "scripts/WebProgressPublishing.cs",
+    "bytes": 3224,
+    "sha256": "99844f1b42543f4e099325af5dcef4d37fa981e43a0d52c101ee0652cc78aa25"
+  },
+  {
+    "path": "scripts/XtDebug.cs",
+    "bytes": 3806,
+    "sha256": "8091412cd983e85c9c19e50024f95c3fde5f4c98456b9b35bb8f1021d4ccb8a1"
+  },
+  {
+    "path": "scripts/XtGeometryWriterOracle.cs",
+    "bytes": 52469,
+    "sha256": "84f77537eff61cce99241ed02a3b88c5150441a4eaf88995dde7cc6bac6335f7"
+  },
+  {
+    "path": "scripts/XtNativeAbiSmoke.cs",
+    "bytes": 11494,
+    "sha256": "7cbca1e1590e9ef121f71ede27f9532a83f27ae6a2ab05d9bef1d6402c848079"
+  },
+  {
+    "path": "scripts/XtReencode.cs",
+    "bytes": 1235,
+    "sha256": "8fa989734da04b2a0f186390af9505db59daf34566f0cad2adb783f9fef1b114"
+  },
+  {
+    "path": "scripts/systemd/gm-kernel-progress-refresh.service",
+    "bytes": 1544,
+    "sha256": "87fd999e6d1725698130c37d267771d1be479da8d1ed4e1c1b6da35dfa5feefe"
+  },
+  {
+    "path": "scripts/systemd/gm-kernel-progress-refresh.timer",
+    "bytes": 227,
+    "sha256": "9ebbc24cb98f42c9e72baa6eb575278b6df43db3391806fffd84132bf4a384ad"
+  },
+  {
+    "path": "scripts/web-progress-registry.json",
+    "bytes": 446427,
+    "sha256": "58e863df13cffd2f1d9406c03b371056b6004089f039bd143ddcb53c1ec72277"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Computation/AlgorithmStatus.cs",
+    "bytes": 464,
+    "sha256": "edd37586f99a8f2e1aa52b109b6da48c5e8b99f7ec93c9c5c9325a883d263541"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Computation/Numerics/BlockSchurSolve.cs",
+    "bytes": 6660,
+    "sha256": "8ea68dff5ac6c938e6f66db89266479788c6cf43b46b6b0cb1e01da0d38ff2fd"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Computation/Numerics/IntervalDual.cs",
+    "bytes": 4236,
+    "sha256": "2f4d84d1552adb522f943866711cfcd9f4984361370e96ddc4f343762f83260a"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Computation/Numerics/IntervalNumber.cs",
+    "bytes": 3257,
+    "sha256": "0209f70d1017a28f4fee88cdaddf199320a4d9f2bb870d7537d968adc65311a4"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Computation/Numerics/IntervalRootCheck.cs",
+    "bytes": 46429,
+    "sha256": "6a7e571cd3b467da78d7c28fabf74206978b9068bc79d4912d80c9a0a1e0ca00"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Computation/Numerics/LevenbergMarquardtStep.cs",
+    "bytes": 3704,
+    "sha256": "60256d24f2b4efb22ea36451f3e14989e4f29fccd610c466476c31bb0d19bafa"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Computation/Numerics/NewtonStep.cs",
+    "bytes": 3864,
+    "sha256": "34e8b4f72c62b336c5a1646939828983f1d1780a5f282aca1b40b0cd07f19ad6"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Computation/Numerics/SmallLinearSolve.cs",
+    "bytes": 21681,
+    "sha256": "74ebcb691d00385f2b854557ce7d5888908a9bbf215f9369676136bf63439f6f"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Computation/Numerics/TaylorJet.cs",
+    "bytes": 3940,
+    "sha256": "9dd1248012528acfd3724bc824baba509640993f68204ee2d77604b95180dbcd"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Computation/Numerics/TaylorVector.cs",
+    "bytes": 1771,
+    "sha256": "eb0a0932a5dcdcc2f0e56481c8d5cb104a96ed42fa9d8d1ab59e4b5fb6afa214"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Computation/Numerics/TrustRegionStep.cs",
+    "bytes": 7810,
+    "sha256": "a31eb4a919afb5bbb56ccfeb00b3b5251ce6422d583c9992a4329c06bb871845"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Computation/WorkBuffer.cs",
+    "bytes": 1034,
+    "sha256": "e96397b1ba522f42ed4f6761fc6c7d8323322aacb16e5583e0061300d30a84d6"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Generated/KernelExports.generated.cs",
+    "bytes": 229968,
+    "sha256": "76cea3efdb24a2ed45a6c0bbfe3f6e92a7f7600992b03b73f683710ca1dc50d7"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Generated/ParasolidHeader.generated.cs",
+    "bytes": 639911,
+    "sha256": "dced98710ad8cad0b29f45bf90b10dcc8af4a84e2fbee119d40aac5144f23a32"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Bounds/AnalyticBezierPatches.cs",
+    "bytes": 5338,
+    "sha256": "02aae695fec4c0ba9eefc3e5ab581d3251e05e0db365fbaaaec80e072d524306"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Bounds/BezierCurveBounds.cs",
+    "bytes": 1472,
+    "sha256": "6687147f77f0f24870610ebaec4cd13914d48fbd7d302eadb6c6a708cbf848f0"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Bounds/BezierSurfaceBounds.cs",
+    "bytes": 16700,
+    "sha256": "4f38094aae59e3f02d3c07cf0de6ddc540d0814f0511734113429829c043606c"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Bounds/OffsetBezierBounds.cs",
+    "bytes": 1906,
+    "sha256": "a64e499d9bc41cf37c86b45ea2705c20cdf4f65cea980458f0f640552356c752"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Bounds/ParametricPatchSeparation.cs",
+    "bytes": 5408,
+    "sha256": "75fae50a50d42c84a59d7d885de69df6c6d754914bfe996fc3eba3cabaccf7f0"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Bounds/RollingBallReach.cs",
+    "bytes": 8347,
+    "sha256": "e8e80e1ac14e295842eb4790b70374469150439ae7e008dda9f39a1bda60b281"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Caching/EvaluationBudget.cs",
+    "bytes": 2127,
+    "sha256": "12beb58138b06c9a18a6902d801a41f7694bf0bdb0ca58f96aac83bf2908bad2"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Caching/EvaluationCounters.cs",
+    "bytes": 935,
+    "sha256": "9edccbf344a515fc69dff63f3de2eb85debc10e3c5110657823260e2918a6594"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Caching/EvaluationDiagnostics.cs",
+    "bytes": 1022,
+    "sha256": "389f5e3f8cdf91d738265bb7f72dcefa12772261c1b582cf534489f4add279b8"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Caching/EvaluationSampleStore.cs",
+    "bytes": 15268,
+    "sha256": "391f6d00493b2a09bdef30bddf31b7c4a430f82f4979bcebde7bdcd1c28275d1"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Caching/FailureReplayRing.cs",
+    "bytes": 2705,
+    "sha256": "93e3e74746c0457242ce5ca50da6e705ba1bbbd50c3fcbd93ae5fa134fc9a405"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Caching/FrozenResidualScale.cs",
+    "bytes": 4335,
+    "sha256": "2d538f37f84335a55d7863acd8d42591390f0071d610d64da313b317870573d2"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Caching/ParameterCorrespondence.cs",
+    "bytes": 3210,
+    "sha256": "40231fc5753f246db6358ec994985480151a0fcbd0ab41c9c799ccc62b966778"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Caching/ResidualMemo.cs",
+    "bytes": 5243,
+    "sha256": "41ea9d3df2a2631a4c24e156952c2bd6b819082c471cad09303abfb8d6100e0c"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Caching/SharedSpineMemo.cs",
+    "bytes": 3280,
+    "sha256": "1512500058de45a2bcd323a843781118fa5e5805b9c6ad700195e6979dc1fb52"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Caching/SolveStateBuffer.cs",
+    "bytes": 3662,
+    "sha256": "745f5704916a3132d4f233882ef85f0ac876cd277bcc805661b67f84d51f764c"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Construction/FreeformSplineMath.cs",
+    "bytes": 17012,
+    "sha256": "dc6995e3fdaabe0b1607e493008389c3bd8b99b22f628672991c5e5bd8e4f8f2"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Construction/SplineEditingMath.cs",
+    "bytes": 8126,
+    "sha256": "a186368c72b085c92d356f3fda0c81f5f18e0dd98992bace9987faabe46c7857"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/AffineImplicitJets.cs",
+    "bytes": 4220,
+    "sha256": "aaaaa6d8e54dd64f18c63cda2cf16d661e9ea235f65522797121a3e38513fb34"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/AffineSplineTerminator.cs",
+    "bytes": 4434,
+    "sha256": "dee6db628b66ad35932d9694cfe6c1a43bd52fc96b754c65db4d956e5f30394a"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/AnalyticDistanceSeries.cs",
+    "bytes": 2448,
+    "sha256": "607ecda0d1e83d63b7a806799f9e074101ea3bd39f102bf786cf7dfc030a4aa3"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/AnalyticImplicitEvaluation.cs",
+    "bytes": 16487,
+    "sha256": "dc8f8b2fe3ff0eab4ffa436348a8eca653b1b5ab05d58fa4b2244eac3c4318fb"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/AnalyticParametricEvaluation.cs",
+    "bytes": 3537,
+    "sha256": "6970229452daf78ee4ca071927bf027acec6785a6781cf686c34bc0869fe3dac"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/AnalyticSpineContact.cs",
+    "bytes": 4400,
+    "sha256": "799f5fdd09c7174daa7013cc0317011bde249002be0c1773d9fabe6fbcbe1d98"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/AnalyticSurface.cs",
+    "bytes": 820,
+    "sha256": "8b9ff44dd4ca9d12debe59738297b75b9c1dbf702d7871821c2766bb674c389c"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/BCurveEvaluation.cs",
+    "bytes": 5241,
+    "sha256": "6e2973795a16335e2258e936d9a7f4fdce4242e8cbda5207e389dc087d8ea115"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/BCurveView.cs",
+    "bytes": 831,
+    "sha256": "45c3436f371abf6eba6ac3758503601585c7015defe776418ea7261a30dc0250"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/BSurfaceEvaluation.cs",
+    "bytes": 13345,
+    "sha256": "a4086261c8ee56589aaf00512b36167d8eda64c64d9344e417a8a64d2a99b893"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/BSurfaceView.cs",
+    "bytes": 1403,
+    "sha256": "114c57ed9a41a3325b3203b3e65823dd3c5f686efb450d38c5dac1970cfb6075"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/BlendBoundComposition.cs",
+    "bytes": 13345,
+    "sha256": "de7a03c44fbd8787e23aca4016780535c88bac7861fcce3332efc5f66ab602be"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/BlendEnvelopeSolve.cs",
+    "bytes": 13423,
+    "sha256": "08709d49d01e4ba2f7a2a6011d9db8aa762b5cb2c18e19b809c7e7b2a42542d8"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/BlendEvaluation.cs",
+    "bytes": 18756,
+    "sha256": "f495133ab7f60b8e47e798d7e44dfbcc2709d5b6eae51550ad63b61b5420b8de"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/BlendImplicitEvaluation.cs",
+    "bytes": 11632,
+    "sha256": "75b6a00c1a6cf8eabb8958983af09f32e2faee787e011087eb00d9ddec267176"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/CaseFValidator.cs",
+    "bytes": 8264,
+    "sha256": "9a8709f8bac71a77223101819a9170ce7d81a51656cf63e0a92149f52dc7cb04"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/CompactBranchCertificate.cs",
+    "bytes": 19291,
+    "sha256": "bc7a9ad3095a3b43985c8ff1872855270c44125733210b93fbd18540b18454da"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/ConicTubeSeparation.cs",
+    "bytes": 5203,
+    "sha256": "aee776ed8eae8e61b2febf0d7f778775a4736a2a1394c9b6b70817590da0cd7d"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/CurveEvaluation.cs",
+    "bytes": 3213,
+    "sha256": "aee3892bb900c197b9ef841bec82437cea9826f1c0ba92df44c4238915658d7a"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/EvaluationMath.cs",
+    "bytes": 3438,
+    "sha256": "a64999c6e48b141d0d63501314fbcf15b517746cf1a89c8d989293527918155c"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/ICurveEvaluation.cs",
+    "bytes": 88170,
+    "sha256": "51d8658322bd094b4ab4b08f5663c194711cbc99d930d161ad239fc29a6cef8c"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/ICurveSupportView.cs",
+    "bytes": 9327,
+    "sha256": "2c48aa9677bd6a5cb525f42c4b7a9b6b0e050493a8ffdf324aa173f65a00b849"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/ICurveView.cs",
+    "bytes": 13208,
+    "sha256": "54b82c7dca9a1328c485963dd3500ba99c77de45c5d29027d73269de2ee0386a"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/IntervalJacobianRecord.cs",
+    "bytes": 12610,
+    "sha256": "f7b6908afae1b320acc5fb6ff88fd952afa327054f20a9c8ca925a83d863b5ee"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/JointNestedBlendContactParameters.cs",
+    "bytes": 1443,
+    "sha256": "36b76a8e971072de2c5eafaa4b3681aa580276f4df130145e627f6c41a60721c"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/JointNestedBlendEvaluation.cs",
+    "bytes": 39119,
+    "sha256": "3949536e273ab24cfb07329ed036f07feea3c06cb2126817746ec2ce3925737b"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/JointNestedBlendExplicit.cs",
+    "bytes": 2090,
+    "sha256": "ea33d145bf6b570b9671ba750a0231891a23009619fe9fd639f930bbf0f67e2c"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/JointTubeWork.cs",
+    "bytes": 5954,
+    "sha256": "0976f8c4ceba6881fef8890ed53eeb93c48071baa10b3ba2003c3fc05db3e0f7"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/LocalDistanceEvaluation.cs",
+    "bytes": 13498,
+    "sha256": "e7291b94a0988730900eb3245c004a6b3dc9e9f7f2ee03f253b94d916c491147"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/NestedBlendBounds.cs",
+    "bytes": 35817,
+    "sha256": "5c5446338124dead0401dd5dbb81e63dde7a74dd98031d378264ada0640d9d7c"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/NestedBlendConicLinearSystem.cs",
+    "bytes": 4632,
+    "sha256": "ede38e00811cadbb527c2e847e7550b4489e543062d59ffa92650de099a3595b"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/NestedBlendConicSubstitution.cs",
+    "bytes": 8695,
+    "sha256": "2e07b1115adef275881645a674da8e02c156d8b63f0e407caa710020dfc981ab"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/NestedBlendIntervalSupport.cs",
+    "bytes": 13721,
+    "sha256": "fe6cc2acb3cc993d5cba2bf3cf42f5ae62c1ac111797723275edc4fb7b7b60a7"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/NestedBlendJacobianExpressions.cs",
+    "bytes": 16369,
+    "sha256": "77e3f34efa391c50d6c88c71ae8a58ca1b2589f2102b358dd347e5a843c0f0e3"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/NestedBlendParameterBounds.cs",
+    "bytes": 6316,
+    "sha256": "df959bb27c2e8d5bbb9b53ec4a27279a3b6af0a298285b40dd4cf94ba492c3e7"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/NestedBlendPlaneSplineJacobian.cs",
+    "bytes": 5429,
+    "sha256": "b308157fd5128aa57511f3b141857c892022e99930ddf99b4be3ccbd20e03e71"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/NestedBlendProgram.cs",
+    "bytes": 3241,
+    "sha256": "dd98ac8a286e88a3421d036ff61be15cc0b012ec778c6cfd563893cf812b1899"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/NestedBlendSeriesEvaluation.cs",
+    "bytes": 9957,
+    "sha256": "954414c7aaa25d42a0fb37be14a78306ff3c94d09db2bb22b69a0e7b03f840d2"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/NestedBlendSplineCartesianRows.cs",
+    "bytes": 10430,
+    "sha256": "07fd1d9666eb63239f36d67d9557b5212c82032cface19a1ea4e6ec7cdb76d60"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/NestedSplineEvaluation.cs",
+    "bytes": 9127,
+    "sha256": "7b8e566813087e162cc8d9782f9a6f0933754fec889d74ad6c5eb478366067fc"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/OffsetSurfaceEvaluation.cs",
+    "bytes": 6421,
+    "sha256": "60ba5643cf0003cffc0782ce17bbb2476d3b907eadbdc15de8f6afdd00b15b26"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/OriginalChartParameterMap.cs",
+    "bytes": 12626,
+    "sha256": "460197f0cee1f024548963f3585439550cdc0b36511159f3d347632ff4c8fedb"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/ParametricICurveEvaluation.cs",
+    "bytes": 51962,
+    "sha256": "78acc5b03885779b92b2c397031ed006f65c39863b0e18a79a01daa37ea36353"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/PlanarBlendProjection.cs",
+    "bytes": 7781,
+    "sha256": "1192394f00bdf8c615a80584f909fc486a89b68723baaffe965e2b44f6b1d306"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/RationalConicGauge.cs",
+    "bytes": 11014,
+    "sha256": "afbef3f5d3e85aae69a1653e2e4bb9f52f7dfd86d1ae11bc8dcc6b86c9bbe5bd"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/RationalSpine.cs",
+    "bytes": 8713,
+    "sha256": "a0b6c41367cedbdebe2fb1020b09e1caba075c454e33c6b94a07f6545214936e"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/RollingSectionEvaluation.cs",
+    "bytes": 5430,
+    "sha256": "fd23119640a2d4d1dfb7dade6de7a0a7cf0e26f3ae168d56549cae0f20701880"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/SpCurveEvaluation.cs",
+    "bytes": 8920,
+    "sha256": "a375df201f5297d121ca25178e79c093f72fcb75582316efb098d0008472a882"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/SpineParameterMap.cs",
+    "bytes": 7638,
+    "sha256": "8cf01280c4526767bcfdb99d2f5cbcb30ce6f97eea790dc7b32d3043750bad0f"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/SplinePlaneResidual.cs",
+    "bytes": 5289,
+    "sha256": "979cb4b58065961c5a00359bfdd551d8d00832f187a187e574adcde63ea822b5"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/SplineTerminalSection.cs",
+    "bytes": 16669,
+    "sha256": "8ab641a0a3422ca50b8f646d6e52d87a5618d23efe1082c574a12964363e8540"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/SurfaceDerivativeLayout.cs",
+    "bytes": 1219,
+    "sha256": "5e146fd3d548ff6ea8d17c6a680676cb0a8abd04719986883b0eb9272fe64352"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/SurfaceDistanceEvaluation.cs",
+    "bytes": 13303,
+    "sha256": "80a926d446f6f11c610217a5eca3dbcec07abe9fca291de4b6abd324df3589bc"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/SurfaceEvaluation.cs",
+    "bytes": 5832,
+    "sha256": "11cd656903b5075772791865c54fe98a06345c19b1fcbc77694d627d0a7681f0"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/SweptSpunImplicit.cs",
+    "bytes": 12828,
+    "sha256": "637307c35ee7c423679a2b171503fbbf25812fa536a616646fc039f4919669c9"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Evaluation/SweptSpunSurfaceEvaluation.cs",
+    "bytes": 3436,
+    "sha256": "375b8c03e14b69a167210ca58b36c66fd94fd1b5fa05cc71e70f985275e2fdb8"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Intersection/AnalyticLevelSet.cs",
+    "bytes": 2598,
+    "sha256": "0b65e87ed723149d40c700e0ac5cebfad6b832820d49472eae564a544c0257be"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Intersection/BCurveAnalyticIntersection.cs",
+    "bytes": 14608,
+    "sha256": "fed73d680ff10d4cbcaeec59bc5ed89e0b99f19d69e0b2e8d8bad62afbd26e13"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Intersection/BCurvePlaneIntersection.cs",
+    "bytes": 5158,
+    "sha256": "1e1f96bdbf99cfdf85214cf89ef5b413fafc0765ad53e4c8ca5beb32213aa458"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Intersection/BezierCurveIntersection.cs",
+    "bytes": 4139,
+    "sha256": "971c651ac1c8a23a7f76c011656804116aeb1d41038df5031e606c98802ce4da"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Intersection/BlendJointLift.cs",
+    "bytes": 17042,
+    "sha256": "f85c5344a1e7e169fd982ea75162b7a8548d5d142d40f26594a17d123b4240b9"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Intersection/BoundedPolynomialRoots.cs",
+    "bytes": 5050,
+    "sha256": "cf2fb0921fc2fe023cb393a89ca189fb67e665181fc8a829bd495e56e1201d41"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Intersection/ContinuityCellRules.cs",
+    "bytes": 2173,
+    "sha256": "ffdec9de9a5c4709f3f11e340f581aca16066bcd27e924aa99b8d72f40f28f69"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Intersection/ConvexPlaneContacts.cs",
+    "bytes": 6281,
+    "sha256": "2db5670a84cc01fa243c49ab6143f4f881d348a8778cb070cc26f18b4995ed1c"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Intersection/ICurveConstraintPlan.cs",
+    "bytes": 5485,
+    "sha256": "1ac9946e54b9d3f3e9c98566f3ff906dbb83ea8aff107ced2b34dd8c192e736b"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Intersection/ICurveContinuation.cs",
+    "bytes": 27703,
+    "sha256": "fc1de2767960f175384e02d4ca726be417d0cdae9cc5d36a96d6cdd28792ded2"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Intersection/ICurveCorrection.cs",
+    "bytes": 30236,
+    "sha256": "0aea6935ae2794b170a7ddf6f3d7acab9f6d185fd3899caf475d91552dd90ce0"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Intersection/ICurveMultiSeed.cs",
+    "bytes": 3167,
+    "sha256": "5e014f53a5ea8a0f4f61bd8bee36676deb1391deb64e9a7b77f925d131af0101"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Intersection/ICurveSeedSelection.cs",
+    "bytes": 6251,
+    "sha256": "05d518368cdce50eb703eb217ebace7501fe3afa3c9847a2215bd25e024a4cf2"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Intersection/IsoParametricBSurfacePlaneIntersection.cs",
+    "bytes": 12717,
+    "sha256": "17c5f449b5581b9a18529bb7a55c75f619afa634ce79ed1954b1239b61407c52"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Intersection/JointBlendResidual.cs",
+    "bytes": 8402,
+    "sha256": "dda077a0900ad4b5fa981e9086a208ec7b135f3097a721cf09aa5f6c58b668d0"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Intersection/OperationIntersection.cs",
+    "bytes": 35541,
+    "sha256": "1d51f858e4bb56dec6198b86c2ff8c9b2ac0f1cd27c2755568bd4f76b0c76138"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Intersection/ParametricSurfaceIntersection.cs",
+    "bytes": 32992,
+    "sha256": "5daa7b36e3a97fcff1b1a65fdf7621e3fdeae457e23da8f17ee6ac370b5a3450"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Intersection/PseudoArclengthStep.cs",
+    "bytes": 2680,
+    "sha256": "477310c621788e39a9f64b474ea467aa8b67b0b3c1b4f835f07e3faf6b5dfc57"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Intersection/RuledBSurfacePlaneIntersection.cs",
+    "bytes": 14719,
+    "sha256": "e618b6ce6ec8ee2cc490214e6d5daf4f3509d77cf5b03412ed2e89c3253db546"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Intersection/SurfaceIntersectionPatch.cs",
+    "bytes": 12131,
+    "sha256": "f899fe439bda2663e579881e6c16034ca09cf50ae12226d09a66bd04e29de63f"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Intersection/SurfaceIsoPlaneRoots.cs",
+    "bytes": 13292,
+    "sha256": "9d169d03425d634feb3845d72e561432c0cfc2fd9fccb05ee486586befa5aa33"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Intersection/SurfacePairPlaneRoots.cs",
+    "bytes": 8586,
+    "sha256": "dbe86dfeb57d703cd0b662a9cea010a2549b92c2b46aa73d9e2c4c47993e644b"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Intersection/SurfacePairRelation.cs",
+    "bytes": 332,
+    "sha256": "c84c879a1b8ea36fb9dfb4ac98e177fa64a35389c5b3ff1ec405bc3ceaf56f52"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Intersection/SurfacePlaneIntersection.cs",
+    "bytes": 15539,
+    "sha256": "9fd77a39c22633e052ca64281101bdf20430ef4a4773f98266bb010688294a2c"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Intersection/SurfaceTripleRoots.cs",
+    "bytes": 11958,
+    "sha256": "27b593f0a2d672913693fb5f5f9b20823549eee135a42d32c16dae3d73fe1796"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Intersection/TerminatorEvaluation.cs",
+    "bytes": 41691,
+    "sha256": "4e50057d254c0894675abe55c6ce14a43674b7d101b1ad4ee783e147d6b9efb8"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/LocalOperations/ConvexLocalModel.cs",
+    "bytes": 5785,
+    "sha256": "029eab81e2f3684e4e58c9b813c028294388cf2e9e6073f4d15f706fab2afa6d"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Projection/BSplineProjection.cs",
+    "bytes": 7912,
+    "sha256": "81d1fcd003f3914982ddd96095718e6e25fec214bbfa96d6bc56125273c62992"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Geometry/Projection/BezierPairDistance.cs",
+    "bytes": 8283,
+    "sha256": "a2533d6f55817d84aab423aa421a92df4b57d6be39e06173d793011f2eabf35a"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/KernelExports.Boolean.cs",
+    "bytes": 2548,
+    "sha256": "e8b2d2ef53d2e33fbaab0306f65bc3a7409cba2694a7ad026c37dfdc53d39ccb"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/KernelExports.Display.cs",
+    "bytes": 1515,
+    "sha256": "755e4d7eed037fbb15a2e914e76dac77dc21ac6f9bc2b6d8cb848508e984b60e"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/KernelExports.Distance.cs",
+    "bytes": 779,
+    "sha256": "d4aef6c0595619ce4bcf1dc39264a18778167bfcea766466e578ff7bbc92825f"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/KernelExports.Freeform.cs",
+    "bytes": 4657,
+    "sha256": "7821cd1d53e50f0582038bc7b4858a6a85517a6b5cd0c660fa93f09d26a9bbfb"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/KernelExports.Geometry.cs",
+    "bytes": 8174,
+    "sha256": "36e47376adf3a92704f495cb6fe2c82b766bfcb9f29443ba6da1d71791a10751"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/KernelExports.GeometryManagement.cs",
+    "bytes": 2065,
+    "sha256": "4c494e3daab411ed3ff055dd9f06fcc0c32a9ba1376d4c569f5e24d39365d917"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/KernelExports.Intersections.cs",
+    "bytes": 1567,
+    "sha256": "0afdfc09dd44d2f677b522b1e38c7c6babe0b8957a114cc1b80389dee3e5cf58"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/KernelExports.LocalOperations.cs",
+    "bytes": 3105,
+    "sha256": "9c9540a344c6c571a05d879436a384ee96e26e69f76472a4d92c44112360a8b5"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/KernelExports.Profiles.cs",
+    "bytes": 2715,
+    "sha256": "2b4c3dc225df8d6830d98ef29317d52ca7cb7f4e1872ec441be6594ab565743a"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/KernelExports.Projection.cs",
+    "bytes": 699,
+    "sha256": "f3d8cc6af5642b80bee60f00d32a85a3b75cfac1ca884ef514ea49bb4bc9b2ed"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/KernelExports.SplineEditing.cs",
+    "bytes": 1725,
+    "sha256": "e3e8c752ca862c0051a15ba397fdbeb2cf1c2479a73a5e5509bee5043e9b5279"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/KernelExports.SurfaceBlend.cs",
+    "bytes": 763,
+    "sha256": "748a38c3be0d4e798b7ddd29a73e31091002d285451eb0d9600bf1fa323c95e1"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/KernelExports.TopologyEditing.cs",
+    "bytes": 423,
+    "sha256": "d54647be9a6ff7f7168b2ca802aa42fe474cb08fdb14749d1132cb90a1f1c858"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/KernelExports.TopologyQueries.cs",
+    "bytes": 2501,
+    "sha256": "eecbd2852819329b5569316cf2fa20bdd2bb1cda0691edb554d99eefe41b133c"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/KernelExports.cs",
+    "bytes": 32709,
+    "sha256": "e44fec0ccbc87af925db84a458d1d9cadec16cc2fab063e8022fe5208b720f5d"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj",
+    "bytes": 4548,
+    "sha256": "a9d3e8e1e2303106179c4ca927fbbd2018fa29df194c0d5a972a1d9dc8aa4d25"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/ApiDispatch.cs",
+    "bytes": 14110,
+    "sha256": "6e64743a9dd984a443d6326ac1197d2b6579be116707c92640ef0428cc0a632c"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/BlockAllocator.cs",
+    "bytes": 10409,
+    "sha256": "5e78e56f6d0d6910a7c41d6b4e4bdf00a8ab1b75291c96044c356b39c68220b2"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/CommandScratch.cs",
+    "bytes": 2553,
+    "sha256": "b32b454874252a060eb4f209eb344e9730c2e4935a1e7aca1f56ba3f0e67b6ca"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/DisplaySnapshot.cs",
+    "bytes": 679,
+    "sha256": "91d3ac35adaea3738a56c3bfab76aa40a2d8bf550ead0d16eeab5dab00d08330"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/EntityPools.cs",
+    "bytes": 1277,
+    "sha256": "b27efe3bf3f9d1d8adcd8a8a6e40f4d279df273bdad01a70a6f0961b0373e1e3"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/FunctionCatalog.generated.cs",
+    "bytes": 14338,
+    "sha256": "a278bc15eb3ebc06fa842c2d7cd6f88d4745ea38e41ebb6aaf72acda349e3ad3"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/GeometryEvaluationCache.cs",
+    "bytes": 16957,
+    "sha256": "2b561a2d42841ccf0fc77a32eab8843cca26e5eea94ae275cbec53efd9cf7c15"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/GeometryQueryCommands.cs",
+    "bytes": 2265,
+    "sha256": "b29079ee644a67166e3d7004bcc4042e62c2997419296f8fa05dbd4f23bbab69"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/GeometryRecords.cs",
+    "bytes": 30981,
+    "sha256": "85a2ad4694909e6bbc760aea16b3831ff8a3e3f846329fcbee9213f7d022ee27"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/IntegrityChecker.cs",
+    "bytes": 9897,
+    "sha256": "b002f33badd40d30c1e2c2ff1d6125141a4d0f2e2ad2bac54f4a8d71367bb96f"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelAffineTransform.cs",
+    "bytes": 3500,
+    "sha256": "8dd5211e769b397362986d08aeaf0c71d039076b8e881fb9844b80cd2388c1a1"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelExportCommands.cs",
+    "bytes": 14647,
+    "sha256": "18fca53ecfa0b71acb1bf22e610cc3f9ba063ce78d2d2b80cf0668481d923c03"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelExportPartitionCommands.cs",
+    "bytes": 4036,
+    "sha256": "0c0d179a955620af2f40f972000d4f7589c8afd260b38c57e90b39357a1e3c80"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.AffineCurveRelations.cs",
+    "bytes": 4302,
+    "sha256": "f587297fe12943dc9ea30f4b2bf25fe55e8b3d0ead1fc1bfacb4718d6959b723"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.AffineSurfaceRelations.cs",
+    "bytes": 20346,
+    "sha256": "8a1c6fd2d335a1c4c07b02690d76ad58e0fe6a793875c04b6e0f03ed45e5fafc"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.AnalyticBlendContact.cs",
+    "bytes": 6196,
+    "sha256": "afde3f6f7775bc33d1788077a18a2c0e5dd01df962d12a5dab1403239e97e260"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.AnalyticBoolean.cs",
+    "bytes": 17752,
+    "sha256": "63c21088c7defd73987669ad4d8d1c310899311f4b17d168ec108d9e0034be81"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.AnalyticFaceDomain.cs",
+    "bytes": 7533,
+    "sha256": "124ccb2f5d80ebb97bd2df5d1a31429c030fdec50f597d6aae3f090e4404dffb"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.AnalyticIntersections.cs",
+    "bytes": 9684,
+    "sha256": "382ed41a6b934613de014df8887dda09b7c7d9208e3d155061b7ab5091f3e143"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.AnalyticRollingCandidate.cs",
+    "bytes": 13335,
+    "sha256": "e1c363027339f79b44f097ba15c8445dd3b31b35eedb94cfbb220571975112cf"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.AnalyticSection.cs",
+    "bytes": 10180,
+    "sha256": "198d122719a960014048eb22dedcac94c7aff432b39125fb94675199f32d5915"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.BCurve.cs",
+    "bytes": 13355,
+    "sha256": "d20453e285dfebd3c3b8405fc791bfbaf2df5d9fce3bbb061033a8d43bd8b679"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.BlendContactCurve.cs",
+    "bytes": 23031,
+    "sha256": "aa7f88ec2d440c24fbee5b728f9fb41c034269abe4a82031ff7992d43c28e37c"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.BlendContactPlaneEvents.cs",
+    "bytes": 7664,
+    "sha256": "caca6aa926a402154922aa95962c0f2d7ca93e948fe38093b17d787d96c7382a"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.BlendContactXt.cs",
+    "bytes": 5820,
+    "sha256": "46765b1bbc774b6efcf1356eb515f312f8d1b8d14a24441ebb7ae974ead78e41"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.BlendDistance.cs",
+    "bytes": 1566,
+    "sha256": "8148c5658a2256927fbb616bb43ac2148df62cd8c6e4a5034bed517b9fb9ce7a"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.BlendIntersections.cs",
+    "bytes": 14191,
+    "sha256": "eb9ef74694aec4cc5c4541b6eb6500acb05a4930d44bea433acc361255de3b7d"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.BlendPlaneCutEvents.cs",
+    "bytes": 9090,
+    "sha256": "817f9476b50783561f75f524baf569654c031687e2cc175f1fc1a0329311c009"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.BlendPlaneIsocut.cs",
+    "bytes": 13720,
+    "sha256": "ffac0a1357e3d22ceae29c389dde6783f13ac6e16d36267e5fc32cf8589eb461"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.BlendSheetRays.cs",
+    "bytes": 11187,
+    "sha256": "61602bfa207468dd91dd4227c66be1479e318c41e51bad2d498792143d29450f"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.Boolean.cs",
+    "bytes": 21974,
+    "sha256": "2a0c489f7b8c212bcd64391ba1b9d4883b7544ea1644145788ed46f0b5ac9150"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.BoundaryAssociations.cs",
+    "bytes": 24269,
+    "sha256": "c884ff1d94e40156a5a864c7d3c574e4e3d435b7b713e5d39be1ec22cbdc2bc3"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.BoundaryStationOrder.cs",
+    "bytes": 8041,
+    "sha256": "f961b3ff8e83caa4c83e13dee5762c629741667c347840101a728e3e177949b7"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.CertifiedCutOrder.cs",
+    "bytes": 6351,
+    "sha256": "b0e35b4ee3ea13fdd8b51279282e0a92ed1addcf59640b49d60037bcad242b53"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.CertifiedCylindricalTrim.cs",
+    "bytes": 3798,
+    "sha256": "50ad98d9e591f4450b2859205f38ef310fb0ad2417029790bd204dfdcfdbfb21"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.CertifiedPlanarWinding.cs",
+    "bytes": 7795,
+    "sha256": "fecaa4f76be20c5a29891c9f4bbf2095f3753e0ab2ad29c643db624dec818cef"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.Classification.cs",
+    "bytes": 7106,
+    "sha256": "9eb472f2b04c0ef1d57ad49b7dad9ace0ce880f01af9db9940474afb0f212b84"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.CoincidentLineBoundary.cs",
+    "bytes": 29496,
+    "sha256": "6ee9bf860cd9bd68f10d6e234ed9691650038aa14e98697a2a543b991d1e658d"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.ConstructionGeometry.cs",
+    "bytes": 11772,
+    "sha256": "f48df1f11104fbae05a22da64b0e3c9d3d9695d477251bbd5fca28e8fcd6cc21"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.ContactSupportCuts.cs",
+    "bytes": 2477,
+    "sha256": "0820d971f02a43ec4d6f71af20580eb3d48e60d7418b107e1edc7dd496a2aca2"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.Copy.cs",
+    "bytes": 30972,
+    "sha256": "4f1f793e5931313083670c090f491cba482e227903b432e8503c48d829d53939"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.CurvedSheetPartition.cs",
+    "bytes": 7305,
+    "sha256": "6d6d35adcfe5c36feb10e80f15c55603f93ecf6abfd0ba9a299baef1ee488a23"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.CylinderConicLocator.cs",
+    "bytes": 7211,
+    "sha256": "51841aac3e79c94fb55d078e01600a3f10e327f5ae7547bf2242027a814cab64"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.CylinderPlaneCutEvents.cs",
+    "bytes": 11218,
+    "sha256": "0cde0936a7fb6f988cb175bd9f2c7a10409fbe515356e64d932ec5a65c481f16"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.CylindricalFaceExtent.cs",
+    "bytes": 20244,
+    "sha256": "555ad5f6189b57ead1e78a9fe13e535caf511109406f198bc87b42b069777ab9"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.EdgeSubdivision.cs",
+    "bytes": 6370,
+    "sha256": "b541a91b0274a9172ff073a3b6b86007b0bedb03737d35885fd7951074df2cf7"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.EntryPoints.cs",
+    "bytes": 33980,
+    "sha256": "5ea47b3d1f6e7ec93042bf3def3391e49eede32f08570cb7552eec78651a2d2c"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.Evaluation.cs",
+    "bytes": 21235,
+    "sha256": "bbc292ee729b96a1b5cf106f9d151abf9d93581eb00859155582f13690f600d1"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.ExactGeometryDistance.cs",
+    "bytes": 4075,
+    "sha256": "7aeb5bbbfa194eae79ca0c3a73ef20937cb31bc8321c2fc03adfb6f08f79cdfb"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.ExplicitSpineCurve.cs",
+    "bytes": 2151,
+    "sha256": "d2985373be1afd11a21d64ef76bb4a1dfffe77d4324d410819196df915f14ab9"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.FiniteBoundary.cs",
+    "bytes": 8544,
+    "sha256": "030b085ecd4c7409853fecd93e9d5dde616d15ebceeeecd26315a24d3861f99a"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.FiniteIntersectionEvents.cs",
+    "bytes": 29968,
+    "sha256": "c18dfed8ea71a0c4c1a7635bffe683fbd5463c683bdaa044b51c8b6e146f5abb"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.FiniteNurbsPlaneSeparation.cs",
+    "bytes": 5077,
+    "sha256": "5ddf82b31e5300385eb94971b47928a84a3455d638189a93b05f6adedc7155aa"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.FinitePlaneSeparation.cs",
+    "bytes": 3619,
+    "sha256": "09eb72266eac31904b5852c52dae249bc60bfaa35b90d9a80d45bf767157e418"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.FiniteRegularBlend.cs",
+    "bytes": 8921,
+    "sha256": "1828c4dcd03917790d21467266ab0b54f4cc5c3758b9a9182c8a359d38612839"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.FiniteSectionChart.cs",
+    "bytes": 5958,
+    "sha256": "f0b36014b95f620e733dc107d097a232ab48e238c0b22957b9b81df6ae0cc5a3"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.Freeform.cs",
+    "bytes": 26823,
+    "sha256": "e826e32654ff7eb9e0e62c62f6f6cef83575c4657e5e1b123b876aaaef84f119"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.FreeformBodies.cs",
+    "bytes": 36805,
+    "sha256": "7500212302462d6f97bd77ca85b9f57145cd644fdcc1eb354739fcffa69262ef"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.FreeformCurves.cs",
+    "bytes": 9722,
+    "sha256": "3841363702347f38d3decad0c9b0f264e39e76d8ed2a4f52092250aa9dbb8ad5"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.FreeformGrid.cs",
+    "bytes": 12369,
+    "sha256": "1b4d7b5b438fc88ae44f0ee496bec4fa8cd621c01bfa1949bc87aab142847b2f"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.FreeformLoftCertificate.cs",
+    "bytes": 10193,
+    "sha256": "15f62678af777b0e65034ec64d55d69f9cbec3c641c05a35ababce1af6475cd6"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.FreeformSurfaces.cs",
+    "bytes": 20000,
+    "sha256": "9b6d3b77b712d018497a330c644a1d6381c6f22ad18f6bf3e122aa56b2fa0214"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.FreeformTolerant.cs",
+    "bytes": 7122,
+    "sha256": "08fa7a8465979213b90bb608a767729233dedc9e3cd2ac6d3e7e5d66f19e6ce6"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.FreeformTracking.cs",
+    "bytes": 4655,
+    "sha256": "b80200b212f240d63100fcf023bd6ccf386c13f66b0c99301ae9ac64d87ce6e6"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.Functions.cs",
+    "bytes": 4897,
+    "sha256": "7d5e977967798dd6ff07f766f5059440410857d8d9fbe0e2253b35e35f95d474"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.GeneralCurveIntersections.cs",
+    "bytes": 8906,
+    "sha256": "0e3d4ea282a1905b2d07a23b898394fea9689fc5801323d4067fa33b2c65fdd6"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.GeneralIntersections.cs",
+    "bytes": 38679,
+    "sha256": "c08f836951216130bc8218bfadd98c96e6933dbc5e12a63b82550687386178f4"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.GeneralSheetPartition.cs",
+    "bytes": 13959,
+    "sha256": "3946a61678adfdd300e8433293301cfc8ecf539a7a51725b4791f58cac9091e0"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.GeometryCreate.cs",
+    "bytes": 56016,
+    "sha256": "53aa37f6ec2190bd9d048f229fd4e8201e5867d8f7eb7ae616f501a7e5332348"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.GeometryDependencies.cs",
+    "bytes": 6372,
+    "sha256": "70468e42ac66b2b14ac5384f9b10d34db9b344f5212c427e067c5df308257382"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.GeometryDistance.cs",
+    "bytes": 13079,
+    "sha256": "c9da2045b43f2f9497d7c8d2f501a0d36e3745969490b61c005afbb7b9eadff2"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.GeometryDistancePairs.cs",
+    "bytes": 16978,
+    "sha256": "21c0cbf1639037827721e7f5b1cf3c05df85128d80b0de889310011ecddff944"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.GeometryManagement.cs",
+    "bytes": 11080,
+    "sha256": "26764778bbfb1d518c37c668448c713ce48968ba746bd3f716ffce0178c298b7"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.GeometryOwnership.cs",
+    "bytes": 11982,
+    "sha256": "70c58b23a43c25960f602899b321d2743b517192389ef3113ead7043b2a3e290"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.GeometryPart.cs",
+    "bytes": 6318,
+    "sha256": "037b8b93f5c2f3c71863d481f1acf668fc78e0c351f83fe7817b71217f672448"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.GeometryQueries.cs",
+    "bytes": 15364,
+    "sha256": "19fdad24583ab83e3546e088705e38b3b87bf8f021dac3d1aec952384adf8364"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.GeometryQueryEntryPoints.cs",
+    "bytes": 4262,
+    "sha256": "5fc1edfeb938c0e99320ea969b6e3f673487b8de4ef74629218d9af46d7850fe"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.IcurveBSurfaceXt.cs",
+    "bytes": 12279,
+    "sha256": "210bed7bea3da1d81c52ae0be745577f7d85e174ebaa7d8ffa01df03f48d37f5"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.IcurveDecode.cs",
+    "bytes": 10589,
+    "sha256": "f6d996504f55a20e76a5a36326fa65f426836f5ce04e6904a7ec0bfab2a15563"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.IcurveWireXt.cs",
+    "bytes": 16299,
+    "sha256": "c393333440816e7eadb3d4a374615a6c812fa5da0a3cf4b811fb11421cd8c5c1"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.IcurveXt.cs",
+    "bytes": 19969,
+    "sha256": "ed2b3f34a76b130382fb10d04098168c7f53d8c296b5f7fd1d9cb4daa8a97b05"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.Imprint.cs",
+    "bytes": 10886,
+    "sha256": "86b175a6372bd282a521df8eed287808c10175ffe4a59a5c96bc47ae16930fba"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.IntersectionCurveExtent.cs",
+    "bytes": 5803,
+    "sha256": "84950adb3fee47b28061386fc299a9b9131630249ffee8b0429d3806fcc5a645"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.Intersections.cs",
+    "bytes": 51457,
+    "sha256": "fac86dcd30e523bb8be2e1feb6177a128fd14e8a831784abedbe96d8091a528e"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.Analytic.cs",
+    "bytes": 11329,
+    "sha256": "1d5dab2e8dc73eff51586a88fee7bd4bbfee624e49e0d23328111068ca1786f6"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.AxialBlend.cs",
+    "bytes": 7954,
+    "sha256": "3bb2ca7725cae5976ba7899c9a605f296754de6e79f85b051f7094ba107ec65a"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.Blend.cs",
+    "bytes": 13544,
+    "sha256": "5c6cf6c77f3633668d496374cd092d89b67e9e03faf9eb4da6f064b87e5a88b0"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.BlendChain.cs",
+    "bytes": 22567,
+    "sha256": "d8ae1cee4bf801d249542761fefb60fdaa3e6b036e4c2c214b811a644981feda"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.BlendCornerBrep.cs",
+    "bytes": 14607,
+    "sha256": "e1fadaddb7bba552327d393f60ba90b69e973f79629f27189cc037f8b012afcf"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.BlendCornerEvents.cs",
+    "bytes": 6299,
+    "sha256": "b12a147fe8489dfd0e5f4dc8fbf157d84530602d7dc5cc40f5bed287a607e2bc"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.BlendCornerGeometry.cs",
+    "bytes": 9052,
+    "sha256": "70df41dd8994cf752c60aab158b3f871cd749a990394ae4208bd92062d51ce8e"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.BlendCornerValidation.cs",
+    "bytes": 28668,
+    "sha256": "128fe78d88141510f2fa22fa6889cd23d5eaff68c0b9cbf63224d99ad8e54d70"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.BlendCorners.cs",
+    "bytes": 20075,
+    "sha256": "3c1e8514a4a6c3ef06e01fb30268d95c0815986351b778805f2b08fe26f79d88"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.BlendSupportChain.cs",
+    "bytes": 27773,
+    "sha256": "6b35d2e9570ef4e4e8cf07f63b49e6574f02324b6062acc72974ccb0995654ce"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.Brep.cs",
+    "bytes": 20214,
+    "sha256": "46f01db175201274568d2980cbbb72fc9dc3b2b3a5fa44ddf898a99502db2bbf"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.Offset.cs",
+    "bytes": 12811,
+    "sha256": "2803c45372675e0241b5ef1c74071f078e44806e561abda45bf966b925f687ef"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.PlanarBlend.cs",
+    "bytes": 24925,
+    "sha256": "9db631cb89d89f2d3b95cbedadf1a9ad13105b84c91b193ef1189c84aece5ee9"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.RegularBlend.cs",
+    "bytes": 29937,
+    "sha256": "ccc28d26c0d34b8cbb7760e869309848a68cb3dc590f55ff28ac75e5b4fd259a"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.RegularBlendValidation.cs",
+    "bytes": 20349,
+    "sha256": "76ef6dc59159901d608634723e6ca809eeb300b76ed29ecc0aa0909213e49496"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.Topology.cs",
+    "bytes": 16082,
+    "sha256": "2949b198156860ddb76b53e3fee8a3a4d5b7e263cccb84e4329e40ed29a8f558"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.LocalOperations.cs",
+    "bytes": 11358,
+    "sha256": "8a45ebd2abac594c83debd64641c7322e324767147dc4182825d0c573581f4c6"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.Memory.cs",
+    "bytes": 22647,
+    "sha256": "1081b42e9593c74cc043cc37f74b4e788e57a672ce4c6e49c5d576619ee60d99"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.ModelingBrep.cs",
+    "bytes": 18430,
+    "sha256": "24c05ee3f23db1152933237a7fa4cea07e4f678e2e138a6dd84e1b29d16661fe"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.ModelingFaceCopy.cs",
+    "bytes": 7165,
+    "sha256": "caa7ee3da95838c6ebf822d1ea8e0e2df0842dfd3cb70c18c6c3d9dc6b5c1c1b"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.NativeCutLocator.cs",
+    "bytes": 31160,
+    "sha256": "bc0d135206092facb05eee848018ffb7023d0d2045ae6e6a2e704ecb227eb73c"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.NativeSplineBoundaryContact.cs",
+    "bytes": 16036,
+    "sha256": "e8d8dc2b9e6d55933d18145d7c25769bbabbc03bf45cc35bcd589dfb814fd08c"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.NativeSurfacePairEnds.cs",
+    "bytes": 4930,
+    "sha256": "4b15f332ac05cb8bee376b2afddbef8d412e6af93f8cb0519a835ad56c9a6d66"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.NativeTripleSurfaceRoots.cs",
+    "bytes": 8238,
+    "sha256": "a2275fa904ec1f7a1d096b2abc2952a87412b8e740917b9524a069a42c1f9fd7"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.NestedBlend.cs",
+    "bytes": 22385,
+    "sha256": "6b3dadd3a2587eeaae5fb365149443f0a1e967123a18368bec3fb83bda010ad8"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.NestedBlendCompilation.cs",
+    "bytes": 33634,
+    "sha256": "f68c94f675a3adac619f3b60358f96c6405fb3dff26d2e83e7400058cb7f70c8"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.NestedBlendConstruction.cs",
+    "bytes": 19175,
+    "sha256": "0192233a0c109a6b37ede9ac8162ff16b829885726e244857f94e782c1924e4e"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.NestedBlendTransform.cs",
+    "bytes": 3758,
+    "sha256": "f900d038aa1cf355fc57adc8e47c3c0d77553a8e41f329be2331369f48676d72"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.NestedBlendXt.cs",
+    "bytes": 9347,
+    "sha256": "50672c9aefa441041c1fa04e985fad2a395171a51076710a069c7b60bbbf7c50"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.NestedCurveArc.cs",
+    "bytes": 17675,
+    "sha256": "80d57471a2bb04fbf81aca92d8230404020a08a84b9732731dbe16dee3869f25"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.PartGeometryQuery.cs",
+    "bytes": 2090,
+    "sha256": "507b4c69b85213c3c665c64e49e733d669da09337b953b606aaabfed9315910d"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.Partitions.cs",
+    "bytes": 26208,
+    "sha256": "bb1f40a71aebe6d4e01cb72e5247812f359c697b18a5cb20822a64983d169ae3"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.PlanarArrangement.cs",
+    "bytes": 20064,
+    "sha256": "f1017a42694ae6ded2b6258ec87381e308bc04ac35625891eed52bcee0e43fb2"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.PlanarComponents.cs",
+    "bytes": 11032,
+    "sha256": "cfce644551d03496004fa301a2b91ea875d5f0b890ba672fcadffb9eeafb0de8"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.PlanarCurveWinding.cs",
+    "bytes": 3350,
+    "sha256": "86c42d1b6e8ff56b0149cff06cc5c20f4d04016db8966e3acc63daf9cc70fbf9"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.PlanarReconstruction.cs",
+    "bytes": 19792,
+    "sha256": "0c0f41eebed6e07d46dff311221931c217031aee7afd28b4efc5265f05b28d7e"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.PrepareEvaluation.cs",
+    "bytes": 19406,
+    "sha256": "b1a1cf077a6b568da6c65b29817d5d0a71a1c0bf2bd368e46f05e5ac2ea6ad67"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.PrimitiveLoops.cs",
+    "bytes": 1264,
+    "sha256": "fe26ced75937a9131b8fd598239d2b27a89c4c80c29e485e7291a379cb836bba"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.Procedural.cs",
+    "bytes": 2524,
+    "sha256": "4c21d6cb57f0bb31c2303cc1bee725e026f5a6fcb80feb112797fbc8932cc137"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.ProceduralPlaneRoots.cs",
+    "bytes": 3621,
+    "sha256": "0bced58a507db6513887ba066b7844c31530eaf7ff5a070f316508a854b1d7a2"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.ProfileCheck.cs",
+    "bytes": 9306,
+    "sha256": "63e68f41d45389722399115ab70a45d6f68cb86747f762f4df5fc4f06d3d7116"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.ProfileCurveBounds.cs",
+    "bytes": 3827,
+    "sha256": "300fc3b5e40ab37373ee4a9c57c7bb31379b44329e4d9b20a342373a7bfea10f"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.ProfileFaces.cs",
+    "bytes": 27882,
+    "sha256": "3532d840c9a5dee8bf7787bae720826b8166ff28fd402786ccc0b2f8dccaac37"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.ProfileIdentity.cs",
+    "bytes": 5078,
+    "sha256": "2fd00b5c4f4f362433591a6b31abfcdac48d8dad360b0627af042758ffda6fb8"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.ProfileSplineSweep.cs",
+    "bytes": 4745,
+    "sha256": "da4365b59d4a2fcb22c8775ef434cb90b2e39adf6a441165a739576d7d79ec22"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.ProfileSweep.cs",
+    "bytes": 35462,
+    "sha256": "e047405475548c5def41a579be30093f54fb67c35050de859b161a3d905d497d"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.ProfileTracking.cs",
+    "bytes": 2879,
+    "sha256": "861beb2e034ec3facf13964139293a789ceecca3572baf86f75a50ae415c4f95"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.ProfileValidation.cs",
+    "bytes": 13381,
+    "sha256": "ca34762346b08503debe9612d188d78f8fbd48c41e3a0098ff18e626d32c8cdc"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.Profiles.cs",
+    "bytes": 17064,
+    "sha256": "2522e91e5ae7348f552fa27fceecbb9047c17eaf32bc55f2a4c223b8df482ebb"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.Projection.cs",
+    "bytes": 10437,
+    "sha256": "22f8cef005a7146ff436c76f38a81f5957df1d38c34be07056d209491b74c3a3"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.RationalBlendContact.cs",
+    "bytes": 8417,
+    "sha256": "3324019b27023f82957ce1559d048aa6a54b7c9537af15fc2fb43d61a0db0432"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.RegularBoolean.cs",
+    "bytes": 21167,
+    "sha256": "02b0b4568f3f8ebeb80da48f1056e1c25cc90e9b9fb0b7cde036cd63a419e917"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.RegularBooleanBuild.cs",
+    "bytes": 19872,
+    "sha256": "e78bc47545530c658e9ad8f8e4d0d40f7180a2398d25b9a43451fd0742d0ffb4"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.RegularBooleanCuts.cs",
+    "bytes": 74131,
+    "sha256": "567e6f2b59b152854d2b3df56ad30537e41630021e10e8730a2bb81bbd671d58"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.RegularBooleanMerge.cs",
+    "bytes": 9469,
+    "sha256": "ac36864350768e87672ae6612822bf765a8c39a36cf897dcf7257d2823389b6f"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.RegularBoundary.cs",
+    "bytes": 13477,
+    "sha256": "c94750c93eb003e8ad2d7b7ff63d02b3ec037483f42e01cfe4a6350f7820a7c1"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.RegularCellWitness.cs",
+    "bytes": 1807,
+    "sha256": "b5737b6828ed95e109d5f8be043deb0b2c28950e0b1c69f55fe9eaeb01e3b889"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.RegularClassification.cs",
+    "bytes": 13915,
+    "sha256": "6282c51c4f5ab6935028a6f00cc57c15e0e42c6575edf57787bb19f406c8291a"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.RegularCurveIntersections.cs",
+    "bytes": 23689,
+    "sha256": "002784ee8c7fd0e03393407be0b3a2f7e6997dd3e90d93e4791b6e1a20c02136"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.RegularCurvePairRelations.cs",
+    "bytes": 9495,
+    "sha256": "fbc5810cc4a76de1d6dd04a6b610199b74bc9046dea2afcdbaf0cabfd8964667"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.RegularFiniteBounds.cs",
+    "bytes": 3606,
+    "sha256": "79a7b5af47344a5792db2ba7205e022d1f0f89a672fe0120e05ccb1e81d0b01c"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.RegularLineContacts.cs",
+    "bytes": 11653,
+    "sha256": "79607a1e28f97aaefb95b96f767e382cf1953952abbcfe15efe1c62186a1f38d"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.RegularPointContacts.cs",
+    "bytes": 4664,
+    "sha256": "29313a47e4396d3e79ec3b49c3de3425e7a71e213ac572ecd8cb2d5be2e64c55"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.RegularSliverReduction.cs",
+    "bytes": 23810,
+    "sha256": "544ef5e04de0ce7138072bb27712318ba5de7413f2b1e667afa6c9cf07fd2bed"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.RegularSurfacePatches.cs",
+    "bytes": 8489,
+    "sha256": "6c68c64b59af1149bdd8761a8b5bfc42a0c515a11d32cbb321c69c38071ec816"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.RollingArrangement.cs",
+    "bytes": 10332,
+    "sha256": "ab5c61adc6652b1cae98f4b6a886ff7aec022a94fc5ab9af32309cf57fe62df3"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.RollingBlendContinuation.cs",
+    "bytes": 4119,
+    "sha256": "9ea41aa96c87d64fb47bc444189e730ddb8d4a64390c88af928038788d409555"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.RollingBoundaryReuse.cs",
+    "bytes": 9262,
+    "sha256": "646ea773e7321461d899cfa37a36a20320524ee8112e66ef63b4aae6ff268728"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.RollingMeridianLine.cs",
+    "bytes": 9642,
+    "sha256": "454764989950eb4bf668bc08b457f28c25e54fdc080c8636218c60f6f8c8c6d3"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.RollingNetwork.cs",
+    "bytes": 20147,
+    "sha256": "c6820288a27d9e8827fccc2879523f8188e45f04a275e22b3682dc2af751677f"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.RollingPatchDomain.cs",
+    "bytes": 13945,
+    "sha256": "113683aea42a055a61ad62f6ef8ae897f0de0844081208bc2014e2544b404e98"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.RollingPointContact.cs",
+    "bytes": 11920,
+    "sha256": "b6c4d5fd4176a417865e9b89430aff58943985ec93e1e815027e926e86dc947b"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.RollingSelection.cs",
+    "bytes": 11611,
+    "sha256": "9311a0818c365502a6270843449810b91423932c21a17fc1b02c552ca510e521"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.RollingSubdivisionCaps.cs",
+    "bytes": 12255,
+    "sha256": "8cb5ba12134349740c9509550ca0b70767d6f5091ab01a72a7abe87970b2286f"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.RollingSubdivisionStation.cs",
+    "bytes": 4134,
+    "sha256": "93088fce0356436b6ac5a192d75a2d12be4e953753a7f63c2f08a6c47665d699"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.RotationalBoolean.Build.cs",
+    "bytes": 17128,
+    "sha256": "25c23e4abc684d1e05fc64a3784ff40cc6820194bef60ab67249fa0bd267668a"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.RotationalBoolean.Classification.cs",
+    "bytes": 3189,
+    "sha256": "628e80d0187cd545546c9cdd0fc55e7033d1fcdd8a08114725bfd5cc57795bbb"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.RotationalBoolean.cs",
+    "bytes": 23695,
+    "sha256": "53065691305ea12f9b202688e783810606e7ddd71e537b5c59f1b83869a39949"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.RotationalSection.cs",
+    "bytes": 14983,
+    "sha256": "a4e9980f8f85366e454cec81661e9788e5750395ba7cfc62944d05f58461faa4"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.Section.cs",
+    "bytes": 14169,
+    "sha256": "0879e847488048111dad3c73f8947fd29b229f186376b7219a31e4c76cf6e67d"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.Sewing.cs",
+    "bytes": 20666,
+    "sha256": "ce169b550022e21a9cea941007e710a6a558658aa28d7da331ea66ae04aebc40"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.SheetArrangement.cs",
+    "bytes": 55188,
+    "sha256": "678a4d7123cbb2c6fa2fbde41ee47487bc0259205e275c861fa767df5977cd1e"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.SheetArrangementGeometry.cs",
+    "bytes": 25676,
+    "sha256": "3a33afcd36f9a3997e9c1459482290a6353d55c208755f07511ec02a6645b978"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.SheetArrangementLoops.cs",
+    "bytes": 9252,
+    "sha256": "dca59d5422f0a63d2d3e55c02979040ac3faec1d847a020a949756a8ccae3c49"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.SheetIntersections.cs",
+    "bytes": 16139,
+    "sha256": "f442aeb774246e6a4e9657c4d33b4672270dad4a5c935fbb8bb74f2b885f282b"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.SphericalFaceDomain.cs",
+    "bytes": 12992,
+    "sha256": "5f370213ecf3bb6efd114a77ebd281cb2e05679778136e05e7a69d57fee4b502"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.SplineEditing.cs",
+    "bytes": 10291,
+    "sha256": "4ad625bf1694cd8c50d111dfdad57d2f674277a8a440819c2c4cece0769d0056"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.SplinePlaneCrossing.cs",
+    "bytes": 11230,
+    "sha256": "407a49fce74f8ad24fe8ea59cabe81b15ab6273cb8f30a8cae664db9b0ff7dc1"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.SplineSurfaceEditing.cs",
+    "bytes": 6858,
+    "sha256": "ee938941bd6cc1b2809e80ac23ccb3605a3fcec3289e69da61d498b8aba6706a"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.StationaryBoundaryEndpoint.cs",
+    "bytes": 14604,
+    "sha256": "08bca2dbe6e87a0258e11447711ffc9cbd90a48bdb64a174a6b69bd049f01765"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.SupportCertificate.cs",
+    "bytes": 5690,
+    "sha256": "d7ef24be3b9c39ac269468447869d065e1ab745ee6f21eae4c3612a2aaa2c5da"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.SurfaceBlend.cs",
+    "bytes": 8156,
+    "sha256": "2d4dceb3538e2143e5359ca1085ff13a174f716e6d801ba4ee278f8d42ebec52"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.SurfacePairRelations.cs",
+    "bytes": 16880,
+    "sha256": "86943f5e26904dfd0321651f65ac22ee433fee4883e8c6550b07595eded82098"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.ThirdFaceEvents.cs",
+    "bytes": 15604,
+    "sha256": "1e46c23e138721e96cfb0ce4faa18b30e76cab2b373051aaa7e07c025044c8fe"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.ThreePlaneCutEvents.cs",
+    "bytes": 13228,
+    "sha256": "9dbc423ef235606f68665d2b5eb38662453a65f79765891dc5fae71263cd8520"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.TopologyQueries.cs",
+    "bytes": 10913,
+    "sha256": "3fee4d38534a02b8277e12ec18f6ee5a169687214f96495e856107c632614c10"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.Transform.cs",
+    "bytes": 37640,
+    "sha256": "f2095d8caa828da20848f8aabc7916b78cfd3620c1c2a79647b7c762e91031c9"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.Trim.cs",
+    "bytes": 4969,
+    "sha256": "4f36e16c918f87d7b47b8ebda29b100feba63b702cf171ffdd5287edfaca67ad"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.XtBrep.cs",
+    "bytes": 16157,
+    "sha256": "8e03615536ec6dc0d0107fc09c0e402ab903741ab01de49bf2b59fccbb37cb4d"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.XtBrepGeometry.cs",
+    "bytes": 15425,
+    "sha256": "133ac7e219a996b4d80abad533f395d717bad5d04685d7c1cbb2b4987c7595ea"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelRuntime.cs",
+    "bytes": 198876,
+    "sha256": "beb26ac90a12f2bb40e7bfb71d1c87a8c488af58e98854af5055dfeda972f54d"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/KernelTypes.cs",
+    "bytes": 3872,
+    "sha256": "f09cdc3f857988dc85dbc0446e6c9f64b5f0e3fcaa9dd6f4f8ed8520dd3e6d5a"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/ModelingPerformance.cs",
+    "bytes": 13543,
+    "sha256": "23423bb830d24d4e7c6443e52369bc6216acfcd98d1b94c61241957cd14ca5e9"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/PagedEntityPool.cs",
+    "bytes": 12298,
+    "sha256": "e7526d4feafac6b5457d5b1ca4e505226efff3fc20e2282a11a5b5fe4229380e"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/ReturnAllocator.cs",
+    "bytes": 10710,
+    "sha256": "798c8fd2635f42110cfc2e1cf23ae5e9b4727477afae9df44ef1288f9f62e16b"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/SessionData.cs",
+    "bytes": 20032,
+    "sha256": "4be6b079d09ebdafc25c2a68acda8d32a687e94df44cadd1106c34934bea1b61"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/SessionMemory.cs",
+    "bytes": 4993,
+    "sha256": "127cccffa906543552da2ebc9948a6dda474f60d61ac45052c436d06199181cb"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/StableTable.cs",
+    "bytes": 2920,
+    "sha256": "095b8608268905462b81ed3f41fedbd14b545266f8e021910583b3581cd79d9b"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/TagMap.cs",
+    "bytes": 6339,
+    "sha256": "cd143f6c05fac501b036249fd8f180406217032045c3abf1475021e96c21b035"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/TopologyRecords.cs",
+    "bytes": 8669,
+    "sha256": "5117f6abd9d80554f3e61e5d1b25c2f1a9e3502fde414979e1a918dc65b6495d"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/XtAssociationTable.cs",
+    "bytes": 2107,
+    "sha256": "dfdb782256e102b64c046cb3827acdb7ea884718a00ee4be9599d86f9cc085aa"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/XtCompatibilityAdapters.cs",
+    "bytes": 4845,
+    "sha256": "ee170799fa33a9ea594dce0109214450845b9c75772d4cb037fd14fb2e6eb666"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/XtCorpusInspection.cs",
+    "bytes": 13098,
+    "sha256": "541903f518ea1dd282e19a099de74d4104907f3457fc357ec69929cc2f8fe4a0"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/XtManagedAliases.cs",
+    "bytes": 1267,
+    "sha256": "e02179b63af93c6b830dd1658e87751079ace3f890a0d215e3b54d6d8b60ea19"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/XtReader.Brep.cs",
+    "bytes": 21931,
+    "sha256": "0024f69625530a4293f1348aed8aaa293c80b7f012ae2159e6ec8c8706bbdfea"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/XtReader.cs",
+    "bytes": 6408,
+    "sha256": "f459954d01f9c96a0751cdab923d6a71dd8d27722a7cab9eb4f88807d596e586"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/XtSchemaRegistry.cs",
+    "bytes": 6098,
+    "sha256": "9b7d0e225a11c80663499933ec6eb86d53287b3f0395ef648b90c4bf31266dfc"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/XtWriter.Display.cs",
+    "bytes": 6065,
+    "sha256": "6992b6536f9a94eaf5f59b7deead471babc9d2409877cb30abfcf8426609c113"
+  },
+  {
+    "path": "src/ProjectGmKernel.Native/Runtime/XtWriter.cs",
+    "bytes": 90845,
+    "sha256": "f5a2f1139eb88a9dc395373c805b45ea20deef9ed9135f633c922bec90086fd5"
+  },
+  {
+    "path": "src/ProjectGmKernel.Xt/Generated/XtBuiltInSchemas.generated.cs",
+    "bytes": 1575700,
+    "sha256": "2275380e6a88195f901c5abc3725b6daf44c45407cece35c9c2181816c1c464f"
+  },
+  {
+    "path": "src/ProjectGmKernel.Xt/Generated/XtSchemaBindings.generated.cs",
+    "bytes": 15799864,
+    "sha256": "af09ecfe8ca5b076df8eac735b86a1e10c9dd8793190148d81117d57655f64c3"
+  },
+  {
+    "path": "src/ProjectGmKernel.Xt/GlobalUsings.cs",
+    "bytes": 1742,
+    "sha256": "bf93c2b43230f31126964605a0a73ed20fedc6c78c32567bf2e21d53ec713b2d"
+  },
+  {
+    "path": "src/ProjectGmKernel.Xt/ProjectGmKernel.Xt.csproj",
+    "bytes": 2050,
+    "sha256": "82b7e497531de813cf4271eec41ea40365aa471776f2bfebe3ddbd29a9d6b355"
+  },
+  {
+    "path": "src/ProjectGmKernel.Xt/README.md",
+    "bytes": 413,
+    "sha256": "c94ffd99aad3ffd57e801ef34ab25ce5d46c2fa20c6138746b7c0039af54bc3f"
+  },
+  {
+    "path": "src/ProjectGmKernel.Xt/XtCodec.cs",
+    "bytes": 47455,
+    "sha256": "03403735901b0a975333d4c7448894a1bc19443ed57f84f1da908835d4d81898"
+  },
+  {
+    "path": "src/ProjectGmKernel.Xt/XtDiagnostics.cs",
+    "bytes": 977,
+    "sha256": "ddc08d44687b14d8b69450cae57139fc19c4cf410adf2f43d232940dcb43f8b3"
+  },
+  {
+    "path": "src/ProjectGmKernel.Xt/XtDocument.cs",
+    "bytes": 3350,
+    "sha256": "74f61a25aaf9a6ae6dbb6d12c0658496d84bde808bb620233952421dbe660385"
+  },
+  {
+    "path": "src/ProjectGmKernel.Xt/XtGeneratedSchemaRuntime.cs",
+    "bytes": 4506,
+    "sha256": "364e70c2f062e70f837c26169665852c3b10292de54e86e8f20b204d2bc592da"
+  },
+  {
+    "path": "src/ProjectGmKernel.Xt/XtPartGraph.cs",
+    "bytes": 16318,
+    "sha256": "36d83ca08d4c6bba0a594731e2e7d30a685188a4ca9886b24c1c93ac82774819"
+  },
+  {
+    "path": "src/ProjectGmKernel.Xt/XtSchemaCatalog.cs",
+    "bytes": 18946,
+    "sha256": "fb33019b52b10f2d4ac613ab4d47b052efdfcccb6200599d5f6df02846e51f43"
+  },
+  {
+    "path": "src/ProjectGmKernel.Xt/XtSchemaFieldTypes.cs",
+    "bytes": 7092,
+    "sha256": "4214b721a56bdf6b8191dcb0b2754aa2ae4f92caf871ff8a9c71e9535748ea7b"
+  },
+  {
+    "path": "src/ProjectGmKernel.Xt/XtSchemaTypes.cs",
+    "bytes": 1960,
+    "sha256": "81c07dd39c01732b083336e22d9492c0bb8d895adc70b946aecf4de8d4c828b7"
+  },
+  {
+    "path": "src/ProjectGmKernel.Xt/XtSemanticModel.cs",
+    "bytes": 7886,
+    "sha256": "574fd01b2457e9799d81fe043040fdb33ecf71887095b544480976b8fcba6c23"
+  },
+  {
+    "path": "src/ProjectGmKernel.Xt/XtVersionConverter.cs",
+    "bytes": 32486,
+    "sha256": "48241e98b218d87ca6f79672ac97c7d7b446ed51e9ea240ac7d9d85ee21d19a4"
+  },
+  {
+    "path": "tests/KernelTests/AnalyticBooleanTests.cs",
+    "bytes": 11192,
+    "sha256": "b87d7a76faff461eb774ab48ed28ccf776bbb9fe201a8121b02446f84c40a665"
+  },
+  {
+    "path": "tests/KernelTests/AnalyticGeometryApiTests.cs",
+    "bytes": 11252,
+    "sha256": "30a59272e567e480f010350947e8f3ecb2aa28d0997249747abd12eeb8e517bd"
+  },
+  {
+    "path": "tests/KernelTests/AnalyticImplicitTests.cs",
+    "bytes": 13708,
+    "sha256": "4f7b8b4598527b2036eb4ba9dc8004f0e373240606d9b72c2219fba9d9ba6f00"
+  },
+  {
+    "path": "tests/KernelTests/AnalyticIntersectionExpansionTests.cs",
+    "bytes": 4012,
+    "sha256": "c9fcfa37dceb7e3f158a0f642b1a44b2fa5f6ebbd9d49ee7068d264726c1a3a3"
+  },
+  {
+    "path": "tests/KernelTests/AnalyticSectionTests.cs",
+    "bytes": 6863,
+    "sha256": "8bb0f67e0c5ba25978ecfdd17a6cb5f210fb18161d1c33cbfb5da6147ab09171"
+  },
+  {
+    "path": "tests/KernelTests/AnalyticSpineContactTests.cs",
+    "bytes": 2766,
+    "sha256": "716f01d3440f97e75ce28dae330ff35d7f856d2081df79c0d6d825653f509a73"
+  },
+  {
+    "path": "tests/KernelTests/AssemblyInfo.cs",
+    "bytes": 154,
+    "sha256": "ac0584c1f09d233b199b62d5d77c19695da3f7d7b28d5201afc0ec3b9088f560"
+  },
+  {
+    "path": "tests/KernelTests/BCurveAnalyticIntersectionTests.cs",
+    "bytes": 12336,
+    "sha256": "0b929f8e98432e97acf7d73b0e087a8e878bb75099638025e7e42403b3b181ac"
+  },
+  {
+    "path": "tests/KernelTests/BCurveEvaluationTests.cs",
+    "bytes": 9911,
+    "sha256": "bee6b822447c910ccaa0159c379e9f48bdb1c06c5179baabdd4308f0e9385fdf"
+  },
+  {
+    "path": "tests/KernelTests/BSplineProjectionTests.cs",
+    "bytes": 3100,
+    "sha256": "d9d084bf578e1ba1b08b0d29f688acb23b6d950786315c6bd73294ecd0a359de"
+  },
+  {
+    "path": "tests/KernelTests/BezierPairDistanceTests.cs",
+    "bytes": 2943,
+    "sha256": "e606dd35dffe4eb1085cbbcd1208ee29500d1dc97ba2464709002a5122fd2c70"
+  },
+  {
+    "path": "tests/KernelTests/BezierSurfaceBoundsOptimizationTests.cs",
+    "bytes": 10183,
+    "sha256": "7235b581ed56ab2111a26fbe1bc4c42e41007397d4c28db74e10e723b6635451"
+  },
+  {
+    "path": "tests/KernelTests/BezierSurfaceBoundsTests.cs",
+    "bytes": 3650,
+    "sha256": "44787ed10846a18c3844580011219ea0bdcffda2a8ebb68b367ef54b92e997cd"
+  },
+  {
+    "path": "tests/KernelTests/BezierWorkspaceTests.cs",
+    "bytes": 2373,
+    "sha256": "72eb371e67f6a05a502e001d0a9b04b7e7684324905b3ae7f447e56ac922934b"
+  },
+  {
+    "path": "tests/KernelTests/BlendBoundCompositionTests.cs",
+    "bytes": 13598,
+    "sha256": "19d1726ec092025661c8286149b143471799cbf9b579ebad019c2922d85c9229"
+  },
+  {
+    "path": "tests/KernelTests/BlendChainTests.cs",
+    "bytes": 5678,
+    "sha256": "86aa74ca64d94a3a3ffba06ccaeb714819fc602172d717b1444a854abee48b23"
+  },
+  {
+    "path": "tests/KernelTests/BlendContactEndpointTests.cs",
+    "bytes": 4112,
+    "sha256": "13c5ae17b9159d6079035cd0574d305d153e4df4d964c403acfd0c8033180fd2"
+  },
+  {
+    "path": "tests/KernelTests/BlendEnvelopeSolveTests.cs",
+    "bytes": 6789,
+    "sha256": "8f0658b8b8b4bdfd2f2284f6ea7e24a1f95adbfb45039312f2c8b4ca32034e47"
+  },
+  {
+    "path": "tests/KernelTests/BlendEvaluationTests.cs",
+    "bytes": 23607,
+    "sha256": "ab97ec998cef5a11f464464b5f3103f542a31a30b5f79cfc177d6da976173597"
+  },
+  {
+    "path": "tests/KernelTests/BlendImplicitTests.cs",
+    "bytes": 9292,
+    "sha256": "7e009d4eeb730edbc58fb80bcca85fa9b25daf5da198ee6b344eea50b7afc718"
+  },
+  {
+    "path": "tests/KernelTests/BlendIntersectionTests.cs",
+    "bytes": 15555,
+    "sha256": "36f5549180214fb95c86fc6c7787532953eab962b87085aa4705887183856d23"
+  },
+  {
+    "path": "tests/KernelTests/BlendMarkOrderTests.cs",
+    "bytes": 3873,
+    "sha256": "a3bd8f045259509d65418c75f88dbf2a87d0b7a764fbcaecee07ca9b86ea8a6d"
+  },
+  {
+    "path": "tests/KernelTests/BlendProjectionTests.cs",
+    "bytes": 3795,
+    "sha256": "f3aee1d2c4892fb3ce100c9d2b39b60b0b8dcd1fee50db1eae7a057a3e02672a"
+  },
+  {
+    "path": "tests/KernelTests/BlendSheetPartitionTests.cs",
+    "bytes": 7319,
+    "sha256": "b248b7bed5a09c41e2efb482ff48693d046338cd5b3ab4f71405e31037c24af9"
+  },
+  {
+    "path": "tests/KernelTests/BlendSupportChainTests.cs",
+    "bytes": 10937,
+    "sha256": "a54b5fc00d8bc639be83eb98a449d90e340460f2aaa16bf7961c845b6e29c589"
+  },
+  {
+    "path": "tests/KernelTests/BodyCreationTests.cs",
+    "bytes": 2089,
+    "sha256": "07fba029e084eaf6a5753552403434a6f53213a90d7043f9fbfb30f38ffbcb92"
+  },
+  {
+    "path": "tests/KernelTests/BooleanOperationTests.cs",
+    "bytes": 7102,
+    "sha256": "d4df8961f562f844f10b8282de26846b23a9a2b38ba02402e50de1d489be9156"
+  },
+  {
+    "path": "tests/KernelTests/CompactBranchCertificateTests.cs",
+    "bytes": 21223,
+    "sha256": "17df15727e40812fde7cc80bf1d42253e90ea8cf8a3924e4562242d64a2587ed"
+  },
+  {
+    "path": "tests/KernelTests/ComputationFrameworkTests.cs",
+    "bytes": 10675,
+    "sha256": "753010f63c673da9b5f76dac8551ede005e7feb8173426ec6c8425587d514be1"
+  },
+  {
+    "path": "tests/KernelTests/ConicBlockLinearSystemTests.cs",
+    "bytes": 4217,
+    "sha256": "04a44f4aeb2a46e858c1cdeb2c8b40df56af0eaabf01573d0eb7b206999f76d7"
+  },
+  {
+    "path": "tests/KernelTests/ConicConstraintSubstitutionTests.cs",
+    "bytes": 5105,
+    "sha256": "79c97d1d85e3046b09b4ead84effec320f59c75dc6e217220d149bd34d4dabb4"
+  },
+  {
+    "path": "tests/KernelTests/ConicTubeSeparationTests.cs",
+    "bytes": 1006,
+    "sha256": "808180dbc6c0c9cd14d204feb6bc7e1c4fb085eeb7310964e786905d792322ca"
+  },
+  {
+    "path": "tests/KernelTests/ConstrainedSplineSurfaceTests.cs",
+    "bytes": 3021,
+    "sha256": "2d374f32e006855dfd0e39adb5515516437041031400aad8f8e034b262b3ec7c"
+  },
+  {
+    "path": "tests/KernelTests/ConstructionGeometryTests.cs",
+    "bytes": 18223,
+    "sha256": "fb824c8c6a0920d62bf475cfe09fa5cdcc2414f392825122ca1421104564e59b"
+  },
+  {
+    "path": "tests/KernelTests/ContactBooleanConsumerTests.cs",
+    "bytes": 7067,
+    "sha256": "7951af03f86442f11bd0ceab0acd6d773de7f183f0a7c2c8e9000714d8d434a0"
+  },
+  {
+    "path": "tests/KernelTests/ContactSupportCutTests.cs",
+    "bytes": 3003,
+    "sha256": "2472106ea6eda45d7f90a4e1f98d76330e1466459a9858ded422c34973a71201"
+  },
+  {
+    "path": "tests/KernelTests/ConvexPlaneContactTests.cs",
+    "bytes": 1746,
+    "sha256": "52c9bc09cc160b67d40482946407c7eae69ea987a4095c921a395b607e91b412"
+  },
+  {
+    "path": "tests/KernelTests/CurvedSheetPartitionTests.cs",
+    "bytes": 12914,
+    "sha256": "e4e2c561229aaa8b5e1f1b31d9b02929d94d5558cb4aa1622df4359e75c10e38"
+  },
+  {
+    "path": "tests/KernelTests/CylindricalFaceExtentTests.cs",
+    "bytes": 7110,
+    "sha256": "b66b50a801556f94f3f3afb97cca9769264232df59e051b4442ce8a073759bb5"
+  },
+  {
+    "path": "tests/KernelTests/DependentGeometryEvaluationTests.cs",
+    "bytes": 26773,
+    "sha256": "bbfe4bdf165c135da8265bf4a3d434be279772508f92f2c5defe336ee29dd98a"
+  },
+  {
+    "path": "tests/KernelTests/DisplaySnapshotTests.cs",
+    "bytes": 4615,
+    "sha256": "db427fccedf098c2a2278f47125c9ceca185d912f680c2983a9c87a415f7c669"
+  },
+  {
+    "path": "tests/KernelTests/EdgeSubdivisionTests.cs",
+    "bytes": 4119,
+    "sha256": "aa71e17afbb8339afb416a42089998720aae60b11db342ead553a9ae8627ef1a"
+  },
+  {
+    "path": "tests/KernelTests/EvaluationTests.cs",
+    "bytes": 7254,
+    "sha256": "f1fa64b5a4f48436c532ba65905461c08e6f0da950f4a7c18f03064abab21a03"
+  },
+  {
+    "path": "tests/KernelTests/ExplicitSpineTests.cs",
+    "bytes": 36074,
+    "sha256": "8c6116a89b9d6f0805603f065b40ed322deb9bb738858ff6ae5d880521b36c80"
+  },
+  {
+    "path": "tests/KernelTests/FilletInputClassificationTests.cs",
+    "bytes": 4990,
+    "sha256": "107981a0d1bbb929a0658d18ed3faa15543ebac63a7608868a7d9757defccf92"
+  },
+  {
+    "path": "tests/KernelTests/FiniteNativeBoundaryRayTests.cs",
+    "bytes": 8989,
+    "sha256": "0463ed913796380e81fe8f61e4c1cf5b3924fa9184363b41c2e06013ebd236b0"
+  },
+  {
+    "path": "tests/KernelTests/FinitePlaneSeparationTests.cs",
+    "bytes": 66738,
+    "sha256": "cc3cb354fcfbe6a7bec73bc08ca84bc9df490557f635923e6f517c75e0ff1985"
+  },
+  {
+    "path": "tests/KernelTests/Fixtures/generated-short-edge-input.x_t",
+    "bytes": 4617,
+    "sha256": "1b320d4c193e35089459c734ea749fc62b000e1dd53e825b5da86265cb02c326"
+  },
+  {
+    "path": "tests/KernelTests/Fixtures/generated-short-edge-native.x_t",
+    "bytes": 9175,
+    "sha256": "2ffebb17374e7fe21b2ac91d5076cf9f742693a4fb95ca6cd3f01fd5b91ed071"
+  },
+  {
+    "path": "tests/KernelTests/Fixtures/generated-short-edge-phase-input.x_t",
+    "bytes": 4648,
+    "sha256": "3b7af52e5f8a428d3bec19f3b8d3e049cd46090120db63aa8de38166155ee5c0"
+  },
+  {
+    "path": "tests/KernelTests/Fixtures/generated-short-edge-shallow-input.x_t",
+    "bytes": 4629,
+    "sha256": "24fc4a0747c0db7edc686cb9bb0427a68070297b48c51808302f601de021470e"
+  },
+  {
+    "path": "tests/KernelTests/Fixtures/generated-small-rolling-first-cut.x_t",
+    "bytes": 47226,
+    "sha256": "b1ec51e397d85bd03d236b8e556f8aae043d9dc96002f25b3ece3a8808cff41e"
+  },
+  {
+    "path": "tests/KernelTests/Fixtures/smooth-support-chain.x_t",
+    "bytes": 5380,
+    "sha256": "a9e66f1fddd486fc29cb6df5203fad1746fcee7453d3a8442f782b20109d5b9a"
+  },
+  {
+    "path": "tests/KernelTests/FreeformModelingTests.cs",
+    "bytes": 34762,
+    "sha256": "db7acf9aa3118d2e0fb369b33684a88aae19aa600f35c64ffb5cde0195af5209"
+  },
+  {
+    "path": "tests/KernelTests/GeneralSheetPartitionTests.cs",
+    "bytes": 7615,
+    "sha256": "851d359694107a3fd10741331133deffeee304ff4a8a820b9365da38739b4364"
+  },
+  {
+    "path": "tests/KernelTests/GeneralSurfaceIntersectionTests.cs",
+    "bytes": 7901,
+    "sha256": "90f205e5c6dbbf9a5e22def0876bb6e8618044b07374a8fee9f48b695b6b877e"
+  },
+  {
+    "path": "tests/KernelTests/GeometryCacheTests.cs",
+    "bytes": 14006,
+    "sha256": "ad01317b7a99ce00e05fb82d7f0a271ac49fb91392df7e905c67ee97dec74fce"
+  },
+  {
+    "path": "tests/KernelTests/GeometryDefinitionTests.cs",
+    "bytes": 12147,
+    "sha256": "cbcac98eef2234e008662d2e5f9d2df394de8981033eac79fa1e7a2096d0e4df"
+  },
+  {
+    "path": "tests/KernelTests/GeometryDistanceTests.cs",
+    "bytes": 8962,
+    "sha256": "0d40c9b40e878e3b81909e2f350bc5913d5c2998d839b591d5124cdca6964f63"
+  },
+  {
+    "path": "tests/KernelTests/GeometryOwnershipTests.cs",
+    "bytes": 5487,
+    "sha256": "cf6e8afc537ec7f7176bdd5aa1bc5d2fa47fdfabadc112f5ec5202be66ce96ec"
+  },
+  {
+    "path": "tests/KernelTests/GeometryPublicApiTests.cs",
+    "bytes": 32470,
+    "sha256": "b8337bcb482f8d4d352360ce9045e1af5e9003b6cd45f2bb95336f5cb8f25770"
+  },
+  {
+    "path": "tests/KernelTests/GeometryTransformTests.cs",
+    "bytes": 23687,
+    "sha256": "86068d9fb71a38dfbee01e7714b5003be9d440261b54ec9e43e5af46f1a2f7f3"
+  },
+  {
+    "path": "tests/KernelTests/ICurveSupportViewTests.cs",
+    "bytes": 9230,
+    "sha256": "601aa019dd18d55cf82e681454d6b7fefe5f7ec7e8fee245ba183e813d8057fd"
+  },
+  {
+    "path": "tests/KernelTests/Icurve5c7ReviewRegressionTests.cs",
+    "bytes": 5989,
+    "sha256": "f9a41b59e69bed68f7f47a44b5b9a474b1d70670011e1b324d6552f444711293"
+  },
+  {
+    "path": "tests/KernelTests/Icurve7ebReviewRegressionTests.cs",
+    "bytes": 4111,
+    "sha256": "838445123c19856ea9b901c070940f6d5a6ab26dc4f541e4a4b51d79c0efa73e"
+  },
+  {
+    "path": "tests/KernelTests/Icurve87aReviewRegressionTests.cs",
+    "bytes": 12173,
+    "sha256": "24c7798a285901ea0b2f19022844ffabc7833cde1d6503fcaec74ce5440c9c02"
+  },
+  {
+    "path": "tests/KernelTests/IcurveB85ReviewRegressionTests.cs",
+    "bytes": 8798,
+    "sha256": "eadfef088203cb207d106873ef3f21f2ab70ffc23a1156c8738e0b12d8a6aff1"
+  },
+  {
+    "path": "tests/KernelTests/IcurveBSurfaceRuntimeTests.cs",
+    "bytes": 34894,
+    "sha256": "1e744ad6b2bcaf6222f4451abbebb12ccd790a8e36a50df61a1ab75da005de41"
+  },
+  {
+    "path": "tests/KernelTests/IcurveCacheTests.cs",
+    "bytes": 10784,
+    "sha256": "5df58641fbcce8bba0b0875223439b9405beb3090172e87ac1979d3f0bfe4e1e"
+  },
+  {
+    "path": "tests/KernelTests/IcurveChartTests.cs",
+    "bytes": 11107,
+    "sha256": "9710c5c98e97bdd010aee768813e178d19129066eb7ecf214f46ce88c46640a0"
+  },
+  {
+    "path": "tests/KernelTests/IcurveConsolidatedReviewFixTests.cs",
+    "bytes": 29973,
+    "sha256": "337e3eae44af0ac87239dc98a99ec2425788b631f4226380be0ceae9a63058cd"
+  },
+  {
+    "path": "tests/KernelTests/IcurveContinuationTests.cs",
+    "bytes": 6958,
+    "sha256": "464a1b934d461f4acf9ec3e8c702055039de13a983b4fb05739f7dec11866948"
+  },
+  {
+    "path": "tests/KernelTests/IcurveCorrectionTests.cs",
+    "bytes": 12952,
+    "sha256": "4fae0f17f675e96165151df73a8ced8c138ba49e8c8c910a2741acd5abd1a997"
+  },
+  {
+    "path": "tests/KernelTests/IcurveDecodeTests.cs",
+    "bytes": 9743,
+    "sha256": "343476638e3ad8042dbed853af01939192d3a0dc71afe349f4013b748bbbfbb2"
+  },
+  {
+    "path": "tests/KernelTests/IcurveEighthReviewRegressionTests.cs",
+    "bytes": 6939,
+    "sha256": "83719c9216855362f4e9b3393c1bea931f6c876fda4cd215b7bee789da03c5ad"
+  },
+  {
+    "path": "tests/KernelTests/IcurveEleventhReviewRegressionTests.cs",
+    "bytes": 10209,
+    "sha256": "6037628dcbb59cc05c76d0d79bc7cf9e2dd119b27f4b7da592bd8cb4bb491146"
+  },
+  {
+    "path": "tests/KernelTests/IcurveEvaluationTests.cs",
+    "bytes": 10613,
+    "sha256": "b5c2aedce8aa71855bbf40e21cdb8b5f2969b46ff745bf46c8a89cab20b485b0"
+  },
+  {
+    "path": "tests/KernelTests/IcurveF323ReviewRegressionTests.cs",
+    "bytes": 8185,
+    "sha256": "df4550b935eaa6458ba1e7c42fdc5d3d3725cbdb67063765091d8e7ee3b1f6c4"
+  },
+  {
+    "path": "tests/KernelTests/IcurveFifthReviewRegressionTests.cs",
+    "bytes": 7127,
+    "sha256": "2e6ec0c7146a184417162d656876603aa94614608f6372a3e7f5a62801c09001"
+  },
+  {
+    "path": "tests/KernelTests/IcurveFourteenthReviewRegressionTests.cs",
+    "bytes": 6345,
+    "sha256": "158cf6ed81d1c82e6b5bf2911ae848d299623ad2299ba5c4056bdf4f0d7adb4d"
+  },
+  {
+    "path": "tests/KernelTests/IcurveFourthReviewRegressionTests.cs",
+    "bytes": 6701,
+    "sha256": "42e0be54b4d6765c0ebbdf030d21addded35465bf357d16bc2b24c80107707fd"
+  },
+  {
+    "path": "tests/KernelTests/IcurveNinthReviewRegressionTests.cs",
+    "bytes": 9130,
+    "sha256": "5075ef2cd5dd0bd14e0f0c30aae3645a543066fd47c17825212d212b30d40cb6"
+  },
+  {
+    "path": "tests/KernelTests/IcurveNumericsTests.cs",
+    "bytes": 14311,
+    "sha256": "ff4902cb6f048fe769b2504ee9b006c415aaf1178bddc263441dfd806573a90f"
+  },
+  {
+    "path": "tests/KernelTests/IcurveP4ChargeOrderTests.cs",
+    "bytes": 10667,
+    "sha256": "68c14c579cc4438cd08f4107163391e0167db5e5b15528c3917178e3e40de68c"
+  },
+  {
+    "path": "tests/KernelTests/IcurvePlansTests.cs",
+    "bytes": 13168,
+    "sha256": "ff6394fb84f32f7bc0509da097eb16220f94b05347a3e84cbbdab9edac7e1321"
+  },
+  {
+    "path": "tests/KernelTests/IcurveReviewRegressionTests.cs",
+    "bytes": 9115,
+    "sha256": "6c03de0c0d9e9638efc365609b27e9156232503faefff080da13a9c99e1442ee"
+  },
+  {
+    "path": "tests/KernelTests/IcurveRuntimeEvalTests.cs",
+    "bytes": 29668,
+    "sha256": "a281866bf9a39eb5713358201e98b597592126b12b0d4352814ceb391a47ab38"
+  },
+  {
+    "path": "tests/KernelTests/IcurveSeedSelectionTests.cs",
+    "bytes": 8715,
+    "sha256": "b4df52cb12f38ae0da60317d43f1138ee0573a85f789449abf8fe4b6d2708449"
+  },
+  {
+    "path": "tests/KernelTests/IcurveSeventhReviewRegressionTests.cs",
+    "bytes": 9138,
+    "sha256": "3eeafc240f8edebf66e5093769d24018bbd6a365730cced4e88b3eb6796fa432"
+  },
+  {
+    "path": "tests/KernelTests/IcurveSixthReviewRegressionTests.cs",
+    "bytes": 7221,
+    "sha256": "8e9e71382781af4f7e8e724b5d3372cd13c85572d5759ad3f90e8131781631b4"
+  },
+  {
+    "path": "tests/KernelTests/IcurveStorageTests.cs",
+    "bytes": 9738,
+    "sha256": "2bc39acbda3cc9e56a35f945267ecea8724c0d3007f86e8754529276598b4c64"
+  },
+  {
+    "path": "tests/KernelTests/IcurveSubnormalChartScaleTests.cs",
+    "bytes": 10308,
+    "sha256": "80d34c47855d6ec98e8cf653a47d26f133a6d8aa31e48a74387788e11dd1a098"
+  },
+  {
+    "path": "tests/KernelTests/IcurveTenthReviewRegressionTests.cs",
+    "bytes": 4516,
+    "sha256": "2d04b43c123fe792840fa39d8a6db139b81cb7761bb9e788d076f465bf0c4059"
+  },
+  {
+    "path": "tests/KernelTests/IcurveThirdReviewRegressionTests.cs",
+    "bytes": 7566,
+    "sha256": "bdbe76dd869b14b85353345b8e1b72840cd9585cbdfbb3d5515386edf6e1ac75"
+  },
+  {
+    "path": "tests/KernelTests/IcurveThirteenthReviewRegressionTests.cs",
+    "bytes": 7138,
+    "sha256": "04732607a3e9fc9afffa1a421a6e0d8bdaa016caade0ab24df24eda7dd9d1d55"
+  },
+  {
+    "path": "tests/KernelTests/IcurveTwelfthReviewRegressionTests.cs",
+    "bytes": 15038,
+    "sha256": "63444b963bcee6e49827df536b1f55d3d92e14130b175d4cba5bbc134abf240d"
+  },
+  {
+    "path": "tests/KernelTests/IcurveWireShellTests.cs",
+    "bytes": 17177,
+    "sha256": "c6898fc6c2e4e97412d8276b1613fc5c6ca059e24b1c2b94fce8d956db3a40cf"
+  },
+  {
+    "path": "tests/KernelTests/IntersectionEventBooleanTests.cs",
+    "bytes": 5211,
+    "sha256": "c557a6243b30af500bb9935b32a4b41c43e64ed5770bd1a4b6eb6c9202befcbd"
+  },
+  {
+    "path": "tests/KernelTests/IntersectionOperationTests.cs",
+    "bytes": 38195,
+    "sha256": "6217c1511a776e007239aa9805e45a72879d929b29d74d30d625d6413cf6654e"
+  },
+  {
+    "path": "tests/KernelTests/IntervalArithmeticTests.cs",
+    "bytes": 2224,
+    "sha256": "6d9a76cae12cef377d58f9b0ca54683847fb8a25b9ce3c23ab760f96ea3a3558"
+  },
+  {
+    "path": "tests/KernelTests/IntervalRootCheckTests.cs",
+    "bytes": 12744,
+    "sha256": "eb55679fef5bd7ca8fcb9be2a4e2e37637476e37c60969b8b2ca1e47a9bf05b3"
+  },
+  {
+    "path": "tests/KernelTests/IsoParametricIntersectionTests.cs",
+    "bytes": 14025,
+    "sha256": "0084d129f92c2da03d94d40d24cb3e7d028c444b4e3f998870105be851092993"
+  },
+  {
+    "path": "tests/KernelTests/IsoparametricBoundaryIntersectionTests.cs",
+    "bytes": 1557,
+    "sha256": "5d47fd9e31b15c71e6812885f35c4cf045a18c43bae59d863e7b5f0c7cedd832"
+  },
+  {
+    "path": "tests/KernelTests/JointSystemTests.cs",
+    "bytes": 13673,
+    "sha256": "999ba9a48627a1b29e6fdb0b5888b7693156df91beb60b9665164acccc819d97"
+  },
+  {
+    "path": "tests/KernelTests/JointTubeWorkTests.cs",
+    "bytes": 6909,
+    "sha256": "be05b4e10b24ff777f5a97720bd6f0c93360709f9e3faf7fd90a8be80d72b420"
+  },
+  {
+    "path": "tests/KernelTests/KernelRegressionTests.cs",
+    "bytes": 50239,
+    "sha256": "5b125291b4f4cf26bf72ef8bf8f0fd85f7b376282410aae0f1acb7d1821495e7"
+  },
+  {
+    "path": "tests/KernelTests/KernelTests.csproj",
+    "bytes": 1162,
+    "sha256": "dbcacc1c7092a7a953b1be0d51c038c1b87ae9731802b3ab4fa9caa622924a43"
+  },
+  {
+    "path": "tests/KernelTests/LocalDistanceTests.cs",
+    "bytes": 13383,
+    "sha256": "086ac93897223b68eb485843b5d16d3ddcf1aaa2bf84959920e5fa4301b4413c"
+  },
+  {
+    "path": "tests/KernelTests/LocalOperationTests.cs",
+    "bytes": 28789,
+    "sha256": "f6cd3f723069b95d9cc5660d49a920955eda91fa2ac93d36412617e184b7933f"
+  },
+  {
+    "path": "tests/KernelTests/LocalTopologyChangeTests.cs",
+    "bytes": 12872,
+    "sha256": "2c6a4d4ceff789bc4eca6745a32aab09efeb4b543fe052e161502a318f122c18"
+  },
+  {
+    "path": "tests/KernelTests/MemoryAcceptanceTests.cs",
+    "bytes": 11338,
+    "sha256": "7a51c7744bd6ffa9505d87ddd327ba6dcaeab7e53d231a30bb47f1e60b6263c2"
+  },
+  {
+    "path": "tests/KernelTests/MemoryConcurrencyTests.cs",
+    "bytes": 11755,
+    "sha256": "fbc1109e506663579b95ccf192808821130fdaa34276d53e734d4f80756da498"
+  },
+  {
+    "path": "tests/KernelTests/MemoryReviewTests.cs",
+    "bytes": 40057,
+    "sha256": "6d15f3643e41188da110f3b5bb57d3e15bea670a5e5be2f8d8af479c040947d3"
+  },
+  {
+    "path": "tests/KernelTests/MixedAnalyticBooleanTests.cs",
+    "bytes": 8819,
+    "sha256": "33d927324a61566edefd40a3801fd79eb0786ad3dcca1fbc2847fcaa428f564d"
+  },
+  {
+    "path": "tests/KernelTests/MixedBlendBooleanTests.cs",
+    "bytes": 5234,
+    "sha256": "8c45ca01a8f98cb01b45dfc9337806e7016bed91f43fe064172153b91315847c"
+  },
+  {
+    "path": "tests/KernelTests/ModelingPerformanceTests.cs",
+    "bytes": 14663,
+    "sha256": "56d562d2287294a83b2cb0f8f7131dabd5c64ad147db0d7eb19d4bb9d2ec8d97"
+  },
+  {
+    "path": "tests/KernelTests/NativeSplineBoundaryRootTests.cs",
+    "bytes": 2612,
+    "sha256": "5181bd51c112f7edb6480a62db1b3a5f177196d88bfbf104486261f5012b9389"
+  },
+  {
+    "path": "tests/KernelTests/NearTangentPlaneCurveTests.cs",
+    "bytes": 4187,
+    "sha256": "4ae55c8d65321739a319522b80b4768b51c668dc78e590d5e013d4c0fea7e807"
+  },
+  {
+    "path": "tests/KernelTests/NestedBlendBoundsInitializationContractTests.cs",
+    "bytes": 12376,
+    "sha256": "846b6260b2ba2eef70229c902c43b0839ce095699db99f6c70decabf41081d4e"
+  },
+  {
+    "path": "tests/KernelTests/NestedBlendBoundsTests.cs",
+    "bytes": 6872,
+    "sha256": "d5fccee2159026282baf04c0a7a68f293c02f99e229d65e2f142b5f6ce00f5a8"
+  },
+  {
+    "path": "tests/KernelTests/NestedBlendCacheEmptyReadSetTests.cs",
+    "bytes": 7682,
+    "sha256": "5d9946cd49a20f99bc576227ff919ad571bb3fa271a11f1f5cf624699fe7d560"
+  },
+  {
+    "path": "tests/KernelTests/NestedBlendJacobianRecordCapacityTests.cs",
+    "bytes": 1976,
+    "sha256": "4534027268b6b201155277327adf22ac66083fc2e13c4f003df803001cb4c53c"
+  },
+  {
+    "path": "tests/KernelTests/NestedBlendJacobianRecordTests.cs",
+    "bytes": 9760,
+    "sha256": "e85bb579e1af3f4d6a2dbc303ba90bfb63dcecf94bda4ac8c87270e0cebd3118"
+  },
+  {
+    "path": "tests/KernelTests/NestedBlendPrecisionTests.cs",
+    "bytes": 3326,
+    "sha256": "e2e5dddd17ce6dc5babd9f58d3954da38a6ab6e16382c832d25ae93d273b5ac4"
+  },
+  {
+    "path": "tests/KernelTests/NestedBlendRuntimeTests.cs",
+    "bytes": 8396,
+    "sha256": "99a9a0efc6740e31bd25941083eae433979e72b9496613b01fec0b8128d88001"
+  },
+  {
+    "path": "tests/KernelTests/NestedBlendSeriesTests.cs",
+    "bytes": 6075,
+    "sha256": "965353b44513222434d8c806ef223cffc61532f391ec45bad7c0fcfde0f2506f"
+  },
+  {
+    "path": "tests/KernelTests/NestedBlendSplineCacheTests.cs",
+    "bytes": 6240,
+    "sha256": "1a74b3022647c5893fefab2c4f17436bba8f58e90bcef5c80d7210676169b0d6"
+  },
+  {
+    "path": "tests/KernelTests/OffsetCornerRootTests.cs",
+    "bytes": 2821,
+    "sha256": "ecf6ce08030fa7d79109b4274b5eaed34eddfe8e07f53bfaa4314c76796b5f70"
+  },
+  {
+    "path": "tests/KernelTests/ParametricICurveBranchTests.cs",
+    "bytes": 9232,
+    "sha256": "33d71d2482a11d7a5ff0a1bb8ef0df03a1e49ac2ecf63396f5d5e5b91a120009"
+  },
+  {
+    "path": "tests/KernelTests/ParametricICurveTests.cs",
+    "bytes": 29341,
+    "sha256": "0d2a814c2c9c2aabb372cc92832a4a57b36da0d9f868ad8e9c89fe877146ad6c"
+  },
+  {
+    "path": "tests/KernelTests/ParametricPatchSeparationTests.cs",
+    "bytes": 5292,
+    "sha256": "95548a8061d3680e1f2bc22ed6ebb1911f79f0d0ef811e358b2d37ab1f0ffe1c"
+  },
+  {
+    "path": "tests/KernelTests/ParametricSurfaceIntersectionTests.cs",
+    "bytes": 5049,
+    "sha256": "eb6cd10bb9c1bd1db7b553a7244a87db9c4e213bf48c4356182582526ff33172"
+  },
+  {
+    "path": "tests/KernelTests/PlanarEditingTests.cs",
+    "bytes": 10269,
+    "sha256": "400ecb0f9b0b5fe8375c724a5b7588184a37da2a34ad4c73fb065b4c1792954d"
+  },
+  {
+    "path": "tests/KernelTests/PlanarMissingGeometryTests.cs",
+    "bytes": 6804,
+    "sha256": "7978e776d887e291fc3ca8cbc542df7502ea4b98224c335d0274e3cb05726ec4"
+  },
+  {
+    "path": "tests/KernelTests/PlaneSplinePointJacobianTests.cs",
+    "bytes": 4084,
+    "sha256": "340ec0197590ebc56272f1d36c9af3bddb0f3178ca6849ce823500ad3b0f26f1"
+  },
+  {
+    "path": "tests/KernelTests/ProfileCurveBoundsTests.cs",
+    "bytes": 8841,
+    "sha256": "e374be34a48905a8b90a781bebb8459cab0fce5055c9f7a1fb9eae2b1ce0965c"
+  },
+  {
+    "path": "tests/KernelTests/ProfileModelingTests.cs",
+    "bytes": 27660,
+    "sha256": "1d11f0507f128eff4113f69105e4942b4882f18dd54279ad218dcc4c2219a523"
+  },
+  {
+    "path": "tests/KernelTests/RegularCurvedBooleanTests.cs",
+    "bytes": 33569,
+    "sha256": "cfabf3d62e90fd8ce0808f2f117595e5dfe178f13d000405550890d87133a6b2"
+  },
+  {
+    "path": "tests/KernelTests/RegularSolidBlendTests.cs",
+    "bytes": 28149,
+    "sha256": "f2c9cad2a03a159fb5e0c426b87e1e2de537b3d0aa2ba32c22189bd249f5f945"
+  },
+  {
+    "path": "tests/KernelTests/ResidualMemoTests.cs",
+    "bytes": 3453,
+    "sha256": "5e511fe3fc5a64ad1ef677b9b08494f57f2d70fb116da56c2bfd4033936874da"
+  },
+  {
+    "path": "tests/KernelTests/RollingBallReachTests.cs",
+    "bytes": 7341,
+    "sha256": "baec6e5ce12edcdd387efa85da5a621cb28ad86417286569fe56afecd7b2c142"
+  },
+  {
+    "path": "tests/KernelTests/RollingBlendContinuationTests.cs",
+    "bytes": 4256,
+    "sha256": "5949f6bea000a40cbd3a012ea7439ed801b02cd4191061983d3259589e4950bf"
+  },
+  {
+    "path": "tests/KernelTests/RollingNetworkTests.cs",
+    "bytes": 40956,
+    "sha256": "cd0d7714a9b2093f7b4b23e2f4731137030e8a0ea8dadff5cfb3a01e6c3a76a7"
+  },
+  {
+    "path": "tests/KernelTests/RollingSectionAdaptiveBoundsTests.cs",
+    "bytes": 3866,
+    "sha256": "fe1f99642819efefbec9c1cad6a2db37b88530406501da102267c01df8cc1c21"
+  },
+  {
+    "path": "tests/KernelTests/RollingSectionLimitTests.cs",
+    "bytes": 3385,
+    "sha256": "8b2431bc3e72f3d54a6f3d4f365ee485569cbf0e40f949ad516cee39b4a0f5cc"
+  },
+  {
+    "path": "tests/KernelTests/RotationalBooleanTests.cs",
+    "bytes": 18274,
+    "sha256": "ee689317fe38384f522862500057d55760cdf414009891e389394b49c8d5e75b"
+  },
+  {
+    "path": "tests/KernelTests/SessionMemoryTests.cs",
+    "bytes": 2504,
+    "sha256": "4e4b40652a1e45e6f2f32533047b21e3d324c6907997f356058a7d1d92052dac"
+  },
+  {
+    "path": "tests/KernelTests/SessionTests.cs",
+    "bytes": 2427,
+    "sha256": "21cbec04f5a5439aad69eec23f7b630d7b56f4ee42b3587ebf7827c825f8d2b8"
+  },
+  {
+    "path": "tests/KernelTests/SphericalFaceDomainTests.cs",
+    "bytes": 8182,
+    "sha256": "6fc31c514325e3a21b753ca56f007eb733e8318f3b26dc3a9402b32def4bcb54"
+  },
+  {
+    "path": "tests/KernelTests/SplineCartesianRowTests.cs",
+    "bytes": 13412,
+    "sha256": "3624855ab4ad83036ee5cbecdc2404d98b1d8a1815c48d49d484a0e3046e4568"
+  },
+  {
+    "path": "tests/KernelTests/SplineEditingTests.cs",
+    "bytes": 8971,
+    "sha256": "affb6a3cee69243bbde5568be5c66af704db47f9c200e2921cf462f454540543"
+  },
+  {
+    "path": "tests/KernelTests/SplinePlaneResidualTests.cs",
+    "bytes": 4193,
+    "sha256": "143992103587c1d47aba9ea1098234a6c19a9a56ea8f517a87a318dff9386ffa"
+  },
+  {
+    "path": "tests/KernelTests/SupportingSectionAngleTests.cs",
+    "bytes": 1936,
+    "sha256": "8db59c0a53f6beca64d71f314aff640eab7a3520985afe8e8be8534d2f3e4584"
+  },
+  {
+    "path": "tests/KernelTests/SurfaceAnalyticIntersectionTests.cs",
+    "bytes": 6258,
+    "sha256": "2fe29129883c45b23278ecbe60977799768a83ea3dbf0d4b319efef9e30cac77"
+  },
+  {
+    "path": "tests/KernelTests/SurfaceBlendTests.cs",
+    "bytes": 3814,
+    "sha256": "53067e38a308b5d2555b4d65beadca775005291258cffff4f7445a02874b0b39"
+  },
+  {
+    "path": "tests/KernelTests/SurfaceIsoPlaneRootsTests.cs",
+    "bytes": 2031,
+    "sha256": "e1b9b046044bdeb6b6c6facef8e4787e043c25f794da8e3216bd1d3eb557c693"
+  },
+  {
+    "path": "tests/KernelTests/SurfacePlaneIntersectionTests.cs",
+    "bytes": 9682,
+    "sha256": "6666a0304ba0ef730dfa3f6b05bdcac57fbcd9cd40cb81e90c37046012161483"
+  },
+  {
+    "path": "tests/KernelTests/SurfaceTripleRootTests.cs",
+    "bytes": 2148,
+    "sha256": "68d52c204319af2084d3ba59d1f2f58c99116c33a528b25fae531744066faecd"
+  },
+  {
+    "path": "tests/KernelTests/TaylorJetTests.cs",
+    "bytes": 2643,
+    "sha256": "6821d15026fc8d11308807d3f29bfd24740ac74a658049317a7a5608801d0763"
+  },
+  {
+    "path": "tests/KernelTests/TerminatorIntervalTests.cs",
+    "bytes": 27109,
+    "sha256": "2014b8ba78b0d27abbb785501d49aef5cfd058027e1c01a74bf43ab45194bd21"
+  },
+  {
+    "path": "tests/KernelTests/TerminatorSelectionTests.cs",
+    "bytes": 9768,
+    "sha256": "4b34a508f8f84af64182f6d1cc8ae50ece1ec7efd2e7d371c0dbbaf97283e560"
+  },
+  {
+    "path": "tests/KernelTests/TestEnvironment.cs",
+    "bytes": 584,
+    "sha256": "301cb152536573954840bfad8047e16ff47537288d198aad35869218d28c7762"
+  },
+  {
+    "path": "tests/KernelTests/ThreadProtocolTests.cs",
+    "bytes": 6872,
+    "sha256": "037a9dddd979191dae03c8e7cea68ece425d5e9e617fbdb34b5eabf3f1b09cd7"
+  },
+  {
+    "path": "tests/KernelTests/TrivalentSolidBlendTests.cs",
+    "bytes": 11552,
+    "sha256": "16639c1bc53545a9246d35d78062c73821a1646f742f91da489d4e7b8bba9476"
+  },
+  {
+    "path": "tests/KernelTests/UngatedFinishTests.cs",
+    "bytes": 6756,
+    "sha256": "710f1841f0aead4b2cf9dcf6f4fabf984d1ef6dbc453e74092b4ee3e89bb4e49"
+  },
+  {
+    "path": "tests/KernelTests/UngatedRemainderTests.cs",
+    "bytes": 8964,
+    "sha256": "09be7d336eddf61edca707022d8c5af1e0564aaf21801ba01f75bf5c15c3e7f2"
+  },
+  {
+    "path": "tests/KernelTests/UnitTest1.cs",
+    "bytes": 102,
+    "sha256": "53f68bb5d7cfc01bd79af371fc100206c2b23dc53ab350ff81d4e2721e39ddd6"
+  },
+  {
+    "path": "tests/KernelTests/XtBrepImportTests.cs",
+    "bytes": 38086,
+    "sha256": "4ce1c18d512cac330c046764ec06d3c4eeb4c71c3892c1cb5323aaca02fe974b"
+  },
+  {
+    "path": "tests/KernelTests/XtConstructionGeometryTests.cs",
+    "bytes": 12803,
+    "sha256": "796413630683080947b8f767a7b420a82b72539600952f07c3f4faca3f907997"
+  },
+  {
+    "path": "tests/KernelTests/XtGeometryWriterTests.cs",
+    "bytes": 45855,
+    "sha256": "6f0ed3fc7b69aa443ee62a7bf57bdd787ca246c65c4edf89f53c2f339c12f98a"
+  },
+  {
+    "path": "tests/KernelTests/XtManagedAliases.cs",
+    "bytes": 577,
+    "sha256": "35235047b3dd85686bbb62f32fd441924bb9fe2fa45fc5c9a358ac43bdf6b6ac"
+  },
+  {
+    "path": "tests/KernelTests/XtSchemaRegistryTests.cs",
+    "bytes": 31064,
+    "sha256": "9d48b0c0d3ffc1c7d7468c2d8a86156eb9fcdfffd5d8713b7b4d26ab621d9145"
+  },
+  {
+    "path": "tests/KernelTests/XtTopologyLinkTests.cs",
+    "bytes": 3750,
+    "sha256": "52e832a3840c29c86808a939baa5a4cd4528234d0967f4b624b55602e80b0c1b"
+  },
+  {
+    "path": "scripts/CollectQueryNumericsEvidence.cs",
+    "bytes": 20179,
+    "sha256": "12d91e9dddebb0568b5beb8b31e4772b0615f1cf1a858d68533122c7449281c8"
+  }
+]
