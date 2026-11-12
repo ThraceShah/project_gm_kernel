@@ -51,7 +51,7 @@ foreach(var entry in registry["cases"]!.AsArray().OfType<JsonObject>())
     if(!selected){notes.Add((JsonNode?)JsonValue.Create("Not selected for this run; current evidence is missing."));Save();continue;}
     if(clock.Elapsed.TotalSeconds>=budget){notes.Add((JsonNode?)JsonValue.Create("Execution budget exhausted before start; not run, not a timeout."));Save();continue;}
     executed++;Console.WriteLine("RUN "+caseId);c["execution"]!["attempted"]=true;
-    var durationsGm=new List<double>();var durationsPk=new List<double>();var exitCodes=new JsonArray();var anyTimeout=false;var allValid=true;var oraclePassed=true;var anyExportError=false;var anyCapture=false;
+    var durationsGm=new List<double>();var durationsPk=new List<double>();var exitCodes=new JsonArray();var anyTimeout=false;var allValid=true;var oraclePassed=true;var anyExportError=false;var anyCapture=false;var evaluationOnly=false;
     for(var sample=0;sample<samples;sample++)
     {
         var caseDir=Path.Combine(run,"cases",caseId,"sample-"+sample);Directory.CreateDirectory(caseDir);
@@ -100,7 +100,13 @@ foreach(var entry in registry["cases"]!.AsArray().OfType<JsonObject>())
             }
             var timings=capture["timings"]!.AsArray();var gm=timings.Where(t=>t!["kernel"]!.GetValue<string>()=="gm").ToArray();var pk=timings.Where(t=>t!["kernel"]!.GetValue<string>()=="pk").ToArray();
             if(gm.Length>0&&gm.Length==pk.Length&&timings.All(t=>t!["error"]!.GetValue<int>()==0)){durationsGm.Add(gm.Sum(t=>t!["ms"]!.GetValue<double>()));durationsPk.Add(pk.Sum(t=>t!["ms"]!.GetValue<double>()));}
-            allValid&=capture["checks"]!.AsArray().Count>0&&capture["checks"]!.AsArray().All(ch=>ch!["status"]!.GetValue<string>() is "pass" or "diagnostic")&&gm.Length>0&&gm.Length==pk.Length;
+            // A pure native-evaluation display has no operation timing by design
+            // (the case is an evaluation, not a modelling API interval), so the
+            // timing requirement is waived only for captures that declare it.
+            var evaluationDisplay=capture["steps"]!.AsArray().Any(st=>st?["gm"]?["evaluation"]!=null||st?["pk"]?["evaluation"]!=null||st?["displayScope"]!=null);
+            var hasTimings=gm.Length>0&&gm.Length==pk.Length;
+            allValid&=capture["checks"]!.AsArray().Count>0&&capture["checks"]!.AsArray().All(ch=>ch!["status"]!.GetValue<string>() is "pass" or "diagnostic")&&(hasTimings||evaluationDisplay);
+            if(evaluationDisplay&&!hasTimings)evaluationOnly=true;
             evidence.Add((JsonNode)new JsonObject{["label"]=$"Structured capture sample {sample}",["path"]=prefix+"capture.json"});
             foreach(var f in Directory.EnumerateFiles(caseDir,"*.json",SearchOption.AllDirectories).Where(f=>f.Contains(Path.DirectorySeparatorChar+"evidence"+Path.DirectorySeparatorChar)))evidence.Add((JsonNode)new JsonObject{["label"]="Raw comparison mask and differences",["path"]=prefix+Path.GetRelativePath(caseDir,f).Replace('\\','/')});
         }
@@ -126,7 +132,9 @@ foreach(var entry in registry["cases"]!.AsArray().OfType<JsonObject>())
     if(durationsGm.Count>0){perf["gmMs"]=Median(durationsGm);perf["pkMs"]=Median(durationsPk);}
     perf["correctnessQualified"]=allValid&&!anyExportError;
     if(allValid&&!anyExportError&&durationsPk.Count>0&&Median(durationsPk)>0)perf["ratioGmOverPk"]=Median(durationsGm)/Median(durationsPk);
-    perf["note"]="API-only elapsed totals across captured steps; median of fresh-process samples, warmup=0. Cold JIT/cache effects remain; no stable throughput claim. Ratio withheld unless both sides succeeded and every current acceptance check passed.";
+    perf["note"]=evaluationOnly&&durationsGm.Count==0
+        ?"纯原生评估显示：该用例是评估/求交而非建模 API 区间，因此不给操作耗时或 GM/PK 倍率（避免把评估采样时间冒充操作性能）；几何与样本点来自同次真实执行。"
+        :"API-only elapsed totals across captured steps; median of fresh-process samples, warmup=0. Cold JIT/cache effects remain; no stable throughput claim. Ratio withheld unless both sides succeeded and every current acceptance check passed.";
     Console.WriteLine($"RESULT {caseId}: {c["status"]}, exits={exitCodes.ToJsonString()}");Save();
 }
 manifest["run"]!["scope"]!["executed"]=executed;manifest["run"]!["finishedAt"]=DateTimeOffset.UtcNow.ToString("O");manifest["run"]!["collectionElapsedSeconds"]=clock.Elapsed.TotalSeconds;completed=true;Save();

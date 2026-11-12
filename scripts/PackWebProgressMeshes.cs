@@ -220,8 +220,11 @@ if (File.Exists(reportPath))
 }
 var membersFinal = report["members"]!.AsArray().OfType<JsonObject>().ToArray();
 report["files"] = membersFinal.Length;
-report["uncompressedBytes"] = membersFinal.Sum(m => m["uncompressedBytes"]!.GetValue<long>());
-report["compressedBytes"] = membersFinal.Sum(m => m["compressedBytes"]!.GetValue<long>());
+// JSON numbers round-trip as int for small values; read them as double and
+// convert, so incremental reports stay type-agnostic.
+long Long(JsonNode? n) => (long)n!.GetValue<double>();
+report["uncompressedBytes"] = membersFinal.Sum(m => Long(m["uncompressedBytes"]));
+report["compressedBytes"] = membersFinal.Sum(m => Long(m["compressedBytes"]));
 File.WriteAllText(reportPath + ".tmp", report.ToJsonString());
 File.Move(reportPath + ".tmp", reportPath, true);
 

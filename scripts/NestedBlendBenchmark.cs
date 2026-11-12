@@ -4,6 +4,7 @@
 #:property AssemblyName=IcurveEvalBenchmark
 #:property UsePskernelSharpUsings=true
 #:property UseParasolidScriptHost=true
+#:property UseWebProgressCapture=true
 #:property AllowUnsafeBlocks=true
 using static parasolid;
 using System.Diagnostics;
@@ -50,7 +51,36 @@ unsafe
                 Console.WriteLine($"regular evaluation window: U fractions {lower:R}..{lower+width:R}, V=.1...9");
                 var samples=new PK_UV_t[512];for(var i=0;i<samples.Length;i++)samples[i]=new(box.param[0]+(box.param[2]-box.param[0])*(lower+width*(i+.5)/samples.Length),.1+.8*((i*239)%samples.Length+.5)/samples.Length);
                 if(pattern==1){var random=new Random(7801);random.Shuffle(samples);}
-                Validate(native,own,samples);
+                var capturedEvaluation=false;
+                if(pattern==0&&WebProgressCapture.Enabled)
+                {
+                    // Display the real fixture surface under evaluation plus the
+                    // actually evaluated sample points and native normals. No GM
+                    // geometry is created and no modelling change is claimed.
+                    var fixtureLabel=Path.GetFileNameWithoutExtension(name.Replace("nested-blend-native/",""));
+                    if(WebProgressCapture.Select(fixtureLabel))
+                    {
+                        int captureFaces;int* captureList=null;Check(PK_BODY_ask_faces(nativeBody,&captureFaces,&captureList),"capture native faces");
+                        var nativeFace=0;try{nativeFace=captureFaces>0?captureList[0]:0;}finally{Check(PK_MEMORY_free(captureList),"capture faces free");}
+                        var ownFaceSlot=KernelRuntime.Bodies[slot].FirstFaceBody;var ownFace=ownFaceSlot>=0?KernelRuntime.Faces[ownFaceSlot].Header.Tag:0;
+                        var pointList=new List<double>();var normalList=new List<double>();
+                        PK_VECTOR_t* evalValues=stackalloc PK_VECTOR_t[6];PK_VECTOR_t evalNormal;
+                        for(var si=0;si<samples.Length;si+=Math.Max(1,samples.Length/32))
+                        {
+                            var uv=samples[si];
+                            if(PK_SURF_eval_with_normal(native,uv,1,1,PK_LOGICAL_true,evalValues,&evalNormal)!=0)continue;
+                            pointList.Add(evalValues[0].coord[0]);pointList.Add(evalValues[0].coord[1]);pointList.Add(evalValues[0].coord[2]);
+                            normalList.Add(evalNormal.coord[0]);normalList.Add(evalNormal.coord[1]);normalList.Add(evalNormal.coord[2]);
+                        }
+                        var points=pointList.ToArray();var normals=normalList.ToArray();
+                        var note=$"被求值 fixture {name}（真实 receive 的 {fixtureName(nativeBody)} 面，原生参数域 {box.param[0]:R}..{box.param[2]:R} × {box.param[1]:R}..{box.param[3]:R}）；显示 {points.Length/3} 个实际求值样本点与原生法向；采样渲染≠连续数学等价，几何未因评估改变。";
+                        Validate(native,own,samples);
+                        WebProgressCapture.Evaluation(true,ownBody,ownFace>0?ownFace:0,points,normals,"evaluate-fixture",note);
+                        WebProgressCapture.Evaluation(false,nativeBody,nativeFace,points,normals,"evaluate-fixture",note);
+                        capturedEvaluation=true;
+                    }
+                }
+                if(!capturedEvaluation)Validate(native,own,samples);
                 if(name.Contains("small-depth3",StringComparison.Ordinal)||name.Contains("large-depth3",StringComparison.Ordinal))
                 {
                     var referenceSurface=NativeSurface("nested-blend-native/depth3.x_t");PK_UVBOX_t referenceBox;Check(PK_SURF_ask_uvbox(referenceSurface,&referenceBox),"similarity reference box");
@@ -95,6 +125,7 @@ static unsafe long Run(int native,int own,PK_UV_t[] samples,int order,bool isOwn
     }
     return Stopwatch.GetTimestamp()-begin;
 }
+static string fixtureName(int body)=>$"body:{body}";
 static unsafe void Validate(int native,int own,PK_UV_t[] samples)
 {
     PK_VECTOR_t* expected=stackalloc PK_VECTOR_t[3];M.PK_VECTOR_s* actual=stackalloc M.PK_VECTOR_s[3];var max=0.0;

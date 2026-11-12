@@ -53,6 +53,29 @@ foreach (var (id, entry) in byId)
     corrected.Add((JsonNode?)JsonValue.Create(id));
 }
 
+// Nested evaluation: NestedBlendBenchmark now emits a native-evaluation display
+// step per fixture (real received surface + actually evaluated samples/normals).
+// All six pattern registrations of one fixture share that fixture's display.
+foreach (var entry in byId.Values.Where(c => c["suite"]?.GetValue<string>() == "nested-evaluation" && c["meshAdapter"]?.GetValue<bool>() != true))
+{
+    var argument = entry["arguments"] is JsonArray a && a.Count > 0 ? a[0]!.GetValue<string>() : "";
+    var fixture = argument.StartsWith("--fixture=", StringComparison.Ordinal) ? argument["--fixture=".Length..] : "";
+    if (fixture.Length == 0) continue;
+    var stem = Path.GetFileNameWithoutExtension(fixture.Replace("nested-blend-native/", ""));
+    entry["selector"] = stem;
+    entry["meshAdapter"] = true;
+    enabled.Add((JsonNode?)JsonValue.Create(entry["id"]!.GetValue<string>()));
+}
+
+// PK-native XT corpus fixtures: the original case is a PK corpus/schema check
+// plus a managed transmit round-trip, so the display is the real PK fixture body
+// with an explicit pk-only scope (no GM modelling equivalence is implied).
+foreach (var entry in byId.Values.Where(c => c["suite"]?.GetValue<string>() == "pk-corpus" && c["meshAdapter"]?.GetValue<bool>() != true))
+{
+    entry["meshAdapter"] = true;
+    enabled.Add((JsonNode?)JsonValue.Create(entry["id"]!.GetValue<string>()));
+}
+
 // Families whose oracle already calls the observer for every fixture: only the
 // adapter flag was missing.
 foreach (var source in new[] { "scripts/BlendCoverageOracle.cs" })

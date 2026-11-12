@@ -80,6 +80,92 @@ internal static unsafe class WebProgressCapture
             AddCheck($"{ordinal}-{own}-blend-fault","Blend fault "+(own?"GM":"PK"),fault==PK_blend_fault_no_fault_c?"pass":"fail",own?fault:null,own?null:fault,PK_blend_fault_no_fault_c,"enum","PK_blend_fault_no_fault_c required");Flush();
         });
     }
+    // Display-only observer for pure native evaluation / intersection cases.
+    // It records the real geometry under evaluation (the actual received body),
+    // the actually evaluated sample points and the native normal vectors as
+    // overlay edges. It never creates GM geometry, never claims a modelling
+    // operation, and a sampled rendering is explicitly not a continuous
+    // mathematical equivalence claim.
+    internal static void Evaluation(bool own,BodyTag body,EntityTag face,double[] points,double[] normals,string operation,string note,double ms=0)
+    {
+        if(!Enabled)return;
+        // The selected list is an EDGE-tag list; a face is highlighted by role below.
+        Before(own,body,[],operation,[]);
+        Observe(()=>
+        {
+            var ordinal=Ordinals[own]-1;var side=own?"gm":"pk";
+            var before=Mesh(own,body,[],[],[],isBefore:true);
+            MarkFace(before,face);
+            Overlay(own,before,points,normals);
+            var beforePath=$"meshes/{side}-{ordinal}-before.json";Write(beforePath,before);
+            var after=Mesh(own,body,[],[],[],roleKnown:true);
+            MarkFace(after,face);
+            Overlay(own,after,points,normals);
+            var afterPath=$"meshes/{side}-{ordinal}-after-0.json";Write(afterPath,after);
+            var step=Steps[ordinal]![side]!;
+            step["before"]=beforePath;step["after"]=afterPath;
+            step["afterBodies"]=new JsonArray((JsonNode?)JsonValue.Create(afterPath));
+            step["evaluation"]=new JsonObject{
+                ["kind"]="native-evaluation-display",
+                ["note"]=note,
+                ["samplePoints"]=points.Length/3,
+                ["normalVectors"]=normals.Length/3,
+                ["sampledNotContinuousEquivalence"]=true,
+                ["operationChangedGeometry"]=false};
+            AddCheck($"{side}-{ordinal}-evaluation","Native evaluation display "+side,"diagnostic",null,null,null,"samples",note);
+            Flush();
+        });
+    }
+    private static void MarkFace(JsonObject mesh,EntityTag face)
+    {
+        if(face==0)return;
+        foreach(var item in mesh["faces"]!.AsArray().OfType<JsonObject>())
+            if(item["entityTag"]?.GetValue<int>()==face){item["role"]="selected";item["roleKnown"]=true;item["evaluationTarget"]=true;}
+    }
+    private static void Overlay(bool own,JsonObject mesh,double[] points,double[] normals)
+    {
+        var edges=(JsonArray)mesh["edges"]!;var side=own?"gm:":"pk:";
+        var size=0.02f;
+        void Segment(JsonArray positions,Vector3 a,Vector3 b){Vector(positions,a);Vector(positions,b);}
+        for(var i=0;i+2<points.Length;i+=3)
+        {
+            var p=new Vector3((float)points[i],(float)points[i+1],(float)points[i+2]);
+            var positions=new JsonArray();
+            Segment(positions,p-new Vector3(size,0,0),p+new Vector3(size,0,0));
+            Segment(positions,p-new Vector3(0,size,0),p+new Vector3(0,size,0));
+            Segment(positions,p-new Vector3(0,0,size),p+new Vector3(0,0,size));
+            edges.Add((JsonNode)new JsonObject{["id"]=$"{side}eval:sample:{i/3}",["entityTag"]=900000+i/3,["identifier"]=900000+i/3,["positions"]=positions,["role"]="selected",["roleKnown"]=true,["evaluationOverlay"]="sample-point"});
+        }
+        var count=points.Length/3;
+        for(var index=0;index<count;index++)
+        {
+            var o=index*3;if(o+2>=normals.Length)break;
+            var p=new Vector3((float)points[o],(float)points[o+1],(float)points[o+2]);
+            var n=new Vector3((float)normals[o],(float)normals[o+1],(float)normals[o+2]);
+            if(n.LengthSquared()<1e-12f)continue;
+            var tip=p+Vector3.Normalize(n)*(size*6f);
+            var positions=new JsonArray();Segment(positions,p,tip);
+            edges.Add((JsonNode)new JsonObject{["id"]=$"{side}eval:normal:{index}",["entityTag"]=910000+index,["identifier"]=910000+index,["positions"]=positions,["role"]="support",["roleKnown"]=true,["evaluationOverlay"]="normal-vector"});
+        }
+    }
+    // One-sided display for a real PK-native fixture whose original case is a
+    // PK XT corpus/schema check (plus a managed transmit round-trip), not an
+    // independent GM modelling operation. The step declares its display scope so
+    // the missing side is explicit instead of an empty model.
+    internal static void CorpusFixture(bool own,BodyTag body,string operation,string note)
+    {
+        if(!Enabled)return;
+        Before(own,body,[],operation,[]);
+        Observe(()=>
+        {
+            var ordinal=Ordinals[own]-1;var side=own?"gm":"pk";
+            var scope=own?"gm-only":"pk-only";
+            Steps[ordinal]!["displayScope"]=JsonValue.Create(scope);
+            Steps[ordinal]![side]!["displayScope"]=JsonValue.Create(scope);
+            AddCheck($"{side}-{ordinal}-fixture","Native fixture display "+side,"diagnostic",null,null,null,"fixture",note);
+            Flush();
+        });
+    }
     internal static void BooleanAfter(bool own,BodyTag[] bodies,double ms,int error,int status,PK_TOPOL_track_r_t* tracking)
         =>Complete(own,bodies,ms,error,status,[],tracking);
     private static void Complete(bool own,BodyTag[] bodies,double ms,int error,int status,EntityTag[] blends,PK_TOPOL_track_r_t* tracking)

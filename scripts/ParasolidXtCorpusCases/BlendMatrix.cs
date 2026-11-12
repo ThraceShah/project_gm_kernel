@@ -3,6 +3,8 @@
 #:property UsePskernelSharpUsings=true
 #:property UseParasolidScriptHost=true
 #:property UseParasolidXtCorpusHost=true
+#:property UseWebProgressCapture=true
+#:property AssemblyName=ParasolidXtCorpusCases
 #:project ../../third_party/PKToy/PskernelSharp/PskernelSharp.csproj
 
 using static parasolid;
