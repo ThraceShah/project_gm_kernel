@@ -152,11 +152,11 @@ var cylinderQueryIds=new HashSet<string>(StringComparer.Ordinal){"local-blend.cy
 // ---- display links for items with real online artifacts (exact run/case/step context)
 var displayLinks=new Dictionary<string,JsonObject>(StringComparer.Ordinal)
 {
-    ["analytic-boolean.equal-overlap-subtract"]=new JsonObject{{"runId","20261112T002227Z-uperf1654"},{"caseId","unifiedperf.sphere"},{"stepId","rep2-display"},{"note","1654 rep2 显示样本（本 case 参数）"}},
-    ["planar-boolean.overlap-two-axes-subtract"]=new JsonObject{{"runId","20261112T002227Z-uperf1654"},{"caseId","unifiedperf.planar"},{"stepId","rep2-display"},{"note","1654 rep2 显示样本"}},
-    ["regular-curved.block-subtract"]=new JsonObject{{"runId","20261112T002227Z-uperf1654"},{"caseId","unifiedperf.curved"},{"stepId","rep2-display"},{"note","1654 rep2 显示样本"}},
-    ["solid-blend.plane-nurbs"]=new JsonObject{{"runId","20261112T002227Z-uperf1654"},{"caseId","unifiedperf.solidblend"},{"stepId","rep2-display"},{"note","1654 rep2 显示样本"}},
-    ["short-edge.a1-r0.5-t1e-07-reversefalse-default"]=new JsonObject{{"runId","20261112T002227Z-uperf1654"},{"caseId","unifiedperf.shortedge"},{"stepId","rep2-display"},{"note","1654 rep2 显示样本（输入=PK seed→GM Fix）"}},
+    ["analytic-boolean.equal-overlap-subtract"]=new JsonObject{{"runId","20261112T045837Z-projcc47871"},{"caseId","projection.sphere"},{"stepId","rep2-display"},{"note","Projection cc47871 rep2 显示样本（本 case 参数）"}},
+    ["planar-boolean.overlap-two-axes-subtract"]=new JsonObject{{"runId","20261112T045837Z-projcc47871"},{"caseId","projection.planar"},{"stepId","rep2-display"},{"note","Projection cc47871 rep2 显示样本"}},
+    ["regular-curved.block-subtract"]=new JsonObject{{"runId","20261112T045837Z-projcc47871"},{"caseId","projection.curved"},{"stepId","rep2-display"},{"note","Projection cc47871 rep2 显示样本"}},
+    ["solid-blend.plane-nurbs"]=new JsonObject{{"runId","20261112T045837Z-projcc47871"},{"caseId","projection.solidblend"},{"stepId","rep2-display"},{"note","Projection cc47871 rep2 显示样本"}},
+    ["short-edge.a1-r0.5-t1e-07-reversefalse-default"]=new JsonObject{{"runId","20261112T045837Z-projcc47871"},{"caseId","projection.shortedge"},{"stepId","rep2-display"},{"note","Projection cc47871 rep2 显示样本（输入=PK seed→GM Fix）"}},
     ["local-blend.oblique-unequal-chamfer"]=new JsonObject{{"runId","20261111T190547Z-integrated1887"},{"caseId","integrated.oblique-upstream"},{"stepId","operation-1"},{"note","同字节链上游（independent-construction）显示"}},
     ["local-blend.prism-all-chamfer"]=new JsonObject{{"runId","20261111T174315Z-blend60be"},{"caseId","blend.planar-chamfer"},{"stepId","operation-1"},{"note","显示样本含 prism 全边倒角与 oblique 不等距"}},
     ["local-blend.prism-all-fillet"]=new JsonObject{{"runId","20261111T174315Z-blend60be"},{"caseId","blend.planar-fillet"},{"stepId","operation-1"},{"note","倒圆目录显示样本"}},
@@ -297,7 +297,8 @@ void Delivery(string runId,string label,string commit,string utc,string note)
 {
     var o=new JsonObject();o["runId"]=JsonValue.Create(runId);o["label"]=JsonValue.Create(label);o["commit"]=JsonValue.Create(commit);o["utc"]=JsonValue.Create(utc);o["note"]=JsonValue.Create(note);deliveries.Add((JsonNode)o);
 }
-Delivery("20261112T002227Z-uperf1654","统一性能 1654 窗口（当前版本复验 5 op）","1654dbf2","2026-11-12T00:22:27Z","current-version measurement window");
+Delivery("20261112T045837Z-projcc47871","Projection cc47871 测量窗口（当前版本复验 5 op）","cc478711","2026-11-12T04:58:37Z","current-version measurement window");
+Delivery("20261112T002227Z-uperf1654","统一性能 1654 窗口（历史复验 5 op）","1654dbf2","2026-11-12T00:22:27Z","historical measurement window");
 Delivery("20261111T223759Z-unified4b","统一内核 4b（功能/质量快照）","4b2405e","2026-11-11T22:37:59Z","unified snapshot");
 Delivery("20261111T211605Z-gconic217fc","G+Conic 受控测量（独立历史窗口）","74c29e0","2026-11-11T21:16:05Z","historical measurement window");
 Delivery("20261111T190547Z-integrated1887","功能集成 1887","1887e30d","2026-11-11T19:05:47Z","functional integration");
@@ -435,10 +436,11 @@ void Record(string id,string title,string status,string note,string evidence)
 {
     var o=new JsonObject();o["id"]=JsonValue.Create(id);o["title"]=JsonValue.Create(title);o["status"]=JsonValue.Create(status);o["note"]=JsonValue.Create(note);o["evidence"]=JsonValue.Create(evidence);o["inModelingDenominator"]=false;records.Add((JsonNode)o);
 }
+Record("suite.mac-2022","Mac Projection cc47871 套件 2022/2022（原 raw 0）","pass","Mac 2022/2022 raw build0/test0 通过（耗时 4m44s）；只属 cc47871；不入建模分母。","docs/projection-cc47871-publish-receipt.md");
 Record("suite.mac-2000","Mac 统一包套件 2000/1998/2（原 raw 1）","fail","2 supportingBlend NotConverged 保留（同 Mac baseline 133 窄复现）；栈修复实质记录；不入建模分母。","docs/uperf-1654-publish-receipt.md");
 Record("suite.linux-1974","Linux unified4b 套件 1974/1974（原 raw 0）","pass","历史 2 项本 TRX Passed；不代签 Mac 全绿。","docs/unified-4b-publish-receipt.md");
-Record("mass.component-ledger","物性分量总账：主 900 分量 312V/588U/0D + 额外 180；唯一总账 1080 分量 396V/684U/0D","unresolved","分量不是功能 case；不重复计数。","docs/uperf-1654-publish-receipt.md");
-Record("perf.targets","性能目标未达（各窗口分源口径）：1654 当前 shortedge 配对 387.35924x；历史窗口 217fc 340.1703x、6616 3423.49713x、676 9465.56563x","unresolved","窗口不相乘、口径不混；主体性能目标未达。","docs/uperf-1654-publish-receipt.md");
+Record("mass.component-ledger","物性分量总账：主 900 分量 312V/588U/0D + 额外 180；唯一总账 1080 分量 396V/684U/0D","unresolved","分量不是功能 case；不重复计数。","docs/projection-cc47871-publish-receipt.md");
+Record("perf.targets","性能目标未达（各窗口分源口径）：cc47871 当前 shortedge 配对 331.97129x（比中位 332.04468x）、solidblend 253.84728x（比中位 244.25723x）、planar 回退 +78.105%；历史 1654 shortedge 387.35924x","unresolved","窗口不相乘、口径不混；主体性能目标未达。","docs/projection-cc47871-publish-receipt.md");
 
 // ---- source / archive index
 var sourceIndex=new JsonArray();
@@ -446,7 +448,8 @@ void Src(string name,string identity,string where,string note)
 {
     var o=new JsonObject();o["name"]=JsonValue.Create(name);o["identity"]=JsonValue.Create(identity);o["where"]=JsonValue.Create(where);o["note"]=JsonValue.Create(note);sourceIndex.Add((JsonNode)o);
 }
-Src("统一性能 1654（当前版本）","1654dbf2/224564d1/metadata d014f76e/交付 73b06e10/独审 2f8aea49","../gm-unified-performance-1654-review + incoming/unified-performance-1654/","当前指定统一版本");
+Src("Projection cc47871（当前版本）","cc478711/fe3fa037/metadata 6568f1d9/交付 553b2c6c/独审 7b20d7f1","../gm-projection-cc47871-review + incoming/mac-projection-cc47871-*.zip","当前指定统一版本（几何/拓扑通过，性能未达）");
+Src("统一性能 1654","1654dbf2/224564d1/metadata d014f76e/交付 73b06e10/独审 2f8aea49","../gm-unified-performance-1654-review + incoming/unified-performance-1654/","历史统一版本（5 op 复验历史）");
 Src("统一内核 4b","4b2405e/133f56ac/独审 583d917+B17","../gm-native-unified-review + incoming/unified-delivery/","63 场景与 local17 的功能/质量历史来源");
 Src("Blend 60be","60be7216/独审 54f1b309","../gm-blend-functional-delivery + ../gm-blend-60be-review","local-blend 17 与查询缺口来源");
 Src("f9 计算","f9c59201/review 4c7646e","../gm-pk-native-delivery + retired-data-archive-4/","96 矩阵/横切红/510 探针来源");
@@ -457,7 +460,7 @@ summary["denominatorNote"]=JsonValue.Create("分母=固定目录 463 具名建�
 
 var overview=new JsonObject();
 overview["schemaVersion"]=1;overview["generatedAt"]=JsonValue.Create(now.ToString("O"));overview["catalogVersion"]=JsonValue.Create("2026-11-12.overview-catalog-v2");
-overview["currentVersion"]=new JsonObject{{"label",JsonValue.Create("统一内核 1654（当前指定版本）")},{"calculation",JsonValue.Create("1654dbf2bb31ff867f40c3ae4eb66cdb3d601fb7")},{"native",JsonValue.Create("224564d1cdc0d0b6cf78c275282454751af2fd60")},{"measurementMetadata",JsonValue.Create("d014f76e41746a08b32e963d24b6a8b02fcaac67")},{"acceptanceReview",JsonValue.Create("2f8aea492d21f39269e514d9bcd3d8e792e3903b")},{"windowUtc",JsonValue.Create("2026-11-11T23:40:41.304661Z .. 23:42:45.017395Z")}};
+overview["currentVersion"]=new JsonObject{{"label",JsonValue.Create("Projection cc47871（当前指定版本）")},{"calculation",JsonValue.Create("cc47871133fb7d536ffa7fd050066c51f4905708")},{"native",JsonValue.Create("fe3fa0378ef6d9c0dd971de4c993a289cdb8a34b")},{"measurementMetadata",JsonValue.Create("6568f1d9d19bbf0df0f9eeb07dc2afac1f5990599535b2f5caa0dbaf40d9e90e")},{"acceptanceReview",JsonValue.Create("7b20d7f1046ad5b6f54f8601edd739fa5d54a901")},{"windowUtc",JsonValue.Create("2026-11-12T04:56:39.7493270Z .. 2026-11-12T04:58:37.0945730Z")}};
 overview["catalog"]=catalogItems;overview["boundaryRegisters"]=boundaries;overview["verificationRecords"]=records;
 overview["deliveries"]=deliveries;overview["sourceIndex"]=sourceIndex;overview["summary"]=summary;overview["mappingAudit"]=mappingAudit;
 

@@ -1,1 +1,437 @@
-[]
+[
+  {
+    "kind": "case-update",
+    "catalogId": "analytic-boolean.equal-overlap-subtract",
+    "dimension": "function",
+    "status": "pass",
+    "currentVersion": "reverified",
+    "lastVerified": {
+      "commit": "cc47871133fb7d536ffa7fd050066c51f4905708",
+      "tree": "Native fe3fa037",
+      "host": "Mac M4 / macOS 27.2",
+      "exit": "runnerRawExit=2（measurement-receipt.json）",
+      "evidence": "docs/projection-cc47871-publish-receipt.md"
+    },
+    "note": "cc47871 窗口质量门（fresh/full/strict/finite）通过（60 对全过）——当前版本复验。",
+    "utc": "2026-11-12T04:58:37Z",
+    "identity": {
+      "parameters": {
+        "fixture": "equal-overlap",
+        "radiusA": 2,
+        "radiusB": 2,
+        "toolOffset": [
+          2,
+          0,
+          0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "rotate": false,
+        "function": 15902,
+        "tracking": true
+      },
+      "source": "scripts/AnalyticBooleanOracle.cs"
+    }
+  },
+  {
+    "kind": "case-update",
+    "catalogId": "analytic-boolean.equal-overlap-subtract",
+    "dimension": "mass",
+    "status": "unresolved",
+    "currentVersion": "reverified",
+    "lastVerified": {
+      "commit": "cc47871133fb7d536ffa7fd050066c51f4905708",
+      "tree": "Native fe3fa037",
+      "host": "Mac M4 / macOS 27.2",
+      "exit": "样本级 2xUnresolved=2；进程级 measurement-receipt.json",
+      "evidence": "docs/projection-cc47871-publish-receipt.md"
+    },
+    "note": "cc47871 当前质量状态：{\"Unresolved\":2}（每 op 候选侧 2 rep 样本状态计数，样本级口径）；物性分量总账另列：主 900 分量 312V/588U、唯一总账 1080=396V/684U（质量归档，不与样本级混算）。",
+    "utc": "2026-11-12T04:58:37Z",
+    "identity": {
+      "parameters": {
+        "fixture": "equal-overlap",
+        "radiusA": 2,
+        "radiusB": 2,
+        "toolOffset": [
+          2,
+          0,
+          0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "rotate": false,
+        "function": 15902,
+        "tracking": true
+      },
+      "source": "scripts/AnalyticBooleanOracle.cs"
+    }
+  },
+  {
+    "kind": "case-update",
+    "catalogId": "analytic-boolean.equal-overlap-subtract",
+    "dimension": "performance",
+    "status": "observed",
+    "currentVersion": "reverified",
+    "lastVerified": {
+      "commit": "cc47871133fb7d536ffa7fd050066c51f4905708",
+      "tree": "Native fe3fa037",
+      "host": "Mac M4 / macOS 27.2",
+      "exit": "样本级原 exit=allSamples rawExit/qualityStatus（本 op 2xUnresolved=2）；进程级见 measurement-receipt.json qualityStates（exit2-Unresolved=16/exit0-Verified=4）、runnerRawExit=2",
+      "evidence": "docs/projection-cc47871-publish-receipt.md"
+    },
+    "note": "cc47871 当前窗口：暖中位 基线 0.08265→候选 0.078ms，变化 -5.62613%（基线→候选）；候选配对 GM/PK ratioMedian 0.260427 / 中位数之比 0.25815（两口径分列）；性能目标未达，runnerPerformanceQualified=false（measurement-receipt.json）。",
+    "utc": "2026-11-12T04:58:37Z",
+    "identity": {
+      "parameters": {
+        "fixture": "equal-overlap",
+        "radiusA": 2,
+        "radiusB": 2,
+        "toolOffset": [
+          2,
+          0,
+          0
+        ],
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "rotate": false,
+        "function": 15902,
+        "tracking": true
+      },
+      "source": "scripts/AnalyticBooleanOracle.cs"
+    }
+  },
+  {
+    "kind": "case-update",
+    "catalogId": "planar-boolean.overlap-two-axes-subtract",
+    "dimension": "function",
+    "status": "pass",
+    "currentVersion": "reverified",
+    "lastVerified": {
+      "commit": "cc47871133fb7d536ffa7fd050066c51f4905708",
+      "tree": "Native fe3fa037",
+      "host": "Mac M4 / macOS 27.2",
+      "exit": "runnerRawExit=2（measurement-receipt.json）",
+      "evidence": "docs/projection-cc47871-publish-receipt.md"
+    },
+    "note": "cc47871 窗口质量门（fresh/full/strict/finite）通过（60 对全过）——当前版本复验。",
+    "utc": "2026-11-12T04:58:37Z",
+    "identity": {
+      "parameters": {
+        "fixture": "overlap-two-axes",
+        "function": 15902,
+        "defaultTolerance": 1e-05,
+        "tracking": true
+      },
+      "source": "scripts/BooleanOperationOracle.cs"
+    }
+  },
+  {
+    "kind": "case-update",
+    "catalogId": "planar-boolean.overlap-two-axes-subtract",
+    "dimension": "mass",
+    "status": "verified",
+    "currentVersion": "reverified",
+    "lastVerified": {
+      "commit": "cc47871133fb7d536ffa7fd050066c51f4905708",
+      "tree": "Native fe3fa037",
+      "host": "Mac M4 / macOS 27.2",
+      "exit": "样本级 2xVerified=2；进程级 measurement-receipt.json",
+      "evidence": "docs/projection-cc47871-publish-receipt.md"
+    },
+    "note": "cc47871 当前质量状态：{\"Verified\":2}（每 op 候选侧 2 rep 样本状态计数，样本级口径）；物性分量总账另列：主 900 分量 312V/588U、唯一总账 1080=396V/684U（质量归档，不与样本级混算）。",
+    "utc": "2026-11-12T04:58:37Z",
+    "identity": {
+      "parameters": {
+        "fixture": "overlap-two-axes",
+        "function": 15902,
+        "defaultTolerance": 1e-05,
+        "tracking": true
+      },
+      "source": "scripts/BooleanOperationOracle.cs"
+    }
+  },
+  {
+    "kind": "case-update",
+    "catalogId": "planar-boolean.overlap-two-axes-subtract",
+    "dimension": "performance",
+    "status": "observed",
+    "currentVersion": "reverified",
+    "lastVerified": {
+      "commit": "cc47871133fb7d536ffa7fd050066c51f4905708",
+      "tree": "Native fe3fa037",
+      "host": "Mac M4 / macOS 27.2",
+      "exit": "样本级原 exit=allSamples rawExit/qualityStatus（本 op 2xVerified=2）；进程级见 measurement-receipt.json qualityStates（exit2-Unresolved=16/exit0-Verified=4）、runnerRawExit=2",
+      "evidence": "docs/projection-cc47871-publish-receipt.md"
+    },
+    "note": "cc47871 当前窗口：暖中位 基线 0.55835→候选 0.99445ms，变化 +78.1051%（基线→候选）；候选配对 GM/PK ratioMedian 0.875491 / 中位数之比 0.869997（两口径分列）；性能回退（必须保留），runnerPerformanceQualified=false（measurement-receipt.json）。",
+    "utc": "2026-11-12T04:58:37Z",
+    "identity": {
+      "parameters": {
+        "fixture": "overlap-two-axes",
+        "function": 15902,
+        "defaultTolerance": 1e-05,
+        "tracking": true
+      },
+      "source": "scripts/BooleanOperationOracle.cs"
+    }
+  },
+  {
+    "kind": "case-update",
+    "catalogId": "regular-curved.block-subtract",
+    "dimension": "function",
+    "status": "pass",
+    "currentVersion": "reverified",
+    "lastVerified": {
+      "commit": "cc47871133fb7d536ffa7fd050066c51f4905708",
+      "tree": "Native fe3fa037",
+      "host": "Mac M4 / macOS 27.2",
+      "exit": "runnerRawExit=2（measurement-receipt.json）",
+      "evidence": "docs/projection-cc47871-publish-receipt.md"
+    },
+    "note": "cc47871 窗口质量门（fresh/full/strict/finite）通过（60 对全过）——当前版本复验。",
+    "utc": "2026-11-12T04:58:37Z",
+    "identity": {
+      "parameters": {
+        "fixture": "block",
+        "function": 15902,
+        "tolerance": 1e-05,
+        "scale": 1,
+        "tracking": false
+      },
+      "source": "scripts/RegularCurvedBooleanOracle.cs"
+    }
+  },
+  {
+    "kind": "case-update",
+    "catalogId": "regular-curved.block-subtract",
+    "dimension": "mass",
+    "status": "unresolved",
+    "currentVersion": "reverified",
+    "lastVerified": {
+      "commit": "cc47871133fb7d536ffa7fd050066c51f4905708",
+      "tree": "Native fe3fa037",
+      "host": "Mac M4 / macOS 27.2",
+      "exit": "样本级 2xUnresolved=2；进程级 measurement-receipt.json",
+      "evidence": "docs/projection-cc47871-publish-receipt.md"
+    },
+    "note": "cc47871 当前质量状态：{\"Unresolved\":2}（每 op 候选侧 2 rep 样本状态计数，样本级口径）；物性分量总账另列：主 900 分量 312V/588U、唯一总账 1080=396V/684U（质量归档，不与样本级混算）。",
+    "utc": "2026-11-12T04:58:37Z",
+    "identity": {
+      "parameters": {
+        "fixture": "block",
+        "function": 15902,
+        "tolerance": 1e-05,
+        "scale": 1,
+        "tracking": false
+      },
+      "source": "scripts/RegularCurvedBooleanOracle.cs"
+    }
+  },
+  {
+    "kind": "case-update",
+    "catalogId": "regular-curved.block-subtract",
+    "dimension": "performance",
+    "status": "observed",
+    "currentVersion": "reverified",
+    "lastVerified": {
+      "commit": "cc47871133fb7d536ffa7fd050066c51f4905708",
+      "tree": "Native fe3fa037",
+      "host": "Mac M4 / macOS 27.2",
+      "exit": "样本级原 exit=allSamples rawExit/qualityStatus（本 op 2xUnresolved=2）；进程级见 measurement-receipt.json qualityStates（exit2-Unresolved=16/exit0-Verified=4）、runnerRawExit=2",
+      "evidence": "docs/projection-cc47871-publish-receipt.md"
+    },
+    "note": "cc47871 当前窗口：暖中位 基线 40.50215→候选 38.8493ms，变化 -4.08089%（基线→候选）；候选配对 GM/PK ratioMedian 18.22905 / 中位数之比 18.22884（两口径分列）；性能目标未达，runnerPerformanceQualified=false（measurement-receipt.json）。",
+    "utc": "2026-11-12T04:58:37Z",
+    "identity": {
+      "parameters": {
+        "fixture": "block",
+        "function": 15902,
+        "tolerance": 1e-05,
+        "scale": 1,
+        "tracking": false
+      },
+      "source": "scripts/RegularCurvedBooleanOracle.cs"
+    }
+  },
+  {
+    "kind": "case-update",
+    "catalogId": "solid-blend.plane-nurbs",
+    "dimension": "function",
+    "status": "pass",
+    "currentVersion": "reverified",
+    "lastVerified": {
+      "commit": "cc47871133fb7d536ffa7fd050066c51f4905708",
+      "tree": "Native fe3fa037",
+      "host": "Mac M4 / macOS 27.2",
+      "exit": "runnerRawExit=2（measurement-receipt.json）",
+      "evidence": "docs/projection-cc47871-publish-receipt.md"
+    },
+    "note": "cc47871 窗口质量门（fresh/full/strict/finite）通过（60 对全过）——当前版本复验。",
+    "utc": "2026-11-12T04:58:37Z",
+    "identity": {
+      "parameters": {
+        "bulge": 0.4,
+        "radius": 0.1,
+        "curvedWall": false,
+        "concave": false,
+        "tolerance": 1e-07,
+        "update": "v261",
+        "mode": "rounding-only"
+      },
+      "source": "scripts/RegularSolidBlendOracle.cs"
+    }
+  },
+  {
+    "kind": "case-update",
+    "catalogId": "solid-blend.plane-nurbs",
+    "dimension": "mass",
+    "status": "unresolved",
+    "currentVersion": "reverified",
+    "lastVerified": {
+      "commit": "cc47871133fb7d536ffa7fd050066c51f4905708",
+      "tree": "Native fe3fa037",
+      "host": "Mac M4 / macOS 27.2",
+      "exit": "样本级 2xUnresolved=2；进程级 measurement-receipt.json",
+      "evidence": "docs/projection-cc47871-publish-receipt.md"
+    },
+    "note": "cc47871 当前质量状态：{\"Unresolved\":2}（每 op 候选侧 2 rep 样本状态计数，样本级口径）；物性分量总账另列：主 900 分量 312V/588U、唯一总账 1080=396V/684U（质量归档，不与样本级混算）。",
+    "utc": "2026-11-12T04:58:37Z",
+    "identity": {
+      "parameters": {
+        "bulge": 0.4,
+        "radius": 0.1,
+        "curvedWall": false,
+        "concave": false,
+        "tolerance": 1e-07,
+        "update": "v261",
+        "mode": "rounding-only"
+      },
+      "source": "scripts/RegularSolidBlendOracle.cs"
+    }
+  },
+  {
+    "kind": "case-update",
+    "catalogId": "solid-blend.plane-nurbs",
+    "dimension": "performance",
+    "status": "observed",
+    "currentVersion": "reverified",
+    "lastVerified": {
+      "commit": "cc47871133fb7d536ffa7fd050066c51f4905708",
+      "tree": "Native fe3fa037",
+      "host": "Mac M4 / macOS 27.2",
+      "exit": "样本级原 exit=allSamples rawExit/qualityStatus（本 op 2xUnresolved=2）；进程级见 measurement-receipt.json qualityStates（exit2-Unresolved=16/exit0-Verified=4）、runnerRawExit=2",
+      "evidence": "docs/projection-cc47871-publish-receipt.md"
+    },
+    "note": "cc47871 当前窗口：暖中位 基线 597.1976→候选 500.76395ms，变化 -16.1477%（基线→候选）；候选配对 GM/PK ratioMedian 253.84728 / 中位数之比 244.25723（两口径分列）；性能目标未达，runnerPerformanceQualified=false（measurement-receipt.json）。",
+    "utc": "2026-11-12T04:58:37Z",
+    "identity": {
+      "parameters": {
+        "bulge": 0.4,
+        "radius": 0.1,
+        "curvedWall": false,
+        "concave": false,
+        "tolerance": 1e-07,
+        "update": "v261",
+        "mode": "rounding-only"
+      },
+      "source": "scripts/RegularSolidBlendOracle.cs"
+    }
+  },
+  {
+    "kind": "case-update",
+    "catalogId": "short-edge.a1-r0.5-t1e-07-reversefalse-default",
+    "dimension": "function",
+    "status": "pass",
+    "currentVersion": "reverified",
+    "lastVerified": {
+      "commit": "cc47871133fb7d536ffa7fd050066c51f4905708",
+      "tree": "Native fe3fa037",
+      "host": "Mac M4 / macOS 27.2",
+      "exit": "runnerRawExit=2（measurement-receipt.json）",
+      "evidence": "docs/projection-cc47871-publish-receipt.md"
+    },
+    "note": "cc47871 窗口质量门（fresh/full/strict/finite）通过（60 对全过）——当前版本复验。",
+    "utc": "2026-11-12T04:58:37Z",
+    "identity": {
+      "parameters": {
+        "angle": 1,
+        "radius": 0.5,
+        "tolerance": 1e-07,
+        "reverseSelection": false,
+        "update": "default",
+        "seedFloor": 0,
+        "supportPhase": 0,
+        "inputScale": 1
+      },
+      "source": "scripts/ShortEdgeBlendOracle.cs"
+    }
+  },
+  {
+    "kind": "case-update",
+    "catalogId": "short-edge.a1-r0.5-t1e-07-reversefalse-default",
+    "dimension": "mass",
+    "status": "unresolved",
+    "currentVersion": "reverified",
+    "lastVerified": {
+      "commit": "cc47871133fb7d536ffa7fd050066c51f4905708",
+      "tree": "Native fe3fa037",
+      "host": "Mac M4 / macOS 27.2",
+      "exit": "样本级 2xUnresolved=2；进程级 measurement-receipt.json",
+      "evidence": "docs/projection-cc47871-publish-receipt.md"
+    },
+    "note": "cc47871 当前质量状态：{\"Unresolved\":2}（每 op 候选侧 2 rep 样本状态计数，样本级口径）；物性分量总账另列：主 900 分量 312V/588U、唯一总账 1080=396V/684U（质量归档，不与样本级混算）。",
+    "utc": "2026-11-12T04:58:37Z",
+    "identity": {
+      "parameters": {
+        "angle": 1,
+        "radius": 0.5,
+        "tolerance": 1e-07,
+        "reverseSelection": false,
+        "update": "default",
+        "seedFloor": 0,
+        "supportPhase": 0,
+        "inputScale": 1
+      },
+      "source": "scripts/ShortEdgeBlendOracle.cs"
+    }
+  },
+  {
+    "kind": "case-update",
+    "catalogId": "short-edge.a1-r0.5-t1e-07-reversefalse-default",
+    "dimension": "performance",
+    "status": "observed",
+    "currentVersion": "reverified",
+    "lastVerified": {
+      "commit": "cc47871133fb7d536ffa7fd050066c51f4905708",
+      "tree": "Native fe3fa037",
+      "host": "Mac M4 / macOS 27.2",
+      "exit": "样本级原 exit=allSamples rawExit/qualityStatus（本 op 2xUnresolved=2）；进程级见 measurement-receipt.json qualityStates（exit2-Unresolved=16/exit0-Verified=4）、runnerRawExit=2",
+      "evidence": "docs/projection-cc47871-publish-receipt.md"
+    },
+    "note": "cc47871 当前窗口：暖中位 基线 646.96075→候选 548.4714ms，变化 -15.2234%（基线→候选）；候选配对 GM/PK ratioMedian 331.97129 / 中位数之比 332.04468（两口径分列）；性能目标未达，runnerPerformanceQualified=false（measurement-receipt.json）。",
+    "utc": "2026-11-12T04:58:37Z",
+    "identity": {
+      "parameters": {
+        "angle": 1,
+        "radius": 0.5,
+        "tolerance": 1e-07,
+        "reverseSelection": false,
+        "update": "default",
+        "seedFloor": 0,
+        "supportPhase": 0,
+        "inputScale": 1
+      },
+      "source": "scripts/ShortEdgeBlendOracle.cs"
+    }
+  }
+]
