@@ -1,0 +1,279 @@
+{
+  "runId": "20261112T132500Z-queryab597",
+  "readOnly": true,
+  "noModelingOrTestsExecuted": true,
+  "sourceSha256": "0e28d692773ea52abb1d379da3f7a87911f04f285f046802bbbd43487994b8fd",
+  "reads": [
+    {
+      "url": "https://qingyu1-linux.tail77e06.ts.net/apps/gm-kernel-progress/data/index.json",
+      "utc": "2026-11-12T07:05:59.7927737+00:00",
+      "status": 200,
+      "bytes": 3260,
+      "sha256": "c29eabef15cad447b8cc5eccb769d797f5df3e2d2a9de8163fbfb0bfb946a295",
+      "saved": "data_index.json"
+    },
+    {
+      "url": "https://qingyu1-linux.tail77e06.ts.net/apps/gm-kernel-progress/data/project-overview.json",
+      "utc": "2026-11-12T07:05:59.8343500+00:00",
+      "status": 200,
+      "bytes": 822283,
+      "sha256": "8a743ed8c1b62d8f3935417cec3fa2dcbbe343f6a6d84d96a05e04f427b45477",
+      "saved": "data_project-overview.json"
+    },
+    {
+      "url": "https://qingyu1-linux.tail77e06.ts.net/apps/gm-kernel-progress/data/overview-events.json",
+      "utc": "2026-11-12T07:05:59.8512781+00:00",
+      "status": 200,
+      "bytes": 20931,
+      "sha256": "9e4916f91318ab1f4eb3e55b06798f971647670df66d5a5b0dfbd93bb302f24f",
+      "saved": "data_overview-events.json"
+    },
+    {
+      "url": "https://qingyu1-linux.tail77e06.ts.net/apps/gm-kernel-progress/data/runs/20261112T132500Z-queryab597/manifest.json",
+      "utc": "2026-11-12T07:05:59.8602110+00:00",
+      "status": 200,
+      "bytes": 22199,
+      "sha256": "e8bb5c626e9e2154c24e5c53ac6238b8b0551966817d9be2ce63e313a777d742",
+      "saved": "data_runs_20261112T132500Z-queryab597_manifest.json"
+    },
+    {
+      "url": "https://qingyu1-linux.tail77e06.ts.net/apps/gm-kernel-progress/data/runs/20261112T132500Z-queryab597/evidence/five-axial-queries.json",
+      "utc": "2026-11-12T07:05:59.8710915+00:00",
+      "status": 200,
+      "bytes": 10967,
+      "sha256": "5e89a4b423d0d1e6c786fcdd9c6881b1791bc3b5b9aefa74efff66b8c07c0025",
+      "saved": "data_runs_20261112T132500Z-queryab597_evidence_five-axial-queries.json"
+    },
+    {
+      "url": "https://qingyu1-linux.tail77e06.ts.net/apps/gm-kernel-progress/data/runs/20261112T132500Z-queryab597/evidence/mass-reassessment-summary.json",
+      "utc": "2026-11-12T07:05:59.8811400+00:00",
+      "status": 200,
+      "bytes": 1237,
+      "sha256": "490fe18a48b341b3046fc020951bcbf36208094b9d9db1fb11f1123a641ecb3f",
+      "saved": "data_runs_20261112T132500Z-queryab597_evidence_mass-reassessment-summary.json"
+    },
+    {
+      "url": "https://qingyu1-linux.tail77e06.ts.net/apps/gm-kernel-progress/data/runs/20261112T132500Z-queryab597/evidence/query-510-summary.json",
+      "utc": "2026-11-12T07:05:59.8876579+00:00",
+      "status": 200,
+      "bytes": 1056,
+      "sha256": "6224592e8969817b34119e394482f335d00d748d03a1f46fc09928ff160aa1d0",
+      "saved": "data_runs_20261112T132500Z-queryab597_evidence_query-510-summary.json"
+    },
+    {
+      "url": "https://qingyu1-linux.tail77e06.ts.net/apps/gm-kernel-progress/data/runs/20261112T132500Z-queryab597/evidence/results.gz.json",
+      "utc": "2026-11-12T07:05:59.9009451+00:00",
+      "status": 200,
+      "bytes": 257328,
+      "sha256": "3f29e8dc9965978bbef9e7e0b7db1b509e4b6e119b9ebbd653368e91a29db270",
+      "saved": "data_runs_20261112T132500Z-queryab597_evidence_results.gz.json"
+    },
+    {
+      "url": "https://qingyu1-linux.tail77e06.ts.net/apps/gm-kernel-progress/data/runs/20261112T132500Z-queryab597/meshes/gm-2-after-0.json",
+      "utc": "2026-11-12T07:05:59.9083974+00:00",
+      "status": 200,
+      "bytes": 37859,
+      "sha256": "4bd8785d64c152e055bdc083a079b2df7389aeb7b51c7decc8aef61aa73ae16e",
+      "saved": "data_runs_20261112T132500Z-queryab597_meshes_gm-2-after-0.json"
+    },
+    {
+      "url": "https://qingyu1-linux.tail77e06.ts.net/apps/gm-kernel-progress/data/runs/20261112T132500Z-queryab597/meshes/gm-2-before.json",
+      "utc": "2026-11-12T07:05:59.9160995+00:00",
+      "status": 200,
+      "bytes": 22275,
+      "sha256": "a8a6bfebf4d5414910db1c489daf5135c02a357e5b1261a33605a0b61a7adf9a",
+      "saved": "data_runs_20261112T132500Z-queryab597_meshes_gm-2-before.json"
+    },
+    {
+      "url": "https://qingyu1-linux.tail77e06.ts.net/apps/gm-kernel-progress/data/runs/20261112T132500Z-queryab597/meshes/gm-3-after-0.json",
+      "utc": "2026-11-12T07:05:59.9234182+00:00",
+      "status": 200,
+      "bytes": 53298,
+      "sha256": "ae0eb0becb2031ca5497539fd64cdb597823180707a984e6b221eab9914231de",
+      "saved": "data_runs_20261112T132500Z-queryab597_meshes_gm-3-after-0.json"
+    },
+    {
+      "url": "https://qingyu1-linux.tail77e06.ts.net/apps/gm-kernel-progress/data/runs/20261112T132500Z-queryab597/meshes/gm-3-before.json",
+      "utc": "2026-11-12T07:05:59.9303522+00:00",
+      "status": 200,
+      "bytes": 22308,
+      "sha256": "b2197e59bfbfefa909f91a6b1777f425d5c381ffae1e9a70f607d60dadca2d7e",
+      "saved": "data_runs_20261112T132500Z-queryab597_meshes_gm-3-before.json"
+    },
+    {
+      "url": "https://qingyu1-linux.tail77e06.ts.net/apps/gm-kernel-progress/data/runs/20261112T132500Z-queryab597/meshes/gm-4-after-0.json",
+      "utc": "2026-11-12T07:05:59.9393265+00:00",
+      "status": 200,
+      "bytes": 37695,
+      "sha256": "ffa8b58e8fe50ce42254c0d395e1649f71f21db2d0cf9d5eef9dbe57041fa7f6",
+      "saved": "data_runs_20261112T132500Z-queryab597_meshes_gm-4-after-0.json"
+    },
+    {
+      "url": "https://qingyu1-linux.tail77e06.ts.net/apps/gm-kernel-progress/data/runs/20261112T132500Z-queryab597/meshes/gm-4-before.json",
+      "utc": "2026-11-12T07:05:59.9453363+00:00",
+      "status": 200,
+      "bytes": 22284,
+      "sha256": "500ca22729f216d7f8fa79dc3eae1bee73aa343206ab5722a0d51eae8662fc13",
+      "saved": "data_runs_20261112T132500Z-queryab597_meshes_gm-4-before.json"
+    },
+    {
+      "url": "https://qingyu1-linux.tail77e06.ts.net/apps/gm-kernel-progress/data/runs/20261112T132500Z-queryab597/meshes/pk-2-after-0.json",
+      "utc": "2026-11-12T07:05:59.9516917+00:00",
+      "status": 200,
+      "bytes": 38469,
+      "sha256": "ff755aef50d8305c53038d5fd1864d9592101564d2473faaa63c707ddc6b61a1",
+      "saved": "data_runs_20261112T132500Z-queryab597_meshes_pk-2-after-0.json"
+    },
+    {
+      "url": "https://qingyu1-linux.tail77e06.ts.net/apps/gm-kernel-progress/data/runs/20261112T132500Z-queryab597/meshes/pk-2-before.json",
+      "utc": "2026-11-12T07:05:59.9579395+00:00",
+      "status": 200,
+      "bytes": 22273,
+      "sha256": "bc67f44bf78fc6a2e3ff2e140c636b214c731bdf44986fc6235e48d202dc1b3c",
+      "saved": "data_runs_20261112T132500Z-queryab597_meshes_pk-2-before.json"
+    },
+    {
+      "url": "https://qingyu1-linux.tail77e06.ts.net/apps/gm-kernel-progress/data/runs/20261112T132500Z-queryab597/meshes/pk-3-after-0.json",
+      "utc": "2026-11-12T07:05:59.9670199+00:00",
+      "status": 200,
+      "bytes": 54529,
+      "sha256": "4ac3f4ed5ed9924ef9c04af665d1c62133fbdfccca3c1f1ad378e0c36614a1a0",
+      "saved": "data_runs_20261112T132500Z-queryab597_meshes_pk-3-after-0.json"
+    },
+    {
+      "url": "https://qingyu1-linux.tail77e06.ts.net/apps/gm-kernel-progress/data/runs/20261112T132500Z-queryab597/meshes/pk-3-before.json",
+      "utc": "2026-11-12T07:05:59.9743134+00:00",
+      "status": 200,
+      "bytes": 22318,
+      "sha256": "b3e15900436d0f2568aad677c853f4c376bbcae38c73cf738609782f0566b69d",
+      "saved": "data_runs_20261112T132500Z-queryab597_meshes_pk-3-before.json"
+    },
+    {
+      "url": "https://qingyu1-linux.tail77e06.ts.net/apps/gm-kernel-progress/data/runs/20261112T132500Z-queryab597/meshes/pk-4-after-0.json",
+      "utc": "2026-11-12T07:05:59.9804218+00:00",
+      "status": 200,
+      "bytes": 38309,
+      "sha256": "ba9a4bbf250340b311fc654cda160458954677f64507cc29fc8ce8f6008546ee",
+      "saved": "data_runs_20261112T132500Z-queryab597_meshes_pk-4-after-0.json"
+    },
+    {
+      "url": "https://qingyu1-linux.tail77e06.ts.net/apps/gm-kernel-progress/data/runs/20261112T132500Z-queryab597/meshes/pk-4-before.json",
+      "utc": "2026-11-12T07:05:59.9875963+00:00",
+      "status": 200,
+      "bytes": 22294,
+      "sha256": "52176b7f3145e000473f5b62209a5bde46c37db257b18163803471e52010938c",
+      "saved": "data_runs_20261112T132500Z-queryab597_meshes_pk-4-before.json"
+    },
+    {
+      "url": "https://qingyu1-linux.tail77e06.ts.net/apps/gm-kernel-progress/data/runs/20261112T045837Z-projcc47871/manifest.json",
+      "utc": "2026-11-12T07:06:00.0926135+00:00",
+      "status": 200,
+      "bytes": 65279,
+      "sha256": "c6d424b6f0e82dee4bef29d586dcd756fb1093dd435243727f3abdabb1a18178",
+      "saved": "data_runs_20261112T045837Z-projcc47871_manifest.json"
+    }
+  ],
+  "checks": [
+    "new run indexed with calculation source",
+    "calculation source",
+    "delivery source",
+    "independent Native/math review",
+    "gzip wire hash/size match actual manifest",
+    "gzip content magic independent of json extension",
+    "decoded full original results equal local bytes",
+    "all original 20 points and input sources retained",
+    "510 summary closure-final-self-direct captureEnabled",
+    "510 summary closure-final-self-direct verifiedCount",
+    "510 summary closure-final-self-direct unresolvedCount",
+    "510 summary closure-final-self-direct differentCount",
+    "510 summary closure-final-self-direct nativeRoundtripDifferentRows",
+    "510 summary closure-final-self-direct gmFiniteBoundaryMemberships",
+    "510 summary closure-final-import-direct captureEnabled",
+    "510 summary closure-final-import-direct verifiedCount",
+    "510 summary closure-final-import-direct unresolvedCount",
+    "510 summary closure-final-import-direct differentCount",
+    "510 summary closure-final-import-direct nativeRoundtripDifferentRows",
+    "510 summary closure-final-import-direct gmFiniteBoundaryMemberships",
+    "510 summary closure-final-self captureEnabled",
+    "510 summary closure-final-self verifiedCount",
+    "510 summary closure-final-self unresolvedCount",
+    "510 summary closure-final-self differentCount",
+    "510 summary closure-final-self nativeRoundtripDifferentRows",
+    "510 summary closure-final-self gmFiniteBoundaryMemberships",
+    "510 summary closure-final-import captureEnabled",
+    "510 summary closure-final-import verifiedCount",
+    "510 summary closure-final-import unresolvedCount",
+    "510 summary closure-final-import differentCount",
+    "510 summary closure-final-import nativeRoundtripDifferentRows",
+    "510 summary closure-final-import gmFiniteBoundaryMemberships",
+    "mass norm and all Joint before/after counts retain source",
+    "whole catalog 463 unique entries",
+    "local-blend.cylinder-rim-fillet current query pass/source",
+    "local-blend.cylinder-rim-fillet historical 5000 preserved",
+    "local-blend.cylinder-both-rim-fillet current query pass/source",
+    "local-blend.cylinder-both-rim-fillet historical 5000 preserved",
+    "local-blend.cylinder-rim-chamfer current query pass/source",
+    "local-blend.cylinder-rim-chamfer historical 5000 preserved",
+    "local-blend.cylinder-rim-chamfer actual gm before mesh/source JSON",
+    "local-blend.cylinder-rim-chamfer actual gm after mesh/source JSON",
+    "local-blend.cylinder-rim-chamfer actual pk before mesh/source JSON",
+    "local-blend.cylinder-rim-chamfer actual pk after mesh/source JSON",
+    "local-blend.cylinder-both-rim-chamfer current query pass/source",
+    "local-blend.cylinder-both-rim-chamfer historical 5000 preserved",
+    "local-blend.cylinder-both-rim-chamfer actual gm before mesh/source JSON",
+    "local-blend.cylinder-both-rim-chamfer actual gm after mesh/source JSON",
+    "local-blend.cylinder-both-rim-chamfer actual pk before mesh/source JSON",
+    "local-blend.cylinder-both-rim-chamfer actual pk after mesh/source JSON",
+    "local-blend.cylinder-unequal-chamfer current query pass/source",
+    "local-blend.cylinder-unequal-chamfer historical 5000 preserved",
+    "local-blend.cylinder-unequal-chamfer actual gm before mesh/source JSON",
+    "local-blend.cylinder-unequal-chamfer actual gm after mesh/source JSON",
+    "local-blend.cylinder-unequal-chamfer actual pk before mesh/source JSON",
+    "local-blend.cylinder-unequal-chamfer actual pk after mesh/source JSON",
+    "Projection and query sources remain separate",
+    "overview unresolved boundary.probes-510",
+    "index unchanged throughout snapshot"
+  ],
+  "issues": [
+    "local-blend.cylinder-rim-chamfer published radius=0.1 differs from actual mark radius=null, range0=0.4, range1=0.4",
+    "local-blend.cylinder-both-rim-chamfer published radius=0.1 differs from actual mark radius=null, range0=0.4, range1=0.4",
+    "local-blend.cylinder-unequal-chamfer published radius=0.1 differs from actual mark radius=null, range0=0.3, range1=0.6",
+    "run-detail 510 case is pass/correctnessQualified=true although original direct 15/16 U remain; overview correctly says unresolved",
+    "510 source path is scripts/ConeAxisProbe.cs instead of the actual ShortEdgeBlendOracle producer",
+    "mass.norm-reassessment-joint source path scripts/ReviewNativeQueryMath.cs does not exist at claimed revision ab597e8a24b2ef23753507c8ca3e43d12edcc650",
+    "managed suite detail invents a paired PK dotnet-test API/count; original is one GM managed suite"
+  ],
+  "publicationCommit": "f0da3f9931775df6c8bea674bb2ec2ea421166b1",
+  "originalReaderSource": "temp_docs/query-numerics-closure/online-readback-v1/reader-original.cs",
+  "readbackToolRawExit": 2,
+  "publicationClosureAccepted": false,
+  "nativeIndependentAcceptanceUnaffected": true,
+  "originalResults": {
+    "path": "docs/query-numerics-closure/results.json",
+    "bytes": 5247186,
+    "sha256": "aed7c9787a03bbb798f7a7be0f9f3b832400c15956af205a7b55662e4866bd60",
+    "gzipBytes": 257328,
+    "gzipSha256": "3f29e8dc9965978bbef9e7e0b7db1b509e4b6e119b9ebbd653368e91a29db270",
+    "decodedBytesEqual": true
+  },
+  "manualSourceClarifications": [
+    {
+      "record": "mass.norm-reassessment-joint",
+      "finding": "The current event is a read-only reassessment of 72 historical PK reports; operation/apis metadata currently presents PK_TOPOL_eval_mass_props as paired new GM/PK API work. Preserve the historical evaluation actors and label this event as reassessment, not a new integration call."
+    },
+    {
+      "record": "mass.faq-geometry-vs-mass",
+      "finding": "The online FAQ adds an unproved universal local-approximation range 1e-8/1e-5 for strict intersection/trimming/topology. The accepted source states that tolerance-based checks do not prove global zero error/normal graph; it does not establish this universal algorithm precision range."
+    }
+  ],
+  "overviewComparison": {
+    "semanticEqualsFixedPublicationExceptGeneratedAt": true,
+    "liveGeneratedAt": "2026-11-12T07:00:20.2483811+00:00",
+    "fixedGeneratedAt": "2026-11-12T06:57:29.5695905+00:00"
+  },
+  "projectionOriginalAccounting": {
+    "source": "data/runs/20261112T045837Z-projcc47871/manifest.json",
+    "observed": "72 unique historical reports, 1080 components, 396 Verified / 684 Unresolved / 0 Different",
+    "unchangedByQueryReassessment": true
+  }
+}
