@@ -10,4 +10,4 @@ Parasolid官方PK_BSURF_sf_t Documentation Notes明确vertex_dim=3是三维多�
 
 初始定向92/92原0，含原有理/非有理、原25矩阵逐位方向对照、C1/periodic资格、degenerate、错误witness、nearest、extension及真实SupportingBlend/RegularSolidBlend消费者。新增独立二项分布矩验证所有27分量及零分配/短输出；另用真实u^4 v^2控制网验证域外(1.125,1.25)的原生tensor线性扩展值2.25、du=6、dv=3、duv=8、duu=dvv=0，不能用多项式外插冒充。原日志/TRX/diff在 `temp_docs/polynomial-jet/`。
 
-当前只为已验证源码进展。下一步先用真实PK和相同当前helper验证完整NURBS API实际开发收益；弱方向不追加全套/ABBA或微审。未签独立算法接受、完整质量/时间资格、main集成、上线或PK目标，Unresolved/Missing/raw exits分开保留。
+后续实际完整API开发对照仅观察−1.797%且波动明显，本实现停止、不进入正式候选。完整原件、两端实际加载源绑定及结算见 `docs/Rejected_Polynomial_Spline_Jets.md`，不追加全套/正式ABBA或微审。质量/数学控制结果保留，Unresolved/Missing/raw exits分层；后续不依赖此实现。
