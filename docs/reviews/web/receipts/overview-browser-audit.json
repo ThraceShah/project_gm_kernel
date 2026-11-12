@@ -1,0 +1,108 @@
+{
+  "checkedUtc": "2026-11-12T02:07:44.028Z",
+  "rows": [
+    {
+      "name": "default view is project overview with counters",
+      "ok": true,
+      "detail": {}
+    },
+    {
+      "name": "catalog rows rendered and filterable",
+      "ok": true,
+      "detail": {
+        "rowCount": 463
+      }
+    },
+    {
+      "name": "query-gap row keeps fail + real evidence text",
+      "ok": true,
+      "detail": {}
+    },
+    {
+      "name": "evidence is plain local-path text (not a clickable link)",
+      "ok": true,
+      "detail": {}
+    },
+    {
+      "name": "cross-suite row shows own source but borrowed log evidence",
+      "ok": true,
+      "detail": {}
+    },
+    {
+      "name": "search narrows the matrix",
+      "ok": true,
+      "detail": {
+        "searchCount": 9
+      }
+    },
+    {
+      "name": "family filter works",
+      "ok": true,
+      "detail": {
+        "boolCount": 186
+      }
+    },
+    {
+      "name": "issues filter works",
+      "ok": true,
+      "detail": {
+        "issueCount": 71
+      }
+    },
+    {
+      "name": "cylinder rows carry step disclaimer text",
+      "ok": true,
+      "detail": {}
+    },
+    {
+      "name": "model jump opens the exact run/case (blend.axial-cylinder)",
+      "ok": true,
+      "detail": {}
+    },
+    {
+      "name": "SPECIFIC STEP: unequal-chamfer link lands on its own step (expect FAIL: no step id in display contract)",
+      "ok": false,
+      "detail": {
+        "landsOnFirstStep": true
+      }
+    },
+    {
+      "name": "back returns to overview",
+      "ok": true,
+      "detail": {}
+    },
+    {
+      "name": "refresh lands on overview again",
+      "ok": true,
+      "detail": {}
+    },
+    {
+      "name": "EVENT UI: top counter equals recomputed pass rows",
+      "ok": false,
+      "detail": {
+        "counter": "188",
+        "recomputedPassRows": 189
+      }
+    },
+    {
+      "name": "390px mobile renders overview rows",
+      "ok": true,
+      "detail": {
+        "mobRows": 463
+      }
+    },
+    {
+      "name": "missing overview data shows explicit failure screen (no fake data)",
+      "ok": true,
+      "detail": {}
+    },
+    {
+      "name": "no uncaught JS errors",
+      "ok": true,
+      "detail": {
+        "errors": []
+      }
+    }
+  ],
+  "errors": []
+}
