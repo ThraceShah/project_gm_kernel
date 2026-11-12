@@ -9,6 +9,9 @@
 global using GeomTag=System.Int32;
 global using BufferCount=System.Int32;
 global using IntegerExponent=System.Int32;
+global using ApiErrorCode=System.Int32;
+global using SplineDegree=System.Int32;
+global using KnotMultiplicity=System.Int32;
 using System.Numerics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -24,6 +27,13 @@ using M=ProjectGmKernel.Native.Generated;
 using static parasolid;
 Directory.SetCurrentDirectory(Path.Combine(Path.GetDirectoryName(Source())!,".."));
 const string output="temp_docs/independent-projection-seed-a9085ed/controls.json";
+if(args.SequenceEqual(new[]{"--bounds"})||args.SequenceEqual(new[]{"--bounds-check"}))
+{
+    var destination="temp_docs/independent-projection-seed-a9085ed/bounds-verified.json";var verified=CheckBounds();
+    if(args[0]=="--bounds-check")Require(JsonNode.DeepEquals(verified,JsonNode.Parse(File.ReadAllText(destination))),"same corrected bounds");
+    else{Require(!File.Exists(destination),"preserve bound verification");File.WriteAllText(destination,verified.ToJsonString());}
+    Console.WriteLine("PASS corrected exact dyadic box minimum and maximum");return;
+}
 Require(!File.Exists(output),"preserve independent execution");
 if(!ParasolidScriptHost.TryStartSession("Independent projection seed review",out var host,out var message))throw new Exception(message);
 using var session=host;
@@ -90,11 +100,7 @@ try
         Require(BSplineProjection.Closest(patch,new(){Z=1},0,ref best)==AlgorithmStatus.InvalidInput,"invalid tolerance");
         failures.Add((JsonNode)new JsonObject{["case"]="degree-zero/resource/invalid",["oldSeeds"]=old,["tooTightStatus"]=status.ToString()});
     }
-    var upper=typeof(BSplineProjection).GetMethod("UpperDistance",BindingFlags.Static|BindingFlags.NonPublic)!.CreateDelegate<DistanceBound>();
-    var lower=typeof(BSplineProjection).GetMethod("BoxDistance",BindingFlags.Static|BindingFlags.NonPublic)!.CreateDelegate<DistanceBound>();
-    Span<IntervalNumber> cube=stackalloc IntervalNumber[3];cube[0]=new(-.25,.5);cube[1]=new(-.5,.25);cube[2]=new(-.125,.125);var query=new KernelVector3{X=1,Y=-1,Z=.625};
-    var lo=lower(cube,query);var hi=upper(cube,query);Require(Dyadic.Of(lo)*Dyadic.Of(lo)<=Dyadic.Of(.75*.75+.5*.5+.5*.5),"exact box lower");Require(Dyadic.Of(hi)*Dyadic.Of(hi)>=Dyadic.Of(1.25*1.25+1.25*1.25+.75*.75),"exact box upper");
-    report["privateOriginalBounds"]=new JsonObject{["lower"]=lo,["upper"]=hi,["exactDyadicChecks"]=true};
+    report["privateOriginalBounds"]=CheckBounds();
 }
 finally{BSplineProjection.AllSubdivisionSeeds=false;KernelRuntime.SessionStop();}
 unsafe
@@ -116,27 +122,34 @@ static KernelVector3 Map(KernelVector3 p,bool transform)=>transform?new(){X=p.Z+
 static double Squared(KernelVector3 p,KernelVector3 q)=>(p.X-q.X)*(p.X-q.X)+(p.Y-q.Y)*(p.Y-q.Y)+(p.Z-q.Z)*(p.Z-q.Z);
 static void Certificate(double upper,double minimumSquared,double tolerance)
 {var a=Dyadic.Of(upper);Require(a*a>=Dyadic.Of(minimumSquared),"valid upper certificate");var gap=a-Dyadic.Of(tolerance);Require(gap*gap<=Dyadic.Of(minimumSquared),"closed global gap");}
+static JsonObject CheckBounds()
+{
+    var upper=typeof(BSplineProjection).GetMethod("UpperDistance",BindingFlags.Static|BindingFlags.NonPublic)!.CreateDelegate<DistanceBound>();var lower=typeof(BSplineProjection).GetMethod("BoxDistance",BindingFlags.Static|BindingFlags.NonPublic)!.CreateDelegate<DistanceBound>();
+    Span<IntervalNumber> cube=stackalloc IntervalNumber[3];cube[0]=new(-.25,.5);cube[1]=new(-.5,.25);cube[2]=new(-.125,.125);var query=new KernelVector3{X=1,Y=-1,Z=.625};var lo=lower(cube,query);var hi=upper(cube,query);
+    Require(Dyadic.Of(lo)*Dyadic.Of(lo)<=Dyadic.Of(.5*.5+.5*.5+.5*.5),"exact box lower");Require(Dyadic.Of(hi)*Dyadic.Of(hi)>=Dyadic.Of(1.25*1.25+1.25*1.25+.75*.75),"exact box upper");
+    return new JsonObject{["lower"]=lo,["upper"]=hi,["exactMinimumSquared"]=.75,["exactMaximumSquared"]=3.6875,["exactDyadicChecks"]=true};
+}
 static void Require(bool value,string label){if(!value)throw new Exception(label);}
-static void Check(int error,string label)=>Require(error==0,label+" error="+error);
+static void Check(ApiErrorCode error,string label)=>Require(error==0,label+" error="+error);
 static string Source([CallerFilePath]string path="")=>path;
 static string Hash(string path)=>Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(path)));
 static string Product(string folder,string name){var source=JsonNode.Parse(File.ReadAllText(folder+"/meshes/"+name))!["source"]!;var path=folder+"/"+(string)source["xtArtifact"]!;Require(Hash(path)==(string?)source["xtSha256"],"sealed product hash");return path;}
 static unsafe GeomTag Receive(string path){var bytes=File.ReadAllBytes(path);fixed(byte* pointer=bytes){var block=new PK_MEMORY_block_t(null,(ulong)bytes.Length,pointer);var options=new PK_PART_receive_o_t{transmit_format=PK_transmit_format_text_c};BufferCount count;PK_PART_t* parts;Check(PK_PART_receive_b(block,&options,&count,&parts),"receive");try{Require(count==1,"one body");return parts[0];}finally{Check(PK_MEMORY_free(parts),"free parts");}}}
 static unsafe void Full(GeomTag body){var options=new PK_BODY_check_o_t{max_faults=100};BufferCount count;PK_check_fault_t* faults;Check(PK_BODY_check(body,&options,&count,&faults),"full check");try{Require(count==0,"full faults="+count);}finally{if(faults!=null)Check(PK_MEMORY_free(faults),"free faults");}}
-static unsafe void PkControl(in BSurfaceView surface,double[] poles,BufferCount degree,BufferCount nu,BufferCount dimension,bool rational,double[] uk,double[] vk,KernelVector3 target,double d2,JsonArray rows)
+static unsafe void PkControl(in BSurfaceView surface,double[] poles,SplineDegree degree,BufferCount nu,BufferCount dimension,bool rational,double[] uk,double[] vk,KernelVector3 target,double d2,JsonArray rows)
 {
-    double[] uvalues=uk.Distinct().ToArray(),vvalues=vk.Distinct().ToArray();int[] um=uvalues.Select(x=>uk.Count(y=>x==y)).ToArray(),vm=vvalues.Select(x=>vk.Count(y=>x==y)).ToArray();
-    fixed(double* p=poles)fixed(double* u=uvalues)fixed(double* v=vvalues)fixed(int* a=um)fixed(int* b=vm)
+    double[] uvalues=uk.Distinct().ToArray(),vvalues=vk.Distinct().ToArray();KnotMultiplicity[] um=uvalues.Select(x=>uk.Count(y=>x==y)).ToArray(),vm=vvalues.Select(x=>vk.Count(y=>x==y)).ToArray();
+    fixed(double* p=poles)fixed(double* u=uvalues)fixed(double* v=vvalues)fixed(KnotMultiplicity* a=um)fixed(KnotMultiplicity* b=vm)
     {
         var sf=new PK_BSURF_sf_t{u_degree=degree,v_degree=1,n_u_vertices=nu,n_v_vertices=2,vertex_dim=dimension,is_rational=rational?PK_LOGICAL_true:PK_LOGICAL_false,vertex=p,form=PK_BSURF_form_unset_c,n_u_knots=uvalues.Length,n_v_knots=vvalues.Length,u_knot=u,v_knot=v,u_knot_mult=a,v_knot_mult=b,u_knot_type=PK_knot_unset_c,v_knot_type=PK_knot_unset_c,self_intersecting=PK_self_intersect_unset_c,convexity=PK_convexity_unset_c};
         GeomTag reference,actual;Check(PK_BSURF_create(&sf,&reference),"PK surface");Check(KernelRuntime.BSurfCreate((M.PK_BSURF_sf_s*)&sf,&actual),"GM surface");
         try
         {
             var vector=new PK_VECTOR_t();vector.coord[0]=target.X;vector.coord[1]=target.Y;vector.coord[2]=target.Z;
-            var options=new PK_GEOM_range_vector_o_t{opt_level=PK_range_opt_accuracy_c,have_tolerance=PK_LOGICAL_true,tolerance=1e-7};int found;var range=new PK_range_1_r_t();Check(PK_GEOM_range_vector(reference,vector,&options,&found,&range),"PK global range");Require(found==PK_range_result_found_c&&Math.Abs(range.distance*range.distance-d2)<1e-10,"PK known finite minimum");
+            var options=new PK_GEOM_range_vector_o_t{opt_level=PK_range_opt_accuracy_c,have_tolerance=PK_LOGICAL_true,tolerance=1e-7};PK_range_result_t found;var range=new PK_range_1_r_t();Check(PK_GEOM_range_vector(reference,vector,&options,&found,&range),"PK global range");Require(found==PK_range_result_found_c&&Math.Abs(range.distance*range.distance-d2)<1e-10,"PK known finite minimum");
             foreach(var old in new[]{true,false})
             {
-                BSplineProjection.AllSubdivisionSeeds=old;var ownRange=new M.PK_range_1_r_s();int ownFound;var error=KernelRuntime.GeomRangeVector(actual,*(M.PK_VECTOR_s*)&vector,(M.PK_GEOM_range_vector_o_s*)&options,&ownFound,&ownRange);
+                BSplineProjection.AllSubdivisionSeeds=old;var ownRange=new M.PK_range_1_r_s();PK_range_result_t ownFound;var error=KernelRuntime.GeomRangeVector(actual,*(M.PK_VECTOR_s*)&vector,(M.PK_GEOM_range_vector_o_s*)&options,&ownFound,&ownRange);
                 Require(error==0?ownFound==PK_range_result_found_c&&Math.Abs(ownRange.distance*ownRange.distance-d2)<2e-7:degree==2&&error==M.ParasolidConstants.PK_ERROR_cant_do_intersect,"GM public finite range/failure gate");
                 rows.Add((JsonNode)new JsonObject{["rational"]=rational,["degree"]=degree,["allSubdivisionSeeds"]=old,["pkDistance"]=range.distance,["gmError"]=error,["gmDistance"]=error==0?JsonValue.Create(ownRange.distance):null,["pkU"]=range.end.parameters[0],["pkV"]=range.end.parameters[1],["gmU"]=error==0?JsonValue.Create(ownRange.end.parameters[0]):null,["gmV"]=error==0?JsonValue.Create(ownRange.end.parameters[1]):null,["knownMinimumSquared"]=d2});
             }

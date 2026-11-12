@@ -1,0 +1,127 @@
+{
+  "scope": "Final review supplement; earlier generated evidence bytes retained",
+  "priorReceiptSha256": "f1b2ad23c8e1c51d2a747f02182db3fc910c6de81b87fbea0b8a10b06ac704a2",
+  "reportSha256": "7ddf32582fa1396b760934fdc7345bd73b275d3e91ccbd2b523392f55a4e0fc6",
+  "policyMarkerBodySha256": "55f16ce0cf53bbb37ddd91920445f32468eb8e2b5b6e28f6fb90856810afcca1",
+  "policyScope": "actual file read/hash, not automatic runtime loading",
+  "decisions": {
+    "mathematicsNativeConsumers": "accepted within existing bounded-failure and certification contracts",
+    "originalQuality": "accepted as executed, missing retained",
+    "uniqueWindow": "accepted descriptive only",
+    "allNumericalVerified": "blocked: 684 original Unresolved components",
+    "performanceQualified": "blocked: original raw2/false",
+    "universalCausalCpuAndOverallPkGoal": "unproven",
+    "abCombinationMainPortal": "not executed"
+  },
+  "boundControlCorrection": {
+    "supersedes": "only initial privateOriginalBounds exact-minimum control claim; initial numeric outputs and logs unchanged",
+    "oldWeakMinimumSquared": 1.0625,
+    "corrected": {
+      "lower": 0.8660254037844384,
+      "upper": 1.920286436967153,
+      "exactMinimumSquared": 0.75,
+      "exactMaximumSquared": 3.6875,
+      "exactDyadicChecks": true
+    },
+    "executionRawExit": 0,
+    "finalSourceRecheckRawExit": 0
+  },
+  "executions": [
+    {
+      "path": "temp_docs/independent-projection-seed-a9085ed/extract.log",
+      "sha256": "984bd4aaebe1f207402c3755592c16ba60f448add47c94e62354f8b62a98173f",
+      "observedRawExit": 0,
+      "exitProvenance": "direct exec/wait tool result; child process.exit also retained where applicable"
+    },
+    {
+      "path": "temp_docs/independent-projection-seed-a9085ed/quality-audit.log",
+      "sha256": "01176385f04130f70d920ea9be6cf29c4de5a33df7f4e30ec5516518ebe6630a",
+      "observedRawExit": 0,
+      "exitProvenance": "direct exec/wait tool result; child process.exit also retained where applicable"
+    },
+    {
+      "path": "temp_docs/independent-projection-seed-a9085ed/measurement-audit.log",
+      "sha256": "c838c93b7ca1fba3c92960b830db444819eeb72a0534dc087a47d1d0995018e4",
+      "observedRawExit": 0,
+      "exitProvenance": "direct exec/wait tool result; child process.exit also retained where applicable"
+    },
+    {
+      "path": "temp_docs/independent-projection-seed-a9085ed/material-audit.log",
+      "sha256": "8cae87331dd85ba75a008b1d9714d17d9bf037d425a69990a78aa253fe13d138",
+      "observedRawExit": 0,
+      "exitProvenance": "direct exec/wait tool result; child process.exit also retained where applicable"
+    },
+    {
+      "path": "temp_docs/independent-projection-seed-a9085ed/focused-driver.log",
+      "sha256": "50e091dc1598a41b9ef5311e853be31a198b4cbcca3e85dc18d73eee0c4fefe4",
+      "observedRawExit": 0,
+      "exitProvenance": "direct exec/wait tool result; child process.exit also retained where applicable"
+    },
+    {
+      "path": "temp_docs/independent-projection-seed-a9085ed/consumer-driver.log",
+      "sha256": "97ac6786be51546dc17a918a50e7391a99c340461385f7554f962eb4358b7ddb",
+      "observedRawExit": 2,
+      "exitProvenance": "direct exec/wait tool result; child process.exit also retained where applicable"
+    },
+    {
+      "path": "temp_docs/independent-projection-seed-a9085ed/controls-attempt1.log",
+      "sha256": "86ff07989715e7d4b8fd72c0236ca934dce35e58154fb4e26f08ec7897a777f4",
+      "observedRawExit": 134,
+      "exitProvenance": "direct exec/wait tool result; child process.exit also retained where applicable"
+    },
+    {
+      "path": "temp_docs/independent-projection-seed-a9085ed/controls-attempt2.log",
+      "sha256": "cd9a0188c5b19c049893c7013d2a509433e823e29b361269245d5f3fa89f5ee0",
+      "observedRawExit": 134,
+      "exitProvenance": "direct exec/wait tool result; child process.exit also retained where applicable"
+    },
+    {
+      "path": "temp_docs/independent-projection-seed-a9085ed/controls-attempt3.log",
+      "sha256": "a1fdbaaeaa38f3eb61a511c64b4c0aa92fd183bfae68e27e63cfb211c4c3f11b",
+      "observedRawExit": 0,
+      "exitProvenance": "direct exec/wait tool result; child process.exit also retained where applicable"
+    },
+    {
+      "path": "temp_docs/independent-projection-seed-a9085ed/receipt-attempt1.log",
+      "sha256": "93d5bc748fae8e63269d32383188a94957c2596c5dfe9807088544c577528c85",
+      "observedRawExit": 134,
+      "exitProvenance": "direct exec/wait tool result; child process.exit also retained where applicable"
+    },
+    {
+      "path": "temp_docs/independent-projection-seed-a9085ed/receipt-attempt2.log",
+      "sha256": "25a188c79d0586e23d045191fb8b8f13410ca1941e2a8ed65f2f9e91bd7acfc4",
+      "observedRawExit": 0,
+      "exitProvenance": "direct exec/wait tool result; child process.exit also retained where applicable"
+    },
+    {
+      "path": "temp_docs/independent-projection-seed-a9085ed/bounds-verified.log",
+      "sha256": "edd30775de39b79dc6b5e4be00d1cf3bb079029667322adf35bcca4768eb7e88",
+      "observedRawExit": 0,
+      "exitProvenance": "direct exec/wait tool result; child process.exit also retained where applicable"
+    },
+    {
+      "path": "temp_docs/independent-projection-seed-a9085ed/bounds-final-source.log",
+      "sha256": "365c5c3391da8606102a853d8ad1a04f4de3c0bc603bff2aa504f69dd110e77b",
+      "observedRawExit": 0,
+      "exitProvenance": "direct exec/wait tool result; child process.exit also retained where applicable"
+    }
+  ],
+  "finalScripts": [
+    {
+      "path": "scripts/ReviewProjectionSeedEvidence.cs",
+      "sha256": "a49eb9975db10f7f418b3924903e7ea0c33f2375031379022f8629cd064c46b1"
+    },
+    {
+      "path": "scripts/ReviewProjectionSeedMeasurement.cs",
+      "sha256": "76f58a912b5604d01ae780794612a19c04325579fbadd077a932018cd9d7e29b"
+    },
+    {
+      "path": "scripts/ReviewProjectionSeedRuntime.cs",
+      "sha256": "22844257d5d1339e169b65aa6ac0f2c83ae2d4f2677cc539476e3072a75b1c2c"
+    },
+    {
+      "path": "scripts/ReviewProjectionSeedControls.cs",
+      "sha256": "cfdc805f16e0c17f844625ba4167d73a27cb13304ae8b987dcd035e04370cb0d"
+    }
+  ]
+}

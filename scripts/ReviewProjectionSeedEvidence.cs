@@ -11,6 +11,16 @@ using System.Xml.Linq;
 Directory.SetCurrentDirectory(Path.Combine(Path.GetDirectoryName(Source())!,".."));
 const string target="a9085ed12bf811cd337bbf2f69964d0cd3957373";
 const string output="temp_docs/independent-projection-seed-a9085ed";
+if(args.SequenceEqual(new[]{"--supplement"}))
+{
+    var receipt=Read("docs/projection-seed-independent/receipt.json");var corrected=Read(output+"/bounds-verified.json");var old=receipt["controls"]!["privateOriginalBounds"]!;
+    Require(JsonNode.DeepEquals(old["lower"],corrected["lower"])&&JsonNode.DeepEquals(old["upper"],corrected["upper"]),"unchanged original private bound values");
+    var logs=new JsonArray();foreach(var (name,exit) in new[]{("extract",0),("quality-audit",0),("measurement-audit",0),("material-audit",0),("focused-driver",0),("consumer-driver",2),("controls-attempt1",134),("controls-attempt2",134),("controls-attempt3",0),("receipt-attempt1",134),("receipt-attempt2",0),("bounds-verified",0),("bounds-final-source",0)})
+    {var path=output+"/"+name+".log";logs.Add((JsonNode)new JsonObject{["path"]=path,["sha256"]=Hash(path),["observedRawExit"]=exit,["exitProvenance"]="direct exec/wait tool result; child process.exit also retained where applicable"});}
+    var scripts=new JsonArray();foreach(var path in new[]{"scripts/ReviewProjectionSeedEvidence.cs","scripts/ReviewProjectionSeedMeasurement.cs","scripts/ReviewProjectionSeedRuntime.cs","scripts/ReviewProjectionSeedControls.cs"})scripts.Add((JsonNode)new JsonObject{["path"]=path,["sha256"]=Hash(path)});
+    var result=new JsonObject{["scope"]="Final review supplement; earlier generated evidence bytes retained",["priorReceiptSha256"]=Hash("docs/projection-seed-independent/receipt.json"),["reportSha256"]=Hash("docs/Projection_Seed_Independent_Review.md"),["policyMarkerBodySha256"]="55f16ce0cf53bbb37ddd91920445f32468eb8e2b5b6e28f6fb90856810afcca1",["policyScope"]="actual file read/hash, not automatic runtime loading",["decisions"]=new JsonObject{["mathematicsNativeConsumers"]="accepted within existing bounded-failure and certification contracts",["originalQuality"]="accepted as executed, missing retained",["uniqueWindow"]="accepted descriptive only",["allNumericalVerified"]="blocked: 684 original Unresolved components",["performanceQualified"]="blocked: original raw2/false",["universalCausalCpuAndOverallPkGoal"]="unproven",["abCombinationMainPortal"]="not executed"},["boundControlCorrection"]=new JsonObject{["supersedes"]="only initial privateOriginalBounds exact-minimum control claim; initial numeric outputs and logs unchanged",["oldWeakMinimumSquared"]=1.0625,["corrected"]=corrected,["executionRawExit"]=0,["finalSourceRecheckRawExit"]=0},["executions"]=logs,["finalScripts"]=scripts};
+    Write("docs/projection-seed-independent/supplement.json",result);Console.WriteLine("PASS final supplement: preserved evidence, corrected dyadic bound control, raw execution exits");return;
+}
 if(args.SequenceEqual(new[]{"--extract"}))
 {
     foreach(var item in new[]{("quality","d8e1895ca86a1f29737e67e1fe2d568876452de1950ba6b23d2122d998666a09",20526861L,524,78395422L),("controlled-original","5b0adf8f1d8b76ed5e9ac80883de7efd5890417260885bf107fb9b4dfe20808a",33987355L,1049,137713130L)})
