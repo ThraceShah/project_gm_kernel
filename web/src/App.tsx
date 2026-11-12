@@ -51,7 +51,8 @@ export const App: React.FC = () => {
   // Selected Case & Step
   const [selectedCaseId, setSelectedCaseId] = useState<string>('');
   const [currentStepIndex, setCurrentStepIndex] = useState<number>(0);
-  const pendingStepIndex = useRef<number | null>(null);
+  const pendingTarget = useRef<{ runId?: string; caseId?: string; stepId?: string } | null>(null);
+  const [openSeq, setOpenSeq] = useState(0);
   const [subState, setSubState] = useState<'before' | 'after'>('before');
 
   // Meshes & Mesh Errors
@@ -179,11 +180,24 @@ export const App: React.FC = () => {
   }, [manifestData, selectedCaseId]);
   const comparison = useComparisonEvidence(currentCase, manifestDir);
 
-  // Reset & clamp step index when case changes
+  // Display-link landing (R4): consume the pending real step id only after the
+  // target run/case/manifest is actually loaded; a plain case switch resets to
+  // the first step (documented policy), display links carry their exact step.
   useEffect(() => {
+    const p = pendingTarget.current;
+    if (p) {
+      // consume only once the TARGET run/case/manifest is actually loaded
+      if (currentCase && currentCase.steps.length > 0 && selectedRunId === p.runId && currentCase.id === p.caseId) {
+        const idx = currentCase.steps.findIndex((st) => st.id === p.stepId);
+        pendingTarget.current = null;
+        setCurrentStepIndex(idx >= 0 ? idx : 0);
+        setSubState('before');
+      }
+      return; // keep waiting for the target run; never clear early
+    }
     setCurrentStepIndex(0);
     setSubState('before');
-  }, [selectedCaseId]);
+  }, [currentCase, openSeq, selectedRunId]);
 
   const stepsCount = currentCase?.steps?.length ?? 0;
   const safeStepIndex = stepsCount > 0 ? Math.min(currentStepIndex, stepsCount - 1) : 0;
@@ -289,9 +303,8 @@ export const App: React.FC = () => {
     return (
       <div className="h-screen w-screen overflow-hidden">
         <OverviewPanel overview={overviewData} onOpenRuns={(runId, caseId, stepId) => {
-          const m = /^op-(\d+)$/.exec(stepId ?? '');
-          pendingStepIndex.current = m ? Math.max(0, Number(m[1]) - 1) : null;
-          if (pendingStepIndex.current !== null) setCurrentStepIndex(pendingStepIndex.current);
+          pendingTarget.current = { runId, caseId, stepId };
+          setOpenSeq((v) => v + 1);
           setViewMode('runs');
           if (runId) { setSelectedRunId(runId); if (caseId) setSelectedCaseId(caseId); }
         }} />

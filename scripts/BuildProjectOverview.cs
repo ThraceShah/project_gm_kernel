@@ -152,19 +152,19 @@ var cylinderQueryIds=new HashSet<string>(StringComparer.Ordinal){"local-blend.cy
 // ---- display links for items with real online artifacts (exact run/case/step context)
 var displayLinks=new Dictionary<string,JsonObject>(StringComparer.Ordinal)
 {
-    ["analytic-boolean.equal-overlap-subtract"]=new JsonObject{{"runId","20261112T002227Z-uperf1654"},{"caseId","unifiedperf.sphere"},{"stepId","op-1"},{"note","1654 rep2 显示样本（本 case 参数）"}},
-    ["planar-boolean.overlap-two-axes-subtract"]=new JsonObject{{"runId","20261112T002227Z-uperf1654"},{"caseId","unifiedperf.planar"},{"stepId","op-1"},{"note","1654 rep2 显示样本"}},
-    ["regular-curved.block-subtract"]=new JsonObject{{"runId","20261112T002227Z-uperf1654"},{"caseId","unifiedperf.curved"},{"stepId","op-1"},{"note","1654 rep2 显示样本"}},
-    ["solid-blend.plane-nurbs"]=new JsonObject{{"runId","20261112T002227Z-uperf1654"},{"caseId","unifiedperf.solidblend"},{"stepId","op-1"},{"note","1654 rep2 显示样本"}},
-    ["short-edge.a1-r0.5-t1e-07-reversefalse-default"]=new JsonObject{{"runId","20261112T002227Z-uperf1654"},{"caseId","unifiedperf.shortedge"},{"stepId","op-1"},{"note","1654 rep2 显示样本（输入=PK seed→GM Fix）"}},
-    ["local-blend.oblique-unequal-chamfer"]=new JsonObject{{"runId","20261111T190547Z-integrated1887"},{"caseId","integrated.oblique-upstream"},{"stepId","op-1"},{"note","同字节链上游（independent-construction）显示"}},
-    ["local-blend.prism-all-chamfer"]=new JsonObject{{"runId","20261111T174315Z-blend60be"},{"caseId","blend.planar-chamfer"},{"stepId","op-1"},{"note","显示样本含 prism 全边倒角与 oblique 不等距"}},
-    ["local-blend.prism-all-fillet"]=new JsonObject{{"runId","20261111T174315Z-blend60be"},{"caseId","blend.planar-fillet"},{"stepId","op-1"},{"note","倒圆目录显示样本"}},
-    ["local-blend.cylinder-rim-fillet"]=new JsonObject{{"runId","20261111T174315Z-blend60be"},{"caseId","blend.axial-cylinder"},{"stepId","op-1"},{"note","五轴向操作同实例显示（步骤=各 cylinder case）"}},
-    ["local-blend.cylinder-both-rim-fillet"]=new JsonObject{{"runId","20261111T174315Z-blend60be"},{"caseId","blend.axial-cylinder"},{"stepId","op-2"},{"note","同上（步骤区分）"}},
-    ["local-blend.cylinder-rim-chamfer"]=new JsonObject{{"runId","20261111T174315Z-blend60be"},{"caseId","blend.axial-cylinder"},{"stepId","op-3"},{"note","同上（步骤区分）"}},
-    ["local-blend.cylinder-both-rim-chamfer"]=new JsonObject{{"runId","20261111T174315Z-blend60be"},{"caseId","blend.axial-cylinder"},{"stepId","op-4"},{"note","同上（步骤区分）"}},
-    ["local-blend.cylinder-unequal-chamfer"]=new JsonObject{{"runId","20261111T174315Z-blend60be"},{"caseId","blend.axial-cylinder"},{"stepId","op-5"},{"note","同上（步骤区分）"}}
+    ["analytic-boolean.equal-overlap-subtract"]=new JsonObject{{"runId","20261112T002227Z-uperf1654"},{"caseId","unifiedperf.sphere"},{"stepId","rep2-display"},{"note","1654 rep2 显示样本（本 case 参数）"}},
+    ["planar-boolean.overlap-two-axes-subtract"]=new JsonObject{{"runId","20261112T002227Z-uperf1654"},{"caseId","unifiedperf.planar"},{"stepId","rep2-display"},{"note","1654 rep2 显示样本"}},
+    ["regular-curved.block-subtract"]=new JsonObject{{"runId","20261112T002227Z-uperf1654"},{"caseId","unifiedperf.curved"},{"stepId","rep2-display"},{"note","1654 rep2 显示样本"}},
+    ["solid-blend.plane-nurbs"]=new JsonObject{{"runId","20261112T002227Z-uperf1654"},{"caseId","unifiedperf.solidblend"},{"stepId","rep2-display"},{"note","1654 rep2 显示样本"}},
+    ["short-edge.a1-r0.5-t1e-07-reversefalse-default"]=new JsonObject{{"runId","20261112T002227Z-uperf1654"},{"caseId","unifiedperf.shortedge"},{"stepId","rep2-display"},{"note","1654 rep2 显示样本（输入=PK seed→GM Fix）"}},
+    ["local-blend.oblique-unequal-chamfer"]=new JsonObject{{"runId","20261111T190547Z-integrated1887"},{"caseId","integrated.oblique-upstream"},{"stepId","operation-1"},{"note","同字节链上游（independent-construction）显示"}},
+    ["local-blend.prism-all-chamfer"]=new JsonObject{{"runId","20261111T174315Z-blend60be"},{"caseId","blend.planar-chamfer"},{"stepId","operation-1"},{"note","显示样本含 prism 全边倒角与 oblique 不等距"}},
+    ["local-blend.prism-all-fillet"]=new JsonObject{{"runId","20261111T174315Z-blend60be"},{"caseId","blend.planar-fillet"},{"stepId","operation-1"},{"note","倒圆目录显示样本"}},
+    ["local-blend.cylinder-rim-fillet"]=new JsonObject{{"runId","20261111T174315Z-blend60be"},{"caseId","blend.axial-cylinder"},{"stepId","operation-1"},{"note","五轴向操作同实例显示（步骤=各 cylinder case）"}},
+    ["local-blend.cylinder-both-rim-fillet"]=new JsonObject{{"runId","20261111T174315Z-blend60be"},{"caseId","blend.axial-cylinder"},{"stepId","operation-2"},{"note","同上（步骤区分）"}},
+    ["local-blend.cylinder-rim-chamfer"]=new JsonObject{{"runId","20261111T174315Z-blend60be"},{"caseId","blend.axial-cylinder"},{"stepId","operation-3"},{"note","同上（步骤区分）"}},
+    ["local-blend.cylinder-both-rim-chamfer"]=new JsonObject{{"runId","20261111T174315Z-blend60be"},{"caseId","blend.axial-cylinder"},{"stepId","operation-4"},{"note","同上（步骤区分）"}},
+    ["local-blend.cylinder-unequal-chamfer"]=new JsonObject{{"runId","20261111T174315Z-blend60be"},{"caseId","blend.axial-cylinder"},{"stepId","operation-5"},{"note","同上（步骤区分）"}}
 };
 
 var now=DateTimeOffset.UtcNow;
@@ -188,12 +188,13 @@ foreach(var entry in registry["cases"]!.AsArray().OfType<JsonObject>())
     item["selector"]=JsonValue.Create(selector);
     var dim=new JsonObject();
     var hist=new JsonArray();
-    void Cell(string which,string status,string note,string evidence,string commit,string tree,string hostNote,string exitNote)
+    void Cell(string which,string status,string note,string evidence,string commit,string tree,string hostNote,string exitNote,string? utc=null)
     {
         var cell=new JsonObject();
         cell["status"]=JsonValue.Create(status);
         cell["lastVerified"]=new JsonObject{{"commit",JsonValue.Create(commit)},{"tree",JsonValue.Create(tree)},{"host",JsonValue.Create(hostNote)},{"exit",JsonValue.Create(exitNote)},{"evidence",JsonValue.Create(evidence)}};
         cell["note"]=JsonValue.Create(note);
+        if(utc!=null)cell["utc"]=JsonValue.Create(utc);
         dim[which]=cell;
     }
     void Hist(string label,string status,string note){var h=new JsonObject();h["label"]=JsonValue.Create(label);h["status"]=JsonValue.Create(status);h["note"]=JsonValue.Create(note);hist.Add((JsonNode)h);}
@@ -226,8 +227,8 @@ foreach(var entry in registry["cases"]!.AsArray().OfType<JsonObject>())
             var logRel=suiteLogRel[suite];
             var commit=suite=="local-blend"?"60be7216d646a296d7fd2d0b30b5f336a46a6a66":"4b2405e3945929c5bb93677a68b0ee79e430b2f3";
             var tree=suite=="local-blend"?"Native 60be":"Native 133f56ac";
-            Cell("function",func,own.Value.PassLines>0?"GEOMETRY_TOPOLOGY_PASS 完整几何/拓扑门通过（自身标记 "+own.Value.PassLines+" 行）":own.Value.FailLines>0?"原日志真实失败标记（"+own.Value.FailLines+" 行）":"原日志缺完整成功标记（缺证据非失败）→未验证。"+(borrowNote!=""?"；"+borrowNote:""),logRel,commit,tree,"q2 Linux x64","批次 exit 2（逐 case 进程 exit 未单独记录，不伪造）");
-            Cell("mass",mst,(v+u+d)==0?"原日志无 MASS_BOUND 行（分量未记录），不推断。":$"MASS_BOUND 逐分量合并 {v}V/{u}U/{d}D"+(phaseNote!=""?"；"+phaseNote:"")+(borrowNote!=""?"；"+borrowNote:""),logRel,commit,tree,"q2 Linux x64","批次 exit 2");
+            Cell("function",func,own.Value.PassLines>0?"GEOMETRY_TOPOLOGY_PASS 完整几何/拓扑门通过（自身标记 "+own.Value.PassLines+" 行）":own.Value.FailLines>0?"原日志真实失败标记（"+own.Value.FailLines+" 行）":"原日志缺完整成功标记（缺证据非失败）→未验证。"+(borrowNote!=""?"；"+borrowNote:""),logRel,commit,tree,"q2 Linux x64","批次 exit 2（逐 case 进程 exit 未单独记录，不伪造）",suite=="local-blend"?"2026-11-11T17:43:15Z":"2026-11-11T22:37:59Z");
+            Cell("mass",mst,(v+u+d)==0?"原日志无 MASS_BOUND 行（分量未记录），不推断。":$"MASS_BOUND 逐分量合并 {v}V/{u}U/{d}D"+(phaseNote!=""?"；"+phaseNote:"")+(borrowNote!=""?"；"+borrowNote:""),logRel,commit,tree,"q2 Linux x64","批次 exit 2",suite=="local-blend"?"2026-11-11T17:43:15Z":"2026-11-11T22:37:59Z");
             Hist(commit.Substring(0,7)+" "+tree+"（q2 Linux）",func+" / "+mst,"逐案自身标记（本套件日志限定）；"+(phaseNote!=""?phaseNote+"；":"")+(borrowNote!=""?borrowNote+"。":""));
             mappingAudit.Add((JsonNode)new JsonObject{{"catalogId",JsonValue.Create(id)},{"suite",JsonValue.Create(suite)},{"sourceLog",JsonValue.Create(suiteLogRel[suite])},{"via",JsonValue.Create("own-suite selector="+selector)},{"status",JsonValue.Create(func)},{"borrowed",JsonValue.Create(borrowNote)}});
         }
@@ -258,7 +259,7 @@ foreach(var entry in registry["cases"]!.AsArray().OfType<JsonObject>())
     // (4) cylinder query gap (explicit five)
     if(cylinderQueryIds.Contains(id))
     {
-        Cell("query","fail","直接 GM BodyContainsVector 在 20 真实点全 error 5000、PK 0（原 exit 1）；独立查询 API 缺口，不否定 BRep 构造。","../gm-blend-functional-delivery/temp_docs/blend-functional/final-integrated/axial-material-query.log","60be7216d646a296d7fd2d0b30b5f336a46a6a66","Native 60be","q2 Linux x64","1");
+        Cell("query","fail","直接 GM BodyContainsVector 在 20 真实点全 error 5000、PK 0（原 exit 1）；独立查询 API 缺口，不否定 BRep 构造。","../gm-blend-functional-delivery/temp_docs/blend-functional/final-integrated/axial-material-query.log","60be7216d646a296d7fd2d0b30b5f336a46a6a66","Native 60be","q2 Linux x64","1","2026-11-11T17:43:15Z");
         Hist("60be7216 查询记录（q2 Linux）","fail","20 点全 5000；历史/当前均未解。");
     }
     // (5) 1654 measurement five ops (current version re-verification)
@@ -273,10 +274,12 @@ foreach(var entry in registry["cases"]!.AsArray().OfType<JsonObject>())
         var sampleTally=string.Join(",",opSummary["allSamples"]!.AsArray().OfType<JsonObject>().Where(s=>s["case"]!.GetValue<string>()==myCase).GroupBy(s=>(s["rawExit"]!.GetValue<int>(),s["qualityStatus"]!.GetValue<string>())).Select(g=>$"{g.Key.Item1}x{g.Key.Item2}={g.Count()}"));
         Cell("performance","observed",
             $"1654 当前窗口：暖中位 基线 {b["warmGmMedianMs"]!.GetValue<double>().ToString("G17")}→候选 {ca["warmGmMedianMs"]!.GetValue<double>().ToString("G17")}ms，变化 {mop["changePercent"]!.GetValue<double>().ToString("G6")}%（基线→候选）；候选配对 GM/PK ratioMedian {ca["warmPairedGmPkMedian"]!.GetValue<double>().ToString("G6")} / 中位数之比 {rom.ToString("G6")}（两口径分列）；性能目标未达，runnerPerformanceQualified=false（measurement-receipt.json）。",
-            "docs/uperf-1654-publish-receipt.md","1654dbf2bb31ff867f40c3ae4eb66cdb3d601fb7","Native 224564d1","Mac M4 / macOS 27.2","样本级原 exit=allSamples rawExit/qualityStatus（本 op "+sampleTally+"）；进程级见 measurement-receipt.json qualityStates（exit2-Unresolved=16/exit0-Verified=4）、runnerRawExit=2");
-        Cell("function","pass","1654 窗口质量门（fresh/full/strict/finite）通过（60 对全过）——当前版本复验。","docs/uperf-1654-publish-receipt.md","1654dbf2bb31ff867f40c3ae4eb66cdb3d601fb7","Native 224564d1","Mac M4 / macOS 27.2","runnerRawExit=2（measurement-receipt.json）");
+            "docs/uperf-1654-publish-receipt.md","1654dbf2bb31ff867f40c3ae4eb66cdb3d601fb7","Native 224564d1","Mac M4 / macOS 27.2","样本级原 exit=allSamples rawExit/qualityStatus（本 op "+sampleTally+"）；进程级见 measurement-receipt.json qualityStates（exit2-Unresolved=16/exit0-Verified=4）、runnerRawExit=2","2026-11-12T00:22:27Z");
+        Cell("function","pass","1654 窗口质量门（fresh/full/strict/finite）通过（60 对全过）——当前版本复验。","docs/uperf-1654-publish-receipt.md","1654dbf2bb31ff867f40c3ae4eb66cdb3d601fb7","Native 224564d1","Mac M4 / macOS 27.2","runnerRawExit=2（measurement-receipt.json）","2026-11-12T00:22:27Z");
         var qk=ca["qualityStatusCounts"]!.AsObject();
-        Cell("mass",qk.ContainsKey("Unresolved")?"unresolved":"verified","1654 当前质量状态："+qk.ToJsonString()+"（每 op 候选侧 2 rep 样本状态计数，样本级口径）；物性分量总账另列：主 900 分量 312V/588U、唯一总账 1080=396V/684U（质量归档，不与样本级混算）。","docs/uperf-1654-publish-receipt.md","1654dbf2bb31ff867f40c3ae4eb66cdb3d601fb7","Native 224564d1","Mac M4 / macOS 27.2","样本级 "+sampleTally+"；进程级 measurement-receipt.json");
+        int qv=qk.ContainsKey("Verified")?qk["Verified"]!.GetValue<int>():0,qu=qk.ContainsKey("Unresolved")?qk["Unresolved"]!.GetValue<int>():0,qd=qk.ContainsKey("Different")?qk["Different"]!.GetValue<int>():0;
+        var massStatus=qd>0?"different":qu>0?"unresolved":qv>0?"verified":"unverified";
+        Cell("mass",massStatus,"1654 当前质量状态："+qk.ToJsonString()+"（每 op 候选侧 2 rep 样本状态计数，样本级口径）；物性分量总账另列：主 900 分量 312V/588U、唯一总账 1080=396V/684U（质量归档，不与样本级混算）。","docs/uperf-1654-publish-receipt.md","1654dbf2bb31ff867f40c3ae4eb66cdb3d601fb7","Native 224564d1","Mac M4 / macOS 27.2","样本级 "+sampleTally+"；进程级 measurement-receipt.json","2026-11-12T00:22:27Z");
         Cell("query","na","本窗口无查询/分类维度检查。","","-","-","-","-");
         Hist("1654 当前窗口（Mac M4）","当前版本复验","基线→候选变化 "+mop["changePercent"]!.GetValue<double>().ToString("G6")+"%；性能观测不改功能状态。");
         dim["currentVersion"]=JsonValue.Create("reverified");
@@ -301,10 +304,23 @@ Delivery("20261111T190547Z-integrated1887","功能集成 1887","1887e30d","2026-
 Delivery("20261111T174315Z-blend60be","Blend 60be 功能验收","60be7216","2026-11-11T17:43:15Z","blend acceptance");
 Delivery("20261110T195008Z-610e3ce8","历史 main610 基线","610e3ce8","2026-11-10T19:50:08Z","historical baseline");
 Delivery("archived","已归档快照（f9/676/6616/重复 run）","various","2026-11-10..11","release 只读 archive；成果目录保留");
-var knownStatuses=new HashSet<string>(StringComparer.Ordinal){"pass","fail","unresolved","unverified","na","verified","different","observed"};
-var knownDims=new HashSet<string>(StringComparer.Ordinal){"function","mass","query","performance"};
+// Event contract (R2): known explicit platform identities only; optional
+// identity block (parameters/source) fully validated when present; stale
+// guard per (catalogId, dimension); event utc must not predate the row's
+// base evidence time (cells carry real utc only; unknown times are omitted,
+// never fabricated); dimension/status pairing whitelist; currentVersion enum.
+var knownHosts=new Dictionary<string,string>(StringComparer.Ordinal){["q2 Linux x64"]="Linux",["Mac M4 / macOS 27.2"]="Mac",["Windows arm64"]="Windows"};
+var dimStatuses=new Dictionary<string,HashSet<string>>(StringComparer.Ordinal)
+{
+    ["function"]=new(StringComparer.Ordinal){"pass","fail","unresolved","unverified"},
+    ["mass"]=new(StringComparer.Ordinal){"verified","different","unresolved","unverified"},
+    ["query"]=new(StringComparer.Ordinal){"fail","unresolved","unverified","na"},
+    ["performance"]=new(StringComparer.Ordinal){"observed","unverified"}
+};
+var knownDims=new HashSet<string>(dimStatuses.Keys,StringComparer.Ordinal);
+var knownCurrentVersions=new HashSet<string>(StringComparer.Ordinal){"reverified","not-retested"};
 var rejectedEvents=new JsonArray();
-var lastAppliedUtc=new Dictionary<string,DateTimeOffset>(StringComparer.Ordinal);
+var lastAppliedUtc=new Dictionary<string,DateTimeOffset>(StringComparer.Ordinal); // (catalogId|dimension)
 if(File.Exists(eventsPath))
 {
     var events=JsonNode.Parse(File.ReadAllText(eventsPath))!.AsArray();
@@ -312,11 +328,10 @@ if(File.Exists(eventsPath))
     {
         if(e["kind"]?.GetValue<string>()=="delivery")
         {
-            if(!DateTimeOffset.TryParse(e["utc"]?.GetValue<string>(),out _)){rejectedEvents.Add((JsonNode?)JsonValue.Create("delivery bad utc"));}
+            if(!DateTimeOffset.TryParse(e["utc"]?.GetValue<string>(),out _))rejectedEvents.Add((JsonNode?)JsonValue.Create("delivery bad utc"));
             else Delivery(e["runId"]!.GetValue<string>(),e["label"]!.GetValue<string>(),e["commit"]!.GetValue<string>(),e["utc"]!.GetValue<string>(),e["note"]!.GetValue<string>()!);
             continue;
         }
-        // case-update: reject-and-record (never crash, never silently sign)
         string Reject(string why){rejectedEvents.Add((JsonNode?)JsonValue.Create(why));return why;}
         if(e["kind"]?.GetValue<string>()!="case-update"){Reject("unknown kind");continue;}
         var cid=e["catalogId"]?.GetValue<string>()??"";
@@ -325,32 +340,48 @@ if(File.Exists(eventsPath))
         var dimName=e["dimension"]?.GetValue<string>()??"";
         if(!knownDims.Contains(dimName)){Reject("bad dimension "+dimName+" for "+cid);continue;}
         var status=e["status"]?.GetValue<string>()??"";
-        if(!knownStatuses.Contains(status)){Reject("bad status "+status+" for "+cid);continue;}
+        if(!dimStatuses[dimName].Contains(status)){Reject("status "+status+" not valid for dimension "+dimName+" ("+cid+")");continue;}
         if(!DateTimeOffset.TryParse(e["utc"]?.GetValue<string>(),out var when)){Reject("bad utc for "+cid);continue;}
-        // stale events never overwrite: apply only strictly newer claims per row
-        if(lastAppliedUtc.TryGetValue(cid,out var prevApplied)&&when<=prevApplied){Reject("stale event utc "+when.ToString("O")+" cannot overwrite newer state for "+cid);continue;}
+        if(e["currentVersion"]!=null&&!knownCurrentVersions.Contains(e["currentVersion"]!.GetValue<string>())){Reject("bad currentVersion for "+cid);continue;}
         var lastVerified=e["lastVerified"];
+        var evHost=lastVerified?["host"]?.GetValue<string>()??"";
+        if(!knownHosts.TryGetValue(evHost,out var evFamily)){Reject("unknown platform identity '"+evHost+"' for "+cid);continue;}
+        var dims=target!["dimensions"]!.AsObject();
+        var baseCell=dims[dimName];
+        var rowHost=baseCell?["lastVerified"]?["host"]?.GetValue<string>()??"-";
+        // platform family: rows with a known family must match exactly; rows
+        // still unverified (host '-') bind their platform family at first real
+        // evidence instead of being locked out. Windows claims have no rows.
+        bool rowMac=rowHost.Contains("Mac",StringComparison.Ordinal),rowLinux=rowHost.Contains("Linux",StringComparison.OrdinalIgnoreCase);
+        if(evFamily=="Windows"&&(rowMac||rowLinux)){Reject("platform mismatch "+evHost+" for "+cid+" (row "+rowHost+")");continue;}
+        if(rowMac&&evFamily!="Mac"){Reject("platform mismatch "+evHost+" for "+cid+" (row "+rowHost+")");continue;}
+        if(rowLinux&&evFamily!="Linux"){Reject("platform mismatch "+evHost+" for "+cid+" (row "+rowHost+")");continue;}
+        // optional identity block: when carried it must match the row exactly
+        if(e["identity"]!=null)
+        {
+            var idn=e["identity"]!.AsObject();
+            var idSource=idn["source"]?.GetValue<string>();
+            if(idSource!=null&&idSource!=target!["source"]!.GetValue<string>()){Reject("identity source mismatch for "+cid+": "+idSource);continue;}
+            if(idn["parameters"]!=null&&!JsonNode.DeepEquals(idn["parameters"],target!["parametersDefinition"])){Reject("identity parameters mismatch for "+cid);continue;}
+        }
+        // base-time guard: an event must not predate the row's real evidence
+        var baseUtcText=baseCell?["utc"]?.GetValue<string>();
+        if(baseUtcText!=null&&DateTimeOffset.TryParse(baseUtcText,out var baseUtc)&&when<baseUtc){Reject("event utc "+when.ToString("O")+" predates base evidence "+baseUtcText+" for "+cid+"."+dimName);continue;}
+        // stale guard per (catalogId, dimension); equal utc across different
+        // dimensions is legitimate and both apply
+        var stKey=cid+"|"+dimName;
+        if(lastAppliedUtc.TryGetValue(stKey,out var prevApplied)&&when<=prevApplied){Reject("stale event for "+cid+"."+dimName);continue;}
         if(status is "pass" or "verified" or "different")
         {
             var evd=lastVerified?["evidence"]?.GetValue<string>();
             if(string.IsNullOrEmpty(evd)){Reject("green without evidence for "+cid);continue;}
         }
-        // platform family identity: the row's own lastVerified.host pins its
-        // platform family; a different family cannot cross-sign this row.
-        var rowHost=target!["dimensions"]![dimName]!["lastVerified"]!["host"]!.GetValue<string>();
-        var evHost=lastVerified?["host"]?.GetValue<string>()??"";
-        bool rowMac=rowHost.Contains("Mac",StringComparison.Ordinal),rowLinux=rowHost.Contains("Linux",StringComparison.OrdinalIgnoreCase);
-        bool evMac=evHost.Contains("Mac",StringComparison.Ordinal),evWin=evHost.Contains("Windows",StringComparison.Ordinal),evLin=evHost.Contains("Linux",StringComparison.OrdinalIgnoreCase);
-        if((evMac&&!rowMac)||(evLin&&!rowLinux)||evWin)
-        {
-            Reject("platform mismatch for "+cid+": row="+rowHost+" event="+evHost);continue;
-        }
-        lastAppliedUtc[cid]=when;
-        var dims=target!["dimensions"]!.AsObject();
+        lastAppliedUtc[stKey]=when;
         var cell=new JsonObject();
         cell["status"]=JsonValue.Create(status);
         cell["lastVerified"]=lastVerified!=null?lastVerified.DeepClone():new JsonObject{{"commit",JsonValue.Create("none")},{"tree",JsonValue.Create("-")},{"host",JsonValue.Create(evHost)},{"exit",JsonValue.Create("-")},{"evidence",JsonValue.Create("")}};
-        cell["note"]=JsonValue.Create((e["note"]?.GetValue<string>()??"")+"（事件 utc "+when.ToString("O")+"，平台族已核）");
+        cell["note"]=JsonValue.Create((e["note"]?.GetValue<string>()??"")+"（事件 utc "+when.ToString("O")+"，平台 "+evHost+"）");
+        cell["utc"]=JsonValue.Create(when.ToString("O"));
         dims[dimName]=cell;
         if(e["currentVersion"]!=null)dims["currentVersion"]=JsonValue.Create(e["currentVersion"]!.GetValue<string>());
         var h=new JsonObject();h["label"]=JsonValue.Create(e["utc"]!.GetValue<string>()+" 事件");h["status"]=JsonValue.Create(status);h["note"]=JsonValue.Create(e["note"]?.GetValue<string>()??"");
@@ -391,7 +422,6 @@ void Record(string id,string title,string status,string note,string evidence)
 Record("suite.mac-2000","Mac 统一包套件 2000/1998/2（原 raw 1）","fail","2 supportingBlend NotConverged 保留（同 Mac baseline 133 窄复现）；栈修复实质记录；不入建模分母。","docs/uperf-1654-publish-receipt.md");
 Record("suite.linux-1974","Linux unified4b 套件 1974/1974（原 raw 0）","pass","历史 2 项本 TRX Passed；不代签 Mac 全绿。","docs/unified-4b-publish-receipt.md");
 Record("mass.component-ledger","物性分量总账：主 900 分量 312V/588U/0D + 额外 180；唯一总账 1080 分量 396V/684U/0D","unresolved","分量不是功能 case；不重复计数。","docs/uperf-1654-publish-receipt.md");
-Record("interaction.round2-failures","常规/混合 round-2 交互步骤 mass mismatch 真实失败记录（键 block-15903-basic-15902-round2 / basic-15903-basic-15902-round2）","fail","两条原日志 FAIL mass 行保留（不属 463 具名 case，不入分母；不以 PASS 后吞 FAIL）；来源 regular45-final.log / mixed18-final.log。","../gm-native-unified-delivery/temp_docs/unified-delivery/regular45-final.log");
 Record("perf.targets","性能目标未达（各窗口分源口径）：1654 当前 shortedge 配对 387.35924x；历史窗口 217fc 340.1703x、6616 3423.49713x、676 9465.56563x","unresolved","窗口不相乘、口径不混；主体性能目标未达。","docs/uperf-1654-publish-receipt.md");
 
 // ---- source / archive index
@@ -435,6 +465,13 @@ if(verifyMode)
         if(row!=null&&row["dimensions"]!["function"]!["status"]!.GetValue<string>()!="fail")Issue("PASS+FAIL key not fail: "+sk.Key+" @ "+kv.Key);
     }
     if(!counts.ContainsKey("current:reverified"))Issue("current reverify count missing");
+    foreach(var r in records)if(r!["id"]!.GetValue<string>()=="interaction.round2-failures")Issue("fabricated record still present");
+    foreach(var c0 in catalogItems.OfType<JsonObject>())
+        foreach(var w0 in new string[]{"function","mass","query","performance"})
+        {
+            var cv0=c0["dimensions"]![w0]!["utc"]?.GetValue<string>();
+            if(cv0!=null&&!DateTimeOffset.TryParse(cv0,out _))Issue("bad cell utc "+c0["id"]+"."+w0);
+        }
     // T5 contract phrase: any green row without evidence (or a rejected
     // empty-evidence event) must be named here, never silently signed.
     foreach(var it in catalogItems.OfType<JsonObject>())

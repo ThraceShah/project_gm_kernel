@@ -57,3 +57,13 @@
 - **B6 落位**：display 携 stepId；同 run 同 case 亦落指定步骤（实测 unequal-chamfer→operation-5）；证据标注「私存原件（hash 锚定）」无可点假链接；来源 runner 显示；计数事件后重算。
 
 验证：--verify 0 问题；AuditOverviewEvents T0–T6/T5b 全 PASS（T7=本树 tracked 随本次提交成立）；AuditProjectOverviewData 剩余 25 findings 全为文档性/白名单（borrow×9 文档、phase-merged×5+mismatch×5=B5 刻意分歧、builder-mechanism×3=旧机制证明、measurement-schema×2+label×1=原 schema 事实）；浏览器累计 27 检查含双 step 落位全绿。
+
+## 独审 R1–R4 闭合（窄复验二轮修复，同任务）
+
+- **R1**：删除 `interaction.round2-failures` 虚构记录（regular45/mixed18 封存日志 FAIL/round2 行数=0；旧 function:fail=2 实为 transverse 行）；不补造、不再引封存日志名。
+- **R2 事件合同**：host 为已知明确平台身份（q2 Linux x64 / Mac M4 / Windows arm64），空/未知拒（T4b）；未验证行首份本族证据可绑定不锁死（T4c）；可选 identity 块（parameters 深等 parametersDefinition、source 等 registry source）矛盾即拒；stale 按 (catalogId,dimension) 计、合法同刻双维均生效（T4e）；事件 utc 早于行基线证据（cell 真实 utc：4b=2026-11-11T22:37:59Z、60be=17:43:15Z、1654=2026-11-12T00:22:27Z；f9 缺时不编造）即拒（T4f）；status 按维白名单（T4g）；currentVersion ∈ {reverified,not-retested}（T8）；空证据绿拒+verify 措辞（T5）。
+  - **T4d 残留（如实登记）**：审计脚本自身 CaseUpdate 工厂无参数/identity 字段，其“完全不同参数”事件与 T1/T3 正例事件在机器上完全同构——若强制每事件必带 identity 则 T1/T3/T4c 正例全拒；故 identity 设计为“携带则全核、矛盾即拒、绿签必有证据”，T4d 的 fail 主张（非签绿）在无 identity 时生效。待审计工厂补 identity 字段后 T4d 即可转 PASS（生产端已实现核验分支）。
+- **R3**：qualityStatusCounts 三态按 Different/Unresolved/Verified 计数推导，空/缺/无有效计数→unverified（不再 ContainsKey 误绿）；样本级与 1080/900 分量账分列保留。
+- **R4**：display.stepId 用真实 manifest step id（operation-N / rep2-display）；pending 仅在目标 run+case+manifest 实际加载完成后一次消费（修复默认最新 run manifest 抢先消费 bug）；普通换 case 复位首步（策略明确）。实测：首击 unequal-chamfer→operation-5、重载后仍落、跨 run rep2-display、同 run rim-fillet→operation-1 全过。
+
+验证（隔离输出 temp_docs/self-audit-receipts）：AuditOverviewEvents 除 T4d 外全 PASS（T4b/T4c/T4e/T4f/T4g/T8 转 PASS）；AuditProjectOverviewData errors=0（14 notes=借用文档/相态合并等事实注记）；--verify 0 问题；浏览器落位 5 检查全过。
