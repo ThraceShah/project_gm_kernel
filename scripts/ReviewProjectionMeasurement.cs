@@ -12,6 +12,49 @@ using System.Text.Json.Nodes;
 Directory.SetCurrentDirectory(Path.Combine(Path.GetDirectoryName(Source())!,".."));
 const string archive="temp_docs/incoming/mac-projection-cc47871-controlled-original.zip",output="temp_docs/independent-projection-cc47871/measurement",original=output+"/original";
 const string baseline="17eedbfd6be891db8c43494cd91a896d261242c4",candidate="cc47871133fb7d536ffa7fd050066c51f4905708",documentation="553b2c6c01d3862411f3b6a03735dc22ee20dc11";
+if(args.SequenceEqual(new[]{"--bindings"}))
+{
+    var bindingRoot=original+"/temp_docs/projection-controlled/window";var bindingReport=Read(bindingRoot+"/report.json");var bindingRows=new JsonArray();var bindingProofs=0;var bindingMissing=0;var bindingViaManaged=0;var bindingKinds=new Dictionary<string,int>();
+    foreach(var bindingSample in bindingReport["samples"]!.AsArray())
+    {
+        var bindingFolder=bindingRoot+"/"+(string)bindingSample!["directory"]!;var bindingId=Read(bindingFolder+"/identity/loaded.json");var bindingCapture=Read(bindingFolder+"/capture.json");var bindingMeshes=new Dictionary<string,JsonNode>();
+        foreach(var bindingMeshPath in Directory.GetFiles(bindingFolder+"/meshes","*.json"))
+        {
+            var bindingMesh=Read(bindingMeshPath);var bindingSource=bindingMesh["source"]!;var own=(string?)bindingSource["kernel"]=="GM";
+            Require(JsonNode.DeepEquals(bindingSource["captureIdentity"],bindingId),"mesh actual loaded identity");Require((bool)bindingSource["freshXtReceive"]! ==own&&(int)bindingSource["snapshotNativeBodyTag"]!>0,"GM snapshot/PK live identity");
+            Require((string?)bindingMesh["bodyId"]==(own?"gm:":"pk:")+(int)bindingSource["sourceBodyTag"]!,"mesh source tag");Require(Hash(bindingFolder+"/"+(string)bindingSource["xtArtifact"]!)==(string?)bindingSource["xtSha256"],"actual source XT bytes");
+            bindingMeshes["meshes/"+Path.GetFileName(bindingMeshPath)]=bindingMesh;
+            bindingRows.Add((JsonNode)new JsonObject{["path"]="temp_docs/projection-controlled/window/"+(string)bindingSample["directory"]!+"/meshes/"+Path.GetFileName(bindingMeshPath),["sha256"]=Hash(bindingMeshPath),["sourceKernel"]=bindingSource["kernel"]!.DeepClone(),["liveTag"]=bindingSource["sourceBodyTag"]!.DeepClone(),["snapshotNativeTag"]=bindingSource["snapshotNativeBodyTag"]!.DeepClone(),["sourceXtSha256"]=bindingSource["xtSha256"]!.DeepClone()});
+        }
+        foreach(var bindingProofPath in Directory.GetFiles(bindingFolder+"/evidence","quality-*.json"))
+        {
+            var bindingProof=Read(bindingProofPath);Require(JsonNode.DeepEquals(bindingProof["captureIdentity"],bindingId),"proof actual loaded identity");
+            if(bindingProof["sourceBinding"] is not JsonObject bindingSource){bindingMissing++;continue;}
+            Require(JsonNode.DeepEquals(bindingSource["identity"],bindingId),"proof source identity");var bindingKind=(string)bindingSource["kind"]!;bindingKinds[bindingKind]=bindingKinds.GetValueOrDefault(bindingKind)+1;
+            if(bindingKind=="same-instance-snapshot-pair")
+            {
+                var bindingStep=bindingCapture["steps"]![(int)bindingSource["step"]!]!;Require(JsonNode.DeepEquals(bindingSource["gmMesh"],bindingStep["gm"]!["after"])&&JsonNode.DeepEquals(bindingSource["pkMesh"],bindingStep["pk"]!["after"]),"snapshot pair actual step mesh");
+                Require(bindingMeshes[(string)bindingSource["gmMesh"]!]["source"]!["kernel"]!.GetValue<string>()=="GM"&&bindingMeshes[(string)bindingSource["pkMesh"]!]["source"]!["kernel"]!.GetValue<string>()=="PK","snapshot pair origin kernels");
+            }
+            else
+            {
+                Require(bindingKind=="GM-fresh-vs-native"&&(string?)bindingSource["actualOriginKernel"]=="GM","fresh GM source kind");
+                if((string?)bindingSource["stage"]=="native via managed")
+                {
+                    // ShortEdgeBlendOracle receives the PK result into a new
+                    // GM body and re-exports it for this separate control;
+                    // WebProgressCapture has no mesh step for that body.
+                    Require((string?)bindingSample["case"]=="shortedge"&&(int)bindingSource["gmLiveBody"]!>0,"PK product via managed control");bindingViaManaged++;
+                }
+                else Require(bindingMeshes.Values.Any(x=>(string?)x["source"]!["kernel"]=="GM"&&(int)x["source"]!["sourceBodyTag"]! ==(int)bindingSource["gmLiveBody"]!),"fresh GM actual live tag");
+                Require((int)bindingProof["actualBody"]! ==(int)bindingSource["freshNativeBody"]!&&(int)bindingProof["referenceBody"]! ==(int)bindingSource["referenceNativeBody"]!,"fresh proof actual PK tags");
+            }
+            bindingProofs++;
+        }
+    }
+    Require(bindingRows.Count==312&&bindingProofs==204&&bindingMissing==12&&bindingViaManaged==24,"complete mesh/proof binding set");
+    var bindingResult=new JsonObject{["scope"]="Actual original mesh source and proof binding audit; source-less reports remain missing; no new modeling or display qualification",["meshes"]=bindingRows,["boundProofs"]=bindingProofs,["missingProofSourceBindings"]=bindingMissing,["pkProductViaManagedProofsWithoutDisplayMesh"]=bindingViaManaged,["proofKinds"]=Counts(bindingKinds)};var bindingDestination="docs/projection-independent/material-bindings.json";Require(!File.Exists(bindingDestination),"preserve binding receipt");Directory.CreateDirectory(Path.GetDirectoryName(bindingDestination)!);File.WriteAllText(bindingDestination,bindingResult.ToJsonString(new JsonSerializerOptions{WriteIndented=true}));Console.WriteLine("PASS material bindings: 312 meshes, 204 bound proofs (24 PK-product via managed controls), 12 missing sources retained");return;
+}
 var recheck=args.SequenceEqual(new[]{"--recheck"});Require(recheck||!Directory.Exists(output),"preserve measurement evidence");Directory.CreateDirectory(original);
 Require(Hash(archive)=="9bfad64ff79211c4fbc6620e3a2678e3f966e8150d5b3dad778e5814c8128919","measurement ZIP hash");
 using var zip=ZipFile.OpenRead(archive);var paths=new HashSet<string>();long expanded=0;

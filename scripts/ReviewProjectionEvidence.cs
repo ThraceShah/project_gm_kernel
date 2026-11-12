@@ -16,6 +16,39 @@ const string target="cc47871133fb7d536ffa7fd050066c51f4905708";
 const string package="temp_docs/incoming/mac-projection-cc47871-quality.zip";
 const string output="temp_docs/independent-projection-cc47871";
 const string original=output+"/original";
+if(args.SequenceEqual(new[]{"--receipt"}))
+{
+    var quality=JsonNode.Parse(File.ReadAllText(output+"/evidence-receipt-verified.json"))!;quality.AsObject().Remove("members");
+    var measurement=JsonNode.Parse(File.ReadAllText(output+"/measurement/receipt-verified.json"))!;measurement.AsObject().Remove("samples");measurement.AsObject().Remove("binaries");
+    var material="temp_docs/projection-controlled/material-binding-current.json";var window="temp_docs/projection-controlled/window";var mroot=output+"/measurement/original/";var report=JsonNode.Parse(File.ReadAllText(mroot+window+"/report.json"))!;
+    var finalArtifacts=new JsonArray();var sources=new JsonArray();
+    foreach(var sample in report["samples"]!.AsArray())
+    {
+        var family=(string)sample!["case"]!;var directory=window+"/"+(string)sample["directory"]!;
+        sources.Add((JsonNode)new JsonObject{["directory"]=directory,["source"]=sample["commit"]!.DeepClone(),["side"]=sample["side"]!.DeepClone(),["rawExit"]=sample["processExit"]!.DeepClone(),["status"]=sample["qualityStatus"]!.DeepClone(),["loadedIdentity"]=JsonNode.Parse(File.ReadAllText(mroot+directory+"/identity/loaded.json"))});
+        foreach(var file in sample["artifacts"]!.AsArray())
+        {
+            var name=(string)file!["path"]!;if(!name.EndsWith(".x_t",StringComparison.Ordinal))continue;
+            var role=family switch
+            {
+                "sphere" or "planar"=>name.EndsWith("-managed.x_t",StringComparison.Ordinal)?"GM product":"PK reference product",
+                "solidblend"=>"GM product",
+                "curved"=>name.Contains("-gm-",StringComparison.Ordinal)?"GM before input":name.Contains("-pk-",StringComparison.Ordinal)?"PK before input":name.EndsWith("-native.x_t",StringComparison.Ordinal)?"PK reference product":"GM product",
+                "shortedge"=>name.EndsWith("-input.x_t",StringComparison.Ordinal)?"PK seed":name.EndsWith("-input-fresh.x_t",StringComparison.Ordinal)?"GM received fresh input":name.EndsWith("-native-fresh.x_t",StringComparison.Ordinal)?"PK product received and re-exported by GM":name.EndsWith("-native.x_t",StringComparison.Ordinal)?"PK reference product":"GM product",
+                _=>throw new Exception("unexpected family")
+            };
+            var path=directory+"/"+name;Require(Hash(File.ReadAllBytes(mroot+path))==(string?)file["sha256"],"final artifact hash");
+            finalArtifacts.Add((JsonNode)new JsonObject{["path"]=path,["sha256"]=file["sha256"]!.DeepClone(),["role"]=role,["source"]=sample["commit"]!.DeepClone(),["processDirectory"]=sample["directory"]!.DeepClone(),["repetition"]=role.EndsWith("product",StringComparison.Ordinal)||role=="PK product received and re-exported by GM"?2:null,["boundary"]="Final file set; input and seed not assigned a fabricated repetition; product rep2 follows original producer overwrite, not byte identity alone"});
+        }
+    }
+    var roleCounts=new JsonObject();foreach(var group in finalArtifacts.GroupBy(x=>(string)x!["role"]!))roleCounts[group.Key]=group.Count();Require(finalArtifacts.Count==64,"64 final files");
+    var q2=output+"/q2-one-nurbs/00-solidblend-candidate";var capture=JsonNode.Parse(File.ReadAllText(q2+"/capture.json"))!;var counts=new JsonObject();foreach(var group in capture["checks"]!.AsArray().GroupBy(x=>(string)x!["status"]!))counts[group.Key]=group.Count();
+    var q2id=JsonNode.Parse(File.ReadAllText(q2+"/identity/loaded.json"))!;Require(Hash(File.ReadAllBytes(q2+"/identity/kernel.dll"))==(string?)q2id["kernelDllSha256"],"q2 actual loaded bytes");
+    XNamespace ns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010";var trx=XDocument.Load(output+"/q2-focused/focused.trx").Descendants(ns+"Counters").Single();
+    var auditLogs=new JsonArray();foreach(var file in new[]{"projection-review-evidence-01.log","projection-review-evidence-02.log","projection-review-measurement-01.log","projection-review-measurement-02.log","projection-review-controls-01.log","projection-review-consumer-01.log","projection-review-focused-driver.log"})auditLogs.Add((JsonNode)new JsonObject{["path"]="temp_docs/"+file,["sha256"]=Hash(File.ReadAllBytes("temp_docs/"+file)),["actualExit"]=file=="projection-review-consumer-01.log"?2:0});
+    var document=new JsonObject{["scope"]="Independent fixed cc47871 review derivation; original exits and tri-state preserved; acceptance limits in accompanying Markdown",["decisions"]=new JsonObject{["algorithmAndIntegration"]="accepted",["recordedGeometryTopologyAndLifecycle"]="accepted within executed scope",["originalMacSuite"]="accepted as 2022/2022 raw build0/test0",["uniqueMacWindow"]="accepted as descriptive fixed-source observations",["allNumericVerifiedUnderOriginalContract"]="blocked by original Unresolved outcomes",["generalOrCausalSpeedupAndOverallPkGoal"]="unproven",["dashboardData"]="accepted for actual-source display with original states; UI, integration and deployment not reviewed"},["quality"]=quality,["measurement"]=measurement,["controls"]=JsonNode.Parse(File.ReadAllText(output+"/controls.json")),["q2Focused"]=new JsonObject{["actualExit"]=int.Parse(File.ReadAllText(output+"/q2-focused/process.exit")),["total"]=(string?)trx.Attribute("total"),["passed"]=(string?)trx.Attribute("passed"),["failed"]=(string?)trx.Attribute("failed"),["trxSha256"]=Hash(File.ReadAllBytes(output+"/q2-focused/focused.trx"))},["q2FreshNurbs"]=new JsonObject{["originalExit"]=int.Parse(File.ReadAllText(q2+"/process.exit")),["checks"]=counts,["captureErrors"]=capture["captureErrors"]!.DeepClone(),["loadedIdentity"]=q2id,["captureSha256"]=Hash(File.ReadAllBytes(q2+"/capture.json")),["scope"]="One complete current-source Linux API execution and quality; not Mac timing"},["dashboardData"]=new JsonObject{["originalArchive"]=measurement["archiveSha256"]!.DeepClone(),["originalMaterialBindingPath"]=material,["originalMaterialBindingSha256"]=Hash(File.ReadAllBytes(mroot+material)),["meshFiles"]=312,["meshBytes"]=35389380,["meshBoundary"]="GM live product, PK private snapshot and independent PK product are separate; no role repair for curved",["sourceDirectories"]=sources,["finalXtRoleCounts"]=roleCounts,["finalXtFiles"]=finalArtifacts,["qualityNurbsFinalProductRepetition"]=5},["auditExecutions"]=auditLogs};
+    var destination="docs/projection-independent/receipt.json";Require(!File.Exists(destination),"preserve aggregate receipt");Directory.CreateDirectory(Path.GetDirectoryName(destination)!);File.WriteAllText(destination,document.ToJsonString(new JsonSerializerOptions{WriteIndented=true}));Console.WriteLine("Independent aggregate receipt written");return;
+}
 if(args.SequenceEqual(new[]{"--focused"}))
 {
     var folder=output+"/q2-focused";Require(!Directory.Exists(folder),"preserve focused execution");Directory.CreateDirectory(folder);
@@ -79,10 +112,10 @@ foreach(var entry in binding.RootElement.GetProperty("binaries").EnumerateArray(
     Require(matched==entry.GetProperty("matchedTrackedDocuments").GetInt32(),"document count");
     binaries.Add((JsonNode)new JsonObject{["dll"]=dll,["sha256"]=Hash(db),["mvid"]=mvid.ToString(),["codeViewGuid"]=guid.ToString(),["matchedTrackedDocuments"]=matched,["unmapped"]=new JsonArray(unmapped.Select(x=>(JsonNode?)JsonValue.Create(x)).ToArray())});
 }
-using var quality=JsonDocument.Parse(File.ReadAllBytes(publicFiles[1]));
+using var originalQuality=JsonDocument.Parse(File.ReadAllBytes(publicFiles[1]));
 var runs=new JsonArray();
 var artifacts=0;var manifests=0;var sourceRows=0;var compareReports=0;var massReports=0;var components=new Dictionary<string,int>();
-foreach(var run in quality.RootElement.GetProperty("qualityRuns").EnumerateArray())
+foreach(var run in originalQuality.RootElement.GetProperty("qualityRuns").EnumerateArray())
 {
     var directory=run.GetProperty("directory").GetString()!;var folder=Path.Combine(original,"temp_docs/projection-bound",directory);var capturePath=Path.Combine(folder,"capture.json");
     Require(Hash(File.ReadAllBytes(capturePath))==run.GetProperty("captureSha256").GetString(),"capture hash");
@@ -123,11 +156,11 @@ foreach(var run in quality.RootElement.GetProperty("qualityRuns").EnumerateArray
     runs.Add((JsonNode)new JsonObject{["directory"]=directory,["originalExit"]=raw,["checks"]=JsonNode.Parse(run.GetProperty("checks").GetRawText()),["captureSha256"]=Hash(File.ReadAllBytes(capturePath))});
 }
 var trxPaths=Directory.GetFiles(original,"*.trx",SearchOption.AllDirectories);
-var full=trxPaths.Single(x=>Hash(File.ReadAllBytes(x))==quality.RootElement.GetProperty("fullSuite").GetProperty("trxSha256").GetString());
-var trx=XDocument.Load(full);XNamespace ns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010";
-var counters=trx.Descendants(ns+"Counters").Single();
+var full=trxPaths.Single(x=>Hash(File.ReadAllBytes(x))==originalQuality.RootElement.GetProperty("fullSuite").GetProperty("trxSha256").GetString());
+var originalTrx=XDocument.Load(full);XNamespace originalNs="http://microsoft.com/schemas/VisualStudio/TeamTest/2010";
+var counters=originalTrx.Descendants(originalNs+"Counters").Single();
 Require((string?)counters.Attribute("total")=="2022"&&(string?)counters.Attribute("passed")=="2022"&&(string?)counters.Attribute("failed")=="0","full TRX");
-var supporting=new JsonArray();foreach(var result in trx.Descendants(ns+"UnitTestResult").Where(x=>((string?)x.Attribute("testName"))?.Contains("SupportingBlend",StringComparison.Ordinal)==true))supporting.Add((JsonNode)new JsonObject{["name"]=(string?)result.Attribute("testName"),["outcome"]=(string?)result.Attribute("outcome")});
+var supporting=new JsonArray();foreach(var result in originalTrx.Descendants(originalNs+"UnitTestResult").Where(x=>((string?)x.Attribute("testName"))?.Contains("SupportingBlend",StringComparison.Ordinal)==true))supporting.Add((JsonNode)new JsonObject{["name"]=(string?)result.Attribute("testName"),["outcome"]=(string?)result.Attribute("outcome")});
 var sealedFolder=Path.Combine(original,"temp_docs/projection-bound");
 using(var before=JsonDocument.Parse(File.ReadAllBytes(sealedFolder+"/projection-full-binaries-before.json")))using(var after=JsonDocument.Parse(File.ReadAllBytes(sealedFolder+"/projection-full-binaries-after.json")))
 {
@@ -139,7 +172,7 @@ using(var before=JsonDocument.Parse(File.ReadAllBytes(sealedFolder+"/projection-
     }
 }
 Require(File.ReadAllText(sealedFolder+"/projection-full-build.exit").Trim()=="0"&&File.ReadAllText(sealedFolder+"/projection-full-test.exit").Trim()=="0","full raw exits");
-var focused=XDocument.Load(sealedFolder+"/test-results/focused.trx").Descendants(ns+"Counters").Single();Require((string?)focused.Attribute("total")=="132"&&(string?)focused.Attribute("passed")=="132"&&File.ReadAllText(sealedFolder+"/focused.exit").Trim()=="0","original focused 132 raw0");
+var focused=XDocument.Load(sealedFolder+"/test-results/focused.trx").Descendants(originalNs+"Counters").Single();Require((string?)focused.Attribute("total")=="132"&&(string?)focused.Attribute("passed")=="132"&&File.ReadAllText(sealedFolder+"/focused.exit").Trim()=="0","original focused 132 raw0");
 using(var copies=JsonDocument.Parse(File.ReadAllBytes(sealedFolder+"/sampling-copy-binding.json")))
 {
     Require(copies.RootElement.GetProperty("files").GetArrayLength()==70,"70 copied sampling originals");
