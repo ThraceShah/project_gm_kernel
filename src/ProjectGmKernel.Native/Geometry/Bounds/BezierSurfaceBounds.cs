@@ -176,6 +176,29 @@ internal static class BezierSurfaceBounds
         }
     }
 
+    internal static AlgorithmStatus BoundPosition(in BezierSurfacePatch patch,in SurfaceParameterBox box,Span<IntervalNumber> output)
+    {
+        Span<IntervalNumber> poles=stackalloc IntervalNumber[Math.Min(MaxScalars,4*(patch.UDegree+1)*(patch.VDegree+1))];
+        return BoundPosition(patch,box,output,poles);
+    }
+
+    // Return the same conservative Cartesian position hull as Bound. A
+    // caller that also needs its restricted net owns the supplied workspace.
+    internal static AlgorithmStatus BoundPosition(in BezierSurfacePatch patch,in SurfaceParameterBox box,Span<IntervalNumber> output,Span<IntervalNumber> poles)
+    {
+        if(output.Length<3)return AlgorithmStatus.WorkspaceTooSmall;
+        var status=Restrict(patch,box,poles);if(status!=AlgorithmStatus.Success)return status;
+        var count=(patch.UDegree+1)*(patch.VDegree+1);var weightLower=poles[3].Lower;
+        for(var i=1;i<count;i++)weightLower=Math.Min(weightLower,poles[4*i+3].Lower);
+        if(!(weightLower>0))return AlgorithmStatus.NumericalFailure;
+        for(var d=0;d<3;d++)
+        {
+            var value=poles[d]/poles[3];for(var i=1;i<count;i++)value=IntervalNumber.Hull(value,poles[4*i+d]/poles[4*i+3]);
+            output[d]=value;if(!value.Finite)return AlgorithmStatus.NumericalFailure;
+        }
+        return AlgorithmStatus.Success;
+    }
+
     /// <summary>XYZ, d/du and d/dv intervals; output layout is component-major.</summary>
     internal static AlgorithmStatus Bound(in BezierSurfacePatch patch, in SurfaceParameterBox box, Span<IntervalNumber> output)
         =>Bound(patch,box,output,default);
