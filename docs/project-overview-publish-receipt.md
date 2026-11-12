@@ -19,3 +19,10 @@
 - 真实浏览器（线上）：6/6（默认整体目录+463 计数、分维统计、首击 unequal-chamfer→operation-5 真实落位、返回目录、390px、无 JS 错误）；收据 temp_docs/cutover-verify/browser-live-receipt.json。本地预验收累计 27+5 检查（统计可复算/筛选/证据/模型/落位/刷新不重置等）。
 - 15 display/real-uv 资源：随数据闭包保留（runs 明细未动）；历史原件/归档/回退快照保留。
 - 剩余问题（如实）：510 self15/import16/native7 分类未决、五圆柱 BodyContainsVector 5000 查询缺口、FaceAttach 未测、curved roles 缺、mass Unresolved 62 行、Mac 套件 2 NotConverged、M0–M5/PK 性能目标未达、sphere +11.178% 性能回退观察保留。
+
+## 勘误（2026-11-12，按 owned 发布日志校正；原记录不改）
+
+1. **发布 UTC 校正**：正确时间为 **2026-11-12T04:17:10Z（UI_PREPARED）…04:18:20Z（首自动轮 UI_SKIP_SAME）**，第二自动轮 04:20:19Z；上述正文「2026-01-12T04:18:50Z」为时钟读数误记（月误），以 journal --utc（gm-kernel-progress-refresh.service）为权威：`2026-11-12T04:18:20+00:00 UI_SKIP_SAME`、`04:22:07+00:00 VERIFY issues=0`（首轮含 overview 生产入口）。
+2. **统计校正**：正确按行 mass=**29 Verified / 51 Unresolved / 1 fail（witness 两 cut 点值门红 1.2044611267910417E-07/1.126468644220207E-07，保留）/ 382 未验证**；function=183 过/0 失败/280 未验证。正文「25/62/376/0」为误抄旧缓存值——线上 project-overview.json 实测行计数一直正确（29/51/1/382），无需重发，仅报告文字更正。
+3. **数据生产/UI 发布两层身份明确**：数据生产层=（a）旧测量刷新 producer 1b6106428a89d1a320f69372f83693987efb19c4；（b）整体目录生产=`gm-delivery-board/scripts/BuildProjectOverview.cs`（3968948b 合同，overview-events 入口）——现已接入自动轮 ExecStart（再生→拷入 producer 数据目录→--verify→ValidateWebProgress），实测 journal：`mappingAudit entries=195 / VERIFY issues=0`（2026-11-12T04:22:07Z）；UI 发布层=release ui-016-tools-1b93597-overview（uiHash ab2f2340…）。自动轮由此可消费新事件再生整体目录，非静态只读。
+4. 当前数据版本=统一内核 1654（页面标注如此）；Joint185 已接受证据将经 overview-events 按版本分列接入（2019/2019 属 185，不回写 1654 的 2000/1998/2 历史）。
