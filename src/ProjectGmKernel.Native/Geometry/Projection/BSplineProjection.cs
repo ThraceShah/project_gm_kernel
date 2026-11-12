@@ -80,9 +80,12 @@ internal static class BSplineProjection
         {
             var u = seed == 0 ? (box.U0 + box.U1) * .5 : seed <= 2 ? box.U0 : box.U1;
             var v = seed == 0 ? (box.V0 + box.V1) * .5 : (seed & 1) != 0 ? box.V0 : box.V1;
+            var positionReady=false;IntervalNumber weight=default;
             for (var iteration = 0; iteration < 18; iteration++)
             {
-                if (BezierSurfaceBounds.Bound(patch, new(u, u, v, v), values) != AlgorithmStatus.Success) break;
+                var status=positionReady?BezierSurfaceBounds.BoundFromPosition(patch,new(u,u,v,v),values[..3],weight,values)
+                    :BezierSurfaceBounds.Bound(patch,new(u,u,v,v),values);
+                positionReady=false;if(status!=AlgorithmStatus.Success)break;
                 var point = Vector(values[0].Midpoint, values[1].Midpoint, values[2].Midpoint);
                 var distance = UpperDistance(values, target);
                 if (distance < best.DistanceUpper) best = new() { U = u, V = v, Point = point, DistanceUpper = distance };
@@ -103,8 +106,8 @@ internal static class BSplineProjection
                 {
                     var nextU = Math.Clamp(u + su, box.U0, box.U1); var nextV = Math.Clamp(v + sv, box.V0, box.V1);
                     if (nextU == u && nextV == v) break;
-                    if (BezierSurfaceBounds.BoundPosition(patch, new(nextU, nextU, nextV, nextV), values[..3]) != AlgorithmStatus.Success) break;
-                    if (UpperDistance(values, target) < distance) { u = nextU; v = nextV; improved = true; break; }
+                    if (BezierSurfaceBounds.BoundPositionWithWeight(patch, new(nextU, nextU, nextV, nextV), values[..3],out var nextWeight) != AlgorithmStatus.Success) break;
+                    if (UpperDistance(values, target) < distance) { u = nextU; v = nextV;weight=nextWeight;positionReady=true; improved = true; break; }
                     su *= .5; sv *= .5;
                 }
                 if (!improved) break;

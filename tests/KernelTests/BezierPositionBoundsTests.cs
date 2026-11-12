@@ -10,7 +10,7 @@ public class BezierPositionBoundsTests
     [InlineData(false)] [InlineData(true)]
     public void PositionHullAndRetainedRestrictionMatchTheFullJetCalculationBitwise(bool rational)
     {
-        var poles=new IntervalNumber[BezierSurfaceBounds.MaxScalars];Span<IntervalNumber> reference=stackalloc IntervalNumber[9],actual=stackalloc IntervalNumber[3],convenience=stackalloc IntervalNumber[3];
+        var poles=new IntervalNumber[BezierSurfaceBounds.MaxScalars];Span<IntervalNumber> reference=stackalloc IntervalNumber[9],actual=stackalloc IntervalNumber[3],convenience=stackalloc IntervalNumber[3],continued=stackalloc IntervalNumber[9];
         var retained=new IntervalNumber[BezierSurfaceBounds.MaxScalars];var restricted=new IntervalNumber[BezierSurfaceBounds.MaxScalars];
         foreach(var p in new[]{0,1,2,4,8,16})foreach(var q in new[]{0,1,2,4,8,16})
         {
@@ -24,7 +24,10 @@ public class BezierPositionBoundsTests
             foreach(var box in new[]{new SurfaceParameterBox(-.2,.4,.4,.9),new SurfaceParameterBox(.2,.2,.7,.7),new SurfaceParameterBox(-1,-1,.2,1.4),new SurfaceParameterBox(-1.001,-.8,1.3,1.401)})
             {
                 var expected=BezierSurfaceBounds.Bound(patch,box,reference);Assert.Equal(expected,BezierSurfaceBounds.BoundPosition(patch,box,actual,retained));Assert.Equal(expected,BezierSurfaceBounds.BoundPosition(patch,box,convenience));
+                Assert.Equal(expected,BezierSurfaceBounds.BoundPositionWithWeight(patch,box,continued[..3],out var weight));
                 if(expected!=AlgorithmStatus.Success)continue;
+                Assert.Equal(expected,BezierSurfaceBounds.BoundFromPosition(patch,box,continued[..3],weight,continued));
+                for(var i=0;i<9;i++){Assert.Equal(BitConverter.DoubleToInt64Bits(reference[i].Lower),BitConverter.DoubleToInt64Bits(continued[i].Lower));Assert.Equal(BitConverter.DoubleToInt64Bits(reference[i].Upper),BitConverter.DoubleToInt64Bits(continued[i].Upper));}
                 for(var i=0;i<3;i++){Assert.Equal(reference[i].Lower,actual[i].Lower);Assert.Equal(reference[i].Upper,actual[i].Upper);Assert.Equal(reference[i].Lower,convenience[i].Lower);Assert.Equal(reference[i].Upper,convenience[i].Upper);}
                 Assert.Equal(AlgorithmStatus.Success,BezierSurfaceBounds.Restrict(patch,box,restricted));
                 for(var i=0;i<size;i++){Assert.Equal(restricted[i].Lower,retained[i].Lower);Assert.Equal(restricted[i].Upper,retained[i].Upper);}
@@ -32,6 +35,7 @@ public class BezierPositionBoundsTests
         }
         var warmPatch=new BezierSurfacePatch(poles,16,16,new(-1,2,.2,1.4));var warmBox=new SurfaceParameterBox(.2,.21,.7,.71);
         var before=GC.GetAllocatedBytesForCurrentThread();var status=BezierSurfaceBounds.BoundPosition(warmPatch,warmBox,actual,retained);var allocated=GC.GetAllocatedBytesForCurrentThread()-before;Assert.Equal(AlgorithmStatus.Success,status);Assert.Equal(0,allocated);
+        before=GC.GetAllocatedBytesForCurrentThread();status=BezierSurfaceBounds.BoundPositionWithWeight(warmPatch,warmBox,continued[..3],out var warmWeight);if(status==AlgorithmStatus.Success)status=BezierSurfaceBounds.BoundFromPosition(warmPatch,warmBox,continued[..3],warmWeight,continued);allocated=GC.GetAllocatedBytesForCurrentThread()-before;Assert.Equal(AlgorithmStatus.Success,status);Assert.Equal(0,allocated);
     }
 
     [Fact]
@@ -41,5 +45,7 @@ public class BezierPositionBoundsTests
         Assert.Equal(AlgorithmStatus.WorkspaceTooSmall,BezierSurfaceBounds.BoundPosition(patch,new(0,1,0,1),result[..2],workspace));
         Assert.Equal(AlgorithmStatus.WorkspaceTooSmall,BezierSurfaceBounds.BoundPosition(patch,new(0,1,0,1),result,workspace[..15]));
         Assert.Equal(AlgorithmStatus.NumericalFailure,BezierSurfaceBounds.BoundPosition(patch,new(0,1,0,1),result,workspace));
+        Assert.Equal(AlgorithmStatus.NumericalFailure,BezierSurfaceBounds.BoundPositionWithWeight(patch,new(0,1,0,1),result,out _));
+        Assert.Equal(AlgorithmStatus.WorkspaceTooSmall,BezierSurfaceBounds.BoundFromPosition(patch,new(0,1,0,1),result,1,workspace[..8]));
     }
 }

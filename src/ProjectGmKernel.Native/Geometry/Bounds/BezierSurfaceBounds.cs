@@ -199,6 +199,33 @@ internal static class BezierSurfaceBounds
         return AlgorithmStatus.Success;
     }
 
+    // The caller retains this successful point enclosure only until the
+    // next Newton iteration at the same patch and exact UV.
+    internal static AlgorithmStatus BoundPositionWithWeight(in BezierSurfacePatch patch,in SurfaceParameterBox box,Span<IntervalNumber> output,out IntervalNumber weight)
+    {
+        weight=default;Span<IntervalNumber> poles=stackalloc IntervalNumber[Math.Min(MaxScalars,4*(patch.UDegree+1)*(patch.VDegree+1))];
+        var status=BoundPosition(patch,box,output,poles);if(status!=AlgorithmStatus.Success)return status;
+        weight=poles[3];for(var i=1;i<(patch.UDegree+1)*(patch.VDegree+1);i++)weight=IntervalNumber.Hull(weight,poles[4*i+3]);
+        return AlgorithmStatus.Success;
+    }
+
+    // position and weight must come from a successful position bound on
+    // this same patch/box. position may alias output's first three slots.
+    internal static AlgorithmStatus BoundFromPosition(in BezierSurfacePatch patch,in SurfaceParameterBox box,ReadOnlySpan<IntervalNumber> position,IntervalNumber weight,Span<IntervalNumber> output)
+    {
+        if(position.Length<3||output.Length<9)return AlgorithmStatus.WorkspaceTooSmall;
+        Span<IntervalNumber> hu=stackalloc IntervalNumber[4],hv=stackalloc IntervalNumber[4];
+        HomogeneousDerivativeHull(patch,box,true,hu);HomogeneousDerivativeHull(patch,box,false,hv);
+        if(!(weight.Lower>0))return AlgorithmStatus.NumericalFailure;
+        for(var d=0;d<3;d++)
+        {
+            var value=position[d];output[d]=value;
+            output[3+d]=(hu[d]-value*hu[3])/weight;output[6+d]=(hv[d]-value*hv[3])/weight;
+            if(!value.Finite)return AlgorithmStatus.NumericalFailure;
+        }
+        return AlgorithmStatus.Success;
+    }
+
     /// <summary>XYZ, d/du and d/dv intervals; output layout is component-major.</summary>
     internal static AlgorithmStatus Bound(in BezierSurfacePatch patch, in SurfaceParameterBox box, Span<IntervalNumber> output)
         =>Bound(patch,box,output,default);
