@@ -26,7 +26,16 @@ using(session)unsafe
    if(node.Type==56){(node.Fields[8],node.Fields[9])=(node.Fields[9],node.Fields[8]);(node.Fields[11],node.Fields[12])=(node.Fields[12],node.Fields[11]);}
   }
   if(count<3)throw new Exception("negative fixture lacks three spines");var bytes=System.Text.Encoding.ASCII.GetBytes(XtText.Encode(document));File.WriteAllBytes(Path.Combine(folder,"negative-depth3.x_t"),bytes);
-  var nativeBody=Receive(bytes);var native=Surface(nativeBody);var own=ImportSurface(bytes);CheckJets(native,own,.35,.65);var ownBox=new M.PK_UVBOX_s();Check(KernelRuntime.SurfAskUvbox(own,&ownBox),"negative own range");var negativeWidth=ownBox.param[2]-ownBox.param[0];ownBox.param[0]+=.35*negativeWidth;ownBox.param[2]-=.35*negativeWidth;ownBox.param[1]=.1;ownBox.param[3]=.9;int ownSheet,nativeSheet;Check(KernelRuntime.SurfMakeSheetBody(own,ownBox,&ownSheet),"negative own sheet");Check(PK_SURF_make_sheet_body(native,*(PK_UVBOX_t*)&ownBox,&nativeSheet),"negative native sheet");Compare(ownSheet,nativeSheet,"negative-depth3");Console.WriteLine("PASS three-level negative sense");
+  var nativeBody=Receive(bytes);var native=Surface(nativeBody);var own=ImportSurface(bytes);CheckJets(native,own,.35,.65);var ownBox=new M.PK_UVBOX_s();Check(KernelRuntime.SurfAskUvbox(own,&ownBox),"negative own range");var negativeWidth=ownBox.param[2]-ownBox.param[0];ownBox.param[0]+=.35*negativeWidth;ownBox.param[2]-=.35*negativeWidth;ownBox.param[1]=.1;ownBox.param[3]=.9;int ownSheet,nativeSheet;Check(KernelRuntime.SurfMakeSheetBody(own,ownBox,&ownSheet),"negative own sheet");Check(PK_SURF_make_sheet_body(native,*(PK_UVBOX_t*)&ownBox,&nativeSheet),"negative native sheet");
+  // Explicit display observer for this case only (no operation: the sheet is the
+  // real evaluated input and the comparison is a sense/geometry check, so roles
+  // stay neutral and no blend/tracking is claimed).
+  var negativeSelected=WebProgressCapture.Select("negative-depth3");
+  if(negativeSelected){WebProgressCapture.Before(true,ownSheet,[],"negative-depth3-sense",[]);WebProgressCapture.Before(false,nativeSheet,[],"negative-depth3-sense",[]);}
+  var negativeStarted=System.Diagnostics.Stopwatch.GetTimestamp();
+  Compare(ownSheet,nativeSheet,"negative-depth3");
+  if(negativeSelected){var ms=System.Diagnostics.Stopwatch.GetElapsedTime(negativeStarted).TotalMilliseconds;WebProgressCapture.BooleanAfter(true,[ownSheet],ms,0,0,null);WebProgressCapture.BooleanAfter(false,[nativeSheet],ms,0,0,null);}
+  Console.WriteLine("PASS three-level negative sense");
   OpenCoverage();
  }
  finally{Check(KernelRuntime.SessionStop(),"self stop");}

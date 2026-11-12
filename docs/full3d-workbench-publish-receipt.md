@@ -114,3 +114,17 @@
 本次交付：一个统一的全 case 真实三维工作台，463 目录中 347 个可采集用例都有真实 GM/PK 三维与操作 entity 角色高亮，Section 2c0e4ea 与累计集成 3aff4e2b 作为同一目录内的版本/改进记录（含 rep2 真实模型版本源），已自测并 owned 发布。
 
 不声称：算法/数值全绿、普遍或因果加速、性能资格（两窗口 `runnerPerformanceQualified=false`）、PK 总目标达成、main 合流、以及任何独立 review 结论。
+
+---
+
+## 8. 增量（2026-11-12T15:42Z 再次 owned 发布）：369 适配 + 发布幂等
+
+- **采集适配器**：`347 → 369`。新增 21 条 `planar-special`（registry 旧参数 `--three-plane-only` 等与本树 oracle 实际 flag 不符，已按 fixture 逐条更正为 `--three-plane-events/--three-plane-hole/--three-face-cylinder/--plane-conic-cut/--conic-corner/--coplanar-tools/--finite-axial-contact/--axial-contact-imprint`）与 `surface-blend.negative-depth3`（补 observer + selector，依赖本树 oracle 自生成的 `nested-blend-native/depth3.x_t`、`negative-depth3.x_t`）。
+- **真实结果**：21 条 planar-special 均产出真实 GM/PK 输入 before 三维与真实 GM 失败 `Boolean at Read/None, curve 0, t=0: 5000`（原 kernel 不支持，如实失败，不伪造 after）；`surface-blend.negative-depth3` pass，1 步 before/after 真实 sheet body，角色中性（evaluation/sense 比较，不称建模操作）。
+- 当前总账：`pass 314 / fail 55 / unsupported 94 / missing 0 / timeout 0`，有 steps 的用例 **369**，mesh 1,960，三角片 593,386。
+- **发布幂等**：`BuildProjectOverview` 的 `generatedAt` 改为由最新已应用事实（delivery / 维度 cell 的 deliveryUtc 最大值）派生，不再用墙钟；同一输入重复生成字节完全一致（实测两次 `82d9fc72…`）。timer 连续 tick 现输出 `UI_SKIP_SAME includes UI identity`，不再每 10 分钟生成同内容 24 MB bundle；未改 timer 频率/全局配置，未删历史证据。
+- **新包**：3,459 文件 / 24,617,310 B（23.48 MiB），余量 6,839,970 B；`data/index.json` SHA256 `1e4516886499c8ddb407e18332d66b75643b507910483255f0b62afd9d9d9524`；`data/runs/20261112T143500Z-full3d/manifest.json.gz` 350,069 B；gzip 绑定 2,949 成员（raw 131,214,905 B → 19,901,648 B）。
+- 自测：本地 smoke **151/151**、线上 verify-portal **20/20**、`ValidateWebProgress` `cases=472 meshes=1960 triangles=593386 errors=[]`。
+- 旧数据整包归档：`…/web-progress-publish/data-archive-20261112T154226Z`（未删除）。
+- **仍未完成（94 条）**：`nested-evaluation 42`（纯评估，需“被求值原生曲面/曲线 + 参数/点/导数”专用显示适配，不能用 body 冒充）、`pk-corpus 23`（PK 原生 corpus fixture，需 PK-only 显示与来源分列）、`nested-blend 6` + `extended-blend 3` + `blend-operation 8`（oracle 尚无 observer，需逐族布线；extended 同时负责生成本树缺失的 fixture）、`short-edge 2`（`self-fixed-probes` 已有真实 fail 三维；`imported-fixed-probes` 原 exit 134 未产出 mesh，需查 PK 导入路径）、`surface-blend 1` 以外的 `planar-edit 10`（edit 循环无 observer，且开启 capture 会跑整套矩阵，需按 fixture 加 Before/After 与 selector）。
+- 本轮不改 Native/数学/Mass/Compare/容差，不重跑已采集 347，不重跑 PK 全 suite/性能窗；13 个失败前无 after 的用例与 3 个原 900s 首超时/原退出保持分列。

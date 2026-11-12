@@ -167,7 +167,6 @@ var displayLinks=new Dictionary<string,JsonObject>(StringComparer.Ordinal)
     ["local-blend.cylinder-unequal-chamfer"]=new JsonObject{{"runId","20261111T174315Z-blend60be"},{"caseId","blend.axial-cylinder"},{"stepId","operation-5"},{"note","同上（步骤区分）"}}
 };
 
-var now=DateTimeOffset.UtcNow;
 var counts=new Dictionary<string,int>(StringComparer.Ordinal);
 void Count(string k){counts[k]=counts.TryGetValue(k,out var n)?n+1:1;}
 string MassState(int v,int u,int d)=>d>0?"different":u>0?"unresolved":v>0?"verified":"unverified";
@@ -466,7 +465,16 @@ foreach(var kv in counts.OrderBy(kv=>kv.Key,StringComparer.Ordinal))summary[kv.K
 summary["denominatorNote"]=JsonValue.Create("分母=固定目录 463 具名建模用例（稳定 ID）；边界/验证记录/单测/质量分量/性能样本不入分母；功能通过为多版本累计（各行历史分列），当前版本复验单独统计。");
 
 var overview=new JsonObject();
-overview["schemaVersion"]=1;overview["generatedAt"]=JsonValue.Create(now.ToString("O"));overview["catalogVersion"]=JsonValue.Create("2026-11-12.overview-catalog-v2");
+// generatedAt is the content as-of time, derived from the newest applied fact
+// (delivery or dimension cell), never the wall clock: regenerating the same
+// inputs must produce the same bytes so the 10-minute refresh is idempotent and
+// does not mint an identical 24 MB bundle every tick.
+var contentUtc=new List<DateTimeOffset>();
+foreach(var d in deliveries.OfType<JsonObject>())if(DateTimeOffset.TryParse(d["utc"]?.GetValue<string>(),out var dt))contentUtc.Add(dt);
+foreach(var ci in catalogItems.OfType<JsonObject>())foreach(var w in new[]{"function","mass","query","performance"})
+    if(DateTimeOffset.TryParse(ci["dimensions"]?[w]?["deliveryUtc"]?.GetValue<string>(),out var ct))contentUtc.Add(ct);
+var contentAsOf=contentUtc.Count>0?contentUtc.Max():DateTimeOffset.UnixEpoch;
+overview["schemaVersion"]=1;overview["generatedAt"]=JsonValue.Create(contentAsOf.ToString("O"));overview["catalogVersion"]=JsonValue.Create("2026-11-12.overview-catalog-v2");
 overview["currentVersion"]=new JsonObject{
     {"label",JsonValue.Create("功能/物性ab597与性能cc47871分源汇总")},
     {"queryNumerics",JsonValue.Create("ab597e8a24b2ef23753507c8ca3e43d12edcc650")},
