@@ -152,11 +152,11 @@ var cylinderQueryIds=new HashSet<string>(StringComparer.Ordinal){"local-blend.cy
 // ---- display links for items with real online artifacts (exact run/case/step context)
 var displayLinks=new Dictionary<string,JsonObject>(StringComparer.Ordinal)
 {
-    ["analytic-boolean.equal-overlap-subtract"]=new JsonObject{{"runId","20261112T045837Z-projcc47871"},{"caseId","projection.sphere"},{"stepId","rep2-display"},{"note","Projection cc47871 rep2 显示样本（本 case 参数）"}},
-    ["planar-boolean.overlap-two-axes-subtract"]=new JsonObject{{"runId","20261112T045837Z-projcc47871"},{"caseId","projection.planar"},{"stepId","rep2-display"},{"note","Projection cc47871 rep2 显示样本"}},
-    ["regular-curved.block-subtract"]=new JsonObject{{"runId","20261112T045837Z-projcc47871"},{"caseId","projection.curved"},{"stepId","rep2-display"},{"note","Projection cc47871 rep2 显示样本"}},
-    ["solid-blend.plane-nurbs"]=new JsonObject{{"runId","20261112T045837Z-projcc47871"},{"caseId","projection.solidblend"},{"stepId","rep2-display"},{"note","Projection cc47871 rep2 显示样本"}},
-    ["short-edge.a1-r0.5-t1e-07-reversefalse-default"]=new JsonObject{{"runId","20261112T045837Z-projcc47871"},{"caseId","projection.shortedge"},{"stepId","rep2-display"},{"note","Projection cc47871 rep2 显示样本（输入=PK seed→GM Fix）"}},
+    ["analytic-boolean.equal-overlap-subtract"]=new JsonObject{{"runId","section-2c0e4ea-rep2"},{"caseId","section.sphere"},{"stepId","rep2-display"},{"note","Section 2c0e4ea 候选 rep2 真实 GM/PK before/after/tool（本 case 参数；单 rep2 显示≠60 pairs）"}},
+    ["planar-boolean.overlap-two-axes-subtract"]=new JsonObject{{"runId","section-2c0e4ea-rep2"},{"caseId","section.planar"},{"stepId","rep2-display"},{"note","Section 2c0e4ea 候选 rep2 真实 GM/PK before/after/tool"}},
+    ["regular-curved.block-subtract"]=new JsonObject{{"runId","section-2c0e4ea-rep2"},{"caseId","section.curved"},{"stepId","rep2-display"},{"note","Section 2c0e4ea 候选 rep2；curved 原 roles/tracking 缺失中性保留"}},
+    ["solid-blend.plane-nurbs"]=new JsonObject{{"runId","section-2c0e4ea-rep2"},{"caseId","section.solidblend"},{"stepId","rep2-display"},{"note","Section 2c0e4ea 候选 rep2 真实 GM/PK"}},
+    ["short-edge.a1-r0.5-t1e-07-reversefalse-default"]=new JsonObject{{"runId","section-2c0e4ea-rep2"},{"caseId","section.shortedge"},{"stepId","rep2-display"},{"note","Section 2c0e4ea 候选 rep2（输入=PK seed→GM receive→GM Fix，不称 GM 独立构造）"}},
     ["local-blend.oblique-unequal-chamfer"]=new JsonObject{{"runId","20261111T190547Z-integrated1887"},{"caseId","integrated.oblique-upstream"},{"stepId","operation-1"},{"note","同字节链上游（independent-construction）显示"}},
     ["local-blend.prism-all-chamfer"]=new JsonObject{{"runId","20261111T174315Z-blend60be"},{"caseId","blend.planar-chamfer"},{"stepId","operation-1"},{"note","显示样本含 prism 全边倒角与 oblique 不等距"}},
     ["local-blend.prism-all-fillet"]=new JsonObject{{"runId","20261111T174315Z-blend60be"},{"caseId","blend.planar-fillet"},{"stepId","operation-1"},{"note","倒圆目录显示样本"}},

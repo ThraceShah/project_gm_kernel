@@ -1,7 +1,16 @@
+using System.IO.Compression;
 using System.Text.Json.Nodes;
 
 internal static class WebProgressDataValidation
 {
+    private static string Decompress(string path)
+    {
+        using var stream = new GZipStream(File.OpenRead(path), CompressionMode.Decompress);
+        using var buffer = new MemoryStream();
+        stream.CopyTo(buffer);
+        return new StreamReader(new MemoryStream(buffer.ToArray())).ReadToEnd();
+    }
+
     private static readonly HashSet<string> Statuses=["pass","fail","missing","unsupported","timeout","diagnostic"];
     private static readonly HashSet<string> Roles=["unchanged","selected","support","newBlend","modified","deleted"];
     internal static JsonObject Validate(string data)
@@ -18,7 +27,18 @@ internal static class WebProgressDataValidation
             if(!path.StartsWith(Path.GetFullPath(root)+Path.DirectorySeparatorChar,StringComparison.Ordinal)||!File.Exists(path)){Error(context+": missing or escaping path "+relative);return null;}
             return path;
         }
-        JsonNode? Read(string path){try{return JsonNode.Parse(File.ReadAllText(path));}catch(Exception e){Error(Path.GetFileName(path)+": "+e.Message);return null;}}
+        // Current contract: a reference ending in .gz is a standard gzip member whose
+        // decompressed bytes must be the exact JSON the producer wrote. A missing or
+        // corrupt member is a hard error, never a silently skipped/blank model.
+        JsonNode? Read(string path)
+        {
+            try
+            {
+                var text=path.EndsWith(".gz",StringComparison.Ordinal)?Decompress(path):File.ReadAllText(path);
+                return JsonNode.Parse(text);
+            }
+            catch(Exception e){Error(Path.GetFileName(path)+": "+e.Message);return null;}
+        }
         void Mesh(string path)
         {
             if(!seenMeshes.Add(path))return;var mesh=Read(path);if(mesh==null)return;meshCount++;
@@ -76,9 +96,13 @@ internal static class WebProgressDataValidation
                     foreach(var side in new[]{"gm","pk"})
                     {
                         Fields(step?[side],"before after",caseId+" step "+side);
+                        // Transport encoding is explicit per side: gzip members must be
+                        // named *.gz and plain sides must not point at a gzip member.
+                        var encoding=step?[side]?["encoding"]?.GetValue<string>();
+                        if(encoding!=null&&encoding!="gzip")Error(caseId+": unsupported step encoding "+encoding);
                         foreach(var key in new[]{"before","after"})
-                        {var reference=step?[side]?[key];if(reference==null){if(status=="pass")Error(caseId+": passing step lacks "+side+" "+key);continue;}var file=Resolve(runRoot,reference,caseId);if(file!=null)Mesh(file);}
-                        foreach(var key in new[]{"tools","afterBodies"})foreach(var reference in step?[side]?[key]?.AsArray()??[]){var file=Resolve(runRoot,reference,caseId);if(file!=null)Mesh(file);}
+                        {var reference=step?[side]?[key];if(reference==null){if(status=="pass")Error(caseId+": passing step lacks "+side+" "+key);continue;}if(reference is JsonValue rv&&rv.TryGetValue<string>(out var rel)&&rel.EndsWith(".gz",StringComparison.Ordinal)!=(encoding=="gzip"))Error(caseId+": transport encoding/member mismatch "+rel);var file=Resolve(runRoot,reference,caseId);if(file!=null)Mesh(file);}
+                        foreach(var key in new[]{"tools","afterBodies"})foreach(var reference in step?[side]?[key]?.AsArray()??[]){if(reference is JsonValue rv&&rv.TryGetValue<string>(out var rel)&&rel.EndsWith(".gz",StringComparison.Ordinal)!=(encoding=="gzip"))Error(caseId+": transport encoding/member mismatch "+rel);var file=Resolve(runRoot,reference,caseId);if(file!=null)Mesh(file);}
                     }
                 }
                 var checks=c["checks"]?.AsArray()??[];

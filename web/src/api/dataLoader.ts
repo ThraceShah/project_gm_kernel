@@ -12,6 +12,18 @@ export interface MeshLoadResult {
   error: string | null;
 }
 
+// Reads a static data member. `encoding` is the explicit transport fact carried by
+// the current manifest side; "gzip" members are decompressed to the exact producer
+// bytes and anything else (including a missing decoder) is a hard failure so no
+// blank or invented model is ever drawn.
+async function readDataBytes(res: Response, encoding: 'gzip' | undefined, url: string): Promise<ArrayBuffer> {
+  if (!encoding) return await res.arrayBuffer();
+  if (encoding !== 'gzip') throw new Error(`不支持的传输编码: ${String(encoding)} (${url})`);
+  if (typeof DecompressionStream === 'undefined' || !res.body) throw new Error(`浏览器缺少 gzip 解压支持，无法读取 ${url}`);
+  const stream = res.body.pipeThrough(new DecompressionStream('gzip'));
+  return await new Response(stream).arrayBuffer();
+}
+
 // In-memory mesh cache
 const meshCache = new Map<string, MeshData>();
 
@@ -135,13 +147,21 @@ export async function fetchMeshData(
   meshRelPath: string | null,
   selection: MeshSelection,
   fromFixture = false,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  encoding?: 'gzip'
 ): Promise<MeshLoadResult> {
   // Check independent selection before dereferencing a path or reusing any
   // verified attachment, including a previously warmed before snapshot.
   try { validateDisplaySelection(manifestDir, meshRelPath, selection); }
   catch (err) { return { data: null, error: (err as Error).message }; }
   if (!meshRelPath) return { data: null, error: null };
+  // The transport encoding must agree with the referenced member: a .gz path
+  // without the gzip marker, or a gzip marker without a .gz member, is a
+  // contract violation and is reported instead of guessed.
+  const isGz = meshRelPath.endsWith('.gz');
+  if (isGz !== (encoding === 'gzip')) {
+    return { data: null, error: `传输编码与成员不一致: ${meshRelPath} encoding=${String(encoding)}` };
+  }
 
   const assetUrl = progressAssetUrl(`${manifestDir}/${meshRelPath}`);
   const fullKey = JSON.stringify([fromFixture, assetUrl, selection.runId, selection.caseId, selection.stepId, selection.kernel, selection.stage]);
@@ -171,7 +191,7 @@ export async function fetchMeshData(
       console.warn(`[DataLoader] Failed to load mesh from ${url}: ${res.status}`);
       return { data: null, error: errMsg };
     }
-    const bytes = await res.arrayBuffer();
+    const bytes = await readDataBytes(res, encoding, url);
     const mesh = JSON.parse(new TextDecoder().decode(bytes)) as MeshData;
     await attachSurfaceParameters(mesh, bytes, manifestDir, meshRelPath, selection, signal);
 
@@ -341,7 +361,7 @@ export async function fetchStepMeshes(
 
   if (!primaryPath) return { data: null, error: null };
 
-  const primaryRes = await fetchMeshData(manifestDir, primaryPath, selection, fromFixture, signal);
+  const primaryRes = await fetchMeshData(manifestDir, primaryPath, selection, fromFixture, signal, stepRef.encoding);
   if (primaryRes.error || !primaryRes.data) {
     return primaryRes;
   }
@@ -349,7 +369,7 @@ export async function fetchStepMeshes(
   // If before state and tools exist, fetch tools and combine
   if (subState === 'before' && stepRef.tools && stepRef.tools.length > 0) {
     const toolResults = await Promise.all(
-      stepRef.tools.map((tPath) => fetchMeshData(manifestDir, tPath, selection, fromFixture, signal))
+      stepRef.tools.map((tPath) => fetchMeshData(manifestDir, tPath, selection, fromFixture, signal, stepRef.encoding))
     );
     const validTools: MeshData[] = [];
     for (const tr of toolResults) {

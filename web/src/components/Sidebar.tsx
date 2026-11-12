@@ -12,6 +12,12 @@ interface SidebarProps {
   onFamilyFilterChange: (f: CaseFamily | 'all') => void;
   statusFilter: CaseStatus | 'all';
   onStatusFilterChange: (s: CaseStatus | 'all') => void;
+  suiteFilter: string;
+  onSuiteFilterChange: (s: string) => void;
+  // Case IDs that carry a current-round improvement record (history/badge only).
+  improvedCaseIds: Set<string>;
+  improvedOnly: boolean;
+  onImprovedOnlyChange: (v: boolean) => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -24,6 +30,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onFamilyFilterChange,
   statusFilter,
   onStatusFilterChange,
+  suiteFilter,
+  onSuiteFilterChange,
+  improvedCaseIds,
+  improvedOnly,
+  onImprovedOnlyChange,
 }) => {
   // Compute counts
   const counts = React.useMemo(() => {
@@ -54,9 +65,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
     };
   }, [cases]);
 
+  // Suites (stable registry grouping, never shrunk by a filter)
+  const suites = React.useMemo(() => {
+    const counts = new Map<string, number>();
+    cases.forEach((c) => {
+      const key = c.suite || '未分组';
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    });
+    return Array.from(counts.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+  }, [cases]);
+
   // Filter cases
   const filteredCases = React.useMemo(() => {
     return cases.filter((c) => {
+      // Suite filter
+      if (suiteFilter !== 'all' && (c.suite || '未分组') !== suiteFilter) {
+        return false;
+      }
+      // Current-round improvement filter
+      if (improvedOnly && !improvedCaseIds.has(c.id)) {
+        return false;
+      }
       // Family filter
       if (familyFilter !== 'all' && c.family !== familyFilter) {
         return false;
@@ -75,7 +104,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
       }
       return true;
     });
-  }, [cases, familyFilter, statusFilter, searchQuery]);
+  }, [cases, familyFilter, statusFilter, searchQuery, suiteFilter, improvedOnly, improvedCaseIds]);
+
+  // Grouped rows: a suite header followed by its cases, preserving registry order.
+  const grouped = React.useMemo(() => {
+    const rows: Array<{ kind: 'group'; suite: string; count: number } | { kind: 'case'; testCase: TestCase }> = [];
+    let current = '';
+    for (const testCase of filteredCases) {
+      const suite = testCase.suite || '未分组';
+      if (suite !== current) {
+        current = suite;
+        rows.push({ kind: 'group', suite, count: filteredCases.filter((c) => (c.suite || '未分组') === suite).length });
+      }
+      rows.push({ kind: 'case', testCase });
+    }
+    return rows;
+  }, [filteredCases]);
 
   return (
     <aside className="w-80 flex-shrink-0 bg-white border-r border-slate-200 flex flex-col h-full select-none z-10">
@@ -132,6 +176,35 @@ export const Sidebar: React.FC<SidebarProps> = ({
             }`}
           >
             布尔 Boolean
+          </button>
+        </div>
+
+        {/* Suite selector (stable 20-suite registry grouping) */}
+        <div className="flex items-center gap-1">
+          <select
+            data-testid="suite-filter"
+            value={suiteFilter}
+            onChange={(e) => onSuiteFilterChange(e.target.value)}
+            className="flex-1 text-xs bg-slate-50 border border-slate-200 rounded-md px-1.5 py-1 text-slate-700 focus:outline-none focus:ring-1 focus:ring-sky-500"
+          >
+            <option value="all">全部 suite（{suites.length}）</option>
+            {suites.map(([name, count]) => (
+              <option key={name} value={name}>
+                {name}（{count}）
+              </option>
+            ))}
+          </select>
+          <button
+            data-testid="improved-filter"
+            onClick={() => onImprovedOnlyChange(!improvedOnly)}
+            title="只显示带有当前轮次改进/复验记录（history）的用例；这是筛选，不改变 463 固定目录"
+            className={`px-1.5 py-1 rounded border text-[11px] whitespace-nowrap transition-colors ${
+              improvedOnly
+                ? 'bg-indigo-600 text-white border-indigo-600 font-semibold'
+                : 'bg-indigo-50 text-indigo-800 border-indigo-200 hover:bg-indigo-100'
+            }`}
+          >
+            本轮改进 {improvedCaseIds.size}
           </button>
         </div>
 
@@ -239,8 +312,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <p>未找到符合筛选条件的用例</p>
           </div>
         ) : (
-          filteredCases.map((c) => {
+          grouped.map((row) => {
+            if (row.kind === 'group') {
+              return (
+                <div
+                  key={`group:${row.suite}`}
+                  data-testid="suite-group-header"
+                  className="sticky top-0 z-[1] bg-slate-100/95 backdrop-blur px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-500 border-y border-slate-200 flex items-center justify-between"
+                >
+                  <span>{row.suite}</span>
+                  <span className="font-mono-code text-slate-400">{row.count}</span>
+                </div>
+              );
+            }
+            const c = row.testCase;
             const isSelected = c.id === selectedCaseId;
+            const improved = improvedCaseIds.has(c.id);
 
             return (
               <div
@@ -286,8 +373,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                 <div className="flex items-center justify-between text-[11px] text-slate-500 font-mono-code">
                   <span className="truncate max-w-[160px] text-slate-400">{c.id}</span>
-                  <span className="text-[10px] bg-slate-100 text-slate-600 px-1 rounded">
-                    {c.operation}
+                  <span className="flex items-center gap-1">
+                    {improved && (
+                      <span
+                        data-testid="improved-badge"
+                        title="当前轮次有改进/复验记录（见右侧历史）"
+                        className="text-[9px] bg-indigo-100 text-indigo-700 px-1 rounded font-semibold"
+                      >
+                        改进
+                      </span>
+                    )}
+                    <span className="text-[10px] bg-slate-100 text-slate-600 px-1 rounded">
+                      {c.operation}
+                    </span>
                   </span>
                 </div>
               </div>

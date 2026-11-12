@@ -17,7 +17,7 @@ internal static class WebProgressPublishing
             {
                 if((File.GetAttributes(entry)&FileAttributes.ReparsePoint)!=0)throw new IOException("Symlinks are not static data: "+Path.GetFileName(entry));
                 if(Directory.Exists(entry))continue;
-                if(Path.GetExtension(entry) is not (".json" or ".log"))throw new IOException("Static data allowlist rejects "+Path.GetExtension(entry));
+                if(Path.GetExtension(entry) is not (".json" or ".log" or ".gz"))throw new IOException("Static data allowlist rejects "+Path.GetExtension(entry));
                 var relative=Path.GetRelativePath(source,entry);var target=Path.Combine(staging,relative);Directory.CreateDirectory(Path.GetDirectoryName(target)!);File.Copy(entry,target);
             }
             if(Directory.Exists(final))

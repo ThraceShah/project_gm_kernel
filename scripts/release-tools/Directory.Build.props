@@ -1,0 +1,40 @@
+<Project>
+  <ItemGroup Condition="'$(UsePskernelSharpUsings)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)../third_party/PKToy/PskernelSharp/Using.cs" Link="PskernelSharp.Using.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UseParasolidScriptHost)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)ParasolidScriptHost.cs" Link="ParasolidScriptHost.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ParasolidBodyCompare.cs" Link="ParasolidBodyCompare.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UseShortEdgeNativeTrimIntegral)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)ShortEdgeNativeTrimIntegral.cs" Link="ShortEdgeNativeTrimIntegral.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UseParasolidMarkOracle)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)ParasolidMarkOracleStorage.cs" Link="ParasolidMarkOracleStorage.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UseParasolidXtCorpusHost)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)ParasolidXtCorpusHost.cs" Link="ParasolidXtCorpusHost.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ParasolidXtSchemaInspector.cs" Link="ParasolidXtSchemaInspector.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CorpusManagedKernel.cs" Link="CorpusManagedKernel.cs" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)../src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UseCorpusManagedKernel)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)CorpusManagedKernelBodyWriter.cs" Link="CorpusManagedKernelBodyWriter.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UseWebProgressCapture)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)WebProgressCapture.cs" Link="WebProgressCapture.cs" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)../src/ProjectGmKernel.DisplayBridge/ProjectGmKernel.DisplayBridge.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UseWebProgressValidation)' == 'true' Or '$(UseWebProgressScheduler)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)ReviewedWebProgressRelease.cs" Link="ReviewedWebProgressRelease.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebProgressDataValidation.cs" Link="WebProgressDataValidation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebProgressPublishing.cs" Link="WebProgressPublishing.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebProgressMetadata.cs" Link="WebProgressMetadata.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UseWebProgressScheduler)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)WebProgressScheduler.cs" Link="WebProgressScheduler.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UseHostedWebProgressSite)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)HostedWebProgressSite.cs" Link="HostedWebProgressSite.cs" />
+  </ItemGroup>
+</Project>

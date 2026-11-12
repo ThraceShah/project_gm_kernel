@@ -18,6 +18,14 @@ if(args.Contains("--self-test"))
     void WriteFixture(){File.WriteAllText(Path.Combine(root,"index.json"),validIndex.ToJsonString());File.WriteAllText(Path.Combine(runDirectory,"manifest.json"),manifest.ToJsonString());File.WriteAllText(Path.Combine(runDirectory,"mesh.json"),mesh.ToJsonString());}
     void Expect(bool valid,string label){WriteFixture();var result=WebProgressDataValidation.Validate(root);if((result["errors"]!.AsArray().Count==0)!=valid)throw new Exception(label+": "+result.ToJsonString());Console.WriteLine("PASS "+label);}
     Expect(true,"zero-valued valid contract");
+    // Lossless gzip transport: same JSON bytes, explicit encoding, .gz members.
+    using(var gzip=new System.IO.Compression.GZipStream(File.Create(Path.Combine(runDirectory,"mesh.json.gz")),System.IO.Compression.CompressionLevel.SmallestSize)){var raw=File.ReadAllBytes(Path.Combine(runDirectory,"mesh.json"));gzip.Write(raw);}
+    foreach(var side in new[]{"gm","pk"}){var s=(JsonObject)c["steps"]![0]![side]!;s["before"]="mesh.json.gz";s["after"]="mesh.json.gz";s["encoding"]="gzip";}
+    Expect(true,"gzip transport contract");
+    ((JsonObject)c["steps"]![0]!["gm"]!)["encoding"]=null;
+    Expect(false,"reject encoding/member mismatch");
+    ((JsonObject)c["steps"]![0]!["gm"]!)["encoding"]="gzip";
+    foreach(var side in new[]{"gm","pk"}){var s=(JsonObject)c["steps"]![0]![side]!;s["before"]="mesh.json";s["after"]="mesh.json";s.Remove("encoding");}
     mesh["faces"]![0]!["indices"]![2]=3;Expect(false,"reject out-of-range face-local index");mesh["faces"]![0]!["indices"]![2]=2;
     c["performance"]!["correctnessQualified"]=false;Expect(false,"reject unqualified numeric ratio");c["performance"]!["correctnessQualified"]=true;
     c["checks"]![0]!["status"]="missing";Expect(false,"reject unknown acceptance as pass");c["checks"]![0]!["status"]="pass";

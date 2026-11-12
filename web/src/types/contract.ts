@@ -48,6 +48,10 @@ export interface ApiCallInfo {
 export interface StepMeshRef {
   before: string | null; // relative to manifest dir, e.g. "meshes/c1_gm_before.json"
   after: string | null;  // relative to manifest dir, e.g. "meshes/c1_gm_after.json"
+  // Explicit transport encoding of every path in this side. "gzip" means each
+  // referenced member is a standard gzip file that decompresses to the exact
+  // producer JSON; absent means plain JSON bytes.
+  encoding?: 'gzip';
   tools?: string[];
   selectedEdgeTags?: number[];
   tracking?: unknown[];
