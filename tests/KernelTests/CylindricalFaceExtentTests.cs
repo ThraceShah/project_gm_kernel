@@ -32,6 +32,29 @@ public unsafe class CylindricalFaceExtentTests:IDisposable
     }
 
     [Theory]
+    [InlineData(0)] [InlineData(1)] [InlineData(2)]
+    public void FiniteConeIncludesCompleteRingsAndTheSingularAxialLimit(int axis)
+    {
+        var basis=new PK_AXIS2_sf_s();basis.location.coord[0]=2;basis.location.coord[1]=-3;basis.location.coord[2]=4;
+        basis.axis.coord[axis]=1;basis.ref_direction.coord[(axis+1)%3]=1;int body;
+        Assert.Equal(0,KernelRuntime.BodyCreateSolidCone(2,3,.25,&basis,&body));
+        Assert.True(KernelRuntime.TryResolveBodySlot(body,out var slot));var face=KernelRuntime.Bodies[slot].FirstFaceBody;
+        while(KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(KernelRuntime.Faces[face].SurfTag)].Class!=SurfaceClass.Cone)face=KernelRuntime.Faces[face].NextInBody;
+        Assert.Equal(AlgorithmStatus.Success,KernelRuntime.CertifiedConicalFaceExtent(face,out var box));
+        var surface=KernelRuntime.Faces[face].SurfTag;var record=KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(surface)];
+        var definition=KernelRuntime.ConeDataPool[record.DataIndex];var apex=-definition.Radius/Math.Tan(definition.SemiAngle);
+        PK_VECTOR_s point;
+        foreach(var height in new[]{0.0,3.0,apex})for(var i=0;i<8;i++)
+        {
+            var uv=new PK_UV_s();uv.param[0]=i*Math.PI*.25;uv.param[1]=height;
+            Assert.Equal(0,KernelRuntime.SurfEval(surface,uv,0,0,0,&point));
+            Assert.InRange(point.coord[0],box.XLo,box.XHi);Assert.InRange(point.coord[1],box.YLo,box.YHi);Assert.InRange(point.coord[2],box.ZLo,box.ZHi);
+        }
+        var before=GC.GetAllocatedBytesForCurrentThread();var status=KernelRuntime.CertifiedConicalFaceExtent(face,out _);var allocated=GC.GetAllocatedBytesForCurrentThread()-before;
+        Assert.Equal(AlgorithmStatus.Success,status);Assert.Equal(0,allocated);
+    }
+
+    [Theory]
     [InlineData(2.0,true)]
     [InlineData(0.5,false)]
     public void NearlyParallelPlaneSeparationUsesTheCompleteFiniteCylinder(double offset,bool separated)

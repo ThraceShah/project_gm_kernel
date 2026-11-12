@@ -49,7 +49,7 @@ using(host)unsafe
                 var oursPersistence=args.Contains("--persistence",StringComparer.Ordinal)?new List<string>():null;
                 var nativePersistence=args.Contains("--persistence",StringComparer.Ordinal)?new List<string>():null;
                 try{ours=Produce(true,kind,function,evidenceDirectory:directory,trackingEnabled:args.Contains("--tracking",StringComparer.Ordinal),trackingShape:oursTracking,persistenceShape:oursPersistence,finiteProvenance:args.Contains("--finite-provenance",StringComparer.Ordinal));}catch(Exception ex){ownFailure=ex;}
-                try{reference=Produce(false,kind,function,evidenceDirectory:directory,intermediate:intermediate,trackingEnabled:args.Contains("--tracking",StringComparer.Ordinal),trackingShape:nativeTracking,persistenceShape:nativePersistence,finiteProvenance:args.Contains("--finite-provenance",StringComparer.Ordinal));}catch(Exception ex){nativeFailure=ex;}
+                try{reference=Produce(false,kind,function,evidenceDirectory:directory,intermediate:intermediate,trackingEnabled:args.Contains("--tracking",StringComparer.Ordinal),trackingShape:nativeTracking,persistenceShape:nativePersistence,finiteProvenance:args.Contains("--finite-provenance",StringComparer.Ordinal),sameByteInputs:args.Contains("--same-byte-inputs",StringComparer.Ordinal));}catch(Exception ex){nativeFailure=ex;}
                 foreach(var stage in intermediate)
                 {
                     try
@@ -93,7 +93,7 @@ using(host)unsafe
     finally{KernelRuntime.TraceFiniteBoundary=null;Check(KernelRuntime.SessionStop(),"own session stop");}
 }
 
-static unsafe int[] Produce(bool own,string kind,int function,double tolerance=1e-5,double scale=1,string? evidenceDirectory=null,Dictionary<string,int>? intermediate=null,bool trackingEnabled=false,List<string>? trackingShape=null,List<string>? persistenceShape=null,bool finiteProvenance=false)
+static unsafe int[] Produce(bool own,string kind,int function,double tolerance=1e-5,double scale=1,string? evidenceDirectory=null,Dictionary<string,int>? intermediate=null,bool trackingEnabled=false,List<string>? trackingShape=null,List<string>? persistenceShape=null,bool finiteProvenance=false,bool sameByteInputs=false)
 {
     var target=Roof(own,0,0,0,.8);int tool;
     if(kind.StartsWith("same-domain",StringComparison.Ordinal))
@@ -135,6 +135,19 @@ static unsafe int[] Produce(bool own,string kind,int function,double tolerance=1
         tools[0]=Block(own,.25,.35,.2,1,1,1.1);
         tools[1]=kind=="two-tools"?Block(own,.83,.62,.17,.8,.7,.91):Block(own,3,3,.25,1,1,1);toolCount=2;
         Check(own?KernelRuntime.EntityDelete(1,&tool):PK_ENTITY_delete(1,&tool),"unused initial tool");
+    }
+    if(sameByteInputs)
+    {
+        Require(!own&&evidenceDirectory!=null,"same-byte native fork requires archived actual managed inputs");
+        var bytes=File.ReadAllBytes(Path.Combine(evidenceDirectory!, $"{kind}-{function}-gm-target-before.x_t"));
+        Check(PK_ENTITY_delete(1,&target),"release independently constructed target before same-byte fork");target=Receive(bytes);
+        Console.WriteLine($"BOOLEAN_SAME_INPUT role=target sha256={Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(bytes))}");
+        for(var i=0;i<toolCount;i++)
+        {
+            bytes=File.ReadAllBytes(Path.Combine(evidenceDirectory!,$"{kind}-{function}-gm-tool{i+1}-before.x_t"));
+            Check(PK_ENTITY_delete(1,tools+i),"release independently constructed tool before same-byte fork");tools[i]=Receive(bytes);
+            Console.WriteLine($"BOOLEAN_SAME_INPUT role=tool{i+1} sha256={Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(bytes))}");
+        }
     }
     if(evidenceDirectory!=null)
     {

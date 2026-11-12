@@ -14,17 +14,26 @@ internal static unsafe partial class KernelRuntime
     // finite face attains its extrema on its complete boundary. Its angular
     // image is enclosed by the entire cross-sectional disk, including seams.
     internal static AlgorithmStatus CertifiedCylindricalFaceExtent(FaceSlot face,out IntervalBox3 extent)
+        =>CertifiedRevolvedFaceExtent(face,SurfaceClass.Cylinder,out extent);
+
+    internal static AlgorithmStatus CertifiedConicalFaceExtent(FaceSlot face,out IntervalBox3 extent)
+        =>CertifiedRevolvedFaceExtent(face,SurfaceClass.Cone,out extent);
+
+    private static AlgorithmStatus CertifiedRevolvedFaceExtent(FaceSlot face,SurfaceClass kind,out IntervalBox3 extent)
     {
         extent=default;
-        var status=CertifiedCylindricalFaceAxialRange(face,out var cylinder,out var height,out var tolerance);
+        var status=CertifiedRevolvedFaceAxialRange(face,out var cylinder,out var height,out var tolerance);
         if(status!=AlgorithmStatus.Success)return status;
+        if(cylinder.Kind!=kind)return AlgorithmStatus.Unsupported;
+        var radius=new IntervalNumber(cylinder.Radius);
+        if(kind==SurfaceClass.Cone)radius+=height*cylinder.Secondary;
         var x=cylinder.X;var y=cylinder.Y;var axis=cylinder.Axis;
         Span<IntervalNumber> coordinates=stackalloc IntervalNumber[3];
         for(var d=0;d<3;d++)
         {
             var xx=d==0?x.X:d==1?x.Y:x.Z;var yy=d==0?y.X:d==1?y.Y:y.Z;
             var square=IntervalNumber.Square(new(xx))+IntervalNumber.Square(new(yy));
-            var radius=xx==0&&yy==0?0:Math.BitIncrement(Math.Sqrt(square.Upper));var radial=(new IntervalNumber(cylinder.Radius)*radius+tolerance).Upper;
+            var frameRadius=xx==0&&yy==0?0:Math.BitIncrement(Math.Sqrt(square.Upper));var radial=(new IntervalNumber(radius.Magnitude)*frameRadius+tolerance).Upper;
             var origin=d==0?cylinder.Origin.X:d==1?cylinder.Origin.Y:cylinder.Origin.Z;var direction=d==0?axis.X:d==1?axis.Y:axis.Z;
             coordinates[d]=new IntervalNumber(origin)+height*direction+new IntervalNumber(-radial,radial);if(!coordinates[d].Finite)return AlgorithmStatus.NotConverged;
         }
@@ -41,7 +50,7 @@ internal static unsafe partial class KernelRuntime
         if(Surfaces[slot].Class!=SurfaceClass.Cylinder||Surfaces[planeSlot].Class!=SurfaceClass.Plane
             ||!TryPrepareSurface(Surfaces[slot],out var cylinder)||!TryPrepareSurface(Surfaces[planeSlot],out var plane))return false;
         if(!NeedsFiniteCylinderPlaneChart(cylinder,plane))return false;
-        if(CertifiedCylindricalFaceAxialRange(face,out cylinder,out var height,out var precision)!=AlgorithmStatus.Success)return false;
+        if(CertifiedRevolvedFaceAxialRange(face,out cylinder,out var height,out var precision)!=AlgorithmStatus.Success)return false;
         var n=new IntervalVector(plane.Axis);var x=IntervalVector.Dot(n,new IntervalVector(cylinder.X)).Value;
         var y=IntervalVector.Dot(n,new IntervalVector(cylinder.Y)).Value;
         var radial=Math.BitIncrement(Math.Sqrt((IntervalNumber.Square(x)+IntervalNumber.Square(y)).Upper));
@@ -55,7 +64,7 @@ internal static unsafe partial class KernelRuntime
     private static bool FiniteCylinderPlaneContactOutsideTrim(FaceSlot first,FaceSlot second,double tolerance)
     {
         if(!TryAxialCylinderPlaneContact(first,second,out var cylinderFace,out var planeFace,out var cylinder,out _,out var anchor))return false;
-        if(CertifiedCylindricalFaceAxialRange(cylinderFace,out _,out var height,out var cylinderPrecision)!=AlgorithmStatus.Success
+        if(CertifiedRevolvedFaceAxialRange(cylinderFace,out _,out var height,out var cylinderPrecision)!=AlgorithmStatus.Success
             ||RegularFiniteFaceExtent(planeFace,out var planeExtent)!=AlgorithmStatus.Success)return false;
         var planarPrecision=Math.Max(tolerance,Faces[planeFace].Tolerance);
         if(!TryThirdFacePrecision(planeFace,ref planarPrecision))return false;
@@ -109,7 +118,7 @@ internal static unsafe partial class KernelRuntime
         var cylinderTag=reverse?second:first;IntervalNumber height=default;var haveRange=false;
         for(var f=0;f<faces.Length;f++)if(faces[f].Surface==cylinderTag)
         {
-            if(CertifiedCylindricalFaceAxialRange(sources[f],out _,out var local,out _)!=AlgorithmStatus.Success)return 0;
+            if(CertifiedRevolvedFaceAxialRange(sources[f],out _,out var local,out _)!=AlgorithmStatus.Success)return 0;
             height=haveRange?IntervalNumber.Hull(height,local):local;haveRange=true;
         }
         if(!haveRange)return 0;
@@ -158,11 +167,11 @@ internal static unsafe partial class KernelRuntime
         return 0;
     }
 
-    private static AlgorithmStatus CertifiedCylindricalFaceAxialRange(FaceSlot face,out AnalyticSurface cylinder,out IntervalNumber height,out double tolerance)
+    private static AlgorithmStatus CertifiedRevolvedFaceAxialRange(FaceSlot face,out AnalyticSurface cylinder,out IntervalNumber height,out double tolerance)
     {
         cylinder=default;height=default;tolerance=0;if(face<0||!Faces.IsAlive(face))return AlgorithmStatus.InvalidInput;
         var slot=GetSurfaceSlotByTag(Faces[face].SurfTag);
-        if(slot<0||!TryPrepareSurface(Surfaces[slot],out cylinder)||cylinder.Kind!=SurfaceClass.Cylinder||!double.IsFinite(cylinder.Radius)||cylinder.Radius<=0)return AlgorithmStatus.Unsupported;
+        if(slot<0||!TryPrepareSurface(Surfaces[slot],out cylinder)||cylinder.Kind is not (SurfaceClass.Cylinder or SurfaceClass.Cone)||!double.IsFinite(cylinder.Radius)||cylinder.Radius<=0)return AlgorithmStatus.Unsupported;
         // Use a dual of the stored radial frame rather than assuming rounded
         // axis/reference data are exactly unit and orthogonal.
         var x=cylinder.X;var y=cylinder.Y;var axis=cylinder.Axis;
@@ -201,7 +210,7 @@ internal static unsafe partial class KernelRuntime
                             value=((new IntervalNumber(box.XLo,box.XHi)-cylinder.Origin.X)*nx
                                 +(new IntervalNumber(box.YLo,box.YHi)-cylinder.Origin.Y)*ny
                                 +(new IntervalNumber(box.ZLo,box.ZHi)-cylinder.Origin.Z)*nz)/denominator;
-                        else if(certified!=AlgorithmStatus.NotConverged
+                        else if(certified!=AlgorithmStatus.NotConverged||cylinder.Kind!=SurfaceClass.Cylinder
                             ||!TryNativeCylinderChartHeight(edge.CurveTag,lo,hi,Faces[face].SurfTag,cylinder,out value))return certified;
                     }
                     finally{if(owns)ReleaseCommandScratch(State.Session);}
@@ -226,6 +235,13 @@ internal static unsafe partial class KernelRuntime
             }
         }
         if(!haveCurve||!double.IsFinite(tolerance)||tolerance<0)return AlgorithmStatus.Unsupported;
+        // Axial height has no interior extremum on either regular chart.
+        // Include the cone singularity as well, even when outside this face.
+        if(cylinder.Kind==SurfaceClass.Cone)
+        {
+            var slope=new IntervalNumber(cylinder.Secondary);if(!slope.Finite||slope.ContainsZero)return AlgorithmStatus.Unsupported;
+            height=IntervalNumber.Hull(height,-new IntervalNumber(cylinder.Radius)/slope);
+        }
         var normalSquare=IntervalNumber.Square(nx)+IntervalNumber.Square(ny)+IntervalNumber.Square(nz);
         var margin=new IntervalNumber(tolerance)*Math.BitIncrement(Math.Sqrt(normalSquare.Upper))/denominator;
         if(!margin.Finite)return AlgorithmStatus.NotConverged;height+=new IntervalNumber(-margin.Upper,margin.Upper);

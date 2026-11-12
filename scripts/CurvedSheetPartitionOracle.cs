@@ -89,6 +89,7 @@ static unsafe void PrecisionLifecycle(string directory,Action<string> log)
         var managed=ReceiveManaged(input);var reference=Receive(input);Check(PK_ENTITY_delete(1,&source),"delete native input source");
         int copy;Check(KernelRuntime.EntityCopy(managed,&copy),"managed copy before trim");Check(KernelRuntime.EntityDelete(1,&managed),"delete managed source before trim");managed=copy;
         Check(PK_ENTITY_copy(reference,&copy),"native copy before trim");Check(PK_ENTITY_delete(1,&reference),"delete native source before trim");reference=copy;
+        Reattach(true,managed);Reattach(false,reference);Verify(managed,reference,label+"-reattached");
         Trim(true,managed);Trim(false,reference);Verify(managed,reference,label+"-trim");
         Transform(true,managed,scale);Transform(false,reference,scale);Verify(managed,reference,label+"-transformed");
         var managedBytes=Transmit(managed);var nativeBytes=TransmitReference(reference);
@@ -116,7 +117,7 @@ static unsafe void PrecisionLifecycle(string directory,Action<string> log)
         Check(PK_BODY_imprint_plane(reference,cutter,1e-8,&n,&cuts),"native model after reload");Require(n==1,"native finite reloaded cut");if(cuts!=null)PK_MEMORY_free(cuts);
         Check(PK_ENTITY_delete(1,&cutter),"delete native post-reload plane");Verify(managed,reference,label+"-reloaded-model");
         Check(KernelRuntime.EntityDelete(1,&managed),"delete final managed precision body");Check(PK_ENTITY_delete(1,&reference),"delete final native precision body");
-        log("PASS "+label+" copy/delete/trim/transform/reload/model");
+        log("PASS "+label+" copy/delete/reattach/trim/transform/reload/model");
     }
 
     void Verify(int managed,int reference,string label)
@@ -142,6 +143,22 @@ static unsafe void PrecisionLifecycle(string directory,Action<string> log)
             Check(own?KernelRuntime.BodyTrim(body,count,boundary,1,&seed,PK_LOGICAL_true):PK_BODY_trim(body,count,boundary,1,&seed,PK_LOGICAL_true),"local-precision whole-face trim");
         }
         finally{if(boundary!=null)Check(own?KernelRuntime.MemoryFree(boundary):PK_MEMORY_free(boundary),"free trim boundary");if(faces!=null)Check(own?KernelRuntime.MemoryFree(faces):PK_MEMORY_free(faces),"free trim faces");}
+    }
+    void Reattach(bool own,int body)
+    {
+        int count;int* faces;Check(own?KernelRuntime.BodyAskFaces(body,&count,&faces):PK_BODY_ask_faces(body,&count,&faces),"reattach actual faces");
+        try
+        {
+            for(var f=0;f<count;f++)
+            {
+                int surface;byte sense;PK_LOGICAL_t nativeSense;
+                if(own){Check(KernelRuntime.FaceAskOrientedSurf(faces[f],&surface,&sense),"managed native support and sense");nativeSense=sense;}
+                else{Check(PK_FACE_ask_oriented_surf(faces[f],&surface,&nativeSense),"native support and sense");sense=(byte)nativeSense;}
+                Check(own?KernelRuntime.TopologyDetachGeometry(faces[f]):PK_TOPOL_detach_geom(faces[f]),"detach actual support");
+                Check(own?KernelRuntime.FaceAttachSurfaces(1,faces+f,&surface,&sense):PK_FACE_attach_surfs(1,faces+f,&surface,&nativeSense),"reattach original native support");
+            }
+        }
+        finally{if(faces!=null)Check(own?KernelRuntime.MemoryFree(faces):PK_MEMORY_free(faces),"free reattached faces");}
     }
     void Transform(bool own,int body,double scale)
     {

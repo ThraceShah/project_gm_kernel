@@ -496,6 +496,7 @@ static unsafe PK_BODY_t VerifyFollowingBoolean(PK_BODY_t managed,string label,st
         finally{KernelRuntime.InjectAllocationFailure(-1);}
         var elapsed=System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds;
         log($"STEP_API stage={stage} side=gm error={ownError} result={ownResult.result} count={ownResult.n_bodies} inject={inject}");
+        if(ownError!=0)log($"BOOLEAN_FAILURE stage={stage} regular={KernelRuntime.LastRegularBooleanStage} pair={KernelRuntime.LastRegularBooleanFace}/{KernelRuntime.LastRegularBooleanOtherFace} sheet={KernelRuntime.LastSheetPartitionStage} algorithm={KernelRuntime.LastSheetAlgorithmStatus}");
         WebProgressCapture.BooleanAfter(true,ownError==0?new ReadOnlySpan<int>(ownResult.bodies,ownResult.n_bodies).ToArray():[],elapsed,ownError,ownResult.result,(PK_TOPOL_track_r_t*)&ownTrack);
         if(ownError==0)tool=0;
         WebProgressCapture.Before(false,nativeTarget,[],"PK_BODY_boolean_2",[nativeTool]);WebProgressCapture.BooleanParameters(false,options);

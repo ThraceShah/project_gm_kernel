@@ -21,7 +21,7 @@ internal static unsafe partial class KernelRuntime
     internal static int ReadRegularBoundaries(ReadOnlySpan<BodyTag> bodies,Span<KernelVector3> points,Span<VertexSlot> vertices,
         Span<ModelingEdge> edges,Span<EdgeSlot> sourceEdges,Span<ModelingCoedge> coedges,Span<ModelingLoop> loops,
         Span<ModelingFace> faces,Span<FaceSlot> sources,Span<BufferOffset> owners,Span<BufferOffset> offsets,
-        out BufferCount np,out BufferCount ne,out BufferCount nc,out BufferCount nl,out BufferCount nf,Span<double> vertexPrecisions=default,bool classification=false)
+        out BufferCount np,out BufferCount ne,out BufferCount nc,out BufferCount nl,out BufferCount nf,Span<double> vertexPrecisions=default)
     {
         np=ne=nc=nl=nf=0;
         for(var b=0;b<bodies.Length;b++)
@@ -34,8 +34,7 @@ internal static unsafe partial class KernelRuntime
             {
                 if(nf==faces.Length)return ParasolidConstants.PK_ERROR_not_implemented;
                 var record=Faces[face];var sf=GetSurfaceSlotByTag(record.SurfTag);if(sf<0)return ParasolidConstants.PK_ERROR_missing_geom;
-                if(record.LoopCount==0||Surfaces[sf].Class is not (SurfaceClass.Plane or SurfaceClass.Cylinder or SurfaceClass.Sphere or SurfaceClass.BSurface or SurfaceClass.BlendSurface)
-                    &&!(classification&&Surfaces[sf].Class is SurfaceClass.Cone or SurfaceClass.Torus))return ParasolidConstants.PK_ERROR_not_implemented;
+                if(record.LoopCount==0||Surfaces[sf].Class is not (SurfaceClass.Plane or SurfaceClass.Cylinder or SurfaceClass.Cone or SurfaceClass.Torus or SurfaceClass.Sphere or SurfaceClass.BSurface or SurfaceClass.BlendSurface))return ParasolidConstants.PK_ERROR_not_implemented;
                 if(Surfaces[sf].Class==SurfaceClass.BSurface)
                 {
                     var view=GetBSurfaceView(BSurfaceDataStore[Surfaces[sf].DataIndex]);

@@ -172,3 +172,73 @@ candidate seed 减算。相关七个测试文件随合同导入，包括 private
 上游失败。短边后续消费发现新 PreservedIdentity 诊断没有携 support，既有回调因此
 非法读取；此原 exit 134 保留，不能签成建模通过。两处在同任务继续修复与复验，
 不因形成统一源码就声称统一端到端能力或性能资格已经成立。
+
+## 一条统一研发与交付主线
+
+共同入口固定为已推送 `0fe797e0accbfa1f73f79fd321cc667ff7e18e50`。q2 负责统一
+候选集成和最终交付，实施 native 表示、有限来源/事件、precision/ownership、
+tracking/tag、Boolean 发布及真实消费者；Mac 负责整链工作量、候选/SSI/材料求交的
+结构改进、同版本 Mac 动态 PK 和平台成本验证。两端产物分别绑定平台与真实 source，
+共同交付一套候选源码；不再维护两条各自宣称完成的产品基线。
+
+后续共同文件按函数归属：ReadRegularBoundaries 属 q2；RegularRayWinding 的
+非解析 extent 分支属 Mac。交换固定最小 patch，不整文件互替。Mac 当前 ray 工作
+未在此接收；不会从历史 CCC/ab 再自动开独立优化分支。关键合成后集中一次重大独验，
+日常修复与实测继续，不等待门户。
+
+已接收固定 `1fffe8fe2448ff886557a6f888e4395f58b59d4e` 的 UV 生产/测试 patch，
+保留其原文和观测 JSON，见 `Native_Operation_System_Alignment_Work.md`。
+联合 solver 实际 UV 与 XYZ 同行，反向和闭合行保持同一来源；只有直接 B-spline
+unknown 可进入 knownUv，其余 NaN 沿现合同处理。额外 command scratch 32768B，
+限额不变。此 patch 原 Mac 未独验，不因导入文档获得独立接受。
+
+## 有限 Cone 候选域贯穿支持面筛选
+
+Reader 原将 Cone/Torus 仅准入 classification；去掉这一接口内的用途分叉后，共同
+有限读取给建模和分类同一原生定义。调用方不再传 classification bool，相关诊断
+也更新当前签名，无旧签名兼容。初轮实际放行14/17下游，其中3个 Cone 仍在 Cuts
+拒绝，说明 Reader 放行本身不足以取得能力。
+
+这三处由无限支持面候选引起：有限 Cone 与远侧有限刀具面不相交，但支持面 SSI
+仍被请求。现在复用 Cylinder 的完整边界齐次区间投影，建立 Cone native axial
+范围。高度在 regular chart 无内部极值，另保守包含 apex；正权 carrier 的全部
+有限 span 和实体 precision 共同构成证书。由该范围及真实 radial frame 包围整个
+有限 Cone，而非只取 vertex/采样 AABB。只有双方完整有限面框及 precision 证明
+严格分离，才省去该支持面对；未知、非正权、无法包围的 carrier 继续原路径。
+相交的支持面对仍走原 SSI、有限 chart/trim、材料和有向发布，未削弱验收。
+
+PK 静态 face_face 实际依赖有 QCU_box、BOX_boxes_clash、有限 bcurve、find_curves_via_iss
+等；这只证明对应计算部件存在，不声称本 Cone 筛选与 PK 内部排序完全相同。
+真实同输入的每步结果才是此能力的行为验证。
+
+当前新组合实际结果：
+
+- `finite-uv-integrated-focused.log/.exit`：15/15、exit0，含三轴 Cone 全边界与
+  apex 包围、零分配，原 Cylinder、UV 同源行/错误 witness、已交换身份后的回滚。
+- `integrated-local-finite.log/.exit`：17/17 上游 Blend/Chamfer、17/17 lifecycle、
+  17/17 下游同字节 Boolean 均 full check/原 strict 通过，材料与查询同检；mass4U，
+  原 exit2。分别保留12/17、14/17旧阶段失败，不倒签或覆盖。
+- `integrated-short-edge-v3.log/.exit`：现场独立构造，完整默认 transverse 流程
+  full check/strict/有限面、ICurve、fin UV、material、copy/delete、reload后第二刀通过；
+  mass8U，exit2。原新 trace 缺 support 的134及调用签名编译失败1均保留。
+  新 trace 从实际 retained edge 的 incident fin/face 读取 support，不填伪造实体。
+- `integrated-precision-reattach.log/.exit`：三尺度共12检查点 exit0，新增真实
+  FaceAttach detach/reattach 原 support，后续 trim/transform/reload再建模均完整检查。
+  此处不声称支持任意换面或自动修复不匹配 pcurve。
+- `integrated-regular-rolling-v2.log/.exit`：六类 affine、plane/NURBS、depressed、
+  NURBS/NURBS、两类凹支撑的独立 Fix 与后续 Boolean 全通过，原有有限接触与
+  plane/NURBS生命周期继续执行；mass另列U，原exit2。首次 shell 环境变量拼写错
+  的127是执行环境失败，未执行模型；原日志独立保留。
+- 新组合 SP 仍按完整正权/cell准入消费；`integrated-native-sp.log/.exit` 的16查询、
+  八条实际 wire full check/strict/有限参数/D0D1通过，exit0。它早于新 UV/Reader
+  修复，只证明其实际记录的 assembly，最终统一包需绑定对应后续关键检查。
+
+有限-source 追踪的45项与sheet族79项在 `3ce2fa5c` 实际完成；后者原exit0。
+本节均为 owner 实测，尚未集中独立接受，不把2058全量或历史观测时间乘成性能资格。
+
+同域 persistence 另以 `--same-byte-inputs` 作控制：先保留独立建模的既有结果，
+该新模式的最终 PK 操作明确读取 GM 调用前归档的真实 target/tool 字节，打印各输入
+SHA，不重定向 PK 到 GM，也不冒充独立原始构造。`same-byte-partial.log/.exit` 六项
+严格几何、finite-source witness 和错误来源负例仍通过，原exit2、mass6U、persistence6U。
+因此原差异不能仅归因两个 primitive creator 的参数化；具体 tag merge/recreate
+策略仍未对齐，精确数量合同保持未决，不按 model key 选保留数量。

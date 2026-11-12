@@ -35,7 +35,7 @@ internal static unsafe partial class KernelRuntime
             if(cursor>bytes.Length)return ParasolidConstants.PK_ERROR_memory_full;
             Span<BodyTag> input=stackalloc BodyTag[1]{Bodies[body].Header.Tag};Span<BufferOffset> offsets=stackalloc BufferOffset[2];
             LastRegularClassificationStage=RegularClassificationStage.Read;
-            var error=ReadRegularBoundaries(input,points,vertices,edges,sourceEdges,coedges,loops,faces,sources,owners,offsets,out var np,out var ne,out var nc,out var nl,out var nf,classification:true);if(error!=0)return error;
+            var error=ReadRegularBoundaries(input,points,vertices,edges,sourceEdges,coedges,loops,faces,sources,owners,offsets,out var np,out var ne,out var nc,out var nl,out var nf);if(error!=0)return error;
             LastRegularClassificationStage=RegularClassificationStage.Vertices;
             for(var v=0;v<np;v++)if(ProfileDistance(points[v],point)<=1e-8)
             {*enclosure=ParasolidConstants.PK_enclosure_on_c;*topology=Vertices[vertices[v]].Header.Tag;return 0;}

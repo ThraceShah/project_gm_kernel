@@ -69,8 +69,13 @@ internal static unsafe partial class KernelRuntime
                 }
             }
             if(TraceFiniteBoundary!=null)for(var i=0;i<edgeCount;i++)
-                TraceFiniteBoundary(new(){Stage=BoundaryTraceStage.PreservedIdentity,SourceEdge=from[i],
-                    Curve=Edges[to[i]].CurveTag,ProductCurve=Edges[from[i]].CurveTag,Edge=-1,Face=-1,Source=-1,SourceFin=-1});
+            {
+                var retained=Edges[from[i]];var fin=retained.FirstFinEdge;var face=Loops[Fins[fin].Loop].Face;
+                TryProfileEdgeRange(retained,out var first,out var last);
+                TraceFiniteBoundary(new(){Stage=BoundaryTraceStage.PreservedIdentity,SourceEdge=from[i],SourceFin=fin,
+                    Surface=Faces[face].SurfTag,Curve=retained.CurveTag,ProductCurve=retained.CurveTag,
+                    Edge=-1,Face=-1,Source=face,Product=face,First=first,Last=last});
+            }
         }
         return 0;
     }

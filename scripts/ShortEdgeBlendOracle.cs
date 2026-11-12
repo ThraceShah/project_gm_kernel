@@ -1503,7 +1503,7 @@ static unsafe JsonObject FiniteProbeEvidence(int body,PK_VECTOR_t query)
         var faces=new KernelRuntime.ModelingFace[record.FaceCountBody];var faceSources=new int[faces.Length];var owners=new int[faces.Length];
         Span<int> input=stackalloc int[1]{body};Span<int> offsets=stackalloc int[2];
         var read=KernelRuntime.ReadRegularBoundaries(input,points,vertices,edges,sources,coedges,loops,faces,faceSources,owners,offsets,
-            out _,out var ne,out var nc,out var nl,out var nf,classification:true);
+            out _,out var ne,out var nc,out var nl,out var nf);
         var planarWitnesses=0;
         if(read==0)
         {

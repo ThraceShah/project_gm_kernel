@@ -14,6 +14,7 @@ internal static unsafe partial class KernelRuntime
         extent=default;var slot=GetSurfaceSlotByTag(Faces[face].SurfTag);
         if(slot<0)return AlgorithmStatus.InvalidInput;
         if(Surfaces[slot].Class==SurfaceClass.Cylinder)return CertifiedCylindricalFaceExtent(face,out extent);
+        if(Surfaces[slot].Class==SurfaceClass.Cone)return CertifiedConicalFaceExtent(face,out extent);
         if(Surfaces[slot].Class!=SurfaceClass.Plane)return RegularSurfaceExtent(slot,out extent);
         Span<IntervalNumber> poles=stackalloc IntervalNumber[4*17],bounds=stackalloc IntervalNumber[9];
         var first=true;var loop=Faces[face].FirstLoop;
@@ -46,6 +47,16 @@ internal static unsafe partial class KernelRuntime
             }
         }
         return first?AlgorithmStatus.Unsupported:AlgorithmStatus.Success;
+    }
+
+    private static bool RegularFiniteConicalPairSeparated(FaceSlot first,FaceSlot second,double tolerance)
+    {
+        if(Surfaces[GetSurfaceSlotByTag(Faces[first].SurfTag)].Class!=SurfaceClass.Cone
+            &&Surfaces[GetSurfaceSlotByTag(Faces[second].SurfTag)].Class!=SurfaceClass.Cone)return false;
+        if(!TryThirdFacePrecision(first,ref tolerance)||!TryThirdFacePrecision(second,ref tolerance)
+            ||RegularFiniteFaceExtent(first,out var a)!=AlgorithmStatus.Success
+            ||RegularFiniteFaceExtent(second,out var b)!=AlgorithmStatus.Success)return false;
+        return ThirdFaceBoxesDisjoint(a,b,tolerance);
     }
 
     private static void IncludeRegularExtent(ref IntervalBox3 extent,ref bool first,ReadOnlySpan<IntervalNumber> bounds)

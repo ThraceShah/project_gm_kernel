@@ -352,6 +352,9 @@ public unsafe class RegularCurvedBooleanTests:IDisposable
         {
             if(trace.Stage!=KernelRuntime.BoundaryTraceStage.PreservedIdentity)return;
             observed=true;Assert.True(KernelRuntime.IsValidTag(KernelRuntime.Edges[trace.SourceEdge].Header.Tag));
+            Assert.True(KernelRuntime.GetSurfaceSlotByTag(trace.Surface)>=0);
+            Assert.True(KernelRuntime.GetCurveSlotByTag(trace.Curve)>=0);
+            Assert.Equal(trace.Surface,KernelRuntime.Faces[trace.Product].SurfTag);
             KernelRuntime.InjectAllocationFailure(0);
         };
         PK_TOPOL_track_r_s tracking=default;PK_boolean_r_s result=default;
