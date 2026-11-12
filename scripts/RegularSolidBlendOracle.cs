@@ -403,6 +403,7 @@ static void PrintProfile(string operation,double apiMs)
 {
     var p=ModelingPerformance.Last;var milliseconds=1000.0/System.Diagnostics.Stopwatch.Frequency;
     Console.WriteLine($"PROFILE operation={operation} api-ms={apiMs:F3} elapsed-ms={p.ElapsedTicks*milliseconds:F3} pairs={p.SurfacePairs} ssi-cells={p.SsiCells} root-cells={p.RootCells} roots={p.Roots} budget-failures={p.BudgetFailures} winding={p.WindingCalls} bound-requests={p.BoundRequests} bound-evaluations={p.BoundEvaluations} cache-hits={p.BoundCacheHits} failure-cache-hits={p.BoundFailureCacheHits} bound-ms={p.BoundTicks*milliseconds:F3}");
+    Console.WriteLine($"CONTRACTION steps={p.SplineContractions} same-all-boxes={p.SplineStableBoxes} same-uv={p.SplineStableUv}");
     for(var i=0;i<8;i++)Console.WriteLine($"COST kind={(EvaluationCost)i} calls={p.EvaluationCalls[i]} elapsed-ms={p.EvaluationElapsed[i]*milliseconds:F3} child-subtracted-elapsed-ms={p.EvaluationOwnElapsed[i]*milliseconds:F3}");
     Console.WriteLine($"COST scope=instrumented-thread-wall-not-exclusive-cpu max-depth={ModelingPerformance.EvaluationMaxDepth} dropped={ModelingPerformance.EvaluationDropped}");
     Console.WriteLine($"WORK jacobians={p.JacobianCalls} directions={p.JacobianDirections} residual-directions={p.ResidualDirections} record-builds={p.JacobianRecordBuilds} record-nodes={p.JacobianRecordNodes} record-rebinds={p.JacobianRecordRebinds} direct-spline-point-columns={p.DirectSplinePointColumns}");

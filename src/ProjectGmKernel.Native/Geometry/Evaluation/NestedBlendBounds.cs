@@ -251,7 +251,14 @@ internal static partial class JointNestedBlendEvaluation
         }
         for(var iteration=0;iteration<6;iteration++)
         {
-            for(var i=0;i<n;i++)boxes[i]=new(Math.Max(boxes[i].Lower,image[i].Lower),Math.Min(boxes[i].Upper,image[i].Upper));
+            var same=true;var sameUv=true;
+            for(var i=0;i<n;i++)
+            {
+                var next=new IntervalNumber(Math.Max(boxes[i].Lower,image[i].Lower),Math.Min(boxes[i].Upper,image[i].Upper));
+                var equal=BitConverter.DoubleToInt64Bits(next.Lower)==BitConverter.DoubleToInt64Bits(boxes[i].Lower)&&BitConverter.DoubleToInt64Bits(next.Upper)==BitConverter.DoubleToInt64Bits(boxes[i].Upper);
+                same&=equal;if(i>=3)sameUv&=equal;boxes[i]=next;
+            }
+            if(cartesianSpline)ModelingPerformance.SplineContraction(same,sameUv);
             status=IntervalJacobianWithRecord(program,nodes,boxes[..n],t,intervalJacobian[..(n*n)],variables,equations,fixedCharts,splineCache,ref jacobianRecord,cartesianSpline,substitutedConic);if(status!=AlgorithmStatus.Success)return status;
             if(substitutedConic)ConicBlockPrecondition(inverse[..(n*n)],intervalJacobian[..(n*n)],remainder[..(n*n)]);
             else Precondition(inverse[..(n*n)],intervalJacobian[..(n*n)],n,remainder);

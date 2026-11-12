@@ -16,6 +16,7 @@ internal enum EvaluationCost:byte{Point,Tube,Frame,IntervalJacobian,SplineJets,B
 internal struct ModelingProfile
 {
     internal EvaluationCostCounts EvaluationCalls,EvaluationElapsed,EvaluationOwnElapsed;
+    internal long SplineContractions,SplineStableBoxes,SplineStableUv;
     internal long ElapsedTicks,SsiCells,RootCells,Roots,BudgetFailures,SurfacePairs,WindingCalls;
     internal long BoundRequests,BoundEvaluations,BoundCacheHits,BoundFailureCacheHits,BoundTicks;
     internal long JacobianCalls,JacobianDirections,ResidualDirections,JacobianRecordBuilds,JacobianRecordNodes,JacobianRecordRebinds,DirectSplinePointColumns;
@@ -85,6 +86,7 @@ internal static unsafe partial class ModelingPerformance
                     parent.BoundCacheHits+=child.BoundCacheHits;parent.BoundFailureCacheHits+=child.BoundFailureCacheHits;parent.BoundTicks+=child.BoundTicks;
                     parent.JacobianCalls+=child.JacobianCalls;parent.JacobianDirections+=child.JacobianDirections;parent.ResidualDirections+=child.ResidualDirections;parent.DirectSplinePointColumns+=child.DirectSplinePointColumns;
                     parent.JacobianRecordBuilds+=child.JacobianRecordBuilds;parent.JacobianRecordNodes+=child.JacobianRecordNodes;parent.JacobianRecordRebinds+=child.JacobianRecordRebinds;
+                    parent.SplineContractions+=child.SplineContractions;parent.SplineStableBoxes+=child.SplineStableBoxes;parent.SplineStableUv+=child.SplineStableUv;
                     for(var i=0;i<8;i++){parent.EvaluationCalls[i]+=child.EvaluationCalls[i];parent.EvaluationElapsed[i]+=child.EvaluationElapsed[i];parent.EvaluationOwnElapsed[i]+=child.EvaluationOwnElapsed[i];}
                     for(var use=0;use<16;use++)
                     {
@@ -99,6 +101,9 @@ internal static unsafe partial class ModelingPerformance
             if(context->Tubes!=null)KernelRuntime.State.Session->Memory->Free(context->Tubes);
         }
     }
+
+    internal static void SplineContraction(bool same,bool sameUv)
+    {if(current!=null&&current->Capture){current->Profile.SplineContractions++;if(same)current->Profile.SplineStableBoxes++;if(sameUv)current->Profile.SplineStableUv++;}}
 
     internal static void Stage(KernelRuntime.RegularBooleanStage stage)
     {
