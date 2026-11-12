@@ -1,0 +1,2731 @@
+{
+  "scope": "Fixed e7f0a48 independent review; no author change, UI review, main integration, deployment or overall PK qualification",
+  "deliveryCommit": "b8c74b95047577e52d1086b48b0b0a88ee3f4388",
+  "calculationCommit": "e7f0a4876ef296b56f5f7c57a45f15617eac6918",
+  "measurementMetadataCommit": "ad79d2d4c6b59a81be423de4faf1745ea62cb318",
+  "nativeTree": "6a84372805cefdaf5c10cb3e0f3e56f8eb12ffdc",
+  "sourceTree": "cee0c419bd3e42acdc2d95e75a350f03cd8d06fa",
+  "policyBodySha256": "55f16ce0cf53bbb37ddd91920445f32468eb8e2b5b6e28f6fb90856810afcca1",
+  "policyScope": "Actual file only; automatic runtime loading not claimed",
+  "decisions": {
+    "mathematicsAndAlgorithm": "accepted",
+    "keyIntegration": "accepted",
+    "recordedQuality": "accepted within actual original scope",
+    "uniqueWindow": "accepted as descriptive observations",
+    "allNumericalVerified": "blocked by original Unresolved",
+    "fullPerformanceQualification": "blocked by original raw2/performanceQualified=false",
+    "generalCausalSpeedupAndOverallPkGoal": "unproven"
+  },
+  "archives": [
+    {
+      "archive": "temp_docs/incoming/mac-isoparam-e7f0a48-quality.zip",
+      "sha256": "335a733b28a6875f9522a786cfb4f03af2cfdbd31bf15ccbafe5885d21d5ed0f",
+      "entries": 529,
+      "expandedBytes": 71158542
+    },
+    {
+      "archive": "temp_docs/incoming/mac-isoparam-e7f0a48-controlled-original.zip",
+      "sha256": "bb03d55d39335688c01003c3ec94a7dd61c5c809fb34803265c79675db0f6197",
+      "entries": 1037,
+      "expandedBytes": 137674519
+    }
+  ],
+  "quality": {
+    "scope": "Independent original quality audit, no Mac code loading and no numerical or performance upgrade",
+    "calculationCommit": "e7f0a4876ef296b56f5f7c57a45f15617eac6918",
+    "binaries": [
+      {
+        "dll": "temp_docs/independent-isoparam-e7f0a48/quality/original/temp_docs/isoparametric-bound/quality/00-curved-candidate/identity/kernel.dll",
+        "dllSha256": "9468a7ba91b82a975be8b748e3cf5ce7ad1dd9ac430fb234fd69b2ad0d1ac389",
+        "pdbSha256": "d2f7998f8ccbd14cd6a0fbb53c8ee66033d5ffd7536ff89c21cd64d38eab5a9c",
+        "mvid": "2188a30e-4c84-45b0-9e37-92250f26f185",
+        "matchedTrackedDocuments": 336,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "dll": "temp_docs/independent-isoparam-e7f0a48/quality/original/temp_docs/isoparametric-bound/quality/01-solidblend-candidate/identity/kernel.dll",
+        "dllSha256": "9468a7ba91b82a975be8b748e3cf5ce7ad1dd9ac430fb234fd69b2ad0d1ac389",
+        "pdbSha256": "d2f7998f8ccbd14cd6a0fbb53c8ee66033d5ffd7536ff89c21cd64d38eab5a9c",
+        "mvid": "2188a30e-4c84-45b0-9e37-92250f26f185",
+        "matchedTrackedDocuments": 336,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "dll": "temp_docs/independent-isoparam-e7f0a48/quality/original/temp_docs/isoparametric-bound/std-candidate/00-shortedge-candidate/identity/kernel.dll",
+        "dllSha256": "9468a7ba91b82a975be8b748e3cf5ce7ad1dd9ac430fb234fd69b2ad0d1ac389",
+        "pdbSha256": "d2f7998f8ccbd14cd6a0fbb53c8ee66033d5ffd7536ff89c21cd64d38eab5a9c",
+        "mvid": "2188a30e-4c84-45b0-9e37-92250f26f185",
+        "matchedTrackedDocuments": 336,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "dll": "temp_docs/independent-isoparam-e7f0a48/quality/original/temp_docs/isoparametric-bound/active-rigid-small-capture/identity/kernel.dll",
+        "dllSha256": "9468a7ba91b82a975be8b748e3cf5ce7ad1dd9ac430fb234fd69b2ad0d1ac389",
+        "pdbSha256": "d2f7998f8ccbd14cd6a0fbb53c8ee66033d5ffd7536ff89c21cd64d38eab5a9c",
+        "mvid": "2188a30e-4c84-45b0-9e37-92250f26f185",
+        "matchedTrackedDocuments": 336,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "dll": "temp_docs/independent-isoparam-e7f0a48/quality/original/temp_docs/isoparametric-bound/active-mirror8-capture/identity/kernel.dll",
+        "dllSha256": "9468a7ba91b82a975be8b748e3cf5ce7ad1dd9ac430fb234fd69b2ad0d1ac389",
+        "pdbSha256": "d2f7998f8ccbd14cd6a0fbb53c8ee66033d5ffd7536ff89c21cd64d38eab5a9c",
+        "mvid": "2188a30e-4c84-45b0-9e37-92250f26f185",
+        "matchedTrackedDocuments": 336,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "dll": "temp_docs/independent-isoparam-e7f0a48/quality/original/temp_docs/isoparametric-bound/active-shortedge-lifecycle-capture/identity/kernel.dll",
+        "dllSha256": "9468a7ba91b82a975be8b748e3cf5ce7ad1dd9ac430fb234fd69b2ad0d1ac389",
+        "pdbSha256": "d2f7998f8ccbd14cd6a0fbb53c8ee66033d5ffd7536ff89c21cd64d38eab5a9c",
+        "mvid": "2188a30e-4c84-45b0-9e37-92250f26f185",
+        "matchedTrackedDocuments": 336,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "dll": "temp_docs/independent-isoparam-e7f0a48/quality/original/temp_docs/isoparametric-bound/active-nurbs-lifecycle-capture/identity/kernel.dll",
+        "dllSha256": "9468a7ba91b82a975be8b748e3cf5ce7ad1dd9ac430fb234fd69b2ad0d1ac389",
+        "pdbSha256": "d2f7998f8ccbd14cd6a0fbb53c8ee66033d5ffd7536ff89c21cd64d38eab5a9c",
+        "mvid": "2188a30e-4c84-45b0-9e37-92250f26f185",
+        "matchedTrackedDocuments": 336,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "dll": "temp_docs/independent-isoparam-e7f0a48/quality/original/temp_docs/isoparametric-bound/active-curved-reload-capture/identity/kernel.dll",
+        "dllSha256": "9468a7ba91b82a975be8b748e3cf5ce7ad1dd9ac430fb234fd69b2ad0d1ac389",
+        "pdbSha256": "d2f7998f8ccbd14cd6a0fbb53c8ee66033d5ffd7536ff89c21cd64d38eab5a9c",
+        "mvid": "2188a30e-4c84-45b0-9e37-92250f26f185",
+        "matchedTrackedDocuments": 336,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "dll": "temp_docs/independent-isoparam-e7f0a48/quality/original/temp_docs/isoparametric-bound/isoparam-full-ProjectGmKernel.Native.dll",
+        "dllSha256": "dfb6f258b82bd970db84564441e174812302d7adce184ea0cf6aeea6b558443d",
+        "pdbSha256": "280de8db68f0dbfc1bad864a308d6822232a265a7602c44c6235856b6de54560",
+        "mvid": "46b93efb-b8b6-4d8b-a01c-9bea4260694c",
+        "matchedTrackedDocuments": 336,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "dll": "temp_docs/independent-isoparam-e7f0a48/quality/original/temp_docs/isoparametric-bound/isoparam-full-KernelTests.dll",
+        "dllSha256": "8ff8f4a58e9af1c760156ac7331a1c676b9927c456856321e2b0573c810ae8be",
+        "pdbSha256": "4d777d51deea736ee8672ea1deebf7c3e4d5538e5b03bf7a77f409611eafe2cd",
+        "mvid": "dad07d57-e24e-489d-b281-79289bad72e2",
+        "matchedTrackedDocuments": 169,
+        "unmapped": [
+          "Microsoft.NET.Test.Sdk.Program.cs",
+          "KernelTests.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "KernelTests.AssemblyInfo.cs"
+        ]
+      }
+    ],
+    "runs": [
+      {
+        "directory": "quality/00-curved-candidate",
+        "rawExit": 2,
+        "checks": {
+          "pass": 14,
+          "missing": 13
+        },
+        "captureSha256": "1e763c1a6d786bbe18317f409b06e2375751dd9219d60adfcd3087ab62fdc892",
+        "steps": 1
+      },
+      {
+        "directory": "quality/01-solidblend-candidate",
+        "rawExit": 2,
+        "checks": {
+          "pass": 16,
+          "missing": 13
+        },
+        "captureSha256": "23b001a1cb45c88c9142425d7a356f3b09e8bcd43a1187e94f8a0eb616c42a6d",
+        "steps": 1
+      },
+      {
+        "directory": "std-candidate/00-shortedge-candidate",
+        "rawExit": 2,
+        "checks": {
+          "pass": 210,
+          "missing": 102
+        },
+        "captureSha256": "a0af7be8388329bff47b2a11588263050e311dff98cdccc965a14e1b491da11f",
+        "steps": 6
+      },
+      {
+        "directory": "active-rigid-small-capture",
+        "rawExit": 0,
+        "checks": {
+          "pass": 51,
+          "missing": 1
+        },
+        "captureSha256": "5d7de110e6401ff5edb5b116f3ae1d20bc99f67dbeb9b9466f751b655bf5450d",
+        "steps": 1
+      },
+      {
+        "directory": "active-mirror8-capture",
+        "rawExit": 2,
+        "checks": {
+          "pass": 29,
+          "missing": 23
+        },
+        "captureSha256": "53d6678ad216156335e3e3cf24ede446e8afb94b1f1cca70ab019c4900fd4cbf",
+        "steps": 1
+      },
+      {
+        "directory": "active-shortedge-lifecycle-capture",
+        "rawExit": 2,
+        "checks": {
+          "pass": 133,
+          "missing": 77
+        },
+        "captureSha256": "f1fb946febfa0de88da6cb6b74d1eff2f214474e53152c53f1b8ea12df2489c3",
+        "steps": 5
+      },
+      {
+        "directory": "active-nurbs-lifecycle-capture",
+        "rawExit": 2,
+        "checks": {
+          "pass": 16,
+          "missing": 13
+        },
+        "captureSha256": "f0f18e61b3ad9ce0c7199f91d1b767e4f728ee05fc8aa22094d40d427af6c794",
+        "steps": 1
+      },
+      {
+        "directory": "active-curved-reload-capture",
+        "rawExit": 2,
+        "checks": {
+          "pass": 17,
+          "missing": 26
+        },
+        "captureSha256": "d5e8e2bc587af78977f859ab07593b99c8f47ede35aaf26f3e188b2c6c79cbb2",
+        "steps": 1
+      }
+    ],
+    "strictReports": 55,
+    "massReports": 29,
+    "trxSha256": "db8768aa7dbf3a7cb22b8b84cf05c25015a447f75438ba83b1d25d057af92b48",
+    "fullSuiteTotal": 2029
+  },
+  "measurement": {
+    "scope": "Independent fixed original measurement; descriptive observation only; raw2 and performanceQualified=false retained",
+    "archiveSha256": "bb03d55d39335688c01003c3ec94a7dd61c5c809fb34803265c79675db0f6197",
+    "archiveFiles": 1037,
+    "expandedBytes": 137674519,
+    "startedUtc": "2026-11-12T08:03:04.2462780\u002B00:00",
+    "finishedUtc": "2026-11-12T08:05:02.4967460\u002B00:00",
+    "sourceManifestRows": 10430,
+    "processes": 20,
+    "pairs": 60,
+    "apiTimes": 120,
+    "runnerExit": 2,
+    "meshFiles": 312,
+    "meshBytes": 35389380,
+    "finalXtArtifactFiles": 64,
+    "mainMassReports": 60,
+    "extraMassReports": 12,
+    "mainComponents": {
+      "Unresolved": 588,
+      "Verified": 312
+    },
+    "extraComponents": {
+      "Verified": 84,
+      "Unresolved": 96
+    },
+    "strictReports": 144,
+    "operations": [
+      {
+        "case": "sphere",
+        "baseline": {
+          "coldGmMs": [
+            22.8674,
+            22.2365
+          ],
+          "coldPkMs": [
+            12.1787,
+            0.4365
+          ],
+          "warmGmMs": [
+            0.095,
+            0.0802,
+            0.0736,
+            0.117
+          ],
+          "warmPkMs": [
+            0.2818,
+            0.2776,
+            0.3319,
+            0.3585
+          ],
+          "gmMedianMs": 0.0876,
+          "pkMedianMs": 0.30684999999999996,
+          "gmMinMs": 0.0736,
+          "gmMaxMs": 0.117,
+          "pairedRatioMedian": 0.30763236588571496,
+          "ratioOfMedians": 0.28548150562163926
+        },
+        "candidate": {
+          "coldGmMs": [
+            22.5046,
+            24.3568
+          ],
+          "coldPkMs": [
+            0.4568,
+            0.5489
+          ],
+          "warmGmMs": [
+            0.08,
+            0.0794,
+            0.0765,
+            0.0822
+          ],
+          "warmPkMs": [
+            0.2897,
+            0.3361,
+            0.331,
+            0.338
+          ],
+          "gmMedianMs": 0.0797,
+          "pkMedianMs": 0.33355,
+          "gmMinMs": 0.0765,
+          "gmMaxMs": 0.0822,
+          "pairedRatioMedian": 0.23971724039583878,
+          "ratioOfMedians": 0.2389446859541298
+        },
+        "changePercent": -9.018264840182654
+      },
+      {
+        "case": "planar",
+        "baseline": {
+          "coldGmMs": [
+            55.9665,
+            56.0082
+          ],
+          "coldPkMs": [
+            1.6608,
+            0.9867
+          ],
+          "warmGmMs": [
+            0.6006,
+            0.951,
+            0.989,
+            0.5631
+          ],
+          "warmPkMs": [
+            1.2186,
+            1.1805,
+            0.8319,
+            0.7657
+          ],
+          "gmMedianMs": 0.7758,
+          "pkMedianMs": 1.0062,
+          "gmMinMs": 0.5631,
+          "gmMaxMs": 0.989,
+          "pairedRatioMedian": 0.7704981813155165,
+          "ratioOfMedians": 0.7710196779964222
+        },
+        "candidate": {
+          "coldGmMs": [
+            48.7332,
+            51.266
+          ],
+          "coldPkMs": [
+            1.0661,
+            1.461
+          ],
+          "warmGmMs": [
+            0.995,
+            0.9547,
+            0.5548,
+            0.6157
+          ],
+          "warmPkMs": [
+            1.1598,
+            1.213,
+            0.8567,
+            0.8735
+          ],
+          "gmMedianMs": 0.7852,
+          "pkMedianMs": 1.01665,
+          "gmMinMs": 0.5548,
+          "gmMaxMs": 0.995,
+          "pairedRatioMedian": 0.745961183722797,
+          "ratioOfMedians": 0.7723405301726257
+        },
+        "changePercent": 1.2116524877545665
+      },
+      {
+        "case": "curved",
+        "baseline": {
+          "coldGmMs": [
+            557.3033,
+            473.4152
+          ],
+          "coldPkMs": [
+            4.6191,
+            2.3644
+          ],
+          "warmGmMs": [
+            40.9214,
+            50.0132,
+            33.3379,
+            48.9105
+          ],
+          "warmPkMs": [
+            1.9501,
+            2.1117,
+            3.6411,
+            1.8248
+          ],
+          "gmMedianMs": 44.915949999999995,
+          "pkMedianMs": 2.0309,
+          "gmMinMs": 33.3379,
+          "gmMaxMs": 50.0132,
+          "pairedRatioMedian": 22.33405691299917,
+          "ratioOfMedians": 22.11627849721798
+        },
+        "candidate": {
+          "coldGmMs": [
+            555.4362,
+            517.3459
+          ],
+          "coldPkMs": [
+            3.5458,
+            2.4136
+          ],
+          "warmGmMs": [
+            45.5108,
+            45.2253,
+            42.7954,
+            39.7907
+          ],
+          "warmPkMs": [
+            1.9577,
+            1.9918,
+            2.0559,
+            3.4648
+          ],
+          "gmMedianMs": 44.01035,
+          "pkMedianMs": 2.02385,
+          "gmMinMs": 39.7907,
+          "gmMaxMs": 45.5108,
+          "pairedRatioMedian": 21.760819631660585,
+          "ratioOfMedians": 21.745855671121873
+        },
+        "changePercent": -2.016210277195496
+      },
+      {
+        "case": "solidblend",
+        "baseline": {
+          "coldGmMs": [
+            1062.6517,
+            1179.7038
+          ],
+          "coldPkMs": [
+            17.9957,
+            2.0315
+          ],
+          "warmGmMs": [
+            517.3628,
+            492.5471,
+            542.0454,
+            439.1901
+          ],
+          "warmPkMs": [
+            1.7116,
+            1.6626,
+            1.6262,
+            1.53
+          ],
+          "gmMedianMs": 504.95495,
+          "pkMedianMs": 1.6444,
+          "gmMinMs": 439.1901,
+          "gmMaxMs": 542.0454,
+          "pairedRatioMedian": 299.2598166987135,
+          "ratioOfMedians": 307.075498662126
+        },
+        "candidate": {
+          "coldGmMs": [
+            1211.9719,
+            1122.5444
+          ],
+          "coldPkMs": [
+            2.7865,
+            2.0461
+          ],
+          "warmGmMs": [
+            531.2275,
+            470.1583,
+            537.8105,
+            472.0975
+          ],
+          "warmPkMs": [
+            1.7018,
+            2.3893,
+            1.8915,
+            1.6667
+          ],
+          "gmMedianMs": 501.6625,
+          "pkMedianMs": 1.79665,
+          "gmMinMs": 470.1583,
+          "gmMaxMs": 537.8105,
+          "pairedRatioMedian": 283.7914980954941,
+          "ratioOfMedians": 279.22105028803605
+        },
+        "changePercent": -0.6520284631331918
+      },
+      {
+        "case": "shortedge",
+        "baseline": {
+          "coldGmMs": [
+            1561.925,
+            1240.2495
+          ],
+          "coldPkMs": [
+            4.6075,
+            2.079
+          ],
+          "warmGmMs": [
+            792.3083,
+            523.7082,
+            511.8432,
+            472.4537
+          ],
+          "warmPkMs": [
+            1.6333,
+            2.3099,
+            1.6483,
+            1.7798
+          ],
+          "gmMedianMs": 517.7757,
+          "pkMedianMs": 1.71405,
+          "gmMinMs": 472.4537,
+          "gmMaxMs": 792.3083,
+          "pairedRatioMedian": 287.9905955249504,
+          "ratioOfMedians": 302.0773606370876
+        },
+        "candidate": {
+          "coldGmMs": [
+            1357.871,
+            2086.4033
+          ],
+          "coldPkMs": [
+            2.7232,
+            2.2878
+          ],
+          "warmGmMs": [
+            720.1391,
+            414.3006,
+            482.1789,
+            397.0935
+          ],
+          "warmPkMs": [
+            1.6364,
+            2.241,
+            2.2843,
+            2.3565
+          ],
+          "gmMedianMs": 448.23974999999996,
+          "pkMedianMs": 2.26265,
+          "gmMinMs": 397.0935,
+          "gmMaxMs": 720.1391,
+          "pairedRatioMedian": 197.97848463415454,
+          "ratioOfMedians": 198.1038826155172
+        },
+        "changePercent": -13.429743806053484
+      }
+    ],
+    "samples": [
+      {
+        "case": "sphere",
+        "side": "baseline",
+        "directory": "00-sphere-baseline",
+        "originalExit": 2,
+        "gmMs": [
+          22.8674,
+          0.095,
+          0.0802
+        ],
+        "pkMs": [
+          12.1787,
+          0.2818,
+          0.2776
+        ],
+        "profile": [
+          "PROFILE operation=Boolean equal-overlap-15902 api-ms=22.867 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000",
+          "PROFILE operation=Boolean equal-overlap-15902 api-ms=0.095 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000",
+          "PROFILE operation=Boolean equal-overlap-15902 api-ms=0.080 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000"
+        ],
+        "work": [
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0",
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0",
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0"
+        ],
+        "captureSha256": "104cc5c7182a547c11986b398e05661f031352d3edbb973335a2e7b439d2434b"
+      },
+      {
+        "case": "sphere",
+        "side": "candidate",
+        "directory": "01-sphere-candidate",
+        "originalExit": 2,
+        "gmMs": [
+          22.5046,
+          0.08,
+          0.0794
+        ],
+        "pkMs": [
+          0.4568,
+          0.2897,
+          0.3361
+        ],
+        "profile": [
+          "PROFILE operation=Boolean equal-overlap-15902 api-ms=22.505 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000",
+          "PROFILE operation=Boolean equal-overlap-15902 api-ms=0.080 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000",
+          "PROFILE operation=Boolean equal-overlap-15902 api-ms=0.079 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000"
+        ],
+        "work": [
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0",
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0",
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0"
+        ],
+        "captureSha256": "c5552d374bcf86c00a06df6c2ae7d492dee7d8545ade9512dbf35cd77262477a"
+      },
+      {
+        "case": "sphere",
+        "side": "candidate",
+        "directory": "02-sphere-candidate",
+        "originalExit": 2,
+        "gmMs": [
+          24.3568,
+          0.0765,
+          0.0822
+        ],
+        "pkMs": [
+          0.5489,
+          0.331,
+          0.338
+        ],
+        "profile": [
+          "PROFILE operation=Boolean equal-overlap-15902 api-ms=24.357 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000",
+          "PROFILE operation=Boolean equal-overlap-15902 api-ms=0.076 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000",
+          "PROFILE operation=Boolean equal-overlap-15902 api-ms=0.082 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000"
+        ],
+        "work": [
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0",
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0",
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0"
+        ],
+        "captureSha256": "f5e3036aedc5fd348ef76957da0f72aa4050ed6284ddc3e4c87d61eb3e39a62c"
+      },
+      {
+        "case": "sphere",
+        "side": "baseline",
+        "directory": "03-sphere-baseline",
+        "originalExit": 2,
+        "gmMs": [
+          22.2365,
+          0.0736,
+          0.117
+        ],
+        "pkMs": [
+          0.4365,
+          0.3319,
+          0.3585
+        ],
+        "profile": [
+          "PROFILE operation=Boolean equal-overlap-15902 api-ms=22.236 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000",
+          "PROFILE operation=Boolean equal-overlap-15902 api-ms=0.074 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000",
+          "PROFILE operation=Boolean equal-overlap-15902 api-ms=0.117 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000"
+        ],
+        "work": [
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0",
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0",
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0"
+        ],
+        "captureSha256": "012ca1e31af1cf1a4603e2e97c7214c4b122de04a750755f2637f167a2d3c6f0"
+      },
+      {
+        "case": "planar",
+        "side": "baseline",
+        "directory": "04-planar-baseline",
+        "originalExit": 0,
+        "gmMs": [
+          55.9665,
+          0.6006,
+          0.951
+        ],
+        "pkMs": [
+          1.6608,
+          1.2186,
+          1.1805
+        ],
+        "profile": [
+          "PROFILE operation=Boolean overlap-two-axes-15902 api-ms=55.967 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000",
+          "PROFILE operation=Boolean overlap-two-axes-15902 api-ms=0.601 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000",
+          "PROFILE operation=Boolean overlap-two-axes-15902 api-ms=0.951 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000"
+        ],
+        "work": [
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0",
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0",
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0"
+        ],
+        "captureSha256": "3881b4d7b73617186058eef4c33fd2607ee9c8c4ae1624275887105e7b36305f"
+      },
+      {
+        "case": "planar",
+        "side": "candidate",
+        "directory": "05-planar-candidate",
+        "originalExit": 0,
+        "gmMs": [
+          48.7332,
+          0.995,
+          0.9547
+        ],
+        "pkMs": [
+          1.0661,
+          1.1598,
+          1.213
+        ],
+        "profile": [
+          "PROFILE operation=Boolean overlap-two-axes-15902 api-ms=48.733 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000",
+          "PROFILE operation=Boolean overlap-two-axes-15902 api-ms=0.995 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000",
+          "PROFILE operation=Boolean overlap-two-axes-15902 api-ms=0.955 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000"
+        ],
+        "work": [
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0",
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0",
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0"
+        ],
+        "captureSha256": "ca806dadd02ddc534339c509ba750b7e5ad10a8135ec45467dcdc50e4d8370ce"
+      },
+      {
+        "case": "planar",
+        "side": "candidate",
+        "directory": "06-planar-candidate",
+        "originalExit": 0,
+        "gmMs": [
+          51.266,
+          0.5548,
+          0.6157
+        ],
+        "pkMs": [
+          1.461,
+          0.8567,
+          0.8735
+        ],
+        "profile": [
+          "PROFILE operation=Boolean overlap-two-axes-15902 api-ms=51.266 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000",
+          "PROFILE operation=Boolean overlap-two-axes-15902 api-ms=0.555 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000",
+          "PROFILE operation=Boolean overlap-two-axes-15902 api-ms=0.616 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000"
+        ],
+        "work": [
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0",
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0",
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0"
+        ],
+        "captureSha256": "ca53055f5e4afe653dd9e3c057082d48f2d0dd82575180c5938f5113e24136ff"
+      },
+      {
+        "case": "planar",
+        "side": "baseline",
+        "directory": "07-planar-baseline",
+        "originalExit": 0,
+        "gmMs": [
+          56.0082,
+          0.989,
+          0.5631
+        ],
+        "pkMs": [
+          0.9867,
+          0.8319,
+          0.7657
+        ],
+        "profile": [
+          "PROFILE operation=Boolean overlap-two-axes-15902 api-ms=56.008 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000",
+          "PROFILE operation=Boolean overlap-two-axes-15902 api-ms=0.989 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000",
+          "PROFILE operation=Boolean overlap-two-axes-15902 api-ms=0.563 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000"
+        ],
+        "work": [
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0",
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0",
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0"
+        ],
+        "captureSha256": "4de2023336ab8dd42e94204b37dc577c1f509d91c797832e64f3ff3c1cd56c3c"
+      },
+      {
+        "case": "curved",
+        "side": "baseline",
+        "directory": "08-curved-baseline",
+        "originalExit": 2,
+        "gmMs": [
+          557.3033,
+          40.9214,
+          50.0132
+        ],
+        "pkMs": [
+          4.6191,
+          1.9501,
+          2.1117
+        ],
+        "profile": [
+          "PROFILE operation=Boolean block-15902 api-ms=557.303 elapsed-ms=518.231 pairs=36 ssi-cells=7 root-cells=1034 roots=84 budget-failures=0 winding=155 bound-requests=4542 bound-evaluations=35 cache-hits=0 failure-cache-hits=0 bound-ms=1.835",
+          "PROFILE operation=Boolean block-15902 api-ms=40.921 elapsed-ms=40.859 pairs=36 ssi-cells=7 root-cells=1034 roots=84 budget-failures=0 winding=155 bound-requests=4542 bound-evaluations=35 cache-hits=0 failure-cache-hits=0 bound-ms=0.011",
+          "PROFILE operation=Boolean block-15902 api-ms=50.013 elapsed-ms=49.939 pairs=36 ssi-cells=7 root-cells=1034 roots=84 budget-failures=0 winding=155 bound-requests=4542 bound-evaluations=35 cache-hits=0 failure-cache-hits=0 bound-ms=0.016"
+        ],
+        "work": [
+          "WORK jacobians=672 directions=3360 residual-directions=1344 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=2016",
+          "WORK jacobians=686 directions=3430 residual-directions=1372 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=2058",
+          "WORK jacobians=707 directions=3535 residual-directions=1414 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=2121"
+        ],
+        "captureSha256": "25022abb4f76257b1923dc1fbbb8bbbe6b5f68c7b3a91dc593fbf0598f8874f6"
+      },
+      {
+        "case": "curved",
+        "side": "candidate",
+        "directory": "09-curved-candidate",
+        "originalExit": 2,
+        "gmMs": [
+          555.4362,
+          45.5108,
+          45.2253
+        ],
+        "pkMs": [
+          3.5458,
+          1.9577,
+          1.9918
+        ],
+        "profile": [
+          "PROFILE operation=Boolean block-15902 api-ms=555.436 elapsed-ms=514.419 pairs=36 ssi-cells=7 root-cells=1034 roots=84 budget-failures=0 winding=155 bound-requests=4542 bound-evaluations=35 cache-hits=0 failure-cache-hits=0 bound-ms=1.540",
+          "PROFILE operation=Boolean block-15902 api-ms=45.511 elapsed-ms=45.443 pairs=36 ssi-cells=7 root-cells=1034 roots=84 budget-failures=0 winding=155 bound-requests=4542 bound-evaluations=35 cache-hits=0 failure-cache-hits=0 bound-ms=0.015",
+          "PROFILE operation=Boolean block-15902 api-ms=45.225 elapsed-ms=45.124 pairs=36 ssi-cells=7 root-cells=1034 roots=84 budget-failures=0 winding=155 bound-requests=4542 bound-evaluations=35 cache-hits=0 failure-cache-hits=0 bound-ms=0.010"
+        ],
+        "work": [
+          "WORK jacobians=672 directions=3360 residual-directions=1344 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=2016",
+          "WORK jacobians=686 directions=3430 residual-directions=1372 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=2058",
+          "WORK jacobians=707 directions=3535 residual-directions=1414 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=2121"
+        ],
+        "captureSha256": "08ae26fb99b0beb3fc71b2f567026c2a63a133514fe40293f690a1de876a7d40"
+      },
+      {
+        "case": "curved",
+        "side": "candidate",
+        "directory": "10-curved-candidate",
+        "originalExit": 2,
+        "gmMs": [
+          517.3459,
+          42.7954,
+          39.7907
+        ],
+        "pkMs": [
+          2.4136,
+          2.0559,
+          3.4648
+        ],
+        "profile": [
+          "PROFILE operation=Boolean block-15902 api-ms=517.346 elapsed-ms=486.966 pairs=36 ssi-cells=7 root-cells=1034 roots=84 budget-failures=0 winding=155 bound-requests=4542 bound-evaluations=35 cache-hits=0 failure-cache-hits=0 bound-ms=1.525",
+          "PROFILE operation=Boolean block-15902 api-ms=42.795 elapsed-ms=42.731 pairs=36 ssi-cells=7 root-cells=1034 roots=84 budget-failures=0 winding=155 bound-requests=4542 bound-evaluations=35 cache-hits=0 failure-cache-hits=0 bound-ms=0.020",
+          "PROFILE operation=Boolean block-15902 api-ms=39.791 elapsed-ms=39.728 pairs=36 ssi-cells=7 root-cells=1034 roots=84 budget-failures=0 winding=155 bound-requests=4542 bound-evaluations=35 cache-hits=0 failure-cache-hits=0 bound-ms=0.011"
+        ],
+        "work": [
+          "WORK jacobians=672 directions=3360 residual-directions=1344 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=2016",
+          "WORK jacobians=686 directions=3430 residual-directions=1372 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=2058",
+          "WORK jacobians=707 directions=3535 residual-directions=1414 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=2121"
+        ],
+        "captureSha256": "f4c11080b9e5abd6d3a83cc83e3dae3dfbca3dc615babfd223c78cf33a074ae5"
+      },
+      {
+        "case": "curved",
+        "side": "baseline",
+        "directory": "11-curved-baseline",
+        "originalExit": 2,
+        "gmMs": [
+          473.4152,
+          33.3379,
+          48.9105
+        ],
+        "pkMs": [
+          2.3644,
+          3.6411,
+          1.8248
+        ],
+        "profile": [
+          "PROFILE operation=Boolean block-15902 api-ms=473.415 elapsed-ms=443.860 pairs=36 ssi-cells=7 root-cells=1034 roots=84 budget-failures=0 winding=155 bound-requests=4542 bound-evaluations=35 cache-hits=0 failure-cache-hits=0 bound-ms=1.386",
+          "PROFILE operation=Boolean block-15902 api-ms=33.338 elapsed-ms=33.237 pairs=36 ssi-cells=7 root-cells=1034 roots=84 budget-failures=0 winding=155 bound-requests=4542 bound-evaluations=35 cache-hits=0 failure-cache-hits=0 bound-ms=0.014",
+          "PROFILE operation=Boolean block-15902 api-ms=48.910 elapsed-ms=48.842 pairs=36 ssi-cells=7 root-cells=1034 roots=84 budget-failures=0 winding=155 bound-requests=4542 bound-evaluations=35 cache-hits=0 failure-cache-hits=0 bound-ms=0.017"
+        ],
+        "work": [
+          "WORK jacobians=672 directions=3360 residual-directions=1344 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=2016",
+          "WORK jacobians=686 directions=3430 residual-directions=1372 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=2058",
+          "WORK jacobians=707 directions=3535 residual-directions=1414 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=2121"
+        ],
+        "captureSha256": "9b0bbe94341c0d91f4d984414013964dc3a0f62634949906f3113fc122d89c2c"
+      },
+      {
+        "case": "solidblend",
+        "side": "baseline",
+        "directory": "12-solidblend-baseline",
+        "originalExit": 2,
+        "gmMs": [
+          1062.6517,
+          517.3628,
+          492.5471
+        ],
+        "pkMs": [
+          17.9957,
+          1.7116,
+          1.6626
+        ],
+        "profile": [
+          "PROFILE operation=FixBlends api-ms=1062.652 elapsed-ms=1056.221 pairs=0 ssi-cells=0 root-cells=150 roots=8 budget-failures=0 winding=18 bound-requests=628 bound-evaluations=452 cache-hits=26 failure-cache-hits=0 bound-ms=287.576",
+          "PROFILE operation=FixBlends api-ms=517.363 elapsed-ms=517.298 pairs=0 ssi-cells=0 root-cells=150 roots=8 budget-failures=0 winding=18 bound-requests=628 bound-evaluations=452 cache-hits=26 failure-cache-hits=0 bound-ms=255.138",
+          "PROFILE operation=FixBlends api-ms=492.547 elapsed-ms=492.485 pairs=0 ssi-cells=0 root-cells=150 roots=8 budget-failures=0 winding=18 bound-requests=628 bound-evaluations=452 cache-hits=26 failure-cache-hits=0 bound-ms=219.847"
+        ],
+        "work": [
+          "WORK jacobians=4179 directions=20895 residual-directions=8358 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=12537",
+          "WORK jacobians=4179 directions=20895 residual-directions=8358 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=12537",
+          "WORK jacobians=4179 directions=20895 residual-directions=8358 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=12537"
+        ],
+        "captureSha256": "b1598d2fa40230146e4f6efa295cd9772d29e71729692edd7ec34da309557173"
+      },
+      {
+        "case": "solidblend",
+        "side": "candidate",
+        "directory": "13-solidblend-candidate",
+        "originalExit": 2,
+        "gmMs": [
+          1211.9719,
+          531.2275,
+          470.1583
+        ],
+        "pkMs": [
+          2.7865,
+          1.7018,
+          2.3893
+        ],
+        "profile": [
+          "PROFILE operation=FixBlends api-ms=1211.972 elapsed-ms=1203.887 pairs=0 ssi-cells=0 root-cells=150 roots=8 budget-failures=0 winding=18 bound-requests=628 bound-evaluations=452 cache-hits=26 failure-cache-hits=0 bound-ms=278.777",
+          "PROFILE operation=FixBlends api-ms=531.227 elapsed-ms=531.120 pairs=0 ssi-cells=0 root-cells=150 roots=8 budget-failures=0 winding=18 bound-requests=628 bound-evaluations=452 cache-hits=26 failure-cache-hits=0 bound-ms=249.902",
+          "PROFILE operation=FixBlends api-ms=470.158 elapsed-ms=470.114 pairs=0 ssi-cells=0 root-cells=150 roots=8 budget-failures=0 winding=18 bound-requests=628 bound-evaluations=452 cache-hits=26 failure-cache-hits=0 bound-ms=230.198"
+        ],
+        "work": [
+          "WORK jacobians=4179 directions=20895 residual-directions=8358 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=12537",
+          "WORK jacobians=4179 directions=20895 residual-directions=8358 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=12537",
+          "WORK jacobians=4179 directions=20895 residual-directions=8358 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=12537"
+        ],
+        "captureSha256": "691ed6d44ee406696b2c350b61f9707f8dd1e393fd3659f9057aefa5ce60c125"
+      },
+      {
+        "case": "solidblend",
+        "side": "candidate",
+        "directory": "14-solidblend-candidate",
+        "originalExit": 2,
+        "gmMs": [
+          1122.5444,
+          537.8105,
+          472.0975
+        ],
+        "pkMs": [
+          2.0461,
+          1.8915,
+          1.6667
+        ],
+        "profile": [
+          "PROFILE operation=FixBlends api-ms=1122.544 elapsed-ms=1115.965 pairs=0 ssi-cells=0 root-cells=150 roots=8 budget-failures=0 winding=18 bound-requests=628 bound-evaluations=452 cache-hits=26 failure-cache-hits=0 bound-ms=296.253",
+          "PROFILE operation=FixBlends api-ms=537.811 elapsed-ms=537.741 pairs=0 ssi-cells=0 root-cells=150 roots=8 budget-failures=0 winding=18 bound-requests=628 bound-evaluations=452 cache-hits=26 failure-cache-hits=0 bound-ms=245.136",
+          "PROFILE operation=FixBlends api-ms=472.098 elapsed-ms=472.041 pairs=0 ssi-cells=0 root-cells=150 roots=8 budget-failures=0 winding=18 bound-requests=628 bound-evaluations=452 cache-hits=26 failure-cache-hits=0 bound-ms=219.102"
+        ],
+        "work": [
+          "WORK jacobians=4179 directions=20895 residual-directions=8358 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=12537",
+          "WORK jacobians=4179 directions=20895 residual-directions=8358 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=12537",
+          "WORK jacobians=4179 directions=20895 residual-directions=8358 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=12537"
+        ],
+        "captureSha256": "e50a6b3f5c68572477562a7c6e6f377cebaf3b056905519c44340973b1cf6d1c"
+      },
+      {
+        "case": "solidblend",
+        "side": "baseline",
+        "directory": "15-solidblend-baseline",
+        "originalExit": 2,
+        "gmMs": [
+          1179.7038,
+          542.0454,
+          439.1901
+        ],
+        "pkMs": [
+          2.0315,
+          1.6262,
+          1.53
+        ],
+        "profile": [
+          "PROFILE operation=FixBlends api-ms=1179.704 elapsed-ms=1173.204 pairs=0 ssi-cells=0 root-cells=150 roots=8 budget-failures=0 winding=18 bound-requests=628 bound-evaluations=452 cache-hits=26 failure-cache-hits=0 bound-ms=307.523",
+          "PROFILE operation=FixBlends api-ms=542.045 elapsed-ms=541.938 pairs=0 ssi-cells=0 root-cells=150 roots=8 budget-failures=0 winding=18 bound-requests=628 bound-evaluations=452 cache-hits=26 failure-cache-hits=0 bound-ms=251.009",
+          "PROFILE operation=FixBlends api-ms=439.190 elapsed-ms=439.130 pairs=0 ssi-cells=0 root-cells=150 roots=8 budget-failures=0 winding=18 bound-requests=628 bound-evaluations=452 cache-hits=26 failure-cache-hits=0 bound-ms=203.001"
+        ],
+        "work": [
+          "WORK jacobians=4179 directions=20895 residual-directions=8358 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=12537",
+          "WORK jacobians=4179 directions=20895 residual-directions=8358 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=12537",
+          "WORK jacobians=4179 directions=20895 residual-directions=8358 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=12537"
+        ],
+        "captureSha256": "ca1cb2179e3c6ebc34642bcc47e778db9475714f8ea2dc725691410ab5ad8f86"
+      },
+      {
+        "case": "shortedge",
+        "side": "baseline",
+        "directory": "16-shortedge-baseline",
+        "originalExit": 2,
+        "gmMs": [
+          1561.925,
+          792.3083,
+          523.7082
+        ],
+        "pkMs": [
+          4.6075,
+          1.6333,
+          2.3099
+        ],
+        "profile": [
+          "PROFILE operation=FixBlends api-ms=1561.925 elapsed-ms=1557.249 pairs=0 ssi-cells=4956 root-cells=21063 roots=3136 budget-failures=0 winding=196 bound-requests=69028 bound-evaluations=42913 cache-hits=6885 failure-cache-hits=1463 bound-ms=778.436",
+          "PROFILE operation=FixBlends api-ms=792.308 elapsed-ms=792.207 pairs=0 ssi-cells=4956 root-cells=21063 roots=3136 budget-failures=0 winding=196 bound-requests=69028 bound-evaluations=42913 cache-hits=6885 failure-cache-hits=1463 bound-ms=479.800",
+          "PROFILE operation=FixBlends api-ms=523.708 elapsed-ms=523.634 pairs=0 ssi-cells=4956 root-cells=21063 roots=3136 budget-failures=0 winding=196 bound-requests=69028 bound-evaluations=42913 cache-hits=6885 failure-cache-hits=1463 bound-ms=305.034"
+        ],
+        "work": [
+          "WORK jacobians=18822 directions=122570 residual-directions=23094 record-builds=44 record-nodes=6412 record-rebinds=264 direct-spline-point-columns=0",
+          "WORK jacobians=18814 directions=122514 residual-directions=23086 record-builds=44 record-nodes=6412 record-rebinds=264 direct-spline-point-columns=0",
+          "WORK jacobians=18814 directions=122514 residual-directions=23086 record-builds=44 record-nodes=6412 record-rebinds=264 direct-spline-point-columns=0"
+        ],
+        "captureSha256": "d96d5b8f70e6b5d2f8af354ca809d1287a29e3a9f79fa99080d4d9039f6522f9"
+      },
+      {
+        "case": "shortedge",
+        "side": "candidate",
+        "directory": "17-shortedge-candidate",
+        "originalExit": 2,
+        "gmMs": [
+          1357.871,
+          720.1391,
+          414.3006
+        ],
+        "pkMs": [
+          2.7232,
+          1.6364,
+          2.241
+        ],
+        "profile": [
+          "PROFILE operation=FixBlends api-ms=1357.871 elapsed-ms=1352.722 pairs=0 ssi-cells=4956 root-cells=21063 roots=3136 budget-failures=0 winding=196 bound-requests=69028 bound-evaluations=42913 cache-hits=6885 failure-cache-hits=1463 bound-ms=647.864",
+          "PROFILE operation=FixBlends api-ms=720.139 elapsed-ms=719.954 pairs=0 ssi-cells=4956 root-cells=21063 roots=3136 budget-failures=0 winding=196 bound-requests=69028 bound-evaluations=42913 cache-hits=6885 failure-cache-hits=1463 bound-ms=382.943",
+          "PROFILE operation=FixBlends api-ms=414.301 elapsed-ms=414.256 pairs=0 ssi-cells=4956 root-cells=21063 roots=3136 budget-failures=0 winding=196 bound-requests=69028 bound-evaluations=42913 cache-hits=6885 failure-cache-hits=1463 bound-ms=210.101"
+        ],
+        "work": [
+          "WORK jacobians=18822 directions=122570 residual-directions=23094 record-builds=44 record-nodes=6412 record-rebinds=264 direct-spline-point-columns=0",
+          "WORK jacobians=18814 directions=122514 residual-directions=23086 record-builds=44 record-nodes=6412 record-rebinds=264 direct-spline-point-columns=0",
+          "WORK jacobians=18814 directions=122514 residual-directions=23086 record-builds=44 record-nodes=6412 record-rebinds=264 direct-spline-point-columns=0"
+        ],
+        "captureSha256": "eba145e3b31bebb0d9aa9aa2cb11f732def182d8b61328de9acebe5d7db76dac"
+      },
+      {
+        "case": "shortedge",
+        "side": "candidate",
+        "directory": "18-shortedge-candidate",
+        "originalExit": 2,
+        "gmMs": [
+          2086.4033,
+          482.1789,
+          397.0935
+        ],
+        "pkMs": [
+          2.2878,
+          2.2843,
+          2.3565
+        ],
+        "profile": [
+          "PROFILE operation=FixBlends api-ms=2086.403 elapsed-ms=2080.428 pairs=0 ssi-cells=4956 root-cells=21063 roots=3136 budget-failures=0 winding=196 bound-requests=69028 bound-evaluations=42913 cache-hits=6885 failure-cache-hits=1463 bound-ms=1130.196",
+          "PROFILE operation=FixBlends api-ms=482.179 elapsed-ms=481.987 pairs=0 ssi-cells=4956 root-cells=21063 roots=3136 budget-failures=0 winding=196 bound-requests=69028 bound-evaluations=42913 cache-hits=6885 failure-cache-hits=1463 bound-ms=252.021",
+          "PROFILE operation=FixBlends api-ms=397.094 elapsed-ms=396.983 pairs=0 ssi-cells=4956 root-cells=21063 roots=3136 budget-failures=0 winding=196 bound-requests=69028 bound-evaluations=42913 cache-hits=6885 failure-cache-hits=1463 bound-ms=210.404"
+        ],
+        "work": [
+          "WORK jacobians=18822 directions=122570 residual-directions=23094 record-builds=44 record-nodes=6412 record-rebinds=264 direct-spline-point-columns=0",
+          "WORK jacobians=18814 directions=122514 residual-directions=23086 record-builds=44 record-nodes=6412 record-rebinds=264 direct-spline-point-columns=0",
+          "WORK jacobians=18814 directions=122514 residual-directions=23086 record-builds=44 record-nodes=6412 record-rebinds=264 direct-spline-point-columns=0"
+        ],
+        "captureSha256": "685afa0d817db038c8ac6e05e882feed5f977d757f5c757bf14a87e4632ed197"
+      },
+      {
+        "case": "shortedge",
+        "side": "baseline",
+        "directory": "19-shortedge-baseline",
+        "originalExit": 2,
+        "gmMs": [
+          1240.2495,
+          511.8432,
+          472.4537
+        ],
+        "pkMs": [
+          2.079,
+          1.6483,
+          1.7798
+        ],
+        "profile": [
+          "PROFILE operation=FixBlends api-ms=1240.249 elapsed-ms=1234.098 pairs=0 ssi-cells=4956 root-cells=21063 roots=3136 budget-failures=0 winding=196 bound-requests=69028 bound-evaluations=42913 cache-hits=6885 failure-cache-hits=1463 bound-ms=581.689",
+          "PROFILE operation=FixBlends api-ms=511.843 elapsed-ms=511.707 pairs=0 ssi-cells=4956 root-cells=21063 roots=3136 budget-failures=0 winding=196 bound-requests=69028 bound-evaluations=42913 cache-hits=6885 failure-cache-hits=1463 bound-ms=297.836",
+          "PROFILE operation=FixBlends api-ms=472.454 elapsed-ms=472.387 pairs=0 ssi-cells=4956 root-cells=21063 roots=3136 budget-failures=0 winding=196 bound-requests=69028 bound-evaluations=42913 cache-hits=6885 failure-cache-hits=1463 bound-ms=306.300"
+        ],
+        "work": [
+          "WORK jacobians=18822 directions=122570 residual-directions=23094 record-builds=44 record-nodes=6412 record-rebinds=264 direct-spline-point-columns=0",
+          "WORK jacobians=18814 directions=122514 residual-directions=23086 record-builds=44 record-nodes=6412 record-rebinds=264 direct-spline-point-columns=0",
+          "WORK jacobians=18814 directions=122514 residual-directions=23086 record-builds=44 record-nodes=6412 record-rebinds=264 direct-spline-point-columns=0"
+        ],
+        "captureSha256": "6cf7962c6bfd3c6f500367de23761f8816281e086d1d1cbfff0b1b571d3cf84a"
+      }
+    ],
+    "binaries": [
+      {
+        "directory": "00-sphere-baseline",
+        "kind": "kernel",
+        "dllSha256": "f467bc2b50265aaec66fbaeea30af3e892e0206265cee7b2907b052c114f492c",
+        "mvid": "a01cccf4-89e7-495f-b217-fbda6c2e9761",
+        "matchedTrackedDocuments": 335,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "00-sphere-baseline",
+        "kind": "oracle",
+        "dllSha256": "889df368a78931eddfd1466a1d8ce8b9ea3dc7461ae024fec3ca27d1a27e4451",
+        "mvid": "d6f26ee6-0c68-4e83-94e5-f6d4914e01cd",
+        "matchedTrackedDocuments": 6,
+        "unmapped": [
+          "Using.cs",
+          "AnalyticBooleanOracle.cs.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "AnalyticBooleanOracle.cs.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "01-sphere-candidate",
+        "kind": "kernel",
+        "dllSha256": "f840039a1b300dd17ecc1d05469263b4166814638e4b626fd3833ec7f53667db",
+        "mvid": "62018b4e-94ed-4772-ab31-e4c6688e7c5f",
+        "matchedTrackedDocuments": 336,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "01-sphere-candidate",
+        "kind": "oracle",
+        "dllSha256": "61f59e398111f63603df4b50c15fe4ab7a3c5de9e8da7ac43501488d38d45136",
+        "mvid": "2978173f-ea65-4a5f-b03b-3b3584e9bb5b",
+        "matchedTrackedDocuments": 6,
+        "unmapped": [
+          "Using.cs",
+          "AnalyticBooleanOracle.cs.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "AnalyticBooleanOracle.cs.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "02-sphere-candidate",
+        "kind": "kernel",
+        "dllSha256": "f840039a1b300dd17ecc1d05469263b4166814638e4b626fd3833ec7f53667db",
+        "mvid": "62018b4e-94ed-4772-ab31-e4c6688e7c5f",
+        "matchedTrackedDocuments": 336,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "02-sphere-candidate",
+        "kind": "oracle",
+        "dllSha256": "61f59e398111f63603df4b50c15fe4ab7a3c5de9e8da7ac43501488d38d45136",
+        "mvid": "2978173f-ea65-4a5f-b03b-3b3584e9bb5b",
+        "matchedTrackedDocuments": 6,
+        "unmapped": [
+          "Using.cs",
+          "AnalyticBooleanOracle.cs.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "AnalyticBooleanOracle.cs.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "03-sphere-baseline",
+        "kind": "kernel",
+        "dllSha256": "f467bc2b50265aaec66fbaeea30af3e892e0206265cee7b2907b052c114f492c",
+        "mvid": "a01cccf4-89e7-495f-b217-fbda6c2e9761",
+        "matchedTrackedDocuments": 335,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "03-sphere-baseline",
+        "kind": "oracle",
+        "dllSha256": "889df368a78931eddfd1466a1d8ce8b9ea3dc7461ae024fec3ca27d1a27e4451",
+        "mvid": "d6f26ee6-0c68-4e83-94e5-f6d4914e01cd",
+        "matchedTrackedDocuments": 6,
+        "unmapped": [
+          "Using.cs",
+          "AnalyticBooleanOracle.cs.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "AnalyticBooleanOracle.cs.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "04-planar-baseline",
+        "kind": "kernel",
+        "dllSha256": "f467bc2b50265aaec66fbaeea30af3e892e0206265cee7b2907b052c114f492c",
+        "mvid": "a01cccf4-89e7-495f-b217-fbda6c2e9761",
+        "matchedTrackedDocuments": 335,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "04-planar-baseline",
+        "kind": "oracle",
+        "dllSha256": "0826f8265c8e08bbe59bbdf5d10002288e104c8488c764df270f1d88a540eb6c",
+        "mvid": "4cca8e7c-48b2-4faf-ab22-c3d9dc6ed870",
+        "matchedTrackedDocuments": 6,
+        "unmapped": [
+          "Using.cs",
+          "BooleanOperationOracle.cs.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "BooleanOperationOracle.cs.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "05-planar-candidate",
+        "kind": "kernel",
+        "dllSha256": "f840039a1b300dd17ecc1d05469263b4166814638e4b626fd3833ec7f53667db",
+        "mvid": "62018b4e-94ed-4772-ab31-e4c6688e7c5f",
+        "matchedTrackedDocuments": 336,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "05-planar-candidate",
+        "kind": "oracle",
+        "dllSha256": "4d8ea24ef40e9d418a6be50aa3b0c50c0a8b5d768b0ec0c163fc79fce825a5f3",
+        "mvid": "9eb10b95-d4c5-450c-bce2-34f7dd32b4c3",
+        "matchedTrackedDocuments": 6,
+        "unmapped": [
+          "Using.cs",
+          "BooleanOperationOracle.cs.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "BooleanOperationOracle.cs.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "06-planar-candidate",
+        "kind": "kernel",
+        "dllSha256": "f840039a1b300dd17ecc1d05469263b4166814638e4b626fd3833ec7f53667db",
+        "mvid": "62018b4e-94ed-4772-ab31-e4c6688e7c5f",
+        "matchedTrackedDocuments": 336,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "06-planar-candidate",
+        "kind": "oracle",
+        "dllSha256": "4d8ea24ef40e9d418a6be50aa3b0c50c0a8b5d768b0ec0c163fc79fce825a5f3",
+        "mvid": "9eb10b95-d4c5-450c-bce2-34f7dd32b4c3",
+        "matchedTrackedDocuments": 6,
+        "unmapped": [
+          "Using.cs",
+          "BooleanOperationOracle.cs.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "BooleanOperationOracle.cs.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "07-planar-baseline",
+        "kind": "kernel",
+        "dllSha256": "f467bc2b50265aaec66fbaeea30af3e892e0206265cee7b2907b052c114f492c",
+        "mvid": "a01cccf4-89e7-495f-b217-fbda6c2e9761",
+        "matchedTrackedDocuments": 335,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "07-planar-baseline",
+        "kind": "oracle",
+        "dllSha256": "0826f8265c8e08bbe59bbdf5d10002288e104c8488c764df270f1d88a540eb6c",
+        "mvid": "4cca8e7c-48b2-4faf-ab22-c3d9dc6ed870",
+        "matchedTrackedDocuments": 6,
+        "unmapped": [
+          "Using.cs",
+          "BooleanOperationOracle.cs.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "BooleanOperationOracle.cs.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "08-curved-baseline",
+        "kind": "kernel",
+        "dllSha256": "f467bc2b50265aaec66fbaeea30af3e892e0206265cee7b2907b052c114f492c",
+        "mvid": "a01cccf4-89e7-495f-b217-fbda6c2e9761",
+        "matchedTrackedDocuments": 335,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "08-curved-baseline",
+        "kind": "oracle",
+        "dllSha256": "d8eacbab6da0d125b013a6628a257a23b570ed4bc35082f5909f13bb9088bf20",
+        "mvid": "e358e834-530d-4c03-98a7-43c6d4916252",
+        "matchedTrackedDocuments": 6,
+        "unmapped": [
+          "Using.cs",
+          "RegularCurvedBooleanOracle.cs.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "RegularCurvedBooleanOracle.cs.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "09-curved-candidate",
+        "kind": "kernel",
+        "dllSha256": "f840039a1b300dd17ecc1d05469263b4166814638e4b626fd3833ec7f53667db",
+        "mvid": "62018b4e-94ed-4772-ab31-e4c6688e7c5f",
+        "matchedTrackedDocuments": 336,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "09-curved-candidate",
+        "kind": "oracle",
+        "dllSha256": "aa86d1f0e9d02837bd735c0a66406074781834af673ee3ac09c584da3d341d1d",
+        "mvid": "d667afe5-9e4e-4bee-a3c9-306ec7aef5a5",
+        "matchedTrackedDocuments": 6,
+        "unmapped": [
+          "Using.cs",
+          "RegularCurvedBooleanOracle.cs.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "RegularCurvedBooleanOracle.cs.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "10-curved-candidate",
+        "kind": "kernel",
+        "dllSha256": "f840039a1b300dd17ecc1d05469263b4166814638e4b626fd3833ec7f53667db",
+        "mvid": "62018b4e-94ed-4772-ab31-e4c6688e7c5f",
+        "matchedTrackedDocuments": 336,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "10-curved-candidate",
+        "kind": "oracle",
+        "dllSha256": "aa86d1f0e9d02837bd735c0a66406074781834af673ee3ac09c584da3d341d1d",
+        "mvid": "d667afe5-9e4e-4bee-a3c9-306ec7aef5a5",
+        "matchedTrackedDocuments": 6,
+        "unmapped": [
+          "Using.cs",
+          "RegularCurvedBooleanOracle.cs.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "RegularCurvedBooleanOracle.cs.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "11-curved-baseline",
+        "kind": "kernel",
+        "dllSha256": "f467bc2b50265aaec66fbaeea30af3e892e0206265cee7b2907b052c114f492c",
+        "mvid": "a01cccf4-89e7-495f-b217-fbda6c2e9761",
+        "matchedTrackedDocuments": 335,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "11-curved-baseline",
+        "kind": "oracle",
+        "dllSha256": "d8eacbab6da0d125b013a6628a257a23b570ed4bc35082f5909f13bb9088bf20",
+        "mvid": "e358e834-530d-4c03-98a7-43c6d4916252",
+        "matchedTrackedDocuments": 6,
+        "unmapped": [
+          "Using.cs",
+          "RegularCurvedBooleanOracle.cs.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "RegularCurvedBooleanOracle.cs.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "12-solidblend-baseline",
+        "kind": "kernel",
+        "dllSha256": "f467bc2b50265aaec66fbaeea30af3e892e0206265cee7b2907b052c114f492c",
+        "mvid": "a01cccf4-89e7-495f-b217-fbda6c2e9761",
+        "matchedTrackedDocuments": 335,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "12-solidblend-baseline",
+        "kind": "oracle",
+        "dllSha256": "24359dbcecb17d081484e97cb58ffe617b8d419f5351d69e2a7a603385467706",
+        "mvid": "20728e57-d28f-407d-8ce1-207efd13d77c",
+        "matchedTrackedDocuments": 6,
+        "unmapped": [
+          "Using.cs",
+          "RegularSolidBlendOracle.cs.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "RegularSolidBlendOracle.cs.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "13-solidblend-candidate",
+        "kind": "kernel",
+        "dllSha256": "f840039a1b300dd17ecc1d05469263b4166814638e4b626fd3833ec7f53667db",
+        "mvid": "62018b4e-94ed-4772-ab31-e4c6688e7c5f",
+        "matchedTrackedDocuments": 336,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "13-solidblend-candidate",
+        "kind": "oracle",
+        "dllSha256": "7839fb8439be5f71733c775963539f1dffc1705662f7b8a38806897e81b11e91",
+        "mvid": "a6011bad-30e0-4e61-8e13-e9c821c59c09",
+        "matchedTrackedDocuments": 6,
+        "unmapped": [
+          "Using.cs",
+          "RegularSolidBlendOracle.cs.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "RegularSolidBlendOracle.cs.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "14-solidblend-candidate",
+        "kind": "kernel",
+        "dllSha256": "f840039a1b300dd17ecc1d05469263b4166814638e4b626fd3833ec7f53667db",
+        "mvid": "62018b4e-94ed-4772-ab31-e4c6688e7c5f",
+        "matchedTrackedDocuments": 336,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "14-solidblend-candidate",
+        "kind": "oracle",
+        "dllSha256": "7839fb8439be5f71733c775963539f1dffc1705662f7b8a38806897e81b11e91",
+        "mvid": "a6011bad-30e0-4e61-8e13-e9c821c59c09",
+        "matchedTrackedDocuments": 6,
+        "unmapped": [
+          "Using.cs",
+          "RegularSolidBlendOracle.cs.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "RegularSolidBlendOracle.cs.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "15-solidblend-baseline",
+        "kind": "kernel",
+        "dllSha256": "f467bc2b50265aaec66fbaeea30af3e892e0206265cee7b2907b052c114f492c",
+        "mvid": "a01cccf4-89e7-495f-b217-fbda6c2e9761",
+        "matchedTrackedDocuments": 335,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "15-solidblend-baseline",
+        "kind": "oracle",
+        "dllSha256": "24359dbcecb17d081484e97cb58ffe617b8d419f5351d69e2a7a603385467706",
+        "mvid": "20728e57-d28f-407d-8ce1-207efd13d77c",
+        "matchedTrackedDocuments": 6,
+        "unmapped": [
+          "Using.cs",
+          "RegularSolidBlendOracle.cs.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "RegularSolidBlendOracle.cs.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "16-shortedge-baseline",
+        "kind": "kernel",
+        "dllSha256": "f467bc2b50265aaec66fbaeea30af3e892e0206265cee7b2907b052c114f492c",
+        "mvid": "a01cccf4-89e7-495f-b217-fbda6c2e9761",
+        "matchedTrackedDocuments": 335,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "16-shortedge-baseline",
+        "kind": "oracle",
+        "dllSha256": "cfababe99de21d36de89ab3c117e80ccb00ca3e097bd6afd3e9c026910cfd322",
+        "mvid": "a76d2d4b-cf27-4a04-9e75-96a6e200136f",
+        "matchedTrackedDocuments": 6,
+        "unmapped": [
+          "Using.cs",
+          "ShortEdgeBlendOracle.cs.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ShortEdgeBlendOracle.cs.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "17-shortedge-candidate",
+        "kind": "kernel",
+        "dllSha256": "f840039a1b300dd17ecc1d05469263b4166814638e4b626fd3833ec7f53667db",
+        "mvid": "62018b4e-94ed-4772-ab31-e4c6688e7c5f",
+        "matchedTrackedDocuments": 336,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "17-shortedge-candidate",
+        "kind": "oracle",
+        "dllSha256": "9ea522444ea8f6dd12f5f6b01565d143d596c80b5b817247fd0540891ff1bc2b",
+        "mvid": "d9824036-885d-4d10-806d-1f00afe56123",
+        "matchedTrackedDocuments": 6,
+        "unmapped": [
+          "Using.cs",
+          "ShortEdgeBlendOracle.cs.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ShortEdgeBlendOracle.cs.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "18-shortedge-candidate",
+        "kind": "kernel",
+        "dllSha256": "f840039a1b300dd17ecc1d05469263b4166814638e4b626fd3833ec7f53667db",
+        "mvid": "62018b4e-94ed-4772-ab31-e4c6688e7c5f",
+        "matchedTrackedDocuments": 336,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "18-shortedge-candidate",
+        "kind": "oracle",
+        "dllSha256": "9ea522444ea8f6dd12f5f6b01565d143d596c80b5b817247fd0540891ff1bc2b",
+        "mvid": "d9824036-885d-4d10-806d-1f00afe56123",
+        "matchedTrackedDocuments": 6,
+        "unmapped": [
+          "Using.cs",
+          "ShortEdgeBlendOracle.cs.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ShortEdgeBlendOracle.cs.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "19-shortedge-baseline",
+        "kind": "kernel",
+        "dllSha256": "f467bc2b50265aaec66fbaeea30af3e892e0206265cee7b2907b052c114f492c",
+        "mvid": "a01cccf4-89e7-495f-b217-fbda6c2e9761",
+        "matchedTrackedDocuments": 335,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "directory": "19-shortedge-baseline",
+        "kind": "oracle",
+        "dllSha256": "cfababe99de21d36de89ab3c117e80ccb00ca3e097bd6afd3e9c026910cfd322",
+        "mvid": "a76d2d4b-cf27-4a04-9e75-96a6e200136f",
+        "matchedTrackedDocuments": 6,
+        "unmapped": [
+          "Using.cs",
+          "ShortEdgeBlendOracle.cs.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ShortEdgeBlendOracle.cs.AssemblyInfo.cs"
+        ]
+      }
+    ],
+    "workAudit": {
+      "repetitions": 60,
+      "rootWorkLines": 96,
+      "prebuildRaw0": 10,
+      "loadMin": 4.52,
+      "loadMax": 6.35,
+      "modulusComponentsRecomputed": 1080
+    }
+  },
+  "controls": {
+    "scope": "Manufactured exact fields, finite consumers, cache isolation, real PK sealed products and native iso semantics; samples are controls, not continuous proofs",
+    "nativeMvid": "9175d859-be91-4a0b-b72a-267d42707b1e",
+    "nativeSha256": "78306a9ef6a92458a52e9f9aa34f01377a6215a89d24edb223627092c64ac633",
+    "graph": [
+      {
+        "newBounds": false,
+        "memo": false,
+        "nodes": 9,
+        "edges": 8,
+        "remaining": 32749,
+        "memoHits": 0,
+        "sectionBounds": 0
+      },
+      {
+        "newBounds": false,
+        "memo": true,
+        "nodes": 9,
+        "edges": 8,
+        "remaining": 32749,
+        "memoHits": 7,
+        "sectionBounds": 0
+      },
+      {
+        "newBounds": true,
+        "memo": false,
+        "nodes": 9,
+        "edges": 8,
+        "remaining": 32749,
+        "memoHits": 0,
+        "sectionBounds": 840
+      },
+      {
+        "newBounds": true,
+        "memo": true,
+        "nodes": 9,
+        "edges": 8,
+        "remaining": 32749,
+        "memoHits": 7,
+        "sectionBounds": 609
+      }
+    ],
+    "cache": {
+      "oneDimensionalKind": 5,
+      "cacheHits": 1,
+      "twoDimensionalSeparated": true,
+      "generationSenseTagSeparated": true
+    },
+    "manufactured": [
+      {
+        "angle": 1.5707963267948966,
+        "reverse": false,
+        "transformed": false,
+        "analyticObservations": 102
+      },
+      {
+        "angle": 1.5707963267948966,
+        "reverse": false,
+        "transformed": true,
+        "analyticObservations": 102
+      },
+      {
+        "angle": 1.5707963267948966,
+        "reverse": true,
+        "transformed": false,
+        "analyticObservations": 102
+      },
+      {
+        "angle": 1.5707963267948966,
+        "reverse": true,
+        "transformed": true,
+        "analyticObservations": 102
+      },
+      {
+        "angle": 0.001,
+        "reverse": false,
+        "transformed": false,
+        "analyticObservations": 102
+      },
+      {
+        "angle": 0.001,
+        "reverse": false,
+        "transformed": true,
+        "analyticObservations": 102
+      },
+      {
+        "angle": 0.001,
+        "reverse": true,
+        "transformed": false,
+        "analyticObservations": 102
+      },
+      {
+        "angle": 0.001,
+        "reverse": true,
+        "transformed": true,
+        "analyticObservations": 102
+      },
+      {
+        "angle": 0,
+        "reverse": false,
+        "transformed": false,
+        "analyticObservations": 102
+      },
+      {
+        "angle": 0,
+        "reverse": false,
+        "transformed": true,
+        "analyticObservations": 102
+      },
+      {
+        "angle": 0,
+        "reverse": true,
+        "transformed": false,
+        "analyticObservations": 102
+      },
+      {
+        "angle": 0,
+        "reverse": true,
+        "transformed": true,
+        "analyticObservations": 102
+      },
+      {
+        "angle": -1.0471975511965976,
+        "reverse": false,
+        "transformed": false,
+        "analyticObservations": 102
+      },
+      {
+        "angle": -1.0471975511965976,
+        "reverse": false,
+        "transformed": true,
+        "analyticObservations": 102
+      },
+      {
+        "angle": -1.0471975511965976,
+        "reverse": true,
+        "transformed": false,
+        "analyticObservations": 102
+      },
+      {
+        "angle": -1.0471975511965976,
+        "reverse": true,
+        "transformed": true,
+        "analyticObservations": 102
+      }
+    ],
+    "curvedCarrier": {
+      "type": "native periodic circle with sphere/plane supports",
+      "bothFreeDerivativesBitwise": true,
+      "analyticObservations": 34
+    },
+    "realPkVersion": "38.0.150",
+    "sealedProducts": [
+      {
+        "label": "quality/00-curved-candidate",
+        "referenceBody": 195,
+        "actualBody": 51,
+        "globalDiffs": [
+          {
+            "type": 21940,
+            "masters": 1,
+            "similars": 1
+          },
+          {
+            "type": 21941,
+            "masters": 9,
+            "similars": 9
+          },
+          {
+            "type": 21943,
+            "masters": 21,
+            "similars": 21
+          },
+          {
+            "type": 21944,
+            "masters": 0,
+            "similars": 0
+          },
+          {
+            "type": 21946,
+            "masters": 14,
+            "similars": 14
+          },
+          {
+            "type": 21947,
+            "masters": 0,
+            "similars": 0
+          }
+        ],
+        "localDiffs": [
+          {
+            "masterFace": 302,
+            "similarFace": 57,
+            "type": 21949,
+            "masterEntity": 242,
+            "similarEntity": 168,
+            "masterClass": 500,
+            "similarClass": 500,
+            "masterLogical": 0,
+            "similarLogical": 0,
+            "masterInt": 4,
+            "similarInt": 33,
+            "masterDouble": 0,
+            "similarDouble": 0,
+            "masterDoubleBits": "0000000000000000",
+            "similarDoubleBits": "0000000000000000",
+            "diagnostic": true
+          },
+          {
+            "masterFace": 302,
+            "similarFace": 57,
+            "type": 21949,
+            "masterEntity": 284,
+            "similarEntity": 169,
+            "masterClass": 500,
+            "similarClass": 500,
+            "masterLogical": 0,
+            "similarLogical": 0,
+            "masterInt": 4,
+            "similarInt": 33,
+            "masterDouble": 0,
+            "similarDouble": 0,
+            "masterDoubleBits": "0000000000000000",
+            "similarDoubleBits": "0000000000000000",
+            "diagnostic": true
+          },
+          {
+            "masterFace": 291,
+            "similarFace": 64,
+            "type": 21949,
+            "masterEntity": 242,
+            "similarEntity": 168,
+            "masterClass": 500,
+            "similarClass": 500,
+            "masterLogical": 0,
+            "similarLogical": 0,
+            "masterInt": 4,
+            "similarInt": 33,
+            "masterDouble": 0,
+            "similarDouble": 0,
+            "masterDoubleBits": "0000000000000000",
+            "similarDoubleBits": "0000000000000000",
+            "diagnostic": true
+          },
+          {
+            "masterFace": 288,
+            "similarFace": 63,
+            "type": 21949,
+            "masterEntity": 284,
+            "similarEntity": 169,
+            "masterClass": 500,
+            "similarClass": 500,
+            "masterLogical": 0,
+            "similarLogical": 0,
+            "masterInt": 4,
+            "similarInt": 33,
+            "masterDouble": 0,
+            "similarDouble": 0,
+            "masterDoubleBits": "0000000000000000",
+            "similarDoubleBits": "0000000000000000",
+            "diagnostic": true
+          }
+        ],
+        "facePairRecords": [
+          {
+            "masterFace": 302,
+            "similarFace": 57,
+            "localDiffCount": 2
+          },
+          {
+            "masterFace": 291,
+            "similarFace": 64,
+            "localDiffCount": 1
+          },
+          {
+            "masterFace": 288,
+            "similarFace": 63,
+            "localDiffCount": 1
+          }
+        ],
+        "referenceType": 5601,
+        "actualType": 5601,
+        "mask": {
+          "o_t_version": 1,
+          "max_diffs": 1024,
+          "all_tests": false,
+          "acc_dev_tests": false,
+          "tol_dev_tests": true,
+          "num_tests": true,
+          "class_tests": true,
+          "sense_tests": true,
+          "tol_tests": true,
+          "missing_tests": true,
+          "non_match_tests": true
+        },
+        "nativeError": 0,
+        "globalResult": 21921,
+        "localResult": 21930,
+        "facePairs": 3,
+        "status": "Verified",
+        "gmXtSha256": "e2175c978745f265fb8f61b5db92a18c81fe9f6a0541bc51b059bada0150eaff",
+        "pkXtSha256": "27ff529db5104ea6e0f33c3c2cf7820dd32458608644081a3fe1a0009f73b434",
+        "originalStep": 0
+      },
+      {
+        "label": "quality/01-solidblend-candidate",
+        "referenceBody": 462,
+        "actualBody": 339,
+        "globalDiffs": [
+          {
+            "type": 21940,
+            "masters": 1,
+            "similars": 1
+          },
+          {
+            "type": 21941,
+            "masters": 7,
+            "similars": 7
+          },
+          {
+            "type": 21943,
+            "masters": 15,
+            "similars": 15
+          },
+          {
+            "type": 21944,
+            "masters": 0,
+            "similars": 0
+          },
+          {
+            "type": 21946,
+            "masters": 10,
+            "similars": 10
+          },
+          {
+            "type": 21947,
+            "masters": 0,
+            "similars": 0
+          }
+        ],
+        "localDiffs": [
+          {
+            "masterFace": 535,
+            "similarFace": 345,
+            "type": 21949,
+            "masterEntity": 546,
+            "similarEntity": 427,
+            "masterClass": 500,
+            "similarClass": 500,
+            "masterLogical": 0,
+            "similarLogical": 0,
+            "masterInt": 5,
+            "similarInt": 27,
+            "masterDouble": 0,
+            "similarDouble": 0,
+            "masterDoubleBits": "0000000000000000",
+            "similarDoubleBits": "0000000000000000",
+            "diagnostic": true
+          },
+          {
+            "masterFace": 536,
+            "similarFace": 346,
+            "type": 21949,
+            "masterEntity": 524,
+            "similarEntity": 429,
+            "masterClass": 500,
+            "similarClass": 500,
+            "masterLogical": 0,
+            "similarLogical": 0,
+            "masterInt": 5,
+            "similarInt": 27,
+            "masterDouble": 0,
+            "similarDouble": 0,
+            "masterDoubleBits": "0000000000000000",
+            "similarDoubleBits": "0000000000000000",
+            "diagnostic": true
+          },
+          {
+            "masterFace": 530,
+            "similarFace": 350,
+            "type": 21949,
+            "masterEntity": 546,
+            "similarEntity": 427,
+            "masterClass": 500,
+            "similarClass": 500,
+            "masterLogical": 0,
+            "similarLogical": 0,
+            "masterInt": 5,
+            "similarInt": 27,
+            "masterDouble": 0,
+            "similarDouble": 0,
+            "masterDoubleBits": "0000000000000000",
+            "similarDoubleBits": "0000000000000000",
+            "diagnostic": true
+          },
+          {
+            "masterFace": 530,
+            "similarFace": 350,
+            "type": 21949,
+            "masterEntity": 524,
+            "similarEntity": 429,
+            "masterClass": 500,
+            "similarClass": 500,
+            "masterLogical": 0,
+            "similarLogical": 0,
+            "masterInt": 5,
+            "similarInt": 27,
+            "masterDouble": 0,
+            "similarDouble": 0,
+            "masterDoubleBits": "0000000000000000",
+            "similarDoubleBits": "0000000000000000",
+            "diagnostic": true
+          }
+        ],
+        "facePairRecords": [
+          {
+            "masterFace": 535,
+            "similarFace": 345,
+            "localDiffCount": 1
+          },
+          {
+            "masterFace": 536,
+            "similarFace": 346,
+            "localDiffCount": 1
+          },
+          {
+            "masterFace": 530,
+            "similarFace": 350,
+            "localDiffCount": 2
+          }
+        ],
+        "referenceType": 5601,
+        "actualType": 5601,
+        "mask": {
+          "o_t_version": 1,
+          "max_diffs": 1024,
+          "all_tests": false,
+          "acc_dev_tests": false,
+          "tol_dev_tests": true,
+          "num_tests": true,
+          "class_tests": true,
+          "sense_tests": true,
+          "tol_tests": true,
+          "missing_tests": true,
+          "non_match_tests": true
+        },
+        "nativeError": 0,
+        "globalResult": 21921,
+        "localResult": 21930,
+        "facePairs": 3,
+        "status": "Verified",
+        "gmXtSha256": "a0124e947773a09ab592c7dda92a0147c34b50f8e3e06cd5519541cf753f1b42",
+        "pkXtSha256": "1f37d48acee672430a170bb650e27ac3f288da96d8fb837d9bc328a605722146",
+        "originalStep": 0
+      },
+      {
+        "label": "active-shortedge-lifecycle-capture",
+        "referenceBody": 731,
+        "actualBody": 571,
+        "globalDiffs": [
+          {
+            "type": 21940,
+            "masters": 1,
+            "similars": 1
+          },
+          {
+            "type": 21941,
+            "masters": 10,
+            "similars": 10
+          },
+          {
+            "type": 21943,
+            "masters": 23,
+            "similars": 23
+          },
+          {
+            "type": 21944,
+            "masters": 0,
+            "similars": 0
+          },
+          {
+            "type": 21946,
+            "masters": 15,
+            "similars": 15
+          },
+          {
+            "type": 21947,
+            "masters": 0,
+            "similars": 0
+          }
+        ],
+        "localDiffs": [],
+        "facePairRecords": [],
+        "referenceType": 5601,
+        "actualType": 5601,
+        "mask": {
+          "o_t_version": 1,
+          "max_diffs": 1024,
+          "all_tests": false,
+          "acc_dev_tests": false,
+          "tol_dev_tests": true,
+          "num_tests": true,
+          "class_tests": true,
+          "sense_tests": true,
+          "tol_tests": true,
+          "missing_tests": true,
+          "non_match_tests": true
+        },
+        "nativeError": 0,
+        "globalResult": 21921,
+        "localResult": 21931,
+        "facePairs": 0,
+        "status": "Verified",
+        "gmXtSha256": "a16c3a536cdee80f5109f33e6bf7605d3d1ef06dc2a1277f27b2ea5eed2467c9",
+        "pkXtSha256": "a7a6e660ae68bff4a7d7973a3357426b26955671984e69a46562593d563c6000",
+        "originalStep": 4
+      }
+    ],
+    "realNativeIso": [
+      {
+        "source": "GM sealed",
+        "axisConstant": 0,
+        "at": 7.063069996185025,
+        "returnedFirst": 0,
+        "returnedLast": 1,
+        "maxPositionResidual": 0,
+        "maxDerivativeResidual": 0
+      },
+      {
+        "source": "GM sealed",
+        "axisConstant": 1,
+        "at": 0.5,
+        "returnedFirst": 4.71238898038469,
+        "returnedLast": 7.853981633974483,
+        "maxPositionResidual": 1.3322676295501878E-15,
+        "maxDerivativeResidual": 3.7675062959647363E-16
+      },
+      {
+        "source": "PK independent sealed",
+        "axisConstant": 0,
+        "at": 2.36170813331858,
+        "returnedFirst": 0,
+        "returnedLast": 1,
+        "maxPositionResidual": 0,
+        "maxDerivativeResidual": 0
+      },
+      {
+        "source": "PK independent sealed",
+        "axisConstant": 1,
+        "at": 0.5,
+        "returnedFirst": 1.5707963267948954,
+        "returnedLast": 4.7123889803846915,
+        "maxPositionResidual": 0,
+        "maxDerivativeResidual": 3.3306690738754696E-16
+      }
+    ]
+  },
+  "q2Focused": {
+    "rawExit": 0,
+    "passed": 81,
+    "total": 81,
+    "trxSha256": "15ca8eae177b815d9c73807eb76ca5faeba870f68df8f8e2241789ca5708ae91"
+  },
+  "q2Consumer": {
+    "rawExit": 2,
+    "checks": {
+      "pass": 16,
+      "missing": 13
+    },
+    "captureSha256": "2e173e7b8c5f11bd11f13d53784f59fbe0dcd687916ed74156a836dcefb655ee",
+    "actualLoadedIdentity": {
+      "calculationCommit": "b8c74b95047577e52d1086b48b0b0a88ee3f4388",
+      "captureCommit": "b8c74b95047577e52d1086b48b0b0a88ee3f4388",
+      "captureSourceFileSha256": "23824249e5d099b832bc4988390baee1cb3d9d652bcf29310e5a66843af9fbfa",
+      "bodyCompareSourceFileSha256": "2ef5f2ff029fd3a6f800ca11f51308b387ea53e5af3557513a283d5d9d192987",
+      "massSourceFileSha256": "1afc2dd45201d1244228c1a8b4658c8ffa35b3f988a9f12b46d62a228930279d",
+      "loadedFileAppAssemblySha256": "2ea772ebfcaf74d1190cbb1296e4b17995bbfdd19b6f7e3b54ad79217ed50e6e",
+      "loadedKernelAssemblySha256": "eeb7b107812cd11e06043845ab03410e2b0dff1f65d08e3ccf90f1f0c50fde3c",
+      "kernelMvid": "4016fd35-ee17-4688-9d72-9c3899f5ae55",
+      "kernelDllSha256": "eeb7b107812cd11e06043845ab03410e2b0dff1f65d08e3ccf90f1f0c50fde3c",
+      "kernelPdbSha256": "4802fe699c2c0b4f3113a6f88f844c9b1ed30fe758ed5c227b2857e69f709c73",
+      "oracleMvid": "9e90e5df-6180-4f5c-9f4f-c7ece1753607",
+      "oracleDllSha256": "2ea772ebfcaf74d1190cbb1296e4b17995bbfdd19b6f7e3b54ad79217ed50e6e",
+      "oraclePdbSha256": "024d788bd52284b9897572bc72c7a400a73b57d4efff224c182e21431f42368e"
+    },
+    "scope": "one Linux current-source consumer, excluded from original Mac timing window"
+  },
+  "originalReportSha256": "6cedd40434fa16b26d4badd90a7e984ae6d2a1bcc8fc0d58c831e54304bbe7ea",
+  "originalMaterialSha256": "f31d2f751cdff6c82b8454076f0c61794a7b3757198c4c5bea781c194b3d7f61",
+  "finalXtFiles": [
+    {
+      "path": "temp_docs/isoparam-controlled/window/00-sphere-baseline/products/equal-overlap-15902-0-reference.x_t",
+      "sha256": "83ef0af850c509ea041e0fcf2cf3bc0a0a56b60a5d13c9b10800a6bf890a9407",
+      "source": "fef52f3252bfe9a345f1a2872e9b6f96bdcafccd",
+      "role": "PK reference product",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/00-sphere-baseline/products/equal-overlap-15902-0-managed.x_t",
+      "sha256": "7043b4bfa23bded3c2605483a359e9a736d59261fed5fd3a5f4449ca229a702b",
+      "source": "fef52f3252bfe9a345f1a2872e9b6f96bdcafccd",
+      "role": "GM product",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/01-sphere-candidate/products/equal-overlap-15902-0-reference.x_t",
+      "sha256": "83ef0af850c509ea041e0fcf2cf3bc0a0a56b60a5d13c9b10800a6bf890a9407",
+      "source": "ad79d2d4c6b59a81be423de4faf1745ea62cb318",
+      "role": "PK reference product",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/01-sphere-candidate/products/equal-overlap-15902-0-managed.x_t",
+      "sha256": "7043b4bfa23bded3c2605483a359e9a736d59261fed5fd3a5f4449ca229a702b",
+      "source": "ad79d2d4c6b59a81be423de4faf1745ea62cb318",
+      "role": "GM product",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/02-sphere-candidate/products/equal-overlap-15902-0-reference.x_t",
+      "sha256": "83ef0af850c509ea041e0fcf2cf3bc0a0a56b60a5d13c9b10800a6bf890a9407",
+      "source": "ad79d2d4c6b59a81be423de4faf1745ea62cb318",
+      "role": "PK reference product",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/02-sphere-candidate/products/equal-overlap-15902-0-managed.x_t",
+      "sha256": "7043b4bfa23bded3c2605483a359e9a736d59261fed5fd3a5f4449ca229a702b",
+      "source": "ad79d2d4c6b59a81be423de4faf1745ea62cb318",
+      "role": "GM product",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/03-sphere-baseline/products/equal-overlap-15902-0-reference.x_t",
+      "sha256": "83ef0af850c509ea041e0fcf2cf3bc0a0a56b60a5d13c9b10800a6bf890a9407",
+      "source": "fef52f3252bfe9a345f1a2872e9b6f96bdcafccd",
+      "role": "PK reference product",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/03-sphere-baseline/products/equal-overlap-15902-0-managed.x_t",
+      "sha256": "7043b4bfa23bded3c2605483a359e9a736d59261fed5fd3a5f4449ca229a702b",
+      "source": "fef52f3252bfe9a345f1a2872e9b6f96bdcafccd",
+      "role": "GM product",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/04-planar-baseline/products/overlap-two-axes-15902-0-reference.x_t",
+      "sha256": "8e6510827c62a076a52f849dadb5c6c382dab66d83ce5c17f8afab8a84a558b6",
+      "source": "fef52f3252bfe9a345f1a2872e9b6f96bdcafccd",
+      "role": "PK reference product",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/04-planar-baseline/products/overlap-two-axes-15902-0-managed.x_t",
+      "sha256": "2f9e15f719acf50a6dfd740c7722ef8db11d631ec964a2fbd36eeb56f22cf1ac",
+      "source": "fef52f3252bfe9a345f1a2872e9b6f96bdcafccd",
+      "role": "GM product",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/05-planar-candidate/products/overlap-two-axes-15902-0-reference.x_t",
+      "sha256": "8e6510827c62a076a52f849dadb5c6c382dab66d83ce5c17f8afab8a84a558b6",
+      "source": "ad79d2d4c6b59a81be423de4faf1745ea62cb318",
+      "role": "PK reference product",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/05-planar-candidate/products/overlap-two-axes-15902-0-managed.x_t",
+      "sha256": "2f9e15f719acf50a6dfd740c7722ef8db11d631ec964a2fbd36eeb56f22cf1ac",
+      "source": "ad79d2d4c6b59a81be423de4faf1745ea62cb318",
+      "role": "GM product",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/06-planar-candidate/products/overlap-two-axes-15902-0-reference.x_t",
+      "sha256": "8e6510827c62a076a52f849dadb5c6c382dab66d83ce5c17f8afab8a84a558b6",
+      "source": "ad79d2d4c6b59a81be423de4faf1745ea62cb318",
+      "role": "PK reference product",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/06-planar-candidate/products/overlap-two-axes-15902-0-managed.x_t",
+      "sha256": "2f9e15f719acf50a6dfd740c7722ef8db11d631ec964a2fbd36eeb56f22cf1ac",
+      "source": "ad79d2d4c6b59a81be423de4faf1745ea62cb318",
+      "role": "GM product",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/07-planar-baseline/products/overlap-two-axes-15902-0-reference.x_t",
+      "sha256": "8e6510827c62a076a52f849dadb5c6c382dab66d83ce5c17f8afab8a84a558b6",
+      "source": "fef52f3252bfe9a345f1a2872e9b6f96bdcafccd",
+      "role": "PK reference product",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/07-planar-baseline/products/overlap-two-axes-15902-0-managed.x_t",
+      "sha256": "2f9e15f719acf50a6dfd740c7722ef8db11d631ec964a2fbd36eeb56f22cf1ac",
+      "source": "fef52f3252bfe9a345f1a2872e9b6f96bdcafccd",
+      "role": "GM product",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/08-curved-baseline/products/block-15902-gm-target-before.x_t",
+      "sha256": "7126d7ecbf2faef432d83ba3dbf5fa4a5b44305c2dafde3f1d568550e264d6f9",
+      "source": "fef52f3252bfe9a345f1a2872e9b6f96bdcafccd",
+      "role": "GM before input",
+      "repetition": null
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/08-curved-baseline/products/block-15902-pk-target-before.x_t",
+      "sha256": "e5a88f05567aef4bb6cd372b7b2a28252e7006cf43d4d05fd0d93e5606ca00b1",
+      "source": "fef52f3252bfe9a345f1a2872e9b6f96bdcafccd",
+      "role": "PK before input",
+      "repetition": null
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/08-curved-baseline/products/block-15902-0-native.x_t",
+      "sha256": "dcca213ad214d4f1471c274f3d552ec20a2699f582fa85605d8d85bcfbbd733a",
+      "source": "fef52f3252bfe9a345f1a2872e9b6f96bdcafccd",
+      "role": "PK reference product",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/08-curved-baseline/products/block-15902-pk-tool1-before.x_t",
+      "sha256": "c530dd2aa4026a6add64b5f22d5784dc95e0b4baf4bb43b1262cdeaa9a35fd24",
+      "source": "fef52f3252bfe9a345f1a2872e9b6f96bdcafccd",
+      "role": "PK before input",
+      "repetition": null
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/08-curved-baseline/products/block-15902-gm-tool1-before.x_t",
+      "sha256": "f2105af378e1820dbc06dce8baf47b5f4d252b2df5f68224a75baac097d91009",
+      "source": "fef52f3252bfe9a345f1a2872e9b6f96bdcafccd",
+      "role": "GM before input",
+      "repetition": null
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/08-curved-baseline/products/block-15902-0.x_t",
+      "sha256": "06bf15b755ce844303bd634076d79702fae93663cfd008b23b4e1da38983b86d",
+      "source": "fef52f3252bfe9a345f1a2872e9b6f96bdcafccd",
+      "role": "GM product",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/09-curved-candidate/products/block-15902-gm-target-before.x_t",
+      "sha256": "7126d7ecbf2faef432d83ba3dbf5fa4a5b44305c2dafde3f1d568550e264d6f9",
+      "source": "ad79d2d4c6b59a81be423de4faf1745ea62cb318",
+      "role": "GM before input",
+      "repetition": null
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/09-curved-candidate/products/block-15902-pk-target-before.x_t",
+      "sha256": "e5a88f05567aef4bb6cd372b7b2a28252e7006cf43d4d05fd0d93e5606ca00b1",
+      "source": "ad79d2d4c6b59a81be423de4faf1745ea62cb318",
+      "role": "PK before input",
+      "repetition": null
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/09-curved-candidate/products/block-15902-0-native.x_t",
+      "sha256": "dcca213ad214d4f1471c274f3d552ec20a2699f582fa85605d8d85bcfbbd733a",
+      "source": "ad79d2d4c6b59a81be423de4faf1745ea62cb318",
+      "role": "PK reference product",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/09-curved-candidate/products/block-15902-pk-tool1-before.x_t",
+      "sha256": "c530dd2aa4026a6add64b5f22d5784dc95e0b4baf4bb43b1262cdeaa9a35fd24",
+      "source": "ad79d2d4c6b59a81be423de4faf1745ea62cb318",
+      "role": "PK before input",
+      "repetition": null
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/09-curved-candidate/products/block-15902-gm-tool1-before.x_t",
+      "sha256": "f2105af378e1820dbc06dce8baf47b5f4d252b2df5f68224a75baac097d91009",
+      "source": "ad79d2d4c6b59a81be423de4faf1745ea62cb318",
+      "role": "GM before input",
+      "repetition": null
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/09-curved-candidate/products/block-15902-0.x_t",
+      "sha256": "06bf15b755ce844303bd634076d79702fae93663cfd008b23b4e1da38983b86d",
+      "source": "ad79d2d4c6b59a81be423de4faf1745ea62cb318",
+      "role": "GM product",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/10-curved-candidate/products/block-15902-gm-target-before.x_t",
+      "sha256": "7126d7ecbf2faef432d83ba3dbf5fa4a5b44305c2dafde3f1d568550e264d6f9",
+      "source": "ad79d2d4c6b59a81be423de4faf1745ea62cb318",
+      "role": "GM before input",
+      "repetition": null
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/10-curved-candidate/products/block-15902-pk-target-before.x_t",
+      "sha256": "e5a88f05567aef4bb6cd372b7b2a28252e7006cf43d4d05fd0d93e5606ca00b1",
+      "source": "ad79d2d4c6b59a81be423de4faf1745ea62cb318",
+      "role": "PK before input",
+      "repetition": null
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/10-curved-candidate/products/block-15902-0-native.x_t",
+      "sha256": "dcca213ad214d4f1471c274f3d552ec20a2699f582fa85605d8d85bcfbbd733a",
+      "source": "ad79d2d4c6b59a81be423de4faf1745ea62cb318",
+      "role": "PK reference product",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/10-curved-candidate/products/block-15902-pk-tool1-before.x_t",
+      "sha256": "c530dd2aa4026a6add64b5f22d5784dc95e0b4baf4bb43b1262cdeaa9a35fd24",
+      "source": "ad79d2d4c6b59a81be423de4faf1745ea62cb318",
+      "role": "PK before input",
+      "repetition": null
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/10-curved-candidate/products/block-15902-gm-tool1-before.x_t",
+      "sha256": "f2105af378e1820dbc06dce8baf47b5f4d252b2df5f68224a75baac097d91009",
+      "source": "ad79d2d4c6b59a81be423de4faf1745ea62cb318",
+      "role": "GM before input",
+      "repetition": null
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/10-curved-candidate/products/block-15902-0.x_t",
+      "sha256": "06bf15b755ce844303bd634076d79702fae93663cfd008b23b4e1da38983b86d",
+      "source": "ad79d2d4c6b59a81be423de4faf1745ea62cb318",
+      "role": "GM product",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/11-curved-baseline/products/block-15902-gm-target-before.x_t",
+      "sha256": "7126d7ecbf2faef432d83ba3dbf5fa4a5b44305c2dafde3f1d568550e264d6f9",
+      "source": "fef52f3252bfe9a345f1a2872e9b6f96bdcafccd",
+      "role": "GM before input",
+      "repetition": null
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/11-curved-baseline/products/block-15902-pk-target-before.x_t",
+      "sha256": "e5a88f05567aef4bb6cd372b7b2a28252e7006cf43d4d05fd0d93e5606ca00b1",
+      "source": "fef52f3252bfe9a345f1a2872e9b6f96bdcafccd",
+      "role": "PK before input",
+      "repetition": null
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/11-curved-baseline/products/block-15902-0-native.x_t",
+      "sha256": "dcca213ad214d4f1471c274f3d552ec20a2699f582fa85605d8d85bcfbbd733a",
+      "source": "fef52f3252bfe9a345f1a2872e9b6f96bdcafccd",
+      "role": "PK reference product",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/11-curved-baseline/products/block-15902-pk-tool1-before.x_t",
+      "sha256": "c530dd2aa4026a6add64b5f22d5784dc95e0b4baf4bb43b1262cdeaa9a35fd24",
+      "source": "fef52f3252bfe9a345f1a2872e9b6f96bdcafccd",
+      "role": "PK before input",
+      "repetition": null
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/11-curved-baseline/products/block-15902-gm-tool1-before.x_t",
+      "sha256": "f2105af378e1820dbc06dce8baf47b5f4d252b2df5f68224a75baac097d91009",
+      "source": "fef52f3252bfe9a345f1a2872e9b6f96bdcafccd",
+      "role": "GM before input",
+      "repetition": null
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/11-curved-baseline/products/block-15902-0.x_t",
+      "sha256": "06bf15b755ce844303bd634076d79702fae93663cfd008b23b4e1da38983b86d",
+      "source": "fef52f3252bfe9a345f1a2872e9b6f96bdcafccd",
+      "role": "GM product",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/12-solidblend-baseline/products/plane-nurbs-fillet.x_t",
+      "sha256": "c3bf85af219f8a80477cec7c5245ad0128f8cecaf3832ead278f5c898a5deb73",
+      "source": "fef52f3252bfe9a345f1a2872e9b6f96bdcafccd",
+      "role": "GM product",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/13-solidblend-candidate/products/plane-nurbs-fillet.x_t",
+      "sha256": "c3bf85af219f8a80477cec7c5245ad0128f8cecaf3832ead278f5c898a5deb73",
+      "source": "ad79d2d4c6b59a81be423de4faf1745ea62cb318",
+      "role": "GM product",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/14-solidblend-candidate/products/plane-nurbs-fillet.x_t",
+      "sha256": "c3bf85af219f8a80477cec7c5245ad0128f8cecaf3832ead278f5c898a5deb73",
+      "source": "ad79d2d4c6b59a81be423de4faf1745ea62cb318",
+      "role": "GM product",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/15-solidblend-baseline/products/plane-nurbs-fillet.x_t",
+      "sha256": "c3bf85af219f8a80477cec7c5245ad0128f8cecaf3832ead278f5c898a5deb73",
+      "source": "fef52f3252bfe9a345f1a2872e9b6f96bdcafccd",
+      "role": "GM product",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/16-shortedge-baseline/products/a1-r0.5-t1E-07-reverseFalse-default-input-fresh.x_t",
+      "sha256": "4f1bbeecd440662f01321103c93a529973fce0b69c77dc97f22533a58e20093a",
+      "source": "fef52f3252bfe9a345f1a2872e9b6f96bdcafccd",
+      "role": "GM received fresh input",
+      "repetition": null
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/16-shortedge-baseline/products/a1-r0.5-t1E-07-reverseFalse-default-native.x_t",
+      "sha256": "b1b0028feca8fd51e0b4b5615d4c34ad81adbee43648dd6c5e320ef9af464655",
+      "source": "fef52f3252bfe9a345f1a2872e9b6f96bdcafccd",
+      "role": "PK reference product",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/16-shortedge-baseline/products/a1-r0.5-t1E-07-reverseFalse-default-input.x_t",
+      "sha256": "262963ce0b899972272970ace0eff5da8b9161dbf007bd01f20a9d3037a8d1a2",
+      "source": "fef52f3252bfe9a345f1a2872e9b6f96bdcafccd",
+      "role": "PK seed",
+      "repetition": null
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/16-shortedge-baseline/products/a1-r0.5-t1E-07-reverseFalse-default-native-fresh.x_t",
+      "sha256": "f40cb59d40da89562198984850ed47910d6dac25f51c76342c9fd865bc3b5da3",
+      "source": "fef52f3252bfe9a345f1a2872e9b6f96bdcafccd",
+      "role": "PK product received/re-exported by GM",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/16-shortedge-baseline/products/a1-r0.5-t1E-07-reverseFalse-default-self.x_t",
+      "sha256": "37ac232e62340c29f4f6ba94807775b7d39ba3a64d445c75791499c1a811b0ba",
+      "source": "fef52f3252bfe9a345f1a2872e9b6f96bdcafccd",
+      "role": "GM product",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/17-shortedge-candidate/products/a1-r0.5-t1E-07-reverseFalse-default-input-fresh.x_t",
+      "sha256": "4f1bbeecd440662f01321103c93a529973fce0b69c77dc97f22533a58e20093a",
+      "source": "ad79d2d4c6b59a81be423de4faf1745ea62cb318",
+      "role": "GM received fresh input",
+      "repetition": null
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/17-shortedge-candidate/products/a1-r0.5-t1E-07-reverseFalse-default-native.x_t",
+      "sha256": "b1b0028feca8fd51e0b4b5615d4c34ad81adbee43648dd6c5e320ef9af464655",
+      "source": "ad79d2d4c6b59a81be423de4faf1745ea62cb318",
+      "role": "PK reference product",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/17-shortedge-candidate/products/a1-r0.5-t1E-07-reverseFalse-default-input.x_t",
+      "sha256": "262963ce0b899972272970ace0eff5da8b9161dbf007bd01f20a9d3037a8d1a2",
+      "source": "ad79d2d4c6b59a81be423de4faf1745ea62cb318",
+      "role": "PK seed",
+      "repetition": null
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/17-shortedge-candidate/products/a1-r0.5-t1E-07-reverseFalse-default-native-fresh.x_t",
+      "sha256": "f40cb59d40da89562198984850ed47910d6dac25f51c76342c9fd865bc3b5da3",
+      "source": "ad79d2d4c6b59a81be423de4faf1745ea62cb318",
+      "role": "PK product received/re-exported by GM",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/17-shortedge-candidate/products/a1-r0.5-t1E-07-reverseFalse-default-self.x_t",
+      "sha256": "37ac232e62340c29f4f6ba94807775b7d39ba3a64d445c75791499c1a811b0ba",
+      "source": "ad79d2d4c6b59a81be423de4faf1745ea62cb318",
+      "role": "GM product",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/18-shortedge-candidate/products/a1-r0.5-t1E-07-reverseFalse-default-input-fresh.x_t",
+      "sha256": "4f1bbeecd440662f01321103c93a529973fce0b69c77dc97f22533a58e20093a",
+      "source": "ad79d2d4c6b59a81be423de4faf1745ea62cb318",
+      "role": "GM received fresh input",
+      "repetition": null
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/18-shortedge-candidate/products/a1-r0.5-t1E-07-reverseFalse-default-native.x_t",
+      "sha256": "b1b0028feca8fd51e0b4b5615d4c34ad81adbee43648dd6c5e320ef9af464655",
+      "source": "ad79d2d4c6b59a81be423de4faf1745ea62cb318",
+      "role": "PK reference product",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/18-shortedge-candidate/products/a1-r0.5-t1E-07-reverseFalse-default-input.x_t",
+      "sha256": "262963ce0b899972272970ace0eff5da8b9161dbf007bd01f20a9d3037a8d1a2",
+      "source": "ad79d2d4c6b59a81be423de4faf1745ea62cb318",
+      "role": "PK seed",
+      "repetition": null
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/18-shortedge-candidate/products/a1-r0.5-t1E-07-reverseFalse-default-native-fresh.x_t",
+      "sha256": "f40cb59d40da89562198984850ed47910d6dac25f51c76342c9fd865bc3b5da3",
+      "source": "ad79d2d4c6b59a81be423de4faf1745ea62cb318",
+      "role": "PK product received/re-exported by GM",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/18-shortedge-candidate/products/a1-r0.5-t1E-07-reverseFalse-default-self.x_t",
+      "sha256": "37ac232e62340c29f4f6ba94807775b7d39ba3a64d445c75791499c1a811b0ba",
+      "source": "ad79d2d4c6b59a81be423de4faf1745ea62cb318",
+      "role": "GM product",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/19-shortedge-baseline/products/a1-r0.5-t1E-07-reverseFalse-default-input-fresh.x_t",
+      "sha256": "4f1bbeecd440662f01321103c93a529973fce0b69c77dc97f22533a58e20093a",
+      "source": "fef52f3252bfe9a345f1a2872e9b6f96bdcafccd",
+      "role": "GM received fresh input",
+      "repetition": null
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/19-shortedge-baseline/products/a1-r0.5-t1E-07-reverseFalse-default-native.x_t",
+      "sha256": "b1b0028feca8fd51e0b4b5615d4c34ad81adbee43648dd6c5e320ef9af464655",
+      "source": "fef52f3252bfe9a345f1a2872e9b6f96bdcafccd",
+      "role": "PK reference product",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/19-shortedge-baseline/products/a1-r0.5-t1E-07-reverseFalse-default-input.x_t",
+      "sha256": "262963ce0b899972272970ace0eff5da8b9161dbf007bd01f20a9d3037a8d1a2",
+      "source": "fef52f3252bfe9a345f1a2872e9b6f96bdcafccd",
+      "role": "PK seed",
+      "repetition": null
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/19-shortedge-baseline/products/a1-r0.5-t1E-07-reverseFalse-default-native-fresh.x_t",
+      "sha256": "f40cb59d40da89562198984850ed47910d6dac25f51c76342c9fd865bc3b5da3",
+      "source": "fef52f3252bfe9a345f1a2872e9b6f96bdcafccd",
+      "role": "PK product received/re-exported by GM",
+      "repetition": 2
+    },
+    {
+      "path": "temp_docs/isoparam-controlled/window/19-shortedge-baseline/products/a1-r0.5-t1E-07-reverseFalse-default-self.x_t",
+      "sha256": "37ac232e62340c29f4f6ba94807775b7d39ba3a64d445c75791499c1a811b0ba",
+      "source": "fef52f3252bfe9a345f1a2872e9b6f96bdcafccd",
+      "role": "GM product",
+      "repetition": 2
+    }
+  ],
+  "originalQualityShortedgeFinalRep": 5,
+  "sealedQualityManifestRows": 528,
+  "researchCopyFiles": 12,
+  "executions": [
+    {
+      "path": "temp_docs/isoparam-review-extract-01.log",
+      "sha256": "b3717365bd423adc81cb72eb4e5fe5105f0235ab795bbeb4ec79fb61e6e6d6f6",
+      "observedProcessExit": 1
+    },
+    {
+      "path": "temp_docs/isoparam-review-extract-02.log",
+      "sha256": "e5bb51128a52d7309e03f211913b8aec54e69fbc12adee630ce22e73bcbcd937",
+      "observedProcessExit": 0
+    },
+    {
+      "path": "temp_docs/isoparam-review-quality-01.log",
+      "sha256": "7dc931b65a8111ed7ca3fc84a5f8f85540fd7ef267512378d070f228737f002d",
+      "observedProcessExit": 134
+    },
+    {
+      "path": "temp_docs/isoparam-review-quality-02.log",
+      "sha256": "f35bfa1bd6fb36eb58a8a53838d38cde0d63e38fa57753784179901c8f9d34d3",
+      "observedProcessExit": 0
+    },
+    {
+      "path": "temp_docs/isoparam-review-measurement-01.log",
+      "sha256": "38b0e5ab01e03774ba8704b804da52be37e55e8d443c184b161a18deea86fba0",
+      "observedProcessExit": 0
+    },
+    {
+      "path": "temp_docs/isoparam-review-bindings-01.log",
+      "sha256": "8cae87331dd85ba75a008b1d9714d17d9bf037d425a69990a78aa253fe13d138",
+      "observedProcessExit": 0
+    },
+    {
+      "path": "temp_docs/isoparam-review-controls-01.log",
+      "sha256": "64330812d07a738d4d1faaf56d8c9caed58a0d57e2ba9762797751ce067abc79",
+      "observedProcessExit": 134
+    },
+    {
+      "path": "temp_docs/isoparam-review-controls-02.log",
+      "sha256": "518d0b6233ae7e7c25f2d5e1540600d3d69d684521d4604e4ab7ee478e93b618",
+      "observedProcessExit": 0
+    },
+    {
+      "path": "temp_docs/isoparam-review-focused-driver.log",
+      "sha256": "304b1a94162f8a58fabaf50a92d7a5e115779b7ecf93878c2c32e6fe2e7203e0",
+      "observedProcessExit": 0
+    },
+    {
+      "path": "temp_docs/isoparam-review-consumer-driver.log",
+      "sha256": "97ac6786be51546dc17a918a50e7391a99c340461385f7554f962eb4358b7ddb",
+      "observedProcessExit": 2
+    },
+    {
+      "path": "temp_docs/isoparam-review-receipt-01.log",
+      "sha256": "180212642e751cdec71acbd8e61854f445da43d7d7ffac2b61d859daabefc1ff",
+      "observedProcessExit": 1
+    },
+    {
+      "path": "temp_docs/isoparam-review-receipt-02.log",
+      "sha256": "f869d64d0668d9214d50e835c965c33eadc889dd31f5e208aca29160265f223e",
+      "observedProcessExit": 134
+    }
+  ]
+}
