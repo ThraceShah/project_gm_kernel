@@ -86,7 +86,7 @@ public unsafe class RollingBlendContinuationTests:IDisposable
             Assert.Equal(charts[0].Position,charts[^1].Position);Assert.Equal(charts[0].FirstU,charts[^1].FirstU);Assert.Equal(charts[0].FirstV,charts[^1].FirstV);
         }
         finally{if(owns)KernelRuntime.ReleaseCommandScratch(KernelRuntime.State.Session);}
-        Assert.Equal(0,KernelRuntime.EntityDelete(1,&blend));Assert.Equal(0,KernelRuntime.EntityDelete(1,&bowl));Assert.Equal(0,KernelRuntime.EntityDelete(1,&plane));
+        Assert.Equal(0,KernelRuntime.EntityDelete(1,&blend));Assert.False(KernelRuntime.IsValidTag(bowl));Assert.False(KernelRuntime.IsValidTag(plane));
         Assert.Equal(0,KernelRuntime.Surfaces.AliveCount);Assert.Equal(0,KernelRuntime.Curves.AliveCount);
     }
 

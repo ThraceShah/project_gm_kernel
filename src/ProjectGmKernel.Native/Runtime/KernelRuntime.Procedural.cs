@@ -13,32 +13,14 @@ internal static unsafe partial class KernelRuntime
     {
         var blocks = &State.Session->Blocks;
         ref var data = ref ICurveDataPool[dataIndex];
-        var owned0 = data.OwnsSupportSurfaces != 0 ? data.Surface0Tag : 0;
-        var owned1 = data.OwnsSupportSurfaces != 0 ? data.Surface1Tag : 0;
         blocks->Free(DereferenceBlock(data.HvecBlock));
         blocks->Free(DereferenceBlock(data.UvValueBlock));
         if(data.ProgramBlock>0)blocks->Free(DereferenceBlock(data.ProgramBlock));
         if(data.ContactChartBlock>0)blocks->Free(DereferenceBlock(data.ContactChartBlock));
         ICurveDataPool.Free(dataIndex);
-        ReleaseImportedICurveSupport(owned0);
-        if (owned1 != owned0) ReleaseImportedICurveSupport(owned1);
-    }
-
-    private static void ReleaseImportedICurveSupport(SurfTag tag)
-    {
-        var slot = GetSurfaceSlotByTag(tag);
-        // A caller may subsequently attach an imported support to a face;
-        // the topology then owns its lifetime. Bound curves release their
-        // acquired references before freeing this payload; this legacy import
-        // fallback only reclaims a support still alive without either owner.
-        // An unbound ordinary decoded payload never owns its input supports.
-        if (slot >= 0 && Surfaces.IsAlive(slot) && Surfaces[slot].OwnerCount == 0 && Surfaces[slot].GeometricOwnerCount == 0)
-        {
-            // This callback runs when the curve payload is physically freed,
-            // including undo replay and deferred-delete commit. Do not append
-            // a fresh EntityDelete transaction while replaying that journal.
-            FinalReleaseEntity(PoolKind.Surface, slot, tag, knownAlive: true);
-        }
+        // Bound definitions release their references through the common
+        // geometry graph. Unbound materializers clean up their own inputs;
+        // freeing payload storage must not introduce another owner policy.
     }
 
     internal static void FreeBlendEdgeData(DataSlot dataIndex)

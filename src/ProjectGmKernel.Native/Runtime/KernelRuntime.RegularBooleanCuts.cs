@@ -697,7 +697,9 @@ internal static unsafe partial class KernelRuntime
                         Surface=input.Faces[first].Surface,OtherSurface=input.Faces[second].Surface});
                     return EvaluationError(status);
                 }
-                if(RegularPointOutsideNativeSupport(sourceFaces[first],point[0],model.Tolerance)||RegularPointOutsideNativeSupport(sourceFaces[second],point[0],model.Tolerance))continue;
+                var firstSource=first<sourceFaces.Length?sourceFaces[first]:-1;
+                var secondSource=second<sourceFaces.Length?sourceFaces[second]:-1;
+                if(RegularPointOutsideNativeSupport(firstSource,point[0],model.Tolerance)||RegularPointOutsideNativeSupport(secondSource,point[0],model.Tolerance))continue;
                 LastRegularClipStage=RegularClipStage.FirstUv;
                 error=FiniteBoundarySurfaceParameters(input.Faces[first].Surface,curve,at,point[0],sectionCharts,out var a);
                 if(error==ParasolidConstants.PK_ERROR_not_on_surface)continue;if(error!=0)return error;

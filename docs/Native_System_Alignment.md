@@ -577,3 +577,20 @@ NativeClosedSolid与上述Torus Boolean实际Native为
 `20a13c989e01b82538f25a8ffbbd9da3e2d6320407422d07753fb93b83176bf0`，
 不作为随后完整闭合体增量的性能资格。局部managed 108/108，以及最后12个native
 定义/宽精度/零heap/闭合体/三操作tag与mark合同测试raw0；最后源仍需完整集中回归。
+
+固定a8b409的完整回归实际raw exit1，runner报告aborted、491 passed/24 failed、
+2.6506分钟；它不是完整通过。多数rolling失败是ClipRegularFacePair可接收尚未
+发布、无原face映射的生成patch，新初筛却索引了可选sourceFaces。现缺少真实
+拓扑精度时不作这个排除，生成patch继续原有限裁剪/事件证明。旧闭合Blend测试
+主动删除已被原生定义拥有关系销毁的输入也已改为断言输入tag失效。
+
+有界创建/回滚跟踪还定位到第二个实际释放策略：共同ReleaseDefiningGeometry已
+按deleteDependentOrphans=false执行创建undo，但FreeICurveData又沿旧import
+reclaimer物理销毁零owner支撑；随后construction snapshot恢复其surface header，
+早期creation entry再次释放已死payload。这正是一次typed-data Debug.Assert，
+而非PK建模结论。现移除该旧拥有关系fallback，payload函数只释放自身存储；
+bound实体统一由共同依赖图释放，unbound materializer继续明确清理其自建输入。
+临时栈跟踪已全部移除，原trace和失败保持。`native-single-owner-release-managed`
+91/91 raw0覆盖三价corner真实拒绝/多深度allocation rollback、闭合continuation、
+共享/借用/复制/mark生命周期；rolling生成视图的前一轮41项通过及三项同释放错误
+单列。整体仍在修正后的集中回归及真实PK验证中。
