@@ -64,13 +64,22 @@ internal static partial class JointNestedBlendEvaluation
         if(!(sine.Value.Lower>0))return AlgorithmStatus.NotConverged;
         var offset=IntervalPoint(variables,0)-IntervalPoint(variables,nodes[child].Offset);
         var longitudinal=IntervalVector.Dot(offset,start);var lateral=IntervalVector.Dot(offset,transverse/sine);
-        // In this half-plane atan(lateral/longitudinal) covers a finite
-        // endpoint at v=0 without crossing the angular branch cut.
-        if(!(longitudinal.Value.Lower>0))return AlgorithmStatus.NotConverged;
-        var ratio=lateral/longitudinal;if(!ratio.Finite)return AlgorithmStatus.NotConverged;
-        var angle=new IntervalDual(new(Math.BitDecrement(Math.BitDecrement(Math.Atan(ratio.Value.Lower))),
-            Math.BitIncrement(Math.BitIncrement(Math.Atan(ratio.Value.Upper)))),ratio.Derivative/(1+IntervalNumber.Square(ratio.Value)));
+        status=SupportingSectionAngle(longitudinal,lateral,out var angle);if(status!=AlgorithmStatus.Success)return status;
         v=angle/IntervalDual.Atan2(sine,cosine);
         return v.Finite?AlgorithmStatus.Success:AlgorithmStatus.NotConverged;
+    }
+
+    // Two strict half-planes cover the native [0,theta] branch, theta<pi.
+    // x>0 admits the v=0 end; y>0 admits x=0 and the second quadrant without
+    // crossing atan2's negative-x branch cut or dividing by an interval at 0.
+    internal static AlgorithmStatus SupportingSectionAngle(IntervalDual longitudinal,IntervalDual lateral,out IntervalDual angle)
+    {
+        angle=default;var vertical=!(longitudinal.Value.Lower>0);
+        if(vertical&&!(lateral.Value.Lower>0))return AlgorithmStatus.NotConverged;
+        var ratio=vertical?longitudinal/lateral:lateral/longitudinal;if(!ratio.Finite)return AlgorithmStatus.NotConverged;
+        angle=new(new(Math.BitDecrement(Math.BitDecrement(Math.Atan(ratio.Value.Lower))),
+            Math.BitIncrement(Math.BitIncrement(Math.Atan(ratio.Value.Upper)))),ratio.Derivative/(1+IntervalNumber.Square(ratio.Value)));
+        if(vertical)angle=new IntervalDual(new(Math.BitDecrement(Math.PI*.5),Math.BitIncrement(Math.PI*.5)),0)-angle;
+        return angle.Finite?AlgorithmStatus.Success:AlgorithmStatus.NotConverged;
     }
 }

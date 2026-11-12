@@ -49,14 +49,20 @@ internal static partial class JointNestedBlendEvaluation
         Span<IntervalNumber> output,out AlgorithmStatus status)
     {
         status=AlgorithmStatus.NotRun;if(program.TubeSource.Tag<=0||program.TubeWork.IsEmpty)return false;
-        var at=TubeIndex(program,spine,domain);ref var entry=ref program.TubeWork[at];if(!SameTube(entry,program,spine,domain))return false;
-        status=TubeFrame(program,surface,domain,((ReadOnlySpan<Occurrence>)entry.Occurrences)[..entry.Nodes],((ReadOnlySpan<IntervalNumber>)entry.Boxes)[..entry.N],((ReadOnlySpan<IntervalNumber>)entry.Derivative)[..entry.N],output);
-        return true;
+        var at=TubeIndex(program,spine,domain);
+        for(var probe=0;probe<Math.Min(8,program.TubeWork.Length);probe++)
+        {
+            ref var entry=ref program.TubeWork[(at+probe)%program.TubeWork.Length];if(entry.Source.Tag==0)return false;if(!SameTube(entry,program,spine,domain))continue;
+            status=TubeFrame(program,surface,domain,((ReadOnlySpan<Occurrence>)entry.Occurrences)[..entry.Nodes],((ReadOnlySpan<IntervalNumber>)entry.Boxes)[..entry.N],((ReadOnlySpan<IntervalNumber>)entry.Derivative)[..entry.N],output);return true;
+        }
+        return false;
     }
     private static void WriteTube(in NestedBlendProgram program,BlendSpineIndex spine,in SurfaceParameterBox domain,ReadOnlySpan<Occurrence> nodes,
         ReadOnlySpan<IntervalNumber> boxes,ReadOnlySpan<IntervalNumber> derivative)
     {
-        if(program.TubeSource.Tag<=0||program.TubeWork.IsEmpty)return;ref var entry=ref program.TubeWork[TubeIndex(program,spine,domain)];
+        if(program.TubeSource.Tag<=0||program.TubeWork.IsEmpty)return;var at=TubeIndex(program,spine,domain);var selected=at;
+        for(var probe=0;probe<Math.Min(8,program.TubeWork.Length);probe++){var index=(at+probe)%program.TubeWork.Length;if(program.TubeWork[index].Source.Tag==0||SameTube(program.TubeWork[index],program,spine,domain)){selected=index;break;}}
+        ref var entry=ref program.TubeWork[selected];
         entry.Source=program.TubeSource;entry.Spine=spine;entry.First=BitConverter.DoubleToInt64Bits(domain.U0);entry.Last=BitConverter.DoubleToInt64Bits(domain.U1);
         entry.Surfaces=program.Surfaces.Length;entry.Spines=program.Spines.Length;entry.Charts=program.Charts.Length;entry.Scalars=program.Scalars.Length;entry.Workspace=program.Workspace.Length;entry.N=boxes.Length;entry.Nodes=nodes.Length;
         nodes.CopyTo(entry.Occurrences);boxes.CopyTo(entry.Boxes);derivative.CopyTo(entry.Derivative);

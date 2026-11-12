@@ -6,7 +6,7 @@
 
 每BoundSegment记录source/generation/sense/ownership的全部live几何保守超集与完整原生program各语义字段（无padding字节，所有double保留bits）、SourceBlock/root/实际occurrence和CHART、原生u/v、中心snapshot、全请求/输出容量/workspace/reach预算和实际require数组。capture输出只读长度、不读未初始化值。每scope有唯一ID与真实immutable标记，scope0/可变阶段单列，不跨scope统计复用。成功tube还记录完成原inclusion/nearest/reach/derivative后的boxes和导数，最终frame成功/失败另列，不把frame失败当无根。
 
-源记录保守地包含无关live几何，所以只能低估匹配率，不能由不同source/tag/CHART悄悄拼成同一键。按不含v的候选层投影统计时仍保留source/program/spine/CHART/occurrence/中心和完整请求；另一层明确限定普通无witness/reach/curvature/参数输出的tube后才允许比较跨v/输出surface需求，不能直接投影已有九输出UV缓存。只有确定的重复数据和实际整体收益才支持后续实现。
+首轮虽记录全部live几何source/generation集合和完整program，但临时编译视图没有逐一标明实际owner；其中相同方程组可能属于不同owner，不能把该语义分组冒称同tag命中数。已保留首轮原件，并以e17e6ac补正有界追踪：每个prepared program直接带真实owner/tag/generation/sense/准备种类/block，模块启动实际记录PID/capture/source与Native/Oracle MVID；匿名临时验证program明确不计可复用身份。按不含v的候选层投影统计仍保留完整source/program/spine/CHART/occurrence/中心及请求资源；仅普通无witness/reach/curvature/参数输出的tube才比较跨v需求，不改九输出UV缓存。
 
 上限为每进程300000 BoundSegment，触顶抛出明确诊断异常，不发布不完整追踪为完整。原始definitions/calls JSONL、当前runner所有质量与rawexit、实际DLL/PDB/source identity一起保留。通用当前helper未改，诊断props仅向BooleanOperationOracle显式开启时添加脚本；最终生产改动会移除此临时分支。没有C ABI更动或AOT/Windows运行。
 
@@ -21,3 +21,13 @@ curved共5328次BoundSegment（含显示/检查），immutable阶段384次成功
 只承认普通完整tube请求；所有witness/capture/requireCharts、reach/curvature/acceleration、support参数和anchor输出都执行原路径。命中仍按请求surface/v重新算frame；失败没有条目。工作区128条（参考本次96/55组普通需求），由原command scope可选native存储拥有，分配失败走未优化算法，不取proof scratch、不增算法预算，scope退出释放。它是单一具体joint中间结果，不是新几何、通用结果框架或历史格式层。
 
 最初使用record生成ToString被Native分配检查拒绝，已换普通readonly值类型；最初测试误用不存在的Contains导致编译原1均留原件。修正后44项相关检查实际原0，含完整tube/解析导数、跨v重新frame逐位相同、tag/gen/sense/kind/block隔离、不同native区间/workspace、坏witness仍失败、退化不发布和0托管分配。普通完整操作/lifecycle、两Mac实际一般原因与最终工作量/收益闭环正在继续，不由44项局部绿灯签整体完成。
+
+## owner修正追踪、完整操作与一般原因修复
+
+补正追踪e17e6ac刻意关闭新tube复用，完整三操作仍各raw2且原2688/4648/18951 Jac、1034/150/22371 root cells等不变，不用带记录器耗时估性能。已知owner的curved384次成功tube/96完整键/288重复；NURBS96次/完整70键26重复、投影u需求29键67重复（21组跨v）；shortedge1032次/918键114重复。全组payload逐位相同。未授权身份的compact等临时program原记录保留但不进入eligible命中判断；原352 semantic重复不偷换为可缓存source命中。
+
+1f075e9首次完整普通三操作保持27/27/35 outstanding、均raw2，无新硬失败；Jac实际2688→1260、4648→4193、18951→18822，root/SSI/roots/winding/budget保持。这是工作量验证，冷单次API时间不作倍率。该版直接映射128条；针对已证96组在同容量的碰撞，当前改为最多8个槽探查，未增存储或证明预算，后续完整包验收仍待执行。
+
+两项Mac旧失败已按真实消费者排查：原fixture的u求界成功，uv求界raw状态NotConverged集中在最后CHART和其上端点（不是修改测试先验）；点求值成功。BoundSpineSupportSection只允许longitudinal>0来用atan(lateral/longitudinal)，因此无法覆盖严格lateral>0而longitudinal跨0的真实右角端点。现在保留原x>0分支，另在严格y>0时用等价π/2−atan(x/y)，π/2向外包围、导数同原商法则。原sine/nearest/分支/有限检查保留；两者均不具严格符号时仍NotConverged，不以误差或采样放行。没有改预算、容差或原测试期望。
+
+包括原两失败和新增半平面制造导数/原点/负轴失败控制在内，54项集中窄验实际原0；这不补签旧1654的1998/2000 raw1，也尚不等于本新源完整suite全绿。初次诊断helper遗漏AllowUnsafeBlocks导致编译原1留存；U与UV两个独立probe的原输出分别保留，不能把U成功误写为UV成功。最终几何/lifecycle、回滚、必要一次稳定测量与集中独审仍按完整目标推进。
