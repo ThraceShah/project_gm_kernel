@@ -23,8 +23,10 @@ using(host)unsafe
     var start=new M.PK_SESSION_start_o_s{o_t_version=1};Check(KernelRuntime.SessionStart(&start),"managed start");
     try
     {
-        if(args.Contains("--blend-owner",StringComparer.Ordinal)) { BlendOwnership(sharedFree,args.Contains("--attached-support",StringComparer.Ordinal),args.Contains("--mark",StringComparer.Ordinal)); return; }
+        if(args.Contains("--blend-owner",StringComparer.Ordinal)) { BlendOwnership(sharedFree,args.Contains("--attached-support",StringComparer.Ordinal),args.Contains("--mark",StringComparer.Ordinal),args.Contains("--free-root-delete",StringComparer.Ordinal)); return; }
         if(args.Contains("--closed-solid",StringComparer.Ordinal)){ClosedSolid(output);return;}
+        var inspect=args.Where(a=>a.StartsWith("--inspect-native=",StringComparison.Ordinal)).Select(a=>a[17..]).ToArray();
+        if(inspect.Length!=0){InspectNativeDomains(root,output,inspect);return;}
         var mismatches=0;var ownershipDifferences=0;var runs=0;double* poles=stackalloc double[36];double* uk=stackalloc double[2];double* vk=stackalloc double[2];int* mult=stackalloc int[2]{3,3};
         double* uvPoles=stackalloc double[4];double* uvKnots=stackalloc double[2]{0,1};int* uvMult=stackalloc int[2]{2,2};
         Console.WriteLine("SOURCE_OWNERSHIP_MODE "+(sharedFree?"surface-has-free-SP-owner":"independent-orphan-surface"));
@@ -92,6 +94,44 @@ using(host)unsafe
     }
     finally{Check(KernelRuntime.SessionStop(),"managed stop");}
 }
+static unsafe void InspectNativeDomains(string root,string output,string[] inputs)
+{
+    var total=0;var bounded=0;
+    using var report=new StreamWriter(Path.Combine(output,"native-face-domains.tsv"));
+    report.WriteLine("source\tsha256\tface\tclass\tperiodicU\tperiodicV\tsurfaceUV\tfaceUV\tmaxNonperiodicOverrun");
+    foreach(var relative in inputs)
+    {
+        var path=Path.GetFullPath(Path.Combine(root,relative));
+        if(Path.IsPathRooted(relative)||!path.StartsWith(root+Path.DirectorySeparatorChar,StringComparison.Ordinal))throw new ArgumentException("project relative native input");
+        var bytes=File.ReadAllBytes(path);var hash=Convert.ToHexStringLower(SHA256.HashData(bytes));
+        File.WriteAllBytes(Path.Combine(output,hash+".x_t"),bytes);
+        var body=Receive(bytes);
+        try
+        {
+            CheckBody(body,relative);int count;int* faces;Check(PK_BODY_ask_faces(body,&count,&faces),"inspect native faces");
+            try
+            {
+                for(var i=0;i<count;i++)
+                {
+                    int surface,kind;Check(PK_FACE_ask_surf(faces[i],&surface),"inspect native support");Check(PK_ENTITY_ask_class(surface,&kind),"inspect support class");
+                    PK_UVBOX_t definition,finite;Check(PK_SURF_ask_uvbox(surface,&definition),"inspect native domain");Check(PK_FACE_find_uvbox(faces[i],&finite),"inspect finite face domain");
+                    var up=false;var vp=false;var overrun=double.NaN;
+                    if(kind==PK_CLASS_bsurf)
+                    {
+                        PK_BSURF_sf_t sf;Check(PK_BSURF_ask(surface,&sf),"inspect native B-surface");
+                        try{up=sf.is_u_periodic==PK_LOGICAL_true;vp=sf.is_v_periodic==PK_LOGICAL_true;}
+                        finally{Check(PK_MEMORY_free(sf.vertex),"release inspect poles");Check(PK_MEMORY_free(sf.u_knot),"release inspect U knots");Check(PK_MEMORY_free(sf.v_knot),"release inspect V knots");Check(PK_MEMORY_free(sf.u_knot_mult),"release inspect U multiplicities");Check(PK_MEMORY_free(sf.v_knot_mult),"release inspect V multiplicities");}
+                        overrun=Math.Max(up?0:Math.Max(definition.param[0]-finite.param[0],finite.param[2]-definition.param[2]),vp?0:Math.Max(definition.param[1]-finite.param[1],finite.param[3]-definition.param[3]));bounded++;
+                    }
+                    report.WriteLine($"{relative}\t{hash}\t{i}\t{kind}\t{up}\t{vp}\t{definition.param[0]:R}/{definition.param[1]:R}/{definition.param[2]:R}/{definition.param[3]:R}\t{finite.param[0]:R}/{finite.param[1]:R}/{finite.param[2]:R}/{finite.param[3]:R}\t{overrun:R}");total++;
+                }
+            }
+            finally{Check(PK_MEMORY_free(faces),"release inspect faces");}
+        }
+        finally{Check(PK_ENTITY_delete(1,&body),"delete inspected native body");}
+    }
+    Console.WriteLine($"NATIVE_DOMAIN_SURVEY inputs={inputs.Length} faces={total} bsurfaces={bounded} report=native-face-domains.tsv evidence=observed-face-UV-boxes-not-a-general-domain-proof");
+}
 static unsafe byte[] Transmit(bool own,int body)
 {
     var options=new PK_PART_transmit_o_t{transmit_format=PK_transmit_format_text_c,transmit_version=371};PK_MEMORY_block_t block;
@@ -99,7 +139,7 @@ static unsafe byte[] Transmit(bool own,int body)
     try{using var stream=new MemoryStream();for(var p=&block;p!=null;p=p->next)stream.Write(new ReadOnlySpan<byte>(p->bytes,checked((int)p->n_bytes)));return stream.ToArray();}
     finally{Check(own?KernelRuntime.MemoryBlockFree((M.PK_MEMORY_block_s*)&block):PK_MEMORY_block_f(&block),"transmit release");}
 }
-static unsafe void BlendOwnership(bool sharedFree,bool attachedSupport,bool useMark)
+static unsafe void BlendOwnership(bool sharedFree,bool attachedSupport,bool useMark,bool freeRootDelete)
 {
     // Observe adoption and dependency lifetime only. Each implementation's
     // native spine parameter range is queried; this is no shape equivalence test.
@@ -135,6 +175,19 @@ static unsafe void BlendOwnership(bool sharedFree,bool attachedSupport,bool useM
         var options=new PK_SURF_create_blend_o_t();var a=new PK_VECTOR_t(.5,0,.075);var b=new PK_VECTOR_t(-.5,0,.075);
         Check(own?KernelRuntime.SurfCreateBlend(source,.1,wall,.1,*(M.PK_VECTOR_s*)&a,*(M.PK_VECTOR_s*)&b,(M.PK_SURF_create_blend_o_s*)&options,&surface):PK_SURF_create_blend(source,.1,wall,.1,a,b,&options,&surface),"free Blend");
         PK_BLENDSF_sf_t definition;Check(own?KernelRuntime.BlendSfAsk(surface,(M.PK_BLENDSF_sf_s*)&definition):PK_BLENDSF_ask(surface,&definition),"Blend definition");
+        if(freeRootDelete)
+        {
+            Check(own?KernelRuntime.EntityDelete(1,&surface):PK_ENTITY_delete(1,&surface),"delete free Blend root");
+            foreach(var (label,tag) in new[]{("first-support",source),("second-support",wall),("spine",definition.spine)})
+            {
+                PK_LOGICAL_t alive=0;if(own)alive=KernelRuntime.IsValidTag(tag)?PK_LOGICAL_true:PK_LOGICAL_false;else Check(PK_ENTITY_is(tag,&alive),"deleted free root dependency");
+                signature.Append($"{label}={alive};");Console.WriteLine($"FREE_BLEND_DELETE own={own} shared_support={sharedFree} attached_support={attachedSupport} definition={label} alive={alive==PK_LOGICAL_true}");
+            }
+            if(referenceSignature==null)referenceSignature=signature.ToString();else if(referenceSignature!=signature.ToString())throw new InvalidOperationException("free Blend defining-geometry deletion differs");
+            if(!own){ReleaseNative(freeSp);ReleaseNative(secondSp);ReleaseNative(freeOffset);ReleaseNative(supportBody);ReleaseNative(source);ReleaseNative(wall);}
+            else{ReleaseOwn(freeSp);ReleaseOwn(secondSp);ReleaseOwn(freeOffset);ReleaseOwn(supportBody);ReleaseOwn(source);ReleaseOwn(wall);}
+            continue;
+        }
         if(freeSp!=0)PrintSp("before",own,freeSp,source);
         PK_UVBOX_t box;Check(own?KernelRuntime.SurfAskUvbox(surface,(M.PK_UVBOX_s*)&box):PK_SURF_ask_uvbox(surface,&box),"Blend domain");
         var lower=box.param[0];var width=box.param[2]-lower;box.param[0]=lower+.4*width;box.param[2]=lower+.6*width;box.param[1]=.15;box.param[3]=.85;

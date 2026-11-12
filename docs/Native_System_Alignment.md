@@ -629,3 +629,40 @@ Mac使用独立固定7d474 worktree，仅由本owner远程命令执行，没有�
 Mac实际Native SHA
 `c523d16ecdde2d5c5a79672f0c194e8a19a061e8bfa2b2b31aae03b39c7fd2e3`；
 它是这个固定源和能力的跨平台收据，不补签后续buffer/readiness修正或整体性能。
+
+### 固定2f997的集中执行与定义域观测
+
+`2f997-full-managed.log/.exit` 完整执行2117项，2116通过/1失败，raw1，13.6458分钟，
+没有aborted。唯一失败为旧GeneralConstruction测试在删除成功的自由Blend后仍要求
+两个定义支撑存活。新增真实PK自由root删除对照 `2f997-free-root-delete` raw0：
+两侧原始两个support及spine均失效，证明此断言与当前native拥有关系冲突。测试现
+分别验证失败时原输入存活且无中间泄漏、成功删除时原定义失效；每个budget重新
+建立独立输入。`2f997-native-contract-assertions` 25/25 raw0，原full raw1不覆盖，
+不把局部复验冒称新的全suite通过。生产代码仍为2f997。
+
+统一JIT下 `2f997-whole-profile` 为四族各两个fresh输入，16次GM Fix/Boolean合计
+30481.650ms，全部独立full/strict通过，raw2保留mass U；剖析开启且与全suite并行，
+不是独立性能资格。三类非解析实体各三尺度的copy/delete、反射旋转尺度、原生XT
+回读及独立变换刀具再Boolean全部full/strict通过（`2f997-lifecycle-remodel` raw2）。
+NativeSP另24族/48查询、插入UV结点、copy/delete/mirror/scale/reload、17点D0/D1及
+有限wire比较通过（`2f997-native-sp` raw0，连续等价证明范围不扩大）。上述执行实际
+Native SHA均为 `585416e1ba9b839d74c5a7a4d274fd9a21b1f7385a61727a21d20ce446e149ef`。
+
+直接510点分别另存 `2f997-self-510` 与 `2f997-import-510`，均raw2，无API错误或
+Inside/Outside翻转，分别15U/16U，独立native分类没有改变旧坐标集基线。两次直接
+native同XT回读均在102/153/204/254/289/390/441七行有On差异；它们不与历史Capture
+八行执行合并。有限数学边界及precision控制JSON均另存，不把四方强制相等，也未
+按点坐标改变分类。历史self495缺失列仍缺失。
+
+旧计划中的单个存活三方交汇/投影cell场景在本固定源已实际通过：
+`2f997-three-participant` raw2仅mass3U，独立现场Fix后两刀联合Boolean，真实三方
+事件、两次反向使用、投影cell材料六点、finiteface/ICurve/finUV、full/strict通过。
+这更正该场景的当前执行状态，不把历史19/49/32严格比较失败当作当前失败，也不
+扩展为任意多方/接触/高价交汇全部支持。变换族及其他原未决仍按实际执行核实。
+
+新增只读 `NativeSurfaceDomainOracle --inspect-native=<项目相对XT>` 对四个独立
+PK产品实际full check后记录33面/5个B曲面定义域、有限face UVbox及周期标志，
+输入原字节按SHA另存；`2f997-native-domain-survey` raw0。五个非周期B曲面最大的
+UVbox外越为2.506e-15，其余为零或更小舍入量。此项属于动态观测，不是任意surface
+域的连续证明，也不据UVbox端点微小越界宣判实际face跨出数学定义。官方自然边界
+合同、原生domain包围及实体precision仍各自是候选资格的必要依据。

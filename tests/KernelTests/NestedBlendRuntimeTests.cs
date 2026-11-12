@@ -79,19 +79,29 @@ public unsafe class NestedBlendRuntimeTests:IDisposable
     }
 
     [Fact]
-    public void GeneralConstructionRollsBackEveryIntermediateOffsetAndCopiedSupportOnAllocationFailure()
+    public void GeneralConstructionRollsBackIntermediateOffsetsAndDeletesOwnedDefinitionsOnSuccess()
     {
         var torusSf=new PK_TORUS_sf_s{major_radius=2,minor_radius=.5};torusSf.basis_set.axis.coord[2]=1;torusSf.basis_set.ref_direction.coord[0]=1;int torus;
-        Assert.Equal(0,KernelRuntime.TorusCreate(&torusSf,&torus));var planeSf=new PK_PLANE_sf_s();planeSf.basis_set.axis.coord[1]=.6;planeSf.basis_set.axis.coord[2]=.8;planeSf.basis_set.ref_direction.coord[0]=1;int plane;
-        Assert.Equal(0,KernelRuntime.PlaneCreate(&planeSf,&plane));var options=new PK_SURF_create_blend_o_s{o_t_version=1};var start=new PK_VECTOR_s();start.coord[0]=2.5;
+        var planeSf=new PK_PLANE_sf_s();planeSf.basis_set.axis.coord[1]=.6;planeSf.basis_set.axis.coord[2]=.8;planeSf.basis_set.ref_direction.coord[0]=1;int plane;
+        var options=new PK_SURF_create_blend_o_s{o_t_version=1};var start=new PK_VECTOR_s();start.coord[0]=2.5;
         var end=new PK_VECTOR_s();end.coord[0]=2;end.coord[1]=.5;end.coord[2]=-.375;
         var failed=false;var succeeded=false;
         foreach(var budget in new[]{0,1,3,7,15,31})
         {
+            Assert.Equal(0,KernelRuntime.TorusCreate(&torusSf,&torus));Assert.Equal(0,KernelRuntime.PlaneCreate(&planeSf,&plane));
             int result=0;KernelRuntime.InjectAllocationFailure(budget);var error=KernelRuntime.SurfCreateBlend(torus,.1,plane,.1,start,end,&options,&result);KernelRuntime.InjectAllocationFailure(-1);
-            if(error!=0){failed=true;Assert.Equal(0,result);}else{succeeded=true;Assert.Equal(0,KernelRuntime.EntityDelete(1,&result));}
-            Assert.Equal(2,KernelRuntime.Surfaces.AliveCount);Assert.Equal(0,KernelRuntime.Curves.AliveCount);Assert.Equal(0,KernelRuntime.BlendedEdgeDataPool.AliveCount);
-            Assert.True(KernelRuntime.IsValidTag(torus));Assert.True(KernelRuntime.IsValidTag(plane));
+            if(error!=0)
+            {
+                failed=true;Assert.Equal(0,result);Assert.Equal(2,KernelRuntime.Surfaces.AliveCount);
+                Assert.True(KernelRuntime.IsValidTag(torus));Assert.True(KernelRuntime.IsValidTag(plane));
+                Assert.Equal(0,KernelRuntime.EntityDelete(1,&torus));Assert.Equal(0,KernelRuntime.EntityDelete(1,&plane));
+            }
+            else
+            {
+                succeeded=true;Assert.Equal(0,KernelRuntime.EntityDelete(1,&result));
+                Assert.False(KernelRuntime.IsValidTag(torus));Assert.False(KernelRuntime.IsValidTag(plane));
+            }
+            Assert.Equal(0,KernelRuntime.Surfaces.AliveCount);Assert.Equal(0,KernelRuntime.Curves.AliveCount);Assert.Equal(0,KernelRuntime.BlendedEdgeDataPool.AliveCount);
         }
         Assert.True(failed&&succeeded);
     }
