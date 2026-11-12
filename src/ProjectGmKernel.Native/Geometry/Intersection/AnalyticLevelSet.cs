@@ -33,7 +33,7 @@ internal static class AnalyticLevelSet
         if(surface.Kind==SurfaceClass.Cylinder)RemoveAxial(surface.Axis,ref x,ref y,ref z);
     }
 
-    private static void RemoveAxial(in KernelVector3 axis,ref IntervalNumber x,ref IntervalNumber y,ref IntervalNumber z)
+    internal static void RemoveAxial(in KernelVector3 axis,ref IntervalNumber x,ref IntervalNumber y,ref IntervalNumber z)
     {
         // Apply I-aaᵀ as one linear map. Forming delta-a*(a·delta)
         // separately counts the same coordinate twice in every interval

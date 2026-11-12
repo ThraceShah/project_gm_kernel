@@ -15,8 +15,8 @@ internal struct SurfaceBoundCacheEntry
 internal readonly ref struct SurfaceIntersectionPatch
 {
 #if KERNEL_TEST_HOOKS
-    internal static bool UseCertifiedSectionBounds=true;
-    [ThreadStatic] internal static long TestCertifiedSectionBounds;
+    internal static bool UseCertifiedSectionBounds=true,UseNativeScalarLevel=true;
+    [ThreadStatic] internal static long TestCertifiedSectionBounds,TestNativeScalarLevels;
 #endif
     private readonly BezierSurfacePatch bezier;
     private readonly NestedBlendProgram blend;
@@ -68,6 +68,17 @@ internal readonly ref struct SurfaceIntersectionPatch
         certified=this;var status=Bound(cell,output);if(status!=AlgorithmStatus.Success||output.Length<9||isoAxis!=0||sweepAxis!=0||parameterLine)return status;
         for(var i=0;i<9;i++)if(!output[i].Finite)return status;
         certified=new(this,cell);return status;
+    }
+    internal NativeScalarLevel SectionLevel(in AnalyticSurface target,double first,double last)
+    {
+#if KERNEL_TEST_HOOKS
+        if(!UseNativeScalarLevel||!UseCertifiedSectionBounds)return default;
+#endif
+        if(!hasCellProof||!isBlend||isSpine||isoAxis!=1||parameterLine||sweepAxis!=0||normalOffset!=0||supportParameterSide!=0
+            ||!double.IsFinite(isoParameter)||!double.IsFinite(first)||!double.IsFinite(last)||first>last
+            ||isoParameter<provenCell.U0||isoParameter>provenCell.U1||first<provenCell.V0||last>provenCell.V1
+            ||!AnalyticLevelSet.Supported(target)||!JointNestedBlendEvaluation.CanBoundExplicitSection(blend,surface))return default;
+        return JointNestedBlendEvaluation.NativeSectionLevel(blend,surface,isoParameter,target,new(first,last));
     }
     internal bool ExactCorner(double u,double v,Span<IntervalNumber> homogeneous)
     {
