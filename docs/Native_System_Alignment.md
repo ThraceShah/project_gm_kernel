@@ -16,8 +16,8 @@
    找结构性重复与缺失。原生 XT/UV/精度和共享 arrangement 已取得的成果继续复用；
    不另建模型、Engine 或诊断平台，不用 case 坐标定义算法。
 2. 本轮已修的来源、precision/ownership、TR/SP 和 Cone 有限域继续作为完整能力
-   消费；当前实际攻关是跨 native knot 的连续根域，以及所有排除消费者的完整
-   domain/extension/precision 资格。原来留给另一 worker 的 extent WIP 由本 owner
+   消费；跨 native knot 的连续根域及已准入排除消费者已有固定运行，当前攻关是
+   变换后的有限端点、原生UV、事件和切割曲线参数的共同传递。原来留给另一 worker 的 extent WIP 由本 owner
    直接核模型、吸收并贯通，不能把9项自测等同于完整 helper。
 3. JIT 作为同一个基准入口合同处理：核原配置层级，在同 source/Release IL 的
    主要完整操作上做一次统一开关对照，从整体结果选一套 TieredCompilation，固定
@@ -32,7 +32,7 @@
 
 ## 真实处理链与关键差异
 
-| 阶段 | PK 依据及证据层级 | 当前 GM 实现与本轮动作 |
+| 阶段 | PK 依据及证据层级 | 起点 GM 实现与本轮动作（后续执行见下） |
 | --- | --- | --- |
 | 模型定义、准备 | 官方 FD 15/17/18、XT model/schema：原生拓扑、有限 geometry、ownership、precision 是模型定义 | 沿用 Runtime/XT，不创建替代模型；核查有限边和顶点精度在构建及复制中是否保全 |
 | 候选、求交、有限裁剪 | 既有同平台动态证据：Fix 可从终点间追踪；Boolean 可从输入面的有限参数盒界追踪，随后再裁剪；见原 acceptance 的 search-box 控制 | 复用已实现 finite native intervals、paired CHART、标量/向量隔离、共同事件和 SheetArrangement；候选近似不代替最终有限域验收 |
@@ -42,12 +42,12 @@
 | 修改追踪、回滚 | 静态链：boolean → BOO_start_tracking（临时 entity-link）→ BOO_function_2（tag persistence/tracking）→ BOO_end_tracking → PKU_process_boolean_tracking（读取关联、填返回、移除临时属性）；这是静态依赖证据，动态分支待实际验证 | 本轮优先闭合曲面 Boolean 的原生修改来源与发布生命周期，保持 command journal 原子回滚；不把追踪数据变成持久几何定义 |
 | copy/delete/transform/reload | 官方 ownership 与 tag 合同；原 acceptance 已有实际消费者证据，但不能覆盖所有 provider | 新增机制用独立 PK 同操作与 fresh GM XT 验证；继续执行删源、变换、editable XT 回读再建模，检查精度和依赖不丢失 |
 
-当前决定性差异是：原生参数/来源已经在计算中获得，GM 发布接口却尚未完整传递
+本轮首项决定性差异是：原生参数/来源已经在计算中获得，起点的 GM 发布接口却尚未完整传递
 这些信息，曲面 tracking 被整条拒绝；部分公共构建路径还需核查是否丢失实体精度。
 本轮从这些现有共享数据流直接实现，不建立新的调度平台，不碰 Mac 当前数值优化文件。
 后续动态行为若否定某项推断，会据证据修正本表。
 
-## 原计划与未决类别
+## 原计划与起点未决类别（当前执行范围见后文）
 
 - M0/M1：共同 finite-use、halfedge/cycle、native UV 和来源关联已经存在；
   通用多参与者/contact/同域证明仍仅覆盖已实现类别，不能把共享数据结构等同于完整能力。
@@ -64,7 +64,8 @@
   官方 accuracy 是工作量控制，modulus 是误差界，不能用区间重叠签固定精度。
 - FaceAttach 尚未测类别、curved tracking 缺口、all-edge local sense 差异及未执行
   provider 均独立登记；不能由 single/parallel 或五类圆柱有限通过推断通用完成。
-- Mac 已接受性能固定点仅供只读对照，本树尚未合流；moving 候选不取得验收资格。
+- 起点的 Mac 已接受性能固定点仅供只读对照；后续固定 patch 接收见集成章节，
+  moving 候选不取得验收资格。
 
 ## 本轮实施与验收
 
@@ -666,3 +667,58 @@ PK产品实际full check后记录33面/5个B曲面定义域、有限face UVbox�
 UVbox外越为2.506e-15，其余为零或更小舍入量。此项属于动态观测，不是任意surface
 域的连续证明，也不据UVbox端点微小越界宣判实际face跨出数学定义。官方自然边界
 合同、原生domain包围及实体precision仍各自是候选资格的必要依据。
+
+### 正在实施的原生精度与参数见证链
+
+在固定2f997原三方场景通过后，扩展原oracle使种子和两刀实际使用同一similarity，
+并可反转两刀输入顺序；两侧同options，default_tol/blend_radius随单位尺度同变。
+调用前两侧真实target/tool XT以及独立PK操作后的完整检查产品分别保留。镜像旋转、
+1.7尺度、反刀序的执行实际暴露157，不能因原坐标场景通过而宣称变换族已完成。
+当前工作代码仍在该共同模块内研发，没有使用坐标、model name或tag作为算法key。
+
+官方FD17.2.1/17.2.2分别规定原生线性precision的模型一致性及切触附近的接触事件，
+并不要求每个有限拓扑接触都为binary64表示下的严格代数零。动态观察到本输入的
+端点平面残差约2.4e-14、法向二阶导约67.4，独立PK完成相同联合Boolean并full check0。
+候选有限端点provider以完整终端半区间的有符号曲率界、端点D0/D1界证明接触簇和
+驻点都归属原native vertex的precision neighbourhood，再严格隔离完整余段；
+ScalarRootIsolation.Certified保持false，不把这个原生端点事件冒称精确标量零根。
+同carrier不同方程的native事件还要求同实际finite occurrence、同root ordinal、
+重叠的已隔离参数盒、其完整并集的连续空间直径及两侧真实surface距离均不超原
+linear precision。数学上严格同根的原检查及其2^-56位移负例保持独立，不改其结论。
+
+另一缺口是把解析spine的辅助CHART cell当成最终native域。候选保留每个原搜索cell
+和原预算，只对已明确的一条解析native gauge用真实surface定义域验收存在/唯一性
+证书。没有扩张最终有限域；真实域外根仍排除。曾试用整个gauge的一次搜索，实际
+达到原12000-cell预算且未取得整操作收益，已撤回，未提高预算。新增域外负例和
+跨搜索分界的连续根/零heap检查随数学验证保存。
+
+有限winding继续消费同一次joint solve的native UV。非周期Blend的通用参数射线
+使用原U/V及导数作一个标量方程；周期conic候选使用实际子spine centre的原生
+Gram对偶坐标构造相位方程，并以cos相位的正半平面去除反向根，避免在世界XYZ上
+重新做两条曲线的三维交。依赖query的phase视图不读写未含query的command共享
+cache，仅使用该方程私有span cache。周期分支仍待专门的数学/真实PK正负族验证，
+不能以本输入的非周期Blend成功消费替它补签。
+
+原生端部closure同样存在2ULP域界差：实际两接触的U均为1.5707963267948966，
+record上界为1.5707963267948961。候选仅在共享原顶点、两条真实接触及完整连接
+U/V strip都能连续包围在一个linear-precision neighbourhood内时采用声明的native
+端界。为得到这个证明，零夹角section把权函数的完整零阶和先作代数消去，再保留
+所有高阶项、解析导数和原余项界；未采用被拒的PreparedSection/NativeScalarLevel
+缓存或改预算。新38项数学检查通过，前一轮11项失败是private Weight改名后旧测试
+反射查找失效，已更新为直接验算余项的独立decimal/半角参考，原raw1保持。
+
+本候选 `native-domain-contact-integrated-managed-v1` 190/190 raw0、allocation IL guard
+CLEAN；`native-domain-contact-default-v1` 默认独立Fix、完整两刀/copy/delete/反射尺度/
+reload、48材料点、finite/nativefin/full/strict全部通过，raw2保留mass8U。
+该生产assembly SHA为 `d71d268b499fedd5f9fc3df6124520800473d6c349d4240abb9b831a750dccd2`，
+四个实际managed DLL/PDB保存在
+`temp_docs/native-system-alignment/experimental-native-periodic-contact-v5-managed-production/`。
+其source为614e7ede加 `native-periodic-contact-ray-v5.diff`，不是614e7ede的干净构建。
+多数早期失败迭代未逐次保留PE/PDB，不事后重建冒充原二进制。
+
+新增镜像联合Boolean目前已越过端点、native跨CHART根、事件40及finite winding，
+仍在后续RootProjection返回157；独立PK成品及原raw134全部保留，没有补签完成。
+一次额外携带位置AABB的试验没有改变这个阻断且增加临时存储，已撤回；当前继续
+核真实共享支持/CHART见证及有限参数投影，不能把这次试验或候选测试数量算作能力。
+原510/588U、统一固定包、完整最终回归、周期分支、Mac及集中独立接受仍须按实际
+新源执行；本节不替随后source或未执行范围取得资格。

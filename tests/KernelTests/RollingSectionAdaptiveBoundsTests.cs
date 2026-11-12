@@ -8,7 +8,7 @@ namespace KernelTests;
 public class RollingSectionAdaptiveBoundsTests
 {
     private delegate AlgorithmStatus Weight(IntervalDual q,IntervalDual v,out IntervalDual value);
-    private static readonly Weight Evaluate=typeof(RollingSectionEvaluation).GetMethod("Weight",BindingFlags.NonPublic|BindingFlags.Static,null,[typeof(IntervalDual),typeof(IntervalDual),typeof(IntervalDual).MakeByRefType()],null)!.CreateDelegate<Weight>();
+    private static readonly Weight Evaluate=typeof(RollingSectionEvaluation).GetMethod("WeightRemainder",BindingFlags.NonPublic|BindingFlags.Static,null,[typeof(IntervalDual),typeof(IntervalDual),typeof(IntervalDual).MakeByRefType()],null)!.CreateDelegate<Weight>();
 
     [Theory]
     [InlineData(0,.5)] [InlineData(.00000095367431640625,.5)] [InlineData(.125,-.125)]
@@ -28,7 +28,7 @@ public class RollingSectionAdaptiveBoundsTests
     public void SlowConvergenceBranchEnclosesTheIndependentHalfAngleClosedForm(double q)
     {
         Assert.Equal(AlgorithmStatus.Success,Evaluate(new(q,1),new(.5,0),out var actual));
-        var denominator=4-2*q;var expected=1/Math.Sqrt(denominator);var derivative=expected/denominator;
+        var denominator=4-2*q;var weight=1/Math.Sqrt(denominator);var expected=weight-.5;var derivative=weight/denominator;
         Assert.InRange(expected,actual.Value.Lower,actual.Value.Upper);
         Assert.InRange(derivative,actual.Derivative.Lower,actual.Derivative.Upper);
     }
@@ -59,7 +59,7 @@ public class RollingSectionAdaptiveBoundsTests
     // numerical check does not replace the production geometric-tail proof.
     private static (decimal Value,decimal Derivative) Reference(decimal q,decimal v,decimal dq,decimal dv)
     {
-        var a=v;decimal av=1,value=v,qDerivative=0,vDerivative=1,power=1;
+        var a=v;decimal av=1,value=0,qDerivative=0,vDerivative=0,power=1;
         for(var k=1;k<=96;k++)
         {
             var denominator=(decimal)k*(2*k+1);var factor=((decimal)k*k-v*v)/denominator;

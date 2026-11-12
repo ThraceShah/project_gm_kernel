@@ -7,6 +7,17 @@ namespace KernelTests;
 
 public class RollingSectionLimitTests
 {
+    [Fact]
+    public void CollapsedSectionHasATightContinuousPositionEnclosure()
+    {
+        var normal=new IntervalVector(new KernelVector3{X=1});
+        Assert.Equal(AlgorithmStatus.Success,RollingSectionEvaluation.Bound(normal,normal,new(new(0,1),1),out var point));
+        Assert.InRange(1,point.X.Value.Lower,point.X.Value.Upper);
+        Assert.InRange(point.X.Value.Upper-point.X.Value.Lower,0,1e-12);
+        Assert.InRange(0,point.X.Derivative.Lower,point.X.Derivative.Upper);
+        Assert.InRange(0,point.Y.Value.Lower,point.Y.Value.Upper);Assert.InRange(0,point.Z.Value.Lower,point.Z.Value.Upper);
+    }
+
     [Theory]
     [InlineData(0,1)] [InlineData(-.01,1.01)] [InlineData(-.3,1.3)]
     public void IntervalLimitContainsTheManufacturedSectionAndBothParameterDerivatives(double lower,double upper)

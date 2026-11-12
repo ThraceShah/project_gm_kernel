@@ -51,9 +51,12 @@ internal static class RollingSectionEvaluation
             // The support normals are unit vectors, hence 0<=1-cos(theta)<=2.
             var lower=Math.Max(0,q.Value.Lower);var upper=Math.Min(2,q.Value.Upper);if(upper<lower)return AlgorithmStatus.NotConverged;
             q=new(new(lower,upper),q.Derivative);
-            var status=Weight(q,1-v,out var a);if(status!=AlgorithmStatus.Success)return status;
-            status=Weight(q,v,out var b);if(status!=AlgorithmStatus.Success)return status;
-            point=first*a+last*b;
+            var status=WeightRemainder(q,1-v,out var a);if(status!=AlgorithmStatus.Success)return status;
+            status=WeightRemainder(q,v,out var b);if(status!=AlgorithmStatus.Success)return status;
+            // Cancel the complete zeroth-order sum before interval evaluation.
+            // A collapsed section stays one point for the entire native V
+            // interval, rather than two independent copies of that point.
+            point=first+(last-first)*v+first*a+last*b;
         }
         else
         {
@@ -63,11 +66,11 @@ internal static class RollingSectionEvaluation
         return point.Finite?AlgorithmStatus.Success:AlgorithmStatus.NotConverged;
     }
 
-    private static AlgorithmStatus Weight(IntervalDual q,IntervalDual v,out IntervalDual value)
+    private static AlgorithmStatus WeightRemainder(IntervalDual q,IntervalDual v,out IntervalDual value)
     {
         value=default;if(q.Value.Lower<0||q.Value.Upper>=2)return AlgorithmStatus.NotConverged;
         var terms=q.Value.Upper<=1?64:128;if(v.Value.Magnitude>terms)return AlgorithmStatus.NotConverged;
-        var term=v;value=term;
+        var term=v;value=0;
         for(var k=1;k<=terms;k++)
         {
             var denominator=(double)k*(2*k+1);term=term*((k*(double)k-IntervalDual.Square(v))/denominator)*q;value+=term;
