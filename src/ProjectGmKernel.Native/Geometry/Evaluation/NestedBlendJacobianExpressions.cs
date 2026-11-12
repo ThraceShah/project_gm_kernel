@@ -43,7 +43,7 @@ internal static partial class JointNestedBlendEvaluation
         IntervalNumber parameter,Span<IntervalNumber> matrix,Span<IntervalDual> variables,Span<IntervalDual> equations,ReadOnlySpan<BufferOffset> fixedCharts,
         Span<IntervalSplineContact> cache,ref IntervalJacobianRecord record,bool cartesianSpline=false,bool substitutedConic=false)
         =>substitutedConic?ConicSubstitutionJacobian(program,nodes,boxes,parameter,matrix,variables,equations,fixedCharts)
-            :record.Nodes.IsEmpty?IntervalJacobian(program,nodes,boxes,parameter,matrix,variables,equations,fixedCharts,cache,cartesianSpline)
+            :record.Nodes.IsEmpty?IntervalJacobian(program,nodes,boxes,parameter,matrix,variables,equations,fixedCharts,cache,cartesianSpline,true)
             :RecordedIntervalJacobian(program,nodes,boxes,parameter,matrix,fixedCharts,cache,ref record);
 
     // Every use belongs to one immutable occurrence/chart structure. A new

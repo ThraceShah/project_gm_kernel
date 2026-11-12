@@ -18,6 +18,10 @@ internal struct ProjectionPoint
 /// discard domains. Failure to close the global distance gap is explicit.</summary>
 internal static class BSplineProjection
 {
+#if KERNEL_TEST_HOOKS
+    internal static bool AllSubdivisionSeeds;
+    [ThreadStatic] internal static long TestSeedSearches;
+#endif
     internal static AlgorithmStatus Closest(in BezierSurfacePatch patch, in KernelVector3 target,
         double tolerance, ref ProjectionPoint best)
     {
@@ -29,12 +33,13 @@ internal static class BSplineProjection
         {
             if (++visited > 200000) return AlgorithmStatus.NotConverged;
             var box = pending[--count];
-            var status = BezierSurfaceBounds.Bound(patch, box, bounds); if (status != AlgorithmStatus.Success) return status;
+            var status = BezierSurfaceBounds.BoundPosition(patch, box, bounds[..3], poles); if (status != AlgorithmStatus.Success) return status;
             var lower = BoxDistance(bounds, target);
             if (lower >= best.DistanceUpper - tolerance) continue;
             Improve(patch, box, target, ref best);
             if (best.DistanceUpper <= tolerance) continue;
-            status = BezierSurfaceBounds.Restrict(patch, box, poles); if (status != AlgorithmStatus.Success) return status;
+            // The position bound prepared this exact box's restricted net;
+            // Improve only writes best and uses its own point workspace.
             var direction = Sub(target, best.Point); var length = OperationNorm(direction);
             if (length > 0 && double.IsFinite(length))
             {
@@ -75,8 +80,17 @@ internal static class BSplineProjection
     private static void Improve(in BezierSurfacePatch patch, in SurfaceParameterBox box, in KernelVector3 target, ref ProjectionPoint best)
     {
         Span<IntervalNumber> values = stackalloc IntervalNumber[9];
-        for (var seed = 0; seed < 5; seed++)
+        // Newton only supplies certified upper bounds. Descendants retain
+        // the full hull/support-plane lower proof and distance-gap gate.
+        var initial=box.U0==patch.Domain.U0&&box.U1==patch.Domain.U1&&box.V0==patch.Domain.V0&&box.V1==patch.Domain.V1;
+#if KERNEL_TEST_HOOKS
+        initial|=AllSubdivisionSeeds;
+#endif
+        for (var seed = 0; seed < (initial?5:1); seed++)
         {
+#if KERNEL_TEST_HOOKS
+            TestSeedSearches++;
+#endif
             var u = seed == 0 ? (box.U0 + box.U1) * .5 : seed <= 2 ? box.U0 : box.U1;
             var v = seed == 0 ? (box.V0 + box.V1) * .5 : (seed & 1) != 0 ? box.V0 : box.V1;
             for (var iteration = 0; iteration < 18; iteration++)
@@ -102,7 +116,7 @@ internal static class BSplineProjection
                 {
                     var nextU = Math.Clamp(u + su, box.U0, box.U1); var nextV = Math.Clamp(v + sv, box.V0, box.V1);
                     if (nextU == u && nextV == v) break;
-                    if (BezierSurfaceBounds.Bound(patch, new(nextU, nextU, nextV, nextV), values) != AlgorithmStatus.Success) break;
+                    if (BezierSurfaceBounds.BoundPosition(patch, new(nextU, nextU, nextV, nextV), values[..3]) != AlgorithmStatus.Success) break;
                     if (UpperDistance(values, target) < distance) { u = nextU; v = nextV; improved = true; break; }
                     su *= .5; sv *= .5;
                 }

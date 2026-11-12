@@ -14,6 +14,10 @@ internal struct SurfaceBoundCacheEntry
 
 internal readonly ref struct SurfaceIntersectionPatch
 {
+#if KERNEL_TEST_HOOKS
+    internal static bool UseCertifiedSectionBounds=true;
+    [ThreadStatic] internal static long TestCertifiedSectionBounds;
+#endif
     private readonly BezierSurfacePatch bezier;
     private readonly NestedBlendProgram blend;
     private readonly BlendSurfaceIndex surface;
@@ -27,6 +31,8 @@ internal readonly ref struct SurfaceIntersectionPatch
     private readonly double lineU,lineV,lineDU,lineDV;
     private readonly Span<SurfaceBoundCacheEntry> cache;
     private readonly bool pinnedCache;
+    private readonly bool hasCellProof;
+    private readonly SurfaceParameterBox provenCell;
     private readonly GeomTag cacheTag;
     private readonly EntityGeneration cacheGeneration;
     private readonly KernelSense cacheSense;
@@ -38,7 +44,7 @@ internal readonly ref struct SurfaceIntersectionPatch
     internal SplineDegree VDegree=>isBlend?(isSpine?0:1):bezier.VDegree;
     internal SurfaceIntersectionPatch(BezierSurfacePatch patch){bezier=patch;blend=default;surface=0;isBlend=isSpine=false;Domain=patch.Domain;}
     internal SurfaceIntersectionPatch(BezierSurfacePatch patch,double offset):this(patch){normalOffset=offset;}
-    internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,double offset){this=source;normalOffset+=offset;cache=default;}
+    internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,double offset){this=source;normalOffset+=offset;cache=default;hasCellProof=false;}
     internal SurfaceIntersectionPatch(NestedBlendProgram program,BlendSurfaceIndex root,SurfaceParameterBox domain){bezier=default;blend=program;surface=root;isBlend=true;isSpine=false;Domain=domain;}
     internal SurfaceIntersectionPatch(NestedBlendProgram program,BlendSpineIndex spine,double lower,double upper){bezier=default;blend=program;surface=spine;isBlend=isSpine=true;Domain=new(lower,upper,0,1);}
     // Scalar chart-coordinate adapter, used only for native-t root isolation.
@@ -50,11 +56,19 @@ internal readonly ref struct SurfaceIntersectionPatch
     internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,GeomTag tag,EntityGeneration generation,KernelSense sense)
     {this=source;cacheTag=tag;cacheGeneration=generation;cacheSense=sense;}
     internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,bool constantU,double parameter,double lower,double upper)
-    {this=source;isoAxis=constantU?(byte)1:(byte)2;isoParameter=parameter;Domain=new(lower,upper,0,1);cache=default;}
+    {this=source;isoAxis=constantU?(byte)1:(byte)2;isoParameter=parameter;Domain=new(lower,upper,0,1);cache=default;if(source.isoAxis!=0||source.sweepAxis!=0||source.parameterLine)hasCellProof=false;}
     internal SurfaceIntersectionPatch(SurfaceIntersectionPatch curve,BufferOffset axis,double height)
-    {this=curve;sweepAxis=(byte)(axis+1);Domain=new(curve.Domain.U0,curve.Domain.U1,-height,height);cache=default;}
+    {this=curve;sweepAxis=(byte)(axis+1);Domain=new(curve.Domain.U0,curve.Domain.U1,-height,height);cache=default;hasCellProof=false;}
     internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,double u,double v,double du,double dv,double lower,double upper)
-    {this=source;parameterLine=true;lineU=u;lineV=v;lineDU=du;lineDV=dv;Domain=new(lower,upper,0,1);cache=default;}
+    {this=source;parameterLine=true;lineU=u;lineV=v;lineDU=du;lineDV=dv;Domain=new(lower,upper,0,1);cache=default;hasCellProof=false;}
+    private SurfaceIntersectionPatch(SurfaceIntersectionPatch source,SurfaceParameterBox cell)
+    {this=source;provenCell=cell;hasCellProof=true;}
+    internal AlgorithmStatus BoundCell(in SurfaceParameterBox cell,Span<IntervalNumber> output,out SurfaceIntersectionPatch certified)
+    {
+        certified=this;var status=Bound(cell,output);if(status!=AlgorithmStatus.Success||output.Length<9||isoAxis!=0||sweepAxis!=0||parameterLine)return status;
+        for(var i=0;i<9;i++)if(!output[i].Finite)return status;
+        certified=new(this,cell);return status;
+    }
     internal bool ExactCorner(double u,double v,Span<IntervalNumber> homogeneous)
     {
         if(isBlend||normalOffset!=0||isoAxis!=0||sweepAxis!=0||parameterLine||supportParameterSide!=0)return false;
@@ -96,6 +110,25 @@ internal readonly ref struct SurfaceIntersectionPatch
         {
             var t=new IntervalNumber(box.U0,box.U1);var u=lineU+t*lineDU;var v=lineV+t*lineDV;
             mapped=new(u.Lower,u.Upper,v.Lower,v.Upper);
+        }
+        var useCellProof=hasCellProof;
+#if KERNEL_TEST_HOOKS
+        useCellProof&=UseCertifiedSectionBounds;
+#endif
+        if(useCellProof&&isBlend&&!isSpine&&isoAxis!=0&&!parameterLine&&sweepAxis==0&&normalOffset==0
+            &&mapped.U0>=provenCell.U0&&mapped.U1<=provenCell.U1&&mapped.V0>=provenCell.V0&&mapped.V1<=provenCell.V1
+            &&JointNestedBlendEvaluation.CanBoundExplicitSection(blend,surface))
+        {
+            var demand=(byte)(isoAxis+2);
+#if KERNEL_TEST_HOOKS
+            TestCertifiedSectionBounds++;
+#endif
+            if(ModelingPerformance.TryBound(cacheTag,cacheGeneration,cacheSense,surface,false,mapped,output,out var reused,double.NaN,demand))return reused;
+            var started=ModelingPerformance.StartBound();
+            var section=JointNestedBlendEvaluation.BoundExplicitSection(blend,surface,isoAxis==1,isoParameter,new(box.U0,box.U1),output);
+            ModelingPerformance.EndBound(started);
+            if(section==AlgorithmStatus.Success)ModelingPerformance.StoreBound(cacheTag,cacheGeneration,cacheSense,surface,false,mapped,output,section,double.NaN,demand);
+            return section;
         }
         AlgorithmStatus status;var failureScale=isBlend?AnalyticFailureScale():double.NaN;
         if(!isBlend||!ModelingPerformance.TryBound(cacheTag,cacheGeneration,cacheSense,surface,isSpine,mapped,output,out status,failureScale))

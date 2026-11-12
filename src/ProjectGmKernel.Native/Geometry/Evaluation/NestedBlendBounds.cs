@@ -206,7 +206,8 @@ internal static partial class JointNestedBlendEvaluation
             }
             if(cartesianSpline){status=CartesianSplineInverse(program,nodes,state[..n],inverse[..(n*n)]);if(status!=AlgorithmStatus.Success)return status;}
         }
-        Span<IntervalSplineContact> splineCache=stackalloc IntervalSplineContact[n];
+        // Same immutable program/occurrences own this cache until BoundSegment returns.
+        Span<IntervalSplineContact> splineCache=stackalloc IntervalSplineContact[n];splineCache.Clear();
         var recordCapacity=!substitutedConic&&CanRecordJacobian(program,nodes,n)?64+512*nodes.Length:0;
         Span<IntervalExpressionNode> recordNodes=stackalloc IntervalExpressionNode[recordCapacity];
         Span<IntervalNumber> recordDerivatives=stackalloc IntervalNumber[recordCapacity*n];
@@ -408,14 +409,20 @@ internal static partial class JointNestedBlendEvaluation
     }
 
     private static AlgorithmStatus IntervalJacobian(in NestedBlendProgram program,ReadOnlySpan<Occurrence> nodes,ReadOnlySpan<IntervalNumber> boxes,
-        IntervalNumber parameter,Span<IntervalNumber> matrix,Span<IntervalDual> variables,Span<IntervalDual> equations,ReadOnlySpan<BufferOffset> fixedCharts,Span<IntervalSplineContact> cache,bool cartesianSpline=false)
+        IntervalNumber parameter,Span<IntervalNumber> matrix,Span<IntervalDual> variables,Span<IntervalDual> equations,ReadOnlySpan<BufferOffset> fixedCharts,Span<IntervalSplineContact> cache,bool cartesianSpline=false,bool localSplineScope=false)
     {
         var n=boxes.Length;ModelingPerformance.Jacobian(n);for(var i=0;i<n;i++)variables[i]=new(boxes[i],0);
-        if(HasAnyUv(nodes))cache.Clear();
+        if((!localSplineScope||!ReuseSplineContactBounds)&&HasAnyUv(nodes))cache.Clear();
         foreach(var node in nodes)for(var side=0;side<2;side++)
         {
             var uv=side==0?node.FirstUv:node.SecondUv;if(uv<0)continue;var spine=program.Spines[node.Spine];var source=program.Surfaces[side==0?spine.First:spine.Second];
-            if(SplineContactMatches(cache[uv],source,boxes[uv],boxes[uv+1]))continue;
+            if(SplineContactMatches(cache[uv],source,boxes[uv],boxes[uv+1]))
+            {
+#if KERNEL_TEST_HOOKS
+                TestLocalSplineJetHits++;
+#endif
+                continue;
+            }
             var status=CacheSplineContact(program,source,boxes[uv],boxes[uv+1],ref cache[uv]);if(status!=AlgorithmStatus.Success)return status;
         }
         var firstColumn=0;

@@ -150,3 +150,25 @@ pool 和返回内存均恢复。没有用坐标排序选择身份。
 
 以上是 owner 自测、当前分支增量；尚未独立接受，未与 Mac 性能固定源合成统一交付。
 原 M0–M5 未决类别、588 项物性 U、510 边界分类及未执行 FaceAttach 等不会因此消失。
+
+## 固定数值优化合成
+
+以已接受固定 `3aff4e2b0247bd4f21e74e71d437a33dff1a3e24` 相对 `ab597e8a` 的
+八个 Geometry 文件算法差异合成本分支：conditioned homogeneous restriction、
+position-only bounds、一次 immutable proof 内的 successful spline jet reuse、
+完整 parent-cell proof 的 section bounds、局部完整 section root reuse 和 projection
+candidate seed 减算。相关七个测试文件随合同导入，包括 private Jacobian delegate
+新增 localSplineScope 的签名；没有保留旧签名兼容层。
+
+没有取回两个 Runtime 文件：它们来自较早功能基线，整文件替换会丢失当前 cone/torus
+分类及有限 contact distance 修复。Mac 尚在研发的 UV 和 ray extent 补丁不在组合内。
+`integrated-3aff-full.log/.exit` 对合成快照实际完成 **2058/2058**，原 exit 0，
+不是沿用任一单分支回归。该轮之后的 trace/reader 修复有各自新验证记录；本轮全量
+不能替这些后续改动签名。原 `3ce2fa5c` 的 45 个 curved Boolean 全部严格几何通过，
+逐关系有限来源见证及负例通过，mass 47U、partial persistence 6U，原 exit 2。
+
+关键组合消费者仍逐操作实际执行中。初轮17个局部 Blend/Chamfer 的上游及 lifecycle
+通过，12个下游 Boolean 通过，5个含 Cone/Torus 的下游在 read 阶段拒绝；不将此记成
+上游失败。短边后续消费发现新 PreservedIdentity 诊断没有携 support，既有回调因此
+非法读取；此原 exit 134 保留，不能签成建模通过。两处在同任务继续修复与复验，
+不因形成统一源码就声称统一端到端能力或性能资格已经成立。
