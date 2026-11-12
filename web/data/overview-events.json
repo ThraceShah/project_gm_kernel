@@ -433,5 +433,140 @@
       },
       "source": "scripts/ShortEdgeBlendOracle.cs"
     }
+  },
+  {
+    "kind": "case-update",
+    "catalogId": "local-blend.cylinder-rim-fillet",
+    "dimension": "query",
+    "status": "pass",
+    "currentVersion": "reverified",
+    "lastVerified": {
+      "commit": "ab597e8a24b2ef23753507c8ca3e43d12edcc650",
+      "tree": "Native",
+      "host": "q2 Linux x64",
+      "exit": "rawExit=0（fixedOriginal20 20/20 四方同 byte）",
+      "evidence": "docs/query-numerics-closure/results.json"
+    },
+    "note": "ab597 直接 GM BodyContainsVector 在 20 真实点全 0 通过（20/20 四方同 byte），PK 0；copy-delete-source/mirror-scale/reload 均通过。",
+    "utc": "2026-11-12T13:25:00Z",
+    "identity": {
+      "parameters": {
+        "shape": "cylinder",
+        "operation": "fillet",
+        "amount": 0.4,
+        "selection": "single",
+        "oriented": false,
+        "markApi": "PK_EDGE_set_blend_constant"
+      },
+      "source": "scripts/LocalOperationOracle.cs"
+    }
+  },
+  {
+    "kind": "case-update",
+    "catalogId": "local-blend.cylinder-both-rim-fillet",
+    "dimension": "query",
+    "status": "pass",
+    "currentVersion": "reverified",
+    "lastVerified": {
+      "commit": "ab597e8a24b2ef23753507c8ca3e43d12edcc650",
+      "tree": "Native",
+      "host": "q2 Linux x64",
+      "exit": "rawExit=0（fixedOriginal20 20/20 四方同 byte）",
+      "evidence": "docs/query-numerics-closure/results.json"
+    },
+    "note": "ab597 直接 GM BodyContainsVector 在 20 真实点全 0 通过（20/20 四方同 byte），PK 0；copy-delete-source/mirror-scale/reload 均通过。",
+    "utc": "2026-11-12T13:25:00Z",
+    "identity": {
+      "parameters": {
+        "shape": "cylinder",
+        "operation": "fillet",
+        "amount": 0.4,
+        "selection": "all",
+        "oriented": false,
+        "markApi": "PK_EDGE_set_blend_constant"
+      },
+      "source": "scripts/LocalOperationOracle.cs"
+    }
+  },
+  {
+    "kind": "case-update",
+    "catalogId": "local-blend.cylinder-rim-chamfer",
+    "dimension": "query",
+    "status": "pass",
+    "currentVersion": "reverified",
+    "lastVerified": {
+      "commit": "ab597e8a24b2ef23753507c8ca3e43d12edcc650",
+      "tree": "Native",
+      "host": "q2 Linux x64",
+      "exit": "rawExit=0（fixedOriginal20 20/20 四方同 byte）",
+      "evidence": "docs/query-numerics-closure/results.json"
+    },
+    "note": "ab597 直接 GM BodyContainsVector 在 20 真实点全 0 通过（20/20 四方同 byte），PK 0；copy-delete-source/mirror-scale/reload 均通过。",
+    "utc": "2026-11-12T13:25:00Z",
+    "identity": {
+      "parameters": {
+        "shape": "cylinder",
+        "operation": "chamfer",
+        "amount": 0.4,
+        "selection": "single",
+        "oriented": false,
+        "markApi": "PK_EDGE_set_blend_chamfer"
+      },
+      "source": "scripts/LocalOperationOracle.cs"
+    }
+  },
+  {
+    "kind": "case-update",
+    "catalogId": "local-blend.cylinder-both-rim-chamfer",
+    "dimension": "query",
+    "status": "pass",
+    "currentVersion": "reverified",
+    "lastVerified": {
+      "commit": "ab597e8a24b2ef23753507c8ca3e43d12edcc650",
+      "tree": "Native",
+      "host": "q2 Linux x64",
+      "exit": "rawExit=0（fixedOriginal20 20/20 四方同 byte）",
+      "evidence": "docs/query-numerics-closure/results.json"
+    },
+    "note": "ab597 直接 GM BodyContainsVector 在 20 真实点全 0 通过（20/20 四方同 byte），PK 0；copy-delete-source/mirror-scale/reload 均通过。",
+    "utc": "2026-11-12T13:25:00Z",
+    "identity": {
+      "parameters": {
+        "shape": "cylinder",
+        "operation": "chamfer",
+        "amount": 0.4,
+        "selection": "all",
+        "oriented": false,
+        "markApi": "PK_EDGE_set_blend_chamfer"
+      },
+      "source": "scripts/LocalOperationOracle.cs"
+    }
+  },
+  {
+    "kind": "case-update",
+    "catalogId": "local-blend.cylinder-unequal-chamfer",
+    "dimension": "query",
+    "status": "pass",
+    "currentVersion": "reverified",
+    "lastVerified": {
+      "commit": "ab597e8a24b2ef23753507c8ca3e43d12edcc650",
+      "tree": "Native",
+      "host": "q2 Linux x64",
+      "exit": "rawExit=0（fixedOriginal20 20/20 四方同 byte）",
+      "evidence": "docs/query-numerics-closure/results.json"
+    },
+    "note": "ab597 直接 GM BodyContainsVector 在 20 真实点全 0 通过（20/20 四方同 byte），PK 0；copy-delete-source/mirror-scale/reload 均通过。",
+    "utc": "2026-11-12T13:25:00Z",
+    "identity": {
+      "parameters": {
+        "shape": "cylinder",
+        "operation": "unequal-chamfer",
+        "amount": 0.3,
+        "selection": "single",
+        "oriented": false,
+        "markApi": "PK_EDGE_set_blend_chamfer"
+      },
+      "source": "scripts/LocalOperationOracle.cs"
+    }
   }
 ]

@@ -297,6 +297,7 @@ void Delivery(string runId,string label,string commit,string utc,string note)
 {
     var o=new JsonObject();o["runId"]=JsonValue.Create(runId);o["label"]=JsonValue.Create(label);o["commit"]=JsonValue.Create(commit);o["utc"]=JsonValue.Create(utc);o["note"]=JsonValue.Create(note);deliveries.Add((JsonNode)o);
 }
+Delivery("20261112T132500Z-queryab597","Native 查询与物性规范化验收快照：ab597e8a / 交付 f633b51d","ab597e8a","2026-11-12T13:25:00Z","query and numerics closure");
 Delivery("20261112T045837Z-projcc47871","Projection cc47871 测量窗口（当前版本复验 5 op）","cc478711","2026-11-12T04:58:37Z","current-version measurement window");
 Delivery("20261112T002227Z-uperf1654","统一性能 1654 窗口（历史复验 5 op）","1654dbf2","2026-11-12T00:22:27Z","historical measurement window");
 Delivery("20261111T223759Z-unified4b","统一内核 4b（功能/质量快照）","4b2405e","2026-11-11T22:37:59Z","unified snapshot");
@@ -429,7 +430,7 @@ void Boundary(string id,string title,string status,string note,string evidence)
 }
 Boundary("boundary.probes-510","510 四向 On 分类边界分歧（self 15/import 16、native 自差 7）","unresolved","历史/当前均未决；共同有限 precision 合同留共同 owner；已映射 self/imported-fixed-probes 两行。","../gm-pk-native-delivery/temp_docs/pk-native-delivery/probes-self.log");
 Boundary("boundary.faceattach-reattach","FaceAttach 负 surface query/copy/reattach","untested","仅静态线索，组合未执行。","docs/integration-1887-publish-receipt.md");
-Boundary("boundary.bodycontains-axial","五圆柱产品直接 BodyContainsVector 查询缺口（20 点全 5000）","fail","已映射 cylinder-* 五 case 的 query 维度。","../gm-blend-functional-delivery/temp_docs/blend-functional/final-integrated/axial-material-query.log");
+Boundary("boundary.bodycontains-axial","五圆柱产品直接 BodyContainsVector 查询缺口（历史 60be 20 点全 5000；当前 ab597 已通过）","pass","60be 历史 5000 缺口保留在历史记录；当前 ab597 20 XYZ 同 byte 四方 20/20 及 copy-delete-source/mirror-scale/reload 均通过，五产品当前 query 均已置为 pass。","docs/query-numerics-closure/results.json");
 Boundary("boundary.curved-roles","curved tracking/roles missing","unverified","如实中性，不补造。","docs/uperf-1654-publish-receipt.md");
 var records=new JsonArray();
 void Record(string id,string title,string status,string note,string evidence)
@@ -437,8 +438,12 @@ void Record(string id,string title,string status,string note,string evidence)
     var o=new JsonObject();o["id"]=JsonValue.Create(id);o["title"]=JsonValue.Create(title);o["status"]=JsonValue.Create(status);o["note"]=JsonValue.Create(note);o["evidence"]=JsonValue.Create(evidence);o["inModelingDenominator"]=false;records.Add((JsonNode)o);
 }
 Record("suite.mac-2022","Mac Projection cc47871 套件 2022/2022（原 raw 0）","pass","Mac 2022/2022 raw build0/test0 通过（耗时 4m44s）；只属 cc47871；不入建模分母。","docs/projection-cc47871-publish-receipt.md");
+Record("suite.linux-2025","Linux ab597 套件 2025/2025 全过（原 raw 0，guard 3072 CLEAN，不与 Mac Projection 2022 相加）","pass","托管套件 2025/2025 全过，原始 exit 0，guard 3072 CLEAN，归属本源；不与 Mac Projection 2022 相加。","docs/Native_Query_Numerics_Independent_Review.md");
 Record("suite.mac-2000","Mac 统一包套件 2000/1998/2（原 raw 1）","fail","2 supportingBlend NotConverged 保留（同 Mac baseline 133 窄复现）；栈修复实质记录；不入建模分母。","docs/uperf-1654-publish-receipt.md");
 Record("suite.linux-1974","Linux unified4b 套件 1974/1974（原 raw 0）","pass","历史 2 项本 TRX Passed；不代签 Mac 全绿。","docs/unified-4b-publish-receipt.md");
+Record("mass.contract-ab597","当前物性合同验收与 Joint 72 历史报告重判分列（ab597）","pass","当前物性合同已接受（整体量规范化与保守外包围）：五解析圆柱 10 份报告 Verified，一般曲面 1e-7 目标仍未认证；Joint 72 份历史报告按新标准重判（主 900 分量 312V/588U → 348V/552U；回读 180 分量 84V/96U → 144V/36U；总 1080 唯一分量 396V/684U → 492V/588U/0D；144U→V，48V→U 均为 12 volume/12 mass/24 cog.z；最多五整体物理量，不宣传 1080 独立认证）。","docs/Native_Query_Numerics_Independent_Review.md");
+Record("mass.faq-geometry-vs-mass","物性数值释疑：为何严格几何绿但物性仍为未决（U）？","pass","1) 严格几何求交/修剪与拓扑重构是局部逼近（1e-8/1e-5），不等于全域刚体积分误差自动受控；2) 误差传播需具体几何前提（全域单射法向与曲率控制），现有通用 compare 不自动给出；3) 现不少实体 GM 与 PK 估计值差很小（1e-10），但 PK 自带 modulus 模量误差界较宽（3e-7），严格外包围导致上界超标；4) 新标准采用有量纲依据的整体量规范化（体积/Rg/trace），无随意放宽；5) U（未决）代表当前积分误差界无法出具高置信度证明，不代表几何损坏，也不代表物性已全解决。","docs/Native_Query_Numerics_Independent_Review.md");
+Record("query.probes-510","510 四组完整四方 On 分类表与有限平面边界证明（ab597）","unresolved","direct self 495V/15U/0D、import 494V/16U/0D，0 API error；native 自差 7 行（102/153/204/254/289/390/441）、Capture 另 339=8 行；9 点由有限 plane 区域上界证明精度内；62 半/双距离派生控制相等；15/16U 显著可见；旧 self 其余 495 原四列缺失明确 missing。","docs/Native_Query_Numerics_Independent_Review.md");
 Record("mass.component-ledger","物性分量总账：主 900 分量 312V/588U/0D + 额外 180；唯一总账 1080 分量 396V/684U/0D","unresolved","分量不是功能 case；不重复计数。","docs/projection-cc47871-publish-receipt.md");
 Record("perf.targets","性能目标未达（各窗口分源口径）：cc47871 当前 shortedge 配对 331.97129x（比中位 332.04468x）、solidblend 253.84728x（比中位 244.25723x）、planar 回退 +78.105%；历史 1654 shortedge 387.35924x","unresolved","窗口不相乘、口径不混；主体性能目标未达。","docs/projection-cc47871-publish-receipt.md");
 
@@ -448,7 +453,8 @@ void Src(string name,string identity,string where,string note)
 {
     var o=new JsonObject();o["name"]=JsonValue.Create(name);o["identity"]=JsonValue.Create(identity);o["where"]=JsonValue.Create(where);o["note"]=JsonValue.Create(note);sourceIndex.Add((JsonNode)o);
 }
-Src("Projection cc47871（当前版本）","cc478711/fe3fa037/metadata 6568f1d9/交付 553b2c6c/独审 7b20d7f1","../gm-projection-cc47871-review + incoming/mac-projection-cc47871-*.zip","当前指定统一版本（几何/拓扑通过，性能未达）");
+Src("查询/物性规范化 ab597（当前计算源）","ab597e8a/evidence 0ef2305f/交付 f633b51d/独审 3e7ac1b1/Linux 2025 raw 0","../gm-native-query-numerics-closure","五圆柱直接查询通过 / 510 direct self 495V15U / 72 份物性重判 492V588U0D / guard 3072 CLEAN");
+Src("Projection cc47871（当前性能窗口）","cc478711/fe3fa037/metadata 6568f1d9/交付 553b2c6c/独审 7b20d7f1","../gm-projection-cc47871-review + incoming/mac-projection-cc47871-*.zip","性能观测源（几何/拓扑通过，性能未达）");
 Src("统一性能 1654","1654dbf2/224564d1/metadata d014f76e/交付 73b06e10/独审 2f8aea49","../gm-unified-performance-1654-review + incoming/unified-performance-1654/","历史统一版本（5 op 复验历史）");
 Src("统一内核 4b","4b2405e/133f56ac/独审 583d917+B17","../gm-native-unified-review + incoming/unified-delivery/","63 场景与 local17 的功能/质量历史来源");
 Src("Blend 60be","60be7216/独审 54f1b309","../gm-blend-functional-delivery + ../gm-blend-60be-review","local-blend 17 与查询缺口来源");
@@ -460,7 +466,15 @@ summary["denominatorNote"]=JsonValue.Create("分母=固定目录 463 具名建�
 
 var overview=new JsonObject();
 overview["schemaVersion"]=1;overview["generatedAt"]=JsonValue.Create(now.ToString("O"));overview["catalogVersion"]=JsonValue.Create("2026-11-12.overview-catalog-v2");
-overview["currentVersion"]=new JsonObject{{"label",JsonValue.Create("Projection cc47871（当前指定版本）")},{"calculation",JsonValue.Create("cc47871133fb7d536ffa7fd050066c51f4905708")},{"native",JsonValue.Create("fe3fa0378ef6d9c0dd971de4c993a289cdb8a34b")},{"measurementMetadata",JsonValue.Create("6568f1d9d19bbf0df0f9eeb07dc2afac1f5990599535b2f5caa0dbaf40d9e90e")},{"acceptanceReview",JsonValue.Create("7b20d7f1046ad5b6f54f8601edd739fa5d54a901")},{"windowUtc",JsonValue.Create("2026-11-12T04:56:39.7493270Z .. 2026-11-12T04:58:37.0945730Z")}};
+overview["currentVersion"]=new JsonObject{
+    {"label",JsonValue.Create("功能/物性ab597与性能cc47871分源汇总")},
+    {"queryNumerics",JsonValue.Create("ab597e8a24b2ef23753507c8ca3e43d12edcc650")},
+    {"performanceProjection",JsonValue.Create("cc47871133fb7d536ffa7fd050066c51f4905708")},
+    {"calculation",JsonValue.Create("ab597e8a24b2ef23753507c8ca3e43d12edcc650 / cc47871133fb7d536ffa7fd050066c51f4905708")},
+    {"native",JsonValue.Create("ab597e8a / fe3fa037")},
+    {"acceptanceReview",JsonValue.Create("3e7ac1b1273c56530bfbd50f0cb6bdffb08e4fd7 / 7b20d7f1046ad5b6f54f8601edd739fa5d54a901")},
+    {"windowUtc",JsonValue.Create("2026-11-12T04:58:37Z .. 2026-11-12T13:25:00Z")}
+};
 overview["catalog"]=catalogItems;overview["boundaryRegisters"]=boundaries;overview["verificationRecords"]=records;
 overview["deliveries"]=deliveries;overview["sourceIndex"]=sourceIndex;overview["summary"]=summary;overview["mappingAudit"]=mappingAudit;
 
@@ -522,7 +536,7 @@ if(verifyMode)
     foreach(var cid in cylinderQueryIds)
     {
         var c=catalogItems.OfType<JsonObject>().First(x=>x["id"]!.GetValue<string>()==cid);
-        if(c["dimensions"]!["query"]!["status"]!.GetValue<string>()!="fail")Issue("query gap overwritten: "+cid);
+        if(c["dimensions"]!["query"]!["status"]!.GetValue<string>()!="pass")Issue("cylinder query must be pass: "+cid);
     }
     // missing evidence not green
     foreach(var c in catalogItems.OfType<JsonObject>())
