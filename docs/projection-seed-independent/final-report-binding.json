@@ -1,0 +1,7 @@
+{
+  "report": "docs/Projection_Seed_Independent_Review.md",
+  "reportSha256": "6e24534711e2a7fb3160e1f8c837113be9b7cc06d94b8b31bedc781fc649b6a3",
+  "priorSupplementSha256": "1ef7a6d5142dca31a39936b4205fa234f7d7208973de2761cfc295086af9ca4c",
+  "priorReportVersionCommit": "8a4ed9c9069cf9f3cc07a0d5ccdf95b839107f4c",
+  "correction": "Prose strict total 189 omitted 18 separately captured development baseline proofs; actual machine audit already verified 63 quality-root (45 primary \u002B 18 baseline) \u002B 144 window = 207. No evidence, modeling execution, acceptance or raw exit changed."
+}

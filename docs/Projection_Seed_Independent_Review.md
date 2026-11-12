@@ -99,7 +99,7 @@ Linux 定向 **38/38、raw0、0 skip**，包含原 projection、Bezier bounds、
 | NURBS lifecycle | 16／0／13 | 2 |
 | curved editable reload | 17／0／26 | 2 |
 
-八组 CaptureErrors 均0；Fix、copy 删源、反射／缩放、两次 Boolean、可编辑自 XT reload／cleanup按实际步骤保留，后续操作不反判已独立通过的前序。原质量45份 strict／24份 mass，与窗口144份 strict／72份 mass 分开；独查189份 strict 的结构 mask、global/local 和差异条目，仅356条 n_cht_pts diagnostic，**本包无启用其他 conditional finite 降级的条目**，没有全关偏差门。原 mass U 和七 raw2 没有被检查器0补签。
+八组 CaptureErrors 均0；Fix、copy 删源、反射／缩放、两次 Boolean、可编辑自 XT reload／cleanup按实际步骤保留，后续操作不反判已独立通过的前序。原八质量组45份 strict／24份 mass、另存开发基线18份 strict，与窗口144份 strict／72份 mass 分开；合计独查207份 strict 的结构 mask、global/local 和差异条目，仅356条 n_cht_pts diagnostic，**本包无启用其他 conditional finite 降级的条目**，没有全关偏差门。机器收据 qualityReports=63 包含上述开发基线18份，不是把八组扩成63份；原 mass U 和七 raw2 没有被检查器0补签。
 
 10 质量 PE／portable PDB 逐链接、MVID、hash 和 fixed Git checksum 核实；ordinary Native336、testhooks Native336、Tests170，三个 source 集合，generated／unmapped 单列。ordinary actual-loaded 与测试 sealed／前后清单各自论证，不补 test loader 或 start/end。ordinary MVID `6a992446-9083-4400-9f6b-6b0b91f476f8`／DLL `29b4d3f243a6a5df37629d732f2096ff9b75d43dc46da479b9fc79cfd7637a20`；hooks `a86ba398-3bd3-4cd8-96dc-2143cc251046`／`8a0f1afebfb4051e3e87a711592764d2cc1f61b268d44b6324743de5bd655837`；Tests `ef9baabe-a84f-4504-8f19-25a9e901c496`／`015df3add9a5114f0bcb6bff62a171fa4c4949364f251cbc50540cd1a20fb6cf`。Mac PE只解析元数据，没有加载冒充 Linux 执行。
 
