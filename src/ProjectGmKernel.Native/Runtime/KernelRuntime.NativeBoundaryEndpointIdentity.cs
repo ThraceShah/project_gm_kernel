@@ -20,6 +20,12 @@ internal static unsafe partial class KernelRuntime
             if(!model.LiveBoundaryPoint(p)||model.OriginalVertices[p]>=0)continue;
             var isolated=false;foreach(var row in model.Parameters[..model.ParameterCount])if(row.Event==p&&row.Witness!=0){isolated=true;break;}
             if(isolated)continue;
+            // Coincident-area imprint events carry cross-body merge and
+            // precision provenance. A regular declared cut end must not
+            // replace that event with one input body's endpoint identity.
+            var imprint=false;foreach(var cut in cuts)
+                if(cut.Cut.KeepImprint!=0&&model.KnownBoundaryParameter(p,cut.Cut.Curve,out _)){imprint=true;break;}
+            if(imprint)continue;
             for(var e=0;e<input.Edges.Length;e++)
             {
                 var edge=input.Edges[e];

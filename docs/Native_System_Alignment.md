@@ -817,3 +817,41 @@ raw 2、仍为 3 项物性 U，真实程序集为
 事件和原计划其他未执行类别继续按既有章节登记，不因本次局部几何拓扑通过而消失。
 原510/588U、统一固定包、完整最终回归、周期分支、Mac及集中独立接受仍须按实际
 新源执行；本节不替随后source或未执行范围取得资格。
+
+### 固定源横向消费者与 imprint 来源修正
+
+固定 `1dae797aa13163c8abafa8f863e0d5d6591f9fd2` 的完整托管运行
+`temp_docs/native-system-alignment/1dae797-full-managed.log/.exit` 为 raw 1：
+2139/2141 通过，两项 unite 同域有限 overlay 在原生顶点精度计数处失败
+（直接及 XT 回读各一项，预期四个、实际两个）。原失败未被后来的 checker 或
+几何通过覆盖。根因是新 regular cut 端点接续同时接纳了 coincident-area imprint；
+后者携带跨体合并与 precision 来源，不能作为普通 cut end 复用某个输入的身份。
+现在两项接续入口都按实际 `KeepImprint` 角色排除这类事件，继续使用已有同域
+overlay 来源与发布机制；没有按 Boolean 编号、坐标或 fixture 分派。
+
+修正开发源（`1dae797a` 加该固定 diff）实际 Native assembly 为
+6023141eb24473e7a8530849e083693d2521e36b6e5874eb1e8de77d7c154172。
+`native-imprint-provenance-managed-v1.log/.exit` 38/38 raw 0，包含上述六种有限
+overlay、同域 tracking 与 rolling network。`native-imprint-provenance-pk-v1.log/.exit`
+六项真实独立 PK/GM 三操作及回读输入 fullcheck/strict compare、125 点材料分类、
+tracking owner/class 与有限来源正例/错误来源负例通过，raw 2 仅保留六次物性 U。
+逐侧来源关系数为 unite/intersect 44、subtract 12；有限 witness 明确不是连续证明。
+`native-parameter-imprint-eligibility-v1.log/.exit` 镜像、尺度 1.7、逆工具顺序的
+独立 Fix/Boolean/投影材料控制也通过，raw 2、三次物性 U。完整回归仍需新源重跑。
+
+此前固定 `1dae797a` 的生命周期与跨平台结果仍单独绑定原源：
+
+- `1dae797-lifecycle-remodel.log/.exit` raw 2：plane-nurbs、nurbs-nurbs、
+  concave-nurbs-nurbs，各三尺度 .125/1.7/8 的 copy/delete/mirror/scale、XT
+  可编辑回读再建模，共九个生命周期及三组独立 Fix/Boolean 通过；物性另记 U。
+  q2 Native assembly 为 74e673d5d403d316a18132c4f7f513da22c94531e7e25faaf1dc8e38990e7fec。
+- `1dae797-native-ownership.log/.exit` raw 0 为公共几何 contracts-only：free/owned
+  attachment、负例保持目标不变、PART_ask_geoms、嵌套定义、copy/delete/cascade。
+  它没有执行 XT writer 子进程，不称为所有 FaceAttach 类别的完整覆盖。
+- `1dae797-mac-environment.log/.exit` raw 0 后，Mac arm64 同固定源镜像尺度逆序
+  控制 `1dae797-mac-native-parameter.log/.exit` raw 2：独立 Fix/Boolean、fresh XT
+  fullcheck/strict、48 材料与六投影探针通过，三次物性 U。真实 Mac assembly 为
+  6436530f78c8bf03fa0d14f186a65d3061f93b05697a24b757caa59c24fd5af2。
+  该结果不替尚未运行的后继源取得跨平台资格。
+
+这些是 owner 实际运行，尚非独立接受或完整最终交付。

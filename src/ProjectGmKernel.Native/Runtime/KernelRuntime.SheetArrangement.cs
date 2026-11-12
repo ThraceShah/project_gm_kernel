@@ -577,7 +577,7 @@ internal static unsafe partial class KernelRuntime
                 var span=wrap?cut.Last-first+last-cut.First:last-first;
                 if(!(span>(model.RequireBoundaryAssociations||certified||cut.InheritedSourceEdge!=0?0:1e-12)))continue;
                 if(certified&&Math.BitIncrement(first)>=last)return ParasolidConstants.PK_ERROR_cant_do_intersect;
-                if(model.RequireBoundaryAssociations&&!closed&&!wrap&&cut.InheritedSourceEdge==0
+                if(model.RequireBoundaryAssociations&&!closed&&!wrap&&cut.InheritedSourceEdge==0&&cut.KeepImprint==0
                     &&FindNativeFiniteLineFragment(cut.Curve,first,last,endpoints[i],endpoints[j],sources,model.Edges[..model.NE],out var nativeInherited))
                 {
                     var present=false;for(var h=0;h<nh;h++)present|=halfedges[h].Edge==nativeInherited;
