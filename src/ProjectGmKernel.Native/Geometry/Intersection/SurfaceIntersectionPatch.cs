@@ -33,16 +33,23 @@ internal readonly ref struct SurfaceIntersectionPatch
     private readonly bool pinnedCache;
     private readonly bool hasCellProof;
     private readonly SurfaceParameterBox provenCell;
+    private readonly ReadOnlySpan<IntervalNumber> curvePieces;
+    private readonly ReadOnlySpan<SurfaceParameterBox> curveDomains;
+    private readonly SplineDegree curveDegree;
     private readonly GeomTag cacheTag;
     private readonly EntityGeneration cacheGeneration;
     private readonly KernelSense cacheSense;
     internal SurfaceParameterBox Domain{get;}
-    internal bool IsProcedural=>isBlend||normalOffset!=0;
-    internal bool UVariable=>isBlend||bezier.UDegree>0;
+    internal bool IsProcedural=>isBlend||normalOffset!=0||!curveDomains.IsEmpty;
+    internal bool UVariable=>isBlend||!curveDomains.IsEmpty||bezier.UDegree>0;
     internal bool VVariable=>isBlend&&!isSpine||bezier.VDegree>0;
-    internal SplineDegree UDegree=>isBlend?1:bezier.UDegree;
+    internal SplineDegree UDegree=>!curveDomains.IsEmpty?curveDegree:isBlend?1:bezier.UDegree;
     internal SplineDegree VDegree=>isBlend?(isSpine?0:1):bezier.VDegree;
     internal SurfaceIntersectionPatch(BezierSurfacePatch patch){bezier=patch;blend=default;surface=0;isBlend=isSpine=false;Domain=patch.Domain;}
+    // The producer has proved C1 continuity from the actual native knot
+    // multiplicities; each piece retains its exact original-t restriction.
+    internal SurfaceIntersectionPatch(ReadOnlySpan<IntervalNumber> pieces,ReadOnlySpan<SurfaceParameterBox> domains,SplineDegree degree)
+    {curvePieces=pieces;curveDomains=domains;curveDegree=degree;Domain=new(domains[0].U0,domains[^1].U1,0,1);}
     internal SurfaceIntersectionPatch(BezierSurfacePatch patch,double offset):this(patch){normalOffset=offset;}
     internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,double offset){this=source;normalOffset+=offset;cache=default;hasCellProof=false;}
     internal SurfaceIntersectionPatch(NestedBlendProgram program,BlendSurfaceIndex root,SurfaceParameterBox domain){bezier=default;blend=program;surface=root;isBlend=true;isSpine=false;Domain=domain;}
@@ -65,13 +72,13 @@ internal readonly ref struct SurfaceIntersectionPatch
     {this=source;provenCell=cell;hasCellProof=true;}
     internal AlgorithmStatus BoundCell(in SurfaceParameterBox cell,Span<IntervalNumber> output,out SurfaceIntersectionPatch certified)
     {
-        certified=this;var status=Bound(cell,output);if(status!=AlgorithmStatus.Success||output.Length<9||isoAxis!=0||sweepAxis!=0||parameterLine)return status;
+        certified=this;var status=Bound(cell,output);if(status!=AlgorithmStatus.Success||output.Length<9||isoAxis!=0||sweepAxis!=0||parameterLine||!curveDomains.IsEmpty)return status;
         for(var i=0;i<9;i++)if(!output[i].Finite)return status;
         certified=new(this,cell);return status;
     }
     internal bool ExactCorner(double u,double v,Span<IntervalNumber> homogeneous)
     {
-        if(isBlend||normalOffset!=0||isoAxis!=0||sweepAxis!=0||parameterLine||supportParameterSide!=0)return false;
+        if(isBlend||normalOffset!=0||isoAxis!=0||sweepAxis!=0||parameterLine||supportParameterSide!=0||!curveDomains.IsEmpty)return false;
         var i=bezier.UDegree==0||u==bezier.Domain.U0?0:u==bezier.Domain.U1?bezier.UDegree:-1;
         var j=bezier.VDegree==0||v==bezier.Domain.V0?0:v==bezier.Domain.V1?bezier.VDegree:-1;
         if(i<0||j<0)return false;
@@ -92,6 +99,11 @@ internal readonly ref struct SurfaceIntersectionPatch
     }
     private AlgorithmStatus BoundCore(in SurfaceParameterBox box,Span<IntervalNumber> output)
     {
+        if(!curveDomains.IsEmpty)
+        {
+            if(normalOffset!=0||isoAxis!=0||sweepAxis!=0||parameterLine||supportParameterSide!=0)return AlgorithmStatus.Unsupported;
+            return PiecewiseBezierCurveBounds.Bound(curvePieces,curveDomains,curveDegree,box,output);
+        }
         if(supportParameterSide!=0)
         {
             if(ModelingPerformance.TryBound(cacheTag,cacheGeneration,cacheSense,surface,true,box,output,out var cached,double.NaN,supportParameterSide))return cached;
@@ -190,7 +202,7 @@ internal readonly ref struct SurfaceIntersectionPatch
     internal AlgorithmStatus SupportRange(in SurfaceParameterBox box,in KernelVector3 direction,ReadOnlySpan<IntervalNumber> bounds,out IntervalNumber range)
     {
         range=default;
-        if(!isBlend&&normalOffset==0&&isoAxis==0&&sweepAxis==0&&!parameterLine)
+        if(!isBlend&&normalOffset==0&&isoAxis==0&&sweepAxis==0&&!parameterLine&&curveDomains.IsEmpty)
         {
             Span<IntervalNumber> poles=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars];var status=BezierSurfaceBounds.Restrict(bezier,box,poles);if(status!=AlgorithmStatus.Success)return status;
             range=new(double.PositiveInfinity,double.NegativeInfinity);

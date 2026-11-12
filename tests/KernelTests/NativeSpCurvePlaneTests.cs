@@ -53,5 +53,36 @@ public class NativeSpCurvePlaneTests
         Assert.Equal(AlgorithmStatus.Unsupported,SpCurveBezier.Compose(new(surface,1,1,new(0,1,0,1)),uv,1,result,out _));
     }
 
+    [Theory]
+    [InlineData(.375)] [InlineData(.625)]
+    public void ContinuousNativePiecesEncloseTheJoinAndKeepTwoDistinctNearbyRoots(double knot)
+    {
+        Span<IntervalNumber> global=stackalloc IntervalNumber[12]{0,0,knot*knot,1,.5,.5,knot*knot-knot,1,1,1,(1-knot)*(1-knot),1};
+        var source=new BezierSurfacePatch(global,2,0,new(0,1,0,1));
+        Span<SurfaceParameterBox> domains=stackalloc SurfaceParameterBox[2]{new(.1,knot,0,1),new(knot,.9,0,1)};
+        Span<IntervalNumber> pieces=stackalloc IntervalNumber[24],values=stackalloc IntervalNumber[9],corner=stackalloc IntervalNumber[4];
+        for(var i=0;i<2;i++)Assert.Equal(AlgorithmStatus.Success,BezierSurfaceBounds.Restrict(source,domains[i],pieces.Slice(12*i,12)));
+        var curve=new SurfaceIntersectionPatch(pieces,domains,2);
+        Assert.True(curve.IsProcedural&&curve.UVariable&&!curve.VVariable);Assert.Equal(2,curve.UDegree);Assert.Equal(0,curve.VDegree);
+        Assert.False(curve.ExactCorner(knot,0,corner));
+        Assert.Equal(AlgorithmStatus.Success,curve.Bound(new(knot-.0625,knot+.0625,0,0),values));
+        Contains(values[2],0);Contains(values[2],.0625*.0625);Contains(values[5],-.125);Contains(values[5],.125);
+        var plane=new AnalyticSurface(SurfaceClass.Plane,new(){Z=.0625*.0625},new(){Z=1},new(){X=1});
+        Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[8];Span<ScalarRootIsolation> proof=stackalloc ScalarRootIsolation[8];var count=0;
+        Assert.Equal(AlgorithmStatus.Success,SurfaceIsoPlaneRoots.Find(curve,plane,.1,.9,roots,ref count,strictSeparation:true,isolation:proof));
+        Assert.Equal(2,count);Assert.True(proof[0].Certified&&proof[1].Certified&&!proof[0].SameRoot(proof[1]));
+        Assert.InRange(Math.Abs(Math.Min(roots[0].First,roots[1].First)-(knot-.0625)),0,1e-10);
+        Assert.InRange(Math.Abs(Math.Max(roots[0].First,roots[1].First)-(knot+.0625)),0,1e-10);
+        var shifted=new SurfaceIntersectionPatch(curve,.1);Assert.Equal(AlgorithmStatus.Unsupported,shifted.Bound(new(.2,.8,0,0),values));
+        domains[1]=new(knot+.01,.9,0,1);Assert.Equal(AlgorithmStatus.Unsupported,curve.Bound(new(.1,.9,0,0),values));
+    }
+
+    [Fact]
+    public void C0KnotsCannotSupplyTheContinuousDerivativeContract()
+    {
+        Assert.True(SpCurveBezier.HasC1Joins([0,0,0,.375,1,1,1],2,4));
+        Assert.False(SpCurveBezier.HasC1Joins([0,0,0,.375,.375,1,1,1],2,5));
+    }
+
     private static void Contains(IntervalNumber bound,double value)=>Assert.True(bound.Lower<=value+1e-13&&bound.Upper>=value-1e-13,$"{value:R} outside [{bound.Lower:R},{bound.Upper:R}]");
 }

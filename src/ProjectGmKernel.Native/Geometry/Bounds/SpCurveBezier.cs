@@ -9,6 +9,16 @@ namespace ProjectGmKernel.Native.Geometry.Bounds;
 // or installed in the model. A whole finite UV span must lie in one cell.
 internal static class SpCurveBezier
 {
+    internal static bool HasC1Joins(ReadOnlySpan<double> knots,SplineDegree degree,BufferCount vertices)
+    {
+        for(var i=degree+1;i<vertices;)
+        {
+            var j=i+1;while(j<vertices&&knots[j]==knots[i])j++;
+            if(j-i>=degree)return false;i=j;
+        }
+        return true;
+    }
+
     internal static AlgorithmStatus FromSpline(in BSurfaceView surface,in BCurveView curve,KnotIndex knot,double first,double last,
         Span<IntervalNumber> output,out SplineDegree degree)
     {

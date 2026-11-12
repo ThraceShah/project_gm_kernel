@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Geometry.Bounds;
@@ -16,15 +17,34 @@ internal static unsafe partial class KernelRuntime
         if(support<0||basis<0||Surfaces[support].Class!=SurfaceClass.BSurface||Curves[basis].Class!=CurveClass.BCurve)return AlgorithmStatus.Unsupported;
         var surface=GetBSurfaceView(BSurfaceDataStore[Surfaces[support].DataIndex]);var curve=GetBCurveView(BCurveDataStore[Curves[basis].DataIndex]);
         if(span.Lower<curve.Start||span.Upper>curve.End||curve.Periodic)return AlgorithmStatus.Unsupported;
-        Span<IntervalNumber> composed=stackalloc IntervalNumber[4*17];
-        Span<ScalarRootIsolation> isolation=stackalloc ScalarRootIsolation[output.Length];
+        var pieces=0;
         for(var knot=curve.Degree;knot<curve.VertexCount;knot++)
         {
-            var lo=Math.Max(span.Lower,curve.Knots[knot]);var hi=Math.Min(span.Upper,curve.Knots[knot+1]);if(!(hi>lo))continue;
-            var status=SpCurveBezier.FromSpline(surface,curve,knot,lo,hi,composed,out var degree);if(status!=AlgorithmStatus.Success)return status;
-            var path=new SurfaceIntersectionPatch(new BezierSurfacePatch(composed[..(4*(degree+1))],degree,0,new(lo,hi,0,1)));
-            status=SurfaceIsoPlaneRoots.Find(path,plane,lo,hi,output,ref count,strictSeparation:true,isolation:isolation);if(status!=AlgorithmStatus.Success)return status;
+            if(Math.Min(span.Upper,curve.Knots[knot+1])>Math.Max(span.Lower,curve.Knots[knot]))pieces++;
         }
-        OperationIntersection.Sort(output[..count]);return AlgorithmStatus.Success;
+        if(pieces==0)return AlgorithmStatus.Success;
+        if(pieces>1&&(!GeneralSurfaceContinuity(surface)||!SpCurveBezier.HasC1Joins(curve.Knots,curve.Degree,curve.VertexCount)))return AlgorithmStatus.Unsupported;
+        var degree=curve.Degree*(surface.UDegree+surface.VDegree);if(degree is <1 or >16)return AlgorithmStatus.Unsupported;
+        var width=4*(degree+1);var perPiece=(width*sizeof(IntervalNumber)+sizeof(SurfaceParameterBox))/sizeof(double);
+        if(pieces>int.MaxValue/perPiece)return AlgorithmStatus.WorkspaceTooSmall;
+        var memory=pieces==1?default:CommandScratchBorrow(pieces*perPiece);if(pieces>1&&memory.IsEmpty)return AlgorithmStatus.WorkspaceTooSmall;
+        try
+        {
+            var poleWords=pieces*width*sizeof(IntervalNumber)/sizeof(double);
+            Span<IntervalNumber> composed=pieces==1?stackalloc IntervalNumber[4*17]:MemoryMarshal.Cast<double,IntervalNumber>(memory[..poleWords]);
+            Span<SurfaceParameterBox> domains=pieces==1?stackalloc SurfaceParameterBox[1]:MemoryMarshal.Cast<double,SurfaceParameterBox>(memory[poleWords..]);
+            var piece=0;
+            for(var knot=curve.Degree;knot<curve.VertexCount;knot++)
+            {
+                var lo=Math.Max(span.Lower,curve.Knots[knot]);var hi=Math.Min(span.Upper,curve.Knots[knot+1]);if(!(hi>lo))continue;
+                var status=SpCurveBezier.FromSpline(surface,curve,knot,lo,hi,composed.Slice(piece*width,width),out _);if(status!=AlgorithmStatus.Success)return status;
+                domains[piece++]=new(lo,hi,0,1);
+            }
+            var path=new SurfaceIntersectionPatch(composed[..(pieces*width)],domains,degree);
+            Span<ScalarRootIsolation> isolation=stackalloc ScalarRootIsolation[output.Length];
+            var found=SurfaceIsoPlaneRoots.Find(path,plane,span.Lower,span.Upper,output,ref count,strictSeparation:true,isolation:isolation);
+            if(found==AlgorithmStatus.Success)OperationIntersection.Sort(output[..count]);return found;
+        }
+        finally{CommandScratchReturn(memory);}
     }
 }

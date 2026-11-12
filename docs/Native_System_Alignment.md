@@ -5,6 +5,31 @@
 私有环境准备实际返回 ENV_READY（Linux x64、PK 38.0、schema/corpus 就绪）。
 此文件持续记录实现与实际验证；不是 M0–M5 已完成声明。
 
+## 当前整体实施计划
+
+用户已将计算正确性与完整操作性能合为一个负责人目标：q2 是唯一研发、集成和
+交付 owner；第二研发 worker 已停止，原性能目标一并接续。下文的两人分函数协作
+是固定历史过程，已撤销，不再等待另一个研发者或新 scope。Mac 仅可作为同源、
+命令式平台验证机器，不再运行 coding agent 或子 worker。
+
+1. 沿真实 Fix/Boolean 的输入定义、候选、SSI/根、有限材料、拓扑发布、失效和求值
+   找结构性重复与缺失。原生 XT/UV/精度和共享 arrangement 已取得的成果继续复用；
+   不另建模型、Engine 或诊断平台，不用 case 坐标定义算法。
+2. 本轮已修的来源、precision/ownership、TR/SP 和 Cone 有限域继续作为完整能力
+   消费；当前实际攻关是跨 native knot 的连续根域，以及所有排除消费者的完整
+   domain/extension/precision 资格。原来留给另一 worker 的 extent WIP 由本 owner
+   直接核模型、吸收并贯通，不能把9项自测等同于完整 helper。
+3. JIT 作为同一个基准入口合同处理：核原配置层级，在同 source/Release IL 的
+   主要完整操作上做一次统一开关对照，从整体结果选一套 TieredCompilation，固定
+   PGO/QuickJit/R2R与子进程白名单；禁止逐case择优或改全局配置。此前没有显式记录
+   的 runtime-default 数据不反签政策、不转成新标准倍率。
+4. 正确性与成本在相同完整操作、相同输入/选项上共同验收。稳定统一源码一次集中
+   跑受影响建模族、必要全suite、真实PK full check/strict、查询/物性三态和完整
+   生命周期，封存实际source/PE/PDB/原始退出与模型，再安排一次重大独立接受。
+
+普通内部问题和失败由同一负责人持续解决，不逐字段派发、反复申请或用小提交结算。
+完整PK性能目标尚未达到；当前数百至数千倍的开发耗时差不能由几个局部加速掩盖。
+
 ## 真实处理链与关键差异
 
 | 阶段 | PK 依据及证据层级 | 当前 GM 实现与本轮动作 |
@@ -289,3 +314,35 @@ ray consumer，不解除Cone另一侧BSurface/Blend的unknown。原Mac 86项与�
 `ray-unified-rolling.log/.exit` 六类独立Fix/Boolean及既有生命周期几何均通过，
 mass U保留、原exit2。未据两次日志秒数作正式性能比较，也未当作最终全suite或独验。
 公共extent资格由Mac从此共同源继续，原目标仍在执行。
+
+## 连续原生 SP 分段域
+
+新增有效C1二维UV knot后，逐span调用严格隔离把内部knot变成了人造请求终点。
+`sp-knot-root-independent.log/.exit` 保留 GM157 与独立PK0/1root，原exit134；
+该轮两侧已分别执行，先前首GM失败后未执行PK的日志不作PK通过证据。
+原生多段linear UV先被PK999拒绝；官方FD95.3.1.1明确不允许这种SP定义，实际
+ask的degree1/dimension2/knots/poles记录保留。改用同native t的精确quadratic
+定义满足C1，不关闭PK连续性检查，也不把原输入错误算GM建模失败。
+
+现在一次准备全部有限片段的精确齐次复合系数，以只读piecewise计算视图供原
+SurfaceIsoPlaneRoots在完整有限t域证明。必须由原始UV和surface knot multiplicity
+保证C1，正权/cell资格逐片证明，域连续完整覆盖；位置与一阶导数对跨knot请求
+取全部片段外包围。C0/G1不能自动代替该solver的C1前提，未知、切触、无正权或
+无法覆盖者不签空交。没有拟合持久曲线、改native t、调容差或增迭代预算。
+
+共享SurfaceIntersectionPatch显式区分此视图的degree/变量/过程性质；不提供假
+ExactCorner/控制网，不继承二维cell proof。iso/offset/sweep/parameter-line组合
+当前明确Unsupported；SupportRange沿同C1 bounds和均值定理，不落空bezier分支。
+单片保留固定stack workspace，多片按真实片数借command arena并在finally归还，
+借用期间来源和系数不修改；没有新增heap或扩大arena。
+
+实际 `sp-continuous-managed.log/.exit` 19/19、exit0，含两侧导数包围、跨knot两根
+互不合并、缺域和C0负例，以及原section/projection消费者。
+`sp-continuous-same-bytes.log/.exit` 24参数/尺度族48正负请求、独立生命周期、
+native full check/strict及D0/D1全过，exit0。query的PK端另读取实际GM reload
+输入的同字节，独立native transform仍另作生命周期基准，不混淆两个合同。
+`sp-exact-failure-replay-v2.log/.exit` 对原157前已归档真实GM输入及原有限请求
+参数执行同字节GM/PK重放，两侧0/1root且负区间0root，exit0；该模式仅签query，
+不冒充独立构造。原输入SHA `c7f124ca905cdf9b73c925a7322bae068dcb0309de563e0c1f5d49a230bea3c9`。
+首replay日志的末行source hash误取了未使用factory输入，实际query输入hash另有
+正确记录；保留原日志，v2才纠正该描述，未改模型结果或覆盖原证据。
