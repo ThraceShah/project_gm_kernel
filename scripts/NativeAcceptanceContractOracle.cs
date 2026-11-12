@@ -38,9 +38,9 @@ using(host)unsafe
     double precision;Check(PK_SESSION_ask_precision(&precision));
     Console.WriteLine($"PRECISION {precision:R}");
     ProbePrimitive(precision);
-    Require(ParasolidMassProperties.Classify(1,0,1,0,out _,out _)==MassAgreement.Verified,"exact numeric control");
-    Require(ParasolidMassProperties.Classify(1,100,2,100,out _,out _)==MassAgreement.Unresolved,"overlapping broad bounds must not verify equality");
-    Require(ParasolidMassProperties.Classify(1,0,2,0,out _,out _)==MassAgreement.Different,"separated numeric control");
+    Require(ParasolidMassProperties.Classify(1,0,1,0,1,1,out _,out _)==MassAgreement.Verified,"exact numeric control");
+    Require(ParasolidMassProperties.Classify(1,100,2,100,1,1,out _,out _)==MassAgreement.Unresolved,"overlapping broad bounds must not verify equality");
+    Require(ParasolidMassProperties.Classify(1,0,2,0,1,1,out _,out _)==MassAgreement.Different,"separated numeric control");
     PK_BODY_t correct,wrong;Check(PK_BODY_create_solid_block(2,2,2,null,&correct));Check(PK_BODY_create_solid_block(2.1,2,2,null,&wrong));
     try
     {
