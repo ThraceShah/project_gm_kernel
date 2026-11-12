@@ -165,6 +165,30 @@ public class SplineCartesianRowTests
         Assert.Equal(AlgorithmStatus.Unsupported,JointNestedBlendEvaluation.TestCartesianSplineMatrix(program,box,matrix,default));
     }
 
+    [Theory]
+    [InlineData(-.17,false)] [InlineData(.17,false)] [InlineData(-.17,true)] [InlineData(.17,true)]
+    public unsafe void IdenticalFullContractionBoxesReuseOnlyTheJacobianAndKeepAllSixMaps(double offset,bool curved)
+    {
+        var program=curved?Parabolic(offset,false):Planar(offset,false);const double u=.25;
+        var parameter=curved?2.7*(u-offset*(2*u)/Math.Sqrt(1+4*u*u)):.4;
+        var domain=new SurfaceParameterBox(parameter-1e-5,parameter+1e-5,0,0);
+        Span<IntervalNumber> expected=stackalloc IntervalNumber[9],actual=stackalloc IntervalNumber[9];
+        var enabled=ModelingPerformance.Enabled;var original=JointNestedBlendEvaluation.ReuseStableSplineJacobian;
+        try
+        {
+            ModelingPerformance.Enabled=true;JointNestedBlendEvaluation.ReuseStableSplineJacobian=false;JointNestedBlendEvaluation.TestSplineContractionMaps=0;
+            ModelingPerformance.Context reference=default,current=default;
+            using(var scope=new ModelingPerformance.Scope(&reference))Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSpine(program,0,domain,expected));
+            Assert.Equal(6,JointNestedBlendEvaluation.TestSplineContractionMaps);var calls=ModelingPerformance.Last.JacobianCalls;
+            JointNestedBlendEvaluation.ReuseStableSplineJacobian=true;JointNestedBlendEvaluation.TestSplineContractionMaps=0;
+            using(var scope=new ModelingPerformance.Scope(&current))Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSpine(program,0,domain,actual));
+            Assert.Equal(6,JointNestedBlendEvaluation.TestSplineContractionMaps);
+            Assert.InRange(ModelingPerformance.Last.JacobianCalls,1,calls);if(!curved)Assert.True(ModelingPerformance.Last.JacobianCalls<calls);
+            for(var i=0;i<9;i++){Assert.Equal(expected[i].Lower,actual[i].Lower);Assert.Equal(expected[i].Upper,actual[i].Upper);}
+        }
+        finally{JointNestedBlendEvaluation.ReuseStableSplineJacobian=original;ModelingPerformance.Enabled=enabled;}
+    }
+
     private static NestedBlendProgram Parabolic(double offset,bool reversed,double shear=0,double height=1)
     {
         var spline=new BlendSurfaceInstruction{IsBSpline=true,NormalSense=-1,Offset=offset,UDegree=2,VDegree=1,UCount=3,VCount=2,Dimension=3};

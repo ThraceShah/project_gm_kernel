@@ -9,6 +9,10 @@ namespace ProjectGmKernel.Native.Geometry.Evaluation;
 internal static partial class JointNestedBlendEvaluation
 {
     internal static bool ReuseSplineContactBounds=true;
+#if KERNEL_TEST_HOOKS
+    internal static bool ReuseStableSplineJacobian=true;
+    internal static BufferCount TestSplineContractionMaps;
+#endif
     /// <summary>Certified local implicit tube, followed by interval analytic
     /// differentiation. Chart error estimates and sampled jets are not bounds.</summary>
     internal static AlgorithmStatus Bound(in NestedBlendProgram program,BlendSurfaceIndex surface,in SurfaceParameterBox domain,Span<IntervalNumber> output)
@@ -250,10 +254,30 @@ internal static partial class JointNestedBlendEvaluation
         }
         for(var iteration=0;iteration<6;iteration++)
         {
-            for(var i=0;i<n;i++)boxes[i]=new(Math.Max(boxes[i].Lower,image[i].Lower),Math.Min(boxes[i].Upper,image[i].Upper));
-            status=IntervalJacobianWithRecord(program,nodes,boxes[..n],t,intervalJacobian[..(n*n)],variables,equations,fixedCharts,splineCache,ref jacobianRecord,cartesianSpline,substitutedConic);if(status!=AlgorithmStatus.Success)return status;
-            if(substitutedConic)ConicBlockPrecondition(inverse[..(n*n)],intervalJacobian[..(n*n)],remainder[..(n*n)]);
-            else Precondition(inverse[..(n*n)],intervalJacobian[..(n*n)],n,remainder);
+#if KERNEL_TEST_HOOKS
+            if(cartesianSpline)TestSplineContractionMaps++;
+#endif
+            var changed=false;
+            for(var i=0;i<n;i++)
+            {
+                var next=new IntervalNumber(Math.Max(boxes[i].Lower,image[i].Lower),Math.Min(boxes[i].Upper,image[i].Upper));
+                if(cartesianSpline)changed|=BitConverter.DoubleToInt64Bits(next.Lower)!=BitConverter.DoubleToInt64Bits(boxes[i].Lower)
+                    ||BitConverter.DoubleToInt64Bits(next.Upper)!=BitConverter.DoubleToInt64Bits(boxes[i].Upper);
+                boxes[i]=next;
+            }
+            // The program, CHART, native parameter and workspace stay fixed
+            // in this proof. An identical full box has the same successful J
+            // and preconditioned remainder; still execute every map below.
+            var reuse=cartesianSpline&&!changed;
+#if KERNEL_TEST_HOOKS
+            reuse&=ReuseStableSplineJacobian;
+#endif
+            if(!reuse)
+            {
+                status=IntervalJacobianWithRecord(program,nodes,boxes[..n],t,intervalJacobian[..(n*n)],variables,equations,fixedCharts,splineCache,ref jacobianRecord,cartesianSpline,substitutedConic);if(status!=AlgorithmStatus.Success)return status;
+                if(substitutedConic)ConicBlockPrecondition(inverse[..(n*n)],intervalJacobian[..(n*n)],remainder[..(n*n)]);
+                else Precondition(inverse[..(n*n)],intervalJacobian[..(n*n)],n,remainder);
+            }
             for(var row=0;row<n;row++)
             {
                 IntervalNumber value=state[row];for(var k=0;k<n;k++)value-=inverse[row*n+k]*centerF[k];

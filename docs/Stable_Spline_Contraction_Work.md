@@ -1,0 +1,13 @@
+# 同一完整参数盒的Jacobian计算复用
+
+从已接受17eedbf/Joint185/Native116出发的独立实现，不包含cut950或4e5b584已拒实验，不含诊断计时器。实际项目AGENTS及两架构已读取并逐字核与已读基线相同，初始源码无diff。
+
+原算法先用完整n维inclusion和收缩率认证tube，然后固定做六次交/收缩映射。诊断0391f82在原数学路径一次fresh NURBS中记录3582个收缩步骤，其中1200次所有五维盒上下端点逐位未变（UV未变1220）；原Jac4179、150root cells/8roots/winding18/budget0、API0/raw2不变。这是重复输入证据，不是排他CPU或预签收益。
+
+本实现仅在既有cartesianSpline资格内，逐维比较原boxes与本次交集的binary64 bits。全部维度相同才沿用上一成功求得的完整25项Jacobian和预条件remainder；只要任一位改变，继续原完整计算。这里的program、occurrence、native参数区间、固定CHART、点逆矩阵及workspace在一次BoundSegment内固定，无模型读写回调。上一J必来自认证或前一成功收缩，不存失败或未初始化结果。没有新增跨调用缓存或实体身份协议。
+
+六次交集及全部n维映射仍逐次执行。保留原inclusion/收缩率、所有后续nearest、witness、reach、native CHART、有限参数和解析导数检查。原SplineContact复用开关及清理路径保留；其他方程族不启用这项计算复用。未改变几何定义、参数化、容差、预算、所有权、rollback或公开C ABI。
+
+新增测试控制只在KERNEL_TEST_HOOKS编译，可关闭本计算复用并计数实际收缩映射。用原制造plane/parabola及正负offset，对照9项完整包围/导数逐位，核两种模式都执行六次映射；原degenerate、错误witness、非nearest foot及原真实消费者检查继续执行。生产没有新选项或诊断字段。
+
+首轮定向94/94、原exit0；四组正负offset/plane/parabola对照保留原包围及导数逐位，两个模式都执行六次映射，原regularity/nearest/witness和真实SupportingBlend/RegularSolidBlend消费者通过。原日志/源码diff/测试结果及后续完整API开发对照在 `temp_docs/stable-contraction/`。完整收益、产品质量、独立接受尚待，当前原始数值Unresolved/Missing和raw退出码不洗绿。先看关键验证及完整操作收益，弱方向不追加全套/ABBA或字段微审。
