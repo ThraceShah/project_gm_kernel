@@ -10,4 +10,4 @@
 
 新增测试控制只在KERNEL_TEST_HOOKS编译，可关闭本计算复用并计数实际收缩映射。用原制造plane/parabola及正负offset，对照9项完整包围/导数逐位，核两种模式都执行六次映射；原degenerate、错误witness、非nearest foot及原真实消费者检查继续执行。生产没有新选项或诊断字段。
 
-首轮Spline定向94/94、原exit0；原接入957d49d仅含Spline资格，其一次开发对照NURBS中位517.4336→484.5941ms（−6.347%，原双方2，各六pair），不是完整接受或预签通用路径收益。基于shortedge重复输入事实扩展到通用Joint后定向115/115、原0；新对照覆盖正负offset/plane/parabola、conic/cylinder/witness及嵌套tube，保持所有映射数量、原包围/导数及witness逐位一致，原regularity/nearest及真实SupportingBlend/RegularSolidBlend消费者通过。原日志/源码diff/测试结果及后续完整API开发对照在 `temp_docs/stable-contraction/`。完整收益、产品质量、独立接受尚待，当前原始数值Unresolved/Missing和raw退出码不洗绿。先看关键验证及完整操作收益，弱方向不追加全套/ABBA或字段微审。
+首轮Spline定向94/94、原exit0；原接入957d49d仅含Spline资格，其一次开发对照NURBS中位517.4336→484.5941ms（−6.347%，原双方2，各六pair），不是完整接受或预签通用路径收益。基于shortedge重复输入事实扩展到通用Joint后定向115/115、原0；新对照覆盖正负offset/plane/parabola、conic/cylinder/witness及嵌套tube，保持所有映射数量、原包围/导数及witness逐位一致，原regularity/nearest及真实SupportingBlend/RegularSolidBlend消费者通过。原日志/源码diff/测试结果及后续完整API开发对照在 `temp_docs/stable-contraction/`。随后两源开发对照没有证明值得保留的完整收益，本实验停止并不进入正式候选，结算见 `docs/Rejected_Stable_Contraction_Work.md`。原始数值Unresolved/Missing和raw退出码不洗绿；不追加全套/正式ABBA或微审，已确认正确性和重复输入证据保持。
