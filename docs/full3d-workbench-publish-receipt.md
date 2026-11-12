@@ -128,3 +128,16 @@
 - 旧数据整包归档：`…/web-progress-publish/data-archive-20261112T154226Z`（未删除）。
 - **仍未完成（94 条）**：`nested-evaluation 42`（纯评估，需“被求值原生曲面/曲线 + 参数/点/导数”专用显示适配，不能用 body 冒充）、`pk-corpus 23`（PK 原生 corpus fixture，需 PK-only 显示与来源分列）、`nested-blend 6` + `extended-blend 3` + `blend-operation 8`（oracle 尚无 observer，需逐族布线；extended 同时负责生成本树缺失的 fixture）、`short-edge 2`（`self-fixed-probes` 已有真实 fail 三维；`imported-fixed-probes` 原 exit 134 未产出 mesh，需查 PK 导入路径）、`surface-blend 1` 以外的 `planar-edit 10`（edit 循环无 observer，且开启 capture 会跑整套矩阵，需按 fixture 加 Before/After 与 selector）。
 - 本轮不改 Native/数学/Mass/Compare/容差，不重跑已采集 347，不重跑 PK 全 suite/性能窗；13 个失败前无 after 的用例与 3 个原 900s 首超时/原退出保持分列。
+
+---
+
+## 9. 增量（2026-11-12T16:05Z）：原生评估显示 + PK corpus 单侧显示（434/463）
+
+- **新增显示原语** `WebProgressCapture.Evaluation`：显示真实 receive 的被求值曲面 + 实际求值样本点（selected）+ 原生法向（support）叠加线，并在 step 上写 `evaluation.kind=native-evaluation-display`、`sampledNotContinuousEquivalence=true`、`operationChangedGeometry=false`；不创建 GM 几何、不声称建模操作、不签连续数学等价。
+- **nested-evaluation 42**：`NestedBlendBenchmark` 每 fixture 输出一步真实评估显示（真实 fixture 曲面 + 32 个实际求值点/法向），6 个 pattern 注册共用该 fixture 的显示；runner 对声明为评估显示的 capture 免除操作计时，`performance` 保持 null 并写明原因（不伪造 0x/1x，不冒充稳态基准）。
+- **pk-corpus 23**：核对每条原用例语义后按 **pk-only** 显示真实 PK fixture body（`displayScope=pk-only`），step 注明原用例是 PK XT corpus/schema + managed transmit round-trip，不是 GM 独立建模；GM 侧明确未执行，不编造等价性。corpus 用例改用显式可写 capture 根与 host case id（私有 corpus 根只读）。
+- **契约**：validator（工作区与 release tools 两处）只允许声明了 displayScope 的 step 缺另一侧；未声明仍按原规则报错。
+- 适配器 **434/463**；新包 3,845 文件 / 25,754,078 B（24.56 MiB，余 5,703,202 B），`data/index.json` SHA `e48887bcd1e887b4a58d1ac68cf432e7edee881b834bb0eabe650e64d4362076`。
+- release：`ui-018-tools-9c2e2654-full3d`（tools 含 displayScope 契约；uiHash 不变 `7e7ae256…`），timer drop-in 已指向新 release，tick 输出 `UI_SKIP_SAME`（幂等保持）。旧数据整包归档 `data-archive-20261112T160541Z`。
+- 自测：nested-evaluation 与 pk-corpus 各自本地浏览器实测（真实面/样本点/法向可见、PK-only 侧 GM 明确空白、无 JS 错误、picking 真实 entity）；`ValidateWebProgress` 472 案 2148 mesh 597,844 三角片 0 error；两份 overview 审计 0 error。
+- **仍未完成（29 条）**：`planar-edit 10`（edit 循环需暴露输入 body 句柄并按 fixture 加 Before/After+selector）、`blend-operation 8`（曲面求交，需显示源 sheet + 实际求得交线/点）、`nested-blend 6` 与 `extended-blend 3`（oracle 无 observer，需在真实操作边界接观察器）、`short-edge.imported-fixed-probes`（原 exit 134，需查 PK 导入路径与 capture 层）。
