@@ -1,0 +1,2103 @@
+{
+  "scope": "Independent fixed Section candidate review; no main integration, deployment, UI review or overall PK qualification",
+  "deliveryCommit": "fef52f3252bfe9a345f1a2872e9b6f96bdcafccd",
+  "calculationCommit": "2c0e4ea54bc2c4c9e22f24965ce71c41d84635b4",
+  "measurementSourceCommit": "a770a49d07b43dbe05d284f5e11c2d6adfc40fd6",
+  "nativeTree": "8fc38005545b10735c3612fdf6bd57460fae19af",
+  "sourceTree": "e8b7750c97e018ec6508a94fa8132817982158ff",
+  "policyFileBodySha256": "55f16ce0cf53bbb37ddd91920445f32468eb8e2b5b6e28f6fb90856810afcca1",
+  "policyScope": "File verified, no claim of runtime automatic loading",
+  "decisions": {
+    "algorithmAndKeyIntegration": "accepted",
+    "recordedGeometryTopologyLifecycle": "accepted within original executed scope",
+    "originalMacSuite": "accepted as 2024/2024 raw build0/test0",
+    "uniqueMacWindow": "accepted as descriptive fixed-source observations",
+    "allNumericalVerifiedUnderOriginalContract": "blocked by original Unresolved",
+    "generalOrCausalSpeedupAndOverallPkGoal": "unproven",
+    "publishableData": "accepted with original source, states, limitations, all cold/warm samples and regressions"
+  },
+  "quality": {
+    "scope": "Independent BCL byte/source audit; does not convert producer raw exits or prove geometry",
+    "target": "2c0e4ea54bc2c4c9e22f24965ce71c41d84635b4",
+    "archive": {
+      "sha256": "3138cd943c7ffc265e4f9200dfb93e188fbb4a829d024b1b24bc06fa1183bed0",
+      "length": 21731725,
+      "files": 589,
+      "expandedBytes": 84860396
+    },
+    "binaries": [
+      {
+        "dll": "temp_docs/section-work/quality/00-curved-candidate/identity/kernel.dll",
+        "sha256": "95e37b17841b3e65819f6b4bcd746c0b5b739de339de1a480c242c89d66b2d16",
+        "mvid": "f617318e-d9b4-41f9-8c80-8ed7fa246245",
+        "codeViewGuid": "aa1a1f29-f5b9-45aa-bb32-92fa88df100f",
+        "matchedTrackedDocuments": 335,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "dll": "temp_docs/section-work/quality/01-solidblend-candidate/identity/kernel.dll",
+        "sha256": "95e37b17841b3e65819f6b4bcd746c0b5b739de339de1a480c242c89d66b2d16",
+        "mvid": "f617318e-d9b4-41f9-8c80-8ed7fa246245",
+        "codeViewGuid": "aa1a1f29-f5b9-45aa-bb32-92fa88df100f",
+        "matchedTrackedDocuments": 335,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "dll": "temp_docs/section-work/std-candidate/00-shortedge-candidate/identity/kernel.dll",
+        "sha256": "95e37b17841b3e65819f6b4bcd746c0b5b739de339de1a480c242c89d66b2d16",
+        "mvid": "f617318e-d9b4-41f9-8c80-8ed7fa246245",
+        "codeViewGuid": "aa1a1f29-f5b9-45aa-bb32-92fa88df100f",
+        "matchedTrackedDocuments": 335,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "dll": "temp_docs/section-work/active-rigid-small-capture/identity/kernel.dll",
+        "sha256": "95e37b17841b3e65819f6b4bcd746c0b5b739de339de1a480c242c89d66b2d16",
+        "mvid": "f617318e-d9b4-41f9-8c80-8ed7fa246245",
+        "codeViewGuid": "aa1a1f29-f5b9-45aa-bb32-92fa88df100f",
+        "matchedTrackedDocuments": 335,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "dll": "temp_docs/section-work/active-mirror8-capture/identity/kernel.dll",
+        "sha256": "95e37b17841b3e65819f6b4bcd746c0b5b739de339de1a480c242c89d66b2d16",
+        "mvid": "f617318e-d9b4-41f9-8c80-8ed7fa246245",
+        "codeViewGuid": "aa1a1f29-f5b9-45aa-bb32-92fa88df100f",
+        "matchedTrackedDocuments": 335,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "dll": "temp_docs/section-work/active-shortedge-lifecycle-capture/identity/kernel.dll",
+        "sha256": "95e37b17841b3e65819f6b4bcd746c0b5b739de339de1a480c242c89d66b2d16",
+        "mvid": "f617318e-d9b4-41f9-8c80-8ed7fa246245",
+        "codeViewGuid": "aa1a1f29-f5b9-45aa-bb32-92fa88df100f",
+        "matchedTrackedDocuments": 335,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "dll": "temp_docs/section-work/active-nurbs-lifecycle-capture/identity/kernel.dll",
+        "sha256": "95e37b17841b3e65819f6b4bcd746c0b5b739de339de1a480c242c89d66b2d16",
+        "mvid": "f617318e-d9b4-41f9-8c80-8ed7fa246245",
+        "codeViewGuid": "aa1a1f29-f5b9-45aa-bb32-92fa88df100f",
+        "matchedTrackedDocuments": 335,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "dll": "temp_docs/section-work/active-curved-reload-capture/identity/kernel.dll",
+        "sha256": "95e37b17841b3e65819f6b4bcd746c0b5b739de339de1a480c242c89d66b2d16",
+        "mvid": "f617318e-d9b4-41f9-8c80-8ed7fa246245",
+        "codeViewGuid": "aa1a1f29-f5b9-45aa-bb32-92fa88df100f",
+        "matchedTrackedDocuments": 335,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "dll": "temp_docs/section-work/section-full-ProjectGmKernel.Native.dll",
+        "sha256": "c262650cb6882c4fd3158a0f12191c118a685ca29bc209af85557b7cad17ba2b",
+        "mvid": "11291630-da20-4e76-b52b-f60b10a9b710",
+        "codeViewGuid": "df50b3ad-b3ec-4d67-9130-5e88df309b36",
+        "matchedTrackedDocuments": 335,
+        "unmapped": [
+          "ProjectGmKernel.Native.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "ProjectGmKernel.Native.AssemblyInfo.cs"
+        ]
+      },
+      {
+        "dll": "temp_docs/section-work/section-full-KernelTests.dll",
+        "sha256": "429c0bf6bc0f025a33f6501f88a5c3ae1bd30a592fa88c7698f82f18398397dd",
+        "mvid": "219f8891-882a-4be7-8c4f-7adfa3fc278e",
+        "codeViewGuid": "fe300e47-2c78-4f0e-b9fe-26d17a0b0120",
+        "matchedTrackedDocuments": 168,
+        "unmapped": [
+          "Microsoft.NET.Test.Sdk.Program.cs",
+          "KernelTests.GlobalUsings.g.cs",
+          ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs",
+          "KernelTests.AssemblyInfo.cs"
+        ]
+      }
+    ],
+    "runs": [
+      {
+        "directory": "quality/00-curved-candidate",
+        "originalExit": 2,
+        "checks": {
+          "pass": 14,
+          "missing": 13
+        },
+        "captureSha256": "41163761ea3d0402edd6e9dc0e09ec9978f97b06cb9612d09e290f2a79213741"
+      },
+      {
+        "directory": "quality/01-solidblend-candidate",
+        "originalExit": 2,
+        "checks": {
+          "pass": 16,
+          "missing": 13
+        },
+        "captureSha256": "f208bdc200af3990a7d32e770eaf208963bb51cd7eff5de099a6d6b843b8f1a8"
+      },
+      {
+        "directory": "std-candidate/00-shortedge-candidate",
+        "originalExit": 2,
+        "checks": {
+          "pass": 210,
+          "missing": 102
+        },
+        "captureSha256": "e4874595aff5e1f286585416b81c71ccbad7f67d021b890771c76d7c5de167f5"
+      },
+      {
+        "directory": "active-rigid-small-capture",
+        "originalExit": 0,
+        "checks": {
+          "pass": 51,
+          "missing": 1
+        },
+        "captureSha256": "05d42638359f1783ad5bce385789f031b697c29d0b772c0c9a4c21521b763a08"
+      },
+      {
+        "directory": "active-mirror8-capture",
+        "originalExit": 2,
+        "checks": {
+          "pass": 29,
+          "missing": 23
+        },
+        "captureSha256": "2dce9419887693fbda3b39e21661009656e5cfa5ac90cc2adf665293dab50fd5"
+      },
+      {
+        "directory": "active-shortedge-lifecycle-capture",
+        "originalExit": 2,
+        "checks": {
+          "pass": 133,
+          "missing": 77
+        },
+        "captureSha256": "5374bc38e34aa72c4b1c569934f097a1978237df8bd74eba51e4c806dc24cce3"
+      },
+      {
+        "directory": "active-nurbs-lifecycle-capture",
+        "originalExit": 2,
+        "checks": {
+          "pass": 16,
+          "missing": 13
+        },
+        "captureSha256": "a6b6eeb00ba16080345dbe3cd18b3d32cf9d2470552e4773b0189835d7c4cafe"
+      },
+      {
+        "directory": "active-curved-reload-capture",
+        "originalExit": 2,
+        "checks": {
+          "pass": 17,
+          "missing": 26
+        },
+        "captureSha256": "4e015e035ff855f5ee659577921a0308556b6f38377f0867ed2e6a49931d1676"
+      }
+    ],
+    "fullSuite": {
+      "trxSha256": "8c0acc02b9e01393fc3aeca5ad1791cd4e6c0c331ed527155c54eeeb85331e99",
+      "total": 2024,
+      "passed": 2024,
+      "failed": 0,
+      "supporting": [
+        {
+          "name": "KernelTests.NestedBlendCacheEmptyReadSetTests.SupportingBlendSectionConsumersKeepIndependentChecksWithReuseDisabled",
+          "outcome": "Passed"
+        },
+        {
+          "name": "KernelTests.BlendIntersectionTests.NativeCurveTubeBoundsItsSupportingBlendParameterAndDerivative",
+          "outcome": "Passed"
+        }
+      ]
+    },
+    "productBindings": 80,
+    "sourceManifests": 3,
+    "sourceManifestRows": 1563,
+    "strictCompareReports": 55,
+    "massReports": 29,
+    "massStatusOccurrences": {
+      "Verified": 178,
+      "Unresolved": 286
+    },
+    "fixedDiffSha256": "7a4f6cdc34d8444513b398fd274bd11e3574be1c275faf4a60e292a2a75f91aa",
+    "historicalDiagnostic": {
+      "scope": "Separate historical diagnostic, no candidate binary or CPU qualification",
+      "copiedFiles": 82,
+      "traceSha256": "867270f58c4f38fa28e487a7c598ce31abd6631a02421538938e2507ee477672",
+      "requests": 4811,
+      "findCalls": 16,
+      "uniqueSuccessfulRequests": 3667,
+      "repeatedSuccess": 1038,
+      "payloadMismatches": 0,
+      "laterFailure": 0,
+      "repeatedCells": 1370,
+      "repeatedBoundEvaluations": 4630,
+      "repeatedJacobians": 0,
+      "maxRoots": 24,
+      "repeatedZero": 648,
+      "repeatedOne": 385,
+      "repeatedTwo": 5,
+      "originalProbeExits": [
+        134,
+        134,
+        2
+      ]
+    }
+  },
+  "measurement": {
+    "scope": "Independent fixed original measurement; descriptive observation only; raw2 and performanceQualified=false retained",
+    "archiveSha256": "79568a4a268b7fae9bab8453c136cf0ad9b5cd091cec3cba6ff3db1d653c74a7",
+    "archiveFiles": 1037,
+    "expandedBytes": 137487649,
+    "startedUtc": "2026-11-12T06:56:45.5438090\u002B00:00",
+    "finishedUtc": "2026-11-12T06:58:43.1836750\u002B00:00",
+    "sourceManifestRows": 10420,
+    "processes": 20,
+    "pairs": 60,
+    "apiTimes": 120,
+    "runnerExit": 2,
+    "meshFiles": 312,
+    "meshBytes": 35389380,
+    "finalXtArtifactFiles": 64,
+    "mainMassReports": 60,
+    "extraMassReports": 12,
+    "mainComponents": {
+      "Unresolved": 588,
+      "Verified": 312
+    },
+    "extraComponents": {
+      "Verified": 84,
+      "Unresolved": 96
+    },
+    "strictReports": 144,
+    "operations": [
+      {
+        "case": "sphere",
+        "baseline": {
+          "coldGmMs": [
+            24.3794,
+            25.363
+          ],
+          "coldPkMs": [
+            12.2503,
+            0.4689
+          ],
+          "warmGmMs": [
+            0.0767,
+            0.0722,
+            0.0824,
+            0.0814
+          ],
+          "warmPkMs": [
+            0.29,
+            0.2717,
+            0.3721,
+            0.2822
+          ],
+          "gmMedianMs": 0.07905000000000001,
+          "pkMedianMs": 0.2861,
+          "gmMinMs": 0.0722,
+          "gmMaxMs": 0.0824,
+          "pairedRatioMedian": 0.2651085121774777,
+          "ratioOfMedians": 0.276301992310381
+        },
+        "candidate": {
+          "coldGmMs": [
+            24.2695,
+            22.928
+          ],
+          "coldPkMs": [
+            0.4734,
+            0.4557
+          ],
+          "warmGmMs": [
+            0.079,
+            0.0825,
+            0.0772,
+            0.0777
+          ],
+          "warmPkMs": [
+            0.3118,
+            0.3122,
+            0.2757,
+            0.287
+          ],
+          "gmMedianMs": 0.07835,
+          "pkMedianMs": 0.2994,
+          "gmMinMs": 0.0772,
+          "gmMaxMs": 0.0825,
+          "pairedRatioMedian": 0.267492695426634,
+          "ratioOfMedians": 0.26169004676018703
+        },
+        "changePercent": -0.8855154965211942
+      },
+      {
+        "case": "planar",
+        "baseline": {
+          "coldGmMs": [
+            48.7976,
+            57.0188
+          ],
+          "coldPkMs": [
+            1.6341,
+            0.9764
+          ],
+          "warmGmMs": [
+            0.5979,
+            0.6296,
+            0.6065,
+            0.619
+          ],
+          "warmPkMs": [
+            0.8667,
+            0.8978,
+            1.228,
+            1.2001
+          ],
+          "gmMedianMs": 0.61275,
+          "pkMedianMs": 1.04895,
+          "gmMinMs": 0.5979,
+          "gmMaxMs": 0.6296,
+          "pairedRatioMedian": 0.6028242165927733,
+          "ratioOfMedians": 0.5841555841555841
+        },
+        "candidate": {
+          "coldGmMs": [
+            48.6732,
+            55.0047
+          ],
+          "coldPkMs": [
+            1.0505,
+            0.9765
+          ],
+          "warmGmMs": [
+            0.604,
+            0.6049,
+            0.608,
+            1.0007
+          ],
+          "warmPkMs": [
+            0.8251,
+            0.7891,
+            1.2418,
+            1.3127
+          ],
+          "gmMedianMs": 0.6064499999999999,
+          "pkMedianMs": 1.03345,
+          "gmMinMs": 0.604,
+          "gmMaxMs": 1.0007,
+          "pairedRatioMedian": 0.7471772064037483,
+          "ratioOfMedians": 0.58682084280807
+        },
+        "changePercent": -1.0281517747858127
+      },
+      {
+        "case": "curved",
+        "baseline": {
+          "coldGmMs": [
+            552.1578,
+            555.5336
+          ],
+          "coldPkMs": [
+            5.6771,
+            3.4266
+          ],
+          "warmGmMs": [
+            47.9354,
+            39.0794,
+            38.0924,
+            48.894
+          ],
+          "warmPkMs": [
+            2.128,
+            1.9632,
+            2.058,
+            1.9632
+          ],
+          "gmMedianMs": 43.507400000000004,
+          "pkMedianMs": 2.0106,
+          "gmMinMs": 38.0924,
+          "gmMaxMs": 48.894,
+          "pairedRatioMedian": 21.216001839868618,
+          "ratioOfMedians": 21.639013229881627
+        },
+        "candidate": {
+          "coldGmMs": [
+            491.9862,
+            549.1451
+          ],
+          "coldPkMs": [
+            2.3753,
+            3.6761
+          ],
+          "warmGmMs": [
+            58.023,
+            38.8407,
+            57.6174,
+            40.1734
+          ],
+          "warmPkMs": [
+            1.962,
+            1.9567,
+            2.0439,
+            2.9898
+          ],
+          "gmMedianMs": 48.8954,
+          "pkMedianMs": 2.00295,
+          "gmMinMs": 38.8407,
+          "gmMaxMs": 58.023,
+          "pairedRatioMedian": 24.020017891234858,
+          "ratioOfMedians": 24.41169275318905
+        },
+        "changePercent": 12.384100176061995
+      },
+      {
+        "case": "solidblend",
+        "baseline": {
+          "coldGmMs": [
+            1225.8797,
+            1013.2472
+          ],
+          "coldPkMs": [
+            17.1928,
+            2.198
+          ],
+          "warmGmMs": [
+            518.8002,
+            447.4287,
+            469.3165,
+            466.4696
+          ],
+          "warmPkMs": [
+            2.375,
+            1.5602,
+            1.6044,
+            1.8415
+          ],
+          "gmMedianMs": 467.89305,
+          "pkMedianMs": 1.72295,
+          "gmMinMs": 447.4287,
+          "gmMaxMs": 518.8002,
+          "pairedRatioMedian": 270.0430437951121,
+          "ratioOfMedians": 271.5650773382861
+        },
+        "candidate": {
+          "coldGmMs": [
+            1076.3185,
+            1102.3134
+          ],
+          "coldPkMs": [
+            1.9863,
+            2.1071
+          ],
+          "warmGmMs": [
+            517.835,
+            449.9566,
+            559.3785,
+            445.0022
+          ],
+          "warmPkMs": [
+            1.67,
+            1.625,
+            2.3227,
+            1.745
+          ],
+          "gmMedianMs": 483.8958,
+          "pkMedianMs": 1.7075,
+          "gmMinMs": 445.0022,
+          "gmMaxMs": 559.3785,
+          "pairedRatioMedian": 265.9559783116597,
+          "ratioOfMedians": 283.39431918008785
+        },
+        "changePercent": 3.4201726227820695
+      },
+      {
+        "case": "shortedge",
+        "baseline": {
+          "coldGmMs": [
+            1598.7628,
+            1563.5758
+          ],
+          "coldPkMs": [
+            5.8855,
+            2.1078
+          ],
+          "warmGmMs": [
+            807.0938,
+            520.4744,
+            732.3648,
+            569.4402
+          ],
+          "warmPkMs": [
+            1.6859,
+            2.227,
+            1.6665,
+            2.2849
+          ],
+          "gmMedianMs": 650.9024999999999,
+          "pkMedianMs": 1.9564499999999998,
+          "gmMinMs": 520.4744,
+          "gmMaxMs": 807.0938,
+          "pairedRatioMedian": 344.3408490028398,
+          "ratioOfMedians": 332.6956988422909
+        },
+        "candidate": {
+          "coldGmMs": [
+            1369.8652,
+            1355.3727
+          ],
+          "coldPkMs": [
+            2.0435,
+            2.2813
+          ],
+          "warmGmMs": [
+            687.7985,
+            498.7899,
+            620.3277,
+            467.7802
+          ],
+          "warmPkMs": [
+            1.6155,
+            1.6086,
+            1.6027,
+            1.7269
+          ],
+          "gmMedianMs": 559.5588,
+          "pkMedianMs": 1.61205,
+          "gmMinMs": 467.7802,
+          "gmMaxMs": 687.7985,
+          "pairedRatioMedian": 348.5643431588437,
+          "ratioOfMedians": 347.11007723085515
+        },
+        "changePercent": -14.033392097894836
+      }
+    ],
+    "samples": [
+      {
+        "case": "sphere",
+        "side": "baseline",
+        "directory": "00-sphere-baseline",
+        "originalExit": 2,
+        "gmMs": [
+          24.3794,
+          0.0767,
+          0.0722
+        ],
+        "pkMs": [
+          12.2503,
+          0.29,
+          0.2717
+        ],
+        "profile": [
+          "PROFILE operation=Boolean equal-overlap-15902 api-ms=24.379 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000",
+          "PROFILE operation=Boolean equal-overlap-15902 api-ms=0.077 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000",
+          "PROFILE operation=Boolean equal-overlap-15902 api-ms=0.072 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000"
+        ],
+        "work": [
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0",
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0",
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0"
+        ],
+        "captureSha256": "4f239334e2c2ab468757b507b391c90fb176975b843d77ebb4797e8858093be2"
+      },
+      {
+        "case": "sphere",
+        "side": "candidate",
+        "directory": "01-sphere-candidate",
+        "originalExit": 2,
+        "gmMs": [
+          24.2695,
+          0.079,
+          0.0825
+        ],
+        "pkMs": [
+          0.4734,
+          0.3118,
+          0.3122
+        ],
+        "profile": [
+          "PROFILE operation=Boolean equal-overlap-15902 api-ms=24.270 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000",
+          "PROFILE operation=Boolean equal-overlap-15902 api-ms=0.079 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000",
+          "PROFILE operation=Boolean equal-overlap-15902 api-ms=0.083 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000"
+        ],
+        "work": [
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0",
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0",
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0"
+        ],
+        "captureSha256": "721d60374e758092d52b201b9a95d998feed980c6099af541f4ab05b7c073ab6"
+      },
+      {
+        "case": "sphere",
+        "side": "candidate",
+        "directory": "02-sphere-candidate",
+        "originalExit": 2,
+        "gmMs": [
+          22.928,
+          0.0772,
+          0.0777
+        ],
+        "pkMs": [
+          0.4557,
+          0.2757,
+          0.287
+        ],
+        "profile": [
+          "PROFILE operation=Boolean equal-overlap-15902 api-ms=22.928 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000",
+          "PROFILE operation=Boolean equal-overlap-15902 api-ms=0.077 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000",
+          "PROFILE operation=Boolean equal-overlap-15902 api-ms=0.078 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000"
+        ],
+        "work": [
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0",
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0",
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0"
+        ],
+        "captureSha256": "1f33b44821b7d54f94a05252a767d3a48cec1978e74fbc344d90f16504e84950"
+      },
+      {
+        "case": "sphere",
+        "side": "baseline",
+        "directory": "03-sphere-baseline",
+        "originalExit": 2,
+        "gmMs": [
+          25.363,
+          0.0824,
+          0.0814
+        ],
+        "pkMs": [
+          0.4689,
+          0.3721,
+          0.2822
+        ],
+        "profile": [
+          "PROFILE operation=Boolean equal-overlap-15902 api-ms=25.363 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000",
+          "PROFILE operation=Boolean equal-overlap-15902 api-ms=0.082 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000",
+          "PROFILE operation=Boolean equal-overlap-15902 api-ms=0.081 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000"
+        ],
+        "work": [
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0",
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0",
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0"
+        ],
+        "captureSha256": "5fdbda5428df4f3a41767f66092fb8295279e318c8795b3cdb21f7388e7b0697"
+      },
+      {
+        "case": "planar",
+        "side": "baseline",
+        "directory": "04-planar-baseline",
+        "originalExit": 0,
+        "gmMs": [
+          48.7976,
+          0.5979,
+          0.6296
+        ],
+        "pkMs": [
+          1.6341,
+          0.8667,
+          0.8978
+        ],
+        "profile": [
+          "PROFILE operation=Boolean overlap-two-axes-15902 api-ms=48.798 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000",
+          "PROFILE operation=Boolean overlap-two-axes-15902 api-ms=0.598 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000",
+          "PROFILE operation=Boolean overlap-two-axes-15902 api-ms=0.630 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000"
+        ],
+        "work": [
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0",
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0",
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0"
+        ],
+        "captureSha256": "e66f1994865d1785ad66bd79cfce8ff08d3c095c41a8bbb1ac35145f161b01cb"
+      },
+      {
+        "case": "planar",
+        "side": "candidate",
+        "directory": "05-planar-candidate",
+        "originalExit": 0,
+        "gmMs": [
+          48.6732,
+          0.604,
+          0.6049
+        ],
+        "pkMs": [
+          1.0505,
+          0.8251,
+          0.7891
+        ],
+        "profile": [
+          "PROFILE operation=Boolean overlap-two-axes-15902 api-ms=48.673 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000",
+          "PROFILE operation=Boolean overlap-two-axes-15902 api-ms=0.604 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000",
+          "PROFILE operation=Boolean overlap-two-axes-15902 api-ms=0.605 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000"
+        ],
+        "work": [
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0",
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0",
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0"
+        ],
+        "captureSha256": "6f99ad2654b9acf3bb27205d23c4a72bf07d87288f1493757ce866eca9eaa859"
+      },
+      {
+        "case": "planar",
+        "side": "candidate",
+        "directory": "06-planar-candidate",
+        "originalExit": 0,
+        "gmMs": [
+          55.0047,
+          0.608,
+          1.0007
+        ],
+        "pkMs": [
+          0.9765,
+          1.2418,
+          1.3127
+        ],
+        "profile": [
+          "PROFILE operation=Boolean overlap-two-axes-15902 api-ms=55.005 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000",
+          "PROFILE operation=Boolean overlap-two-axes-15902 api-ms=0.608 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000",
+          "PROFILE operation=Boolean overlap-two-axes-15902 api-ms=1.001 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000"
+        ],
+        "work": [
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0",
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0",
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0"
+        ],
+        "captureSha256": "346e6ba1ab3f9acdc677dbcaa550ef00e95b066e1f2b87cfce7063f9469aa17f"
+      },
+      {
+        "case": "planar",
+        "side": "baseline",
+        "directory": "07-planar-baseline",
+        "originalExit": 0,
+        "gmMs": [
+          57.0188,
+          0.6065,
+          0.619
+        ],
+        "pkMs": [
+          0.9764,
+          1.228,
+          1.2001
+        ],
+        "profile": [
+          "PROFILE operation=Boolean overlap-two-axes-15902 api-ms=57.019 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000",
+          "PROFILE operation=Boolean overlap-two-axes-15902 api-ms=0.607 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000",
+          "PROFILE operation=Boolean overlap-two-axes-15902 api-ms=0.619 elapsed-ms=0.000 pairs=0 ssi-cells=0 root-cells=0 roots=0 budget-failures=0 winding=0 bound-requests=0 bound-evaluations=0 cache-hits=0 failure-cache-hits=0 bound-ms=0.000"
+        ],
+        "work": [
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0",
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0",
+          "WORK jacobians=0 directions=0 residual-directions=0 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=0"
+        ],
+        "captureSha256": "9144419d6f53cf320de016f9bf451316dd6dbcf66c047a475f12f69bbe7711c5"
+      },
+      {
+        "case": "curved",
+        "side": "baseline",
+        "directory": "08-curved-baseline",
+        "originalExit": 2,
+        "gmMs": [
+          552.1578,
+          47.9354,
+          39.0794
+        ],
+        "pkMs": [
+          5.6771,
+          2.128,
+          1.9632
+        ],
+        "profile": [
+          "PROFILE operation=Boolean block-15902 api-ms=552.158 elapsed-ms=514.995 pairs=36 ssi-cells=7 root-cells=1034 roots=84 budget-failures=0 winding=155 bound-requests=4542 bound-evaluations=35 cache-hits=0 failure-cache-hits=0 bound-ms=1.801",
+          "PROFILE operation=Boolean block-15902 api-ms=47.935 elapsed-ms=47.793 pairs=36 ssi-cells=7 root-cells=1034 roots=84 budget-failures=0 winding=155 bound-requests=4542 bound-evaluations=35 cache-hits=0 failure-cache-hits=0 bound-ms=0.011",
+          "PROFILE operation=Boolean block-15902 api-ms=39.079 elapsed-ms=39.014 pairs=36 ssi-cells=7 root-cells=1034 roots=84 budget-failures=0 winding=155 bound-requests=4542 bound-evaluations=35 cache-hits=0 failure-cache-hits=0 bound-ms=0.011"
+        ],
+        "work": [
+          "WORK jacobians=672 directions=3360 residual-directions=1344 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=2016",
+          "WORK jacobians=686 directions=3430 residual-directions=1372 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=2058",
+          "WORK jacobians=707 directions=3535 residual-directions=1414 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=2121"
+        ],
+        "captureSha256": "6fb9de03b2ae8f9eac6dcb48680620a70d5ae58936b0f2c717655ee2ab5050c5"
+      },
+      {
+        "case": "curved",
+        "side": "candidate",
+        "directory": "09-curved-candidate",
+        "originalExit": 2,
+        "gmMs": [
+          491.9862,
+          58.023,
+          38.8407
+        ],
+        "pkMs": [
+          2.3753,
+          1.962,
+          1.9567
+        ],
+        "profile": [
+          "PROFILE operation=Boolean block-15902 api-ms=491.986 elapsed-ms=461.359 pairs=36 ssi-cells=7 root-cells=1034 roots=84 budget-failures=0 winding=155 bound-requests=4542 bound-evaluations=35 cache-hits=0 failure-cache-hits=0 bound-ms=1.511",
+          "PROFILE operation=Boolean block-15902 api-ms=58.023 elapsed-ms=57.845 pairs=36 ssi-cells=7 root-cells=1034 roots=84 budget-failures=0 winding=155 bound-requests=4542 bound-evaluations=35 cache-hits=0 failure-cache-hits=0 bound-ms=0.015",
+          "PROFILE operation=Boolean block-15902 api-ms=38.841 elapsed-ms=38.775 pairs=36 ssi-cells=7 root-cells=1034 roots=84 budget-failures=0 winding=155 bound-requests=4542 bound-evaluations=35 cache-hits=0 failure-cache-hits=0 bound-ms=0.011"
+        ],
+        "work": [
+          "WORK jacobians=672 directions=3360 residual-directions=1344 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=2016",
+          "WORK jacobians=686 directions=3430 residual-directions=1372 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=2058",
+          "WORK jacobians=707 directions=3535 residual-directions=1414 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=2121"
+        ],
+        "captureSha256": "cce3bd40f21599b195226277a0551e0cd98d6395263530ec6710b96fa34b9b97"
+      },
+      {
+        "case": "curved",
+        "side": "candidate",
+        "directory": "10-curved-candidate",
+        "originalExit": 2,
+        "gmMs": [
+          549.1451,
+          57.6174,
+          40.1734
+        ],
+        "pkMs": [
+          3.6761,
+          2.0439,
+          2.9898
+        ],
+        "profile": [
+          "PROFILE operation=Boolean block-15902 api-ms=549.145 elapsed-ms=516.626 pairs=36 ssi-cells=7 root-cells=1034 roots=84 budget-failures=0 winding=155 bound-requests=4542 bound-evaluations=35 cache-hits=0 failure-cache-hits=0 bound-ms=1.556",
+          "PROFILE operation=Boolean block-15902 api-ms=57.617 elapsed-ms=57.519 pairs=36 ssi-cells=7 root-cells=1034 roots=84 budget-failures=0 winding=155 bound-requests=4542 bound-evaluations=35 cache-hits=0 failure-cache-hits=0 bound-ms=0.016",
+          "PROFILE operation=Boolean block-15902 api-ms=40.173 elapsed-ms=40.109 pairs=36 ssi-cells=7 root-cells=1034 roots=84 budget-failures=0 winding=155 bound-requests=4542 bound-evaluations=35 cache-hits=0 failure-cache-hits=0 bound-ms=0.012"
+        ],
+        "work": [
+          "WORK jacobians=672 directions=3360 residual-directions=1344 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=2016",
+          "WORK jacobians=686 directions=3430 residual-directions=1372 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=2058",
+          "WORK jacobians=707 directions=3535 residual-directions=1414 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=2121"
+        ],
+        "captureSha256": "40c18205ad928707ef191266173832bfa0f1fafe0a749f039fa440ad80b74039"
+      },
+      {
+        "case": "curved",
+        "side": "baseline",
+        "directory": "11-curved-baseline",
+        "originalExit": 2,
+        "gmMs": [
+          555.5336,
+          38.0924,
+          48.894
+        ],
+        "pkMs": [
+          3.4266,
+          2.058,
+          1.9632
+        ],
+        "profile": [
+          "PROFILE operation=Boolean block-15902 api-ms=555.534 elapsed-ms=515.178 pairs=36 ssi-cells=7 root-cells=1034 roots=84 budget-failures=0 winding=155 bound-requests=4542 bound-evaluations=35 cache-hits=0 failure-cache-hits=0 bound-ms=1.828",
+          "PROFILE operation=Boolean block-15902 api-ms=38.092 elapsed-ms=38.030 pairs=36 ssi-cells=7 root-cells=1034 roots=84 budget-failures=0 winding=155 bound-requests=4542 bound-evaluations=35 cache-hits=0 failure-cache-hits=0 bound-ms=0.013",
+          "PROFILE operation=Boolean block-15902 api-ms=48.894 elapsed-ms=48.823 pairs=36 ssi-cells=7 root-cells=1034 roots=84 budget-failures=0 winding=155 bound-requests=4542 bound-evaluations=35 cache-hits=0 failure-cache-hits=0 bound-ms=0.016"
+        ],
+        "work": [
+          "WORK jacobians=672 directions=3360 residual-directions=1344 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=2016",
+          "WORK jacobians=686 directions=3430 residual-directions=1372 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=2058",
+          "WORK jacobians=707 directions=3535 residual-directions=1414 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=2121"
+        ],
+        "captureSha256": "b8a91f63cde14a4c1c9561057c117f99c243744bd16365e15994c0144ae6e3c9"
+      },
+      {
+        "case": "solidblend",
+        "side": "baseline",
+        "directory": "12-solidblend-baseline",
+        "originalExit": 2,
+        "gmMs": [
+          1225.8797,
+          518.8002,
+          447.4287
+        ],
+        "pkMs": [
+          17.1928,
+          2.375,
+          1.5602
+        ],
+        "profile": [
+          "PROFILE operation=FixBlends api-ms=1225.880 elapsed-ms=1219.326 pairs=0 ssi-cells=0 root-cells=150 roots=8 budget-failures=0 winding=18 bound-requests=628 bound-evaluations=452 cache-hits=26 failure-cache-hits=0 bound-ms=262.310",
+          "PROFILE operation=FixBlends api-ms=518.800 elapsed-ms=518.694 pairs=0 ssi-cells=0 root-cells=150 roots=8 budget-failures=0 winding=18 bound-requests=628 bound-evaluations=452 cache-hits=26 failure-cache-hits=0 bound-ms=263.129",
+          "PROFILE operation=FixBlends api-ms=447.429 elapsed-ms=447.366 pairs=0 ssi-cells=0 root-cells=150 roots=8 budget-failures=0 winding=18 bound-requests=628 bound-evaluations=452 cache-hits=26 failure-cache-hits=0 bound-ms=194.508"
+        ],
+        "work": [
+          "WORK jacobians=4179 directions=20895 residual-directions=8358 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=12537",
+          "WORK jacobians=4179 directions=20895 residual-directions=8358 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=12537",
+          "WORK jacobians=4179 directions=20895 residual-directions=8358 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=12537"
+        ],
+        "captureSha256": "561bb3af3f3f6925461d85c1f0b022f9475203893d163fc7ee86ebfd7ba18992"
+      },
+      {
+        "case": "solidblend",
+        "side": "candidate",
+        "directory": "13-solidblend-candidate",
+        "originalExit": 2,
+        "gmMs": [
+          1076.3185,
+          517.835,
+          449.9566
+        ],
+        "pkMs": [
+          1.9863,
+          1.67,
+          1.625
+        ],
+        "profile": [
+          "PROFILE operation=FixBlends api-ms=1076.319 elapsed-ms=1068.847 pairs=0 ssi-cells=0 root-cells=150 roots=8 budget-failures=0 winding=18 bound-requests=628 bound-evaluations=452 cache-hits=26 failure-cache-hits=0 bound-ms=279.653",
+          "PROFILE operation=FixBlends api-ms=517.835 elapsed-ms=517.728 pairs=0 ssi-cells=0 root-cells=150 roots=8 budget-failures=0 winding=18 bound-requests=628 bound-evaluations=452 cache-hits=26 failure-cache-hits=0 bound-ms=259.291",
+          "PROFILE operation=FixBlends api-ms=449.957 elapsed-ms=449.918 pairs=0 ssi-cells=0 root-cells=150 roots=8 budget-failures=0 winding=18 bound-requests=628 bound-evaluations=452 cache-hits=26 failure-cache-hits=0 bound-ms=197.248"
+        ],
+        "work": [
+          "WORK jacobians=4179 directions=20895 residual-directions=8358 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=12537",
+          "WORK jacobians=4179 directions=20895 residual-directions=8358 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=12537",
+          "WORK jacobians=4179 directions=20895 residual-directions=8358 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=12537"
+        ],
+        "captureSha256": "9ae0a5a8f46c92987d81000544f0df0d1016b024e819e652fc521718ccfe6b32"
+      },
+      {
+        "case": "solidblend",
+        "side": "candidate",
+        "directory": "14-solidblend-candidate",
+        "originalExit": 2,
+        "gmMs": [
+          1102.3134,
+          559.3785,
+          445.0022
+        ],
+        "pkMs": [
+          2.1071,
+          2.3227,
+          1.745
+        ],
+        "profile": [
+          "PROFILE operation=FixBlends api-ms=1102.313 elapsed-ms=1094.273 pairs=0 ssi-cells=0 root-cells=150 roots=8 budget-failures=0 winding=18 bound-requests=628 bound-evaluations=452 cache-hits=26 failure-cache-hits=0 bound-ms=281.107",
+          "PROFILE operation=FixBlends api-ms=559.379 elapsed-ms=559.266 pairs=0 ssi-cells=0 root-cells=150 roots=8 budget-failures=0 winding=18 bound-requests=628 bound-evaluations=452 cache-hits=26 failure-cache-hits=0 bound-ms=266.762",
+          "PROFILE operation=FixBlends api-ms=445.002 elapsed-ms=444.941 pairs=0 ssi-cells=0 root-cells=150 roots=8 budget-failures=0 winding=18 bound-requests=628 bound-evaluations=452 cache-hits=26 failure-cache-hits=0 bound-ms=194.614"
+        ],
+        "work": [
+          "WORK jacobians=4179 directions=20895 residual-directions=8358 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=12537",
+          "WORK jacobians=4179 directions=20895 residual-directions=8358 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=12537",
+          "WORK jacobians=4179 directions=20895 residual-directions=8358 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=12537"
+        ],
+        "captureSha256": "6bb0fa3484d391c8c8083103f8d296d3ee9827bdb44483b97a9de9f7daf83ee3"
+      },
+      {
+        "case": "solidblend",
+        "side": "baseline",
+        "directory": "15-solidblend-baseline",
+        "originalExit": 2,
+        "gmMs": [
+          1013.2472,
+          469.3165,
+          466.4696
+        ],
+        "pkMs": [
+          2.198,
+          1.6044,
+          1.8415
+        ],
+        "profile": [
+          "PROFILE operation=FixBlends api-ms=1013.247 elapsed-ms=1004.128 pairs=0 ssi-cells=0 root-cells=150 roots=8 budget-failures=0 winding=18 bound-requests=628 bound-evaluations=452 cache-hits=26 failure-cache-hits=0 bound-ms=225.582",
+          "PROFILE operation=FixBlends api-ms=469.317 elapsed-ms=469.184 pairs=0 ssi-cells=0 root-cells=150 roots=8 budget-failures=0 winding=18 bound-requests=628 bound-evaluations=452 cache-hits=26 failure-cache-hits=0 bound-ms=232.026",
+          "PROFILE operation=FixBlends api-ms=466.470 elapsed-ms=466.423 pairs=0 ssi-cells=0 root-cells=150 roots=8 budget-failures=0 winding=18 bound-requests=628 bound-evaluations=452 cache-hits=26 failure-cache-hits=0 bound-ms=228.326"
+        ],
+        "work": [
+          "WORK jacobians=4179 directions=20895 residual-directions=8358 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=12537",
+          "WORK jacobians=4179 directions=20895 residual-directions=8358 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=12537",
+          "WORK jacobians=4179 directions=20895 residual-directions=8358 record-builds=0 record-nodes=0 record-rebinds=0 direct-spline-point-columns=12537"
+        ],
+        "captureSha256": "f321affc9da42c0dbfa8f576d946891c51482c5b89b5594eb32dbda6f46f944d"
+      },
+      {
+        "case": "shortedge",
+        "side": "baseline",
+        "directory": "16-shortedge-baseline",
+        "originalExit": 2,
+        "gmMs": [
+          1598.7628,
+          807.0938,
+          520.4744
+        ],
+        "pkMs": [
+          5.8855,
+          1.6859,
+          2.227
+        ],
+        "profile": [
+          "PROFILE operation=FixBlends api-ms=1598.763 elapsed-ms=1593.012 pairs=0 ssi-cells=4956 root-cells=22371 roots=3518 budget-failures=0 winding=196 bound-requests=77061 bound-evaluations=47246 cache-hits=6885 failure-cache-hits=1463 bound-ms=897.561",
+          "PROFILE operation=FixBlends api-ms=807.094 elapsed-ms=806.991 pairs=0 ssi-cells=4956 root-cells=22371 roots=3518 budget-failures=0 winding=196 bound-requests=77061 bound-evaluations=47246 cache-hits=6885 failure-cache-hits=1463 bound-ms=459.618",
+          "PROFILE operation=FixBlends api-ms=520.474 elapsed-ms=520.405 pairs=0 ssi-cells=4956 root-cells=22371 roots=3518 budget-failures=0 winding=196 bound-requests=77061 bound-evaluations=47246 cache-hits=6885 failure-cache-hits=1463 bound-ms=311.204"
+        ],
+        "work": [
+          "WORK jacobians=18822 directions=122570 residual-directions=23094 record-builds=44 record-nodes=6412 record-rebinds=264 direct-spline-point-columns=0",
+          "WORK jacobians=18814 directions=122514 residual-directions=23086 record-builds=44 record-nodes=6412 record-rebinds=264 direct-spline-point-columns=0",
+          "WORK jacobians=18814 directions=122514 residual-directions=23086 record-builds=44 record-nodes=6412 record-rebinds=264 direct-spline-point-columns=0"
+        ],
+        "captureSha256": "b8bdb8be652ac61b81d3a12b991fce79b6dbb1e3b2839c7c1e13225efc9b6bc9"
+      },
+      {
+        "case": "shortedge",
+        "side": "candidate",
+        "directory": "17-shortedge-candidate",
+        "originalExit": 2,
+        "gmMs": [
+          1369.8652,
+          687.7985,
+          498.7899
+        ],
+        "pkMs": [
+          2.0435,
+          1.6155,
+          1.6086
+        ],
+        "profile": [
+          "PROFILE operation=FixBlends api-ms=1369.865 elapsed-ms=1363.332 pairs=0 ssi-cells=4956 root-cells=21063 roots=3136 budget-failures=0 winding=196 bound-requests=69028 bound-evaluations=42913 cache-hits=6885 failure-cache-hits=1463 bound-ms=650.486",
+          "PROFILE operation=FixBlends api-ms=687.798 elapsed-ms=687.708 pairs=0 ssi-cells=4956 root-cells=21063 roots=3136 budget-failures=0 winding=196 bound-requests=69028 bound-evaluations=42913 cache-hits=6885 failure-cache-hits=1463 bound-ms=375.730",
+          "PROFILE operation=FixBlends api-ms=498.790 elapsed-ms=498.718 pairs=0 ssi-cells=4956 root-cells=21063 roots=3136 budget-failures=0 winding=196 bound-requests=69028 bound-evaluations=42913 cache-hits=6885 failure-cache-hits=1463 bound-ms=301.287"
+        ],
+        "work": [
+          "WORK jacobians=18822 directions=122570 residual-directions=23094 record-builds=44 record-nodes=6412 record-rebinds=264 direct-spline-point-columns=0",
+          "WORK jacobians=18814 directions=122514 residual-directions=23086 record-builds=44 record-nodes=6412 record-rebinds=264 direct-spline-point-columns=0",
+          "WORK jacobians=18814 directions=122514 residual-directions=23086 record-builds=44 record-nodes=6412 record-rebinds=264 direct-spline-point-columns=0"
+        ],
+        "captureSha256": "64348eb73a62657a131f194b2a0b04eb1c483de17fc72324f695b52c2f551913"
+      },
+      {
+        "case": "shortedge",
+        "side": "candidate",
+        "directory": "18-shortedge-candidate",
+        "originalExit": 2,
+        "gmMs": [
+          1355.3727,
+          620.3277,
+          467.7802
+        ],
+        "pkMs": [
+          2.2813,
+          1.6027,
+          1.7269
+        ],
+        "profile": [
+          "PROFILE operation=FixBlends api-ms=1355.373 elapsed-ms=1350.513 pairs=0 ssi-cells=4956 root-cells=21063 roots=3136 budget-failures=0 winding=196 bound-requests=69028 bound-evaluations=42913 cache-hits=6885 failure-cache-hits=1463 bound-ms=622.785",
+          "PROFILE operation=FixBlends api-ms=620.328 elapsed-ms=620.255 pairs=0 ssi-cells=4956 root-cells=21063 roots=3136 budget-failures=0 winding=196 bound-requests=69028 bound-evaluations=42913 cache-hits=6885 failure-cache-hits=1463 bound-ms=350.597",
+          "PROFILE operation=FixBlends api-ms=467.780 elapsed-ms=467.734 pairs=0 ssi-cells=4956 root-cells=21063 roots=3136 budget-failures=0 winding=196 bound-requests=69028 bound-evaluations=42913 cache-hits=6885 failure-cache-hits=1463 bound-ms=287.023"
+        ],
+        "work": [
+          "WORK jacobians=18822 directions=122570 residual-directions=23094 record-builds=44 record-nodes=6412 record-rebinds=264 direct-spline-point-columns=0",
+          "WORK jacobians=18814 directions=122514 residual-directions=23086 record-builds=44 record-nodes=6412 record-rebinds=264 direct-spline-point-columns=0",
+          "WORK jacobians=18814 directions=122514 residual-directions=23086 record-builds=44 record-nodes=6412 record-rebinds=264 direct-spline-point-columns=0"
+        ],
+        "captureSha256": "338ef783451886f0d83492b4c450d32f6a6a53857cbf21d95cf49b5584644770"
+      },
+      {
+        "case": "shortedge",
+        "side": "baseline",
+        "directory": "19-shortedge-baseline",
+        "originalExit": 2,
+        "gmMs": [
+          1563.5758,
+          732.3648,
+          569.4402
+        ],
+        "pkMs": [
+          2.1078,
+          1.6665,
+          2.2849
+        ],
+        "profile": [
+          "PROFILE operation=FixBlends api-ms=1563.576 elapsed-ms=1558.489 pairs=0 ssi-cells=4956 root-cells=22371 roots=3518 budget-failures=0 winding=196 bound-requests=77061 bound-evaluations=47246 cache-hits=6885 failure-cache-hits=1463 bound-ms=814.177",
+          "PROFILE operation=FixBlends api-ms=732.365 elapsed-ms=732.280 pairs=0 ssi-cells=4956 root-cells=22371 roots=3518 budget-failures=0 winding=196 bound-requests=77061 bound-evaluations=47246 cache-hits=6885 failure-cache-hits=1463 bound-ms=427.536",
+          "PROFILE operation=FixBlends api-ms=569.440 elapsed-ms=569.368 pairs=0 ssi-cells=4956 root-cells=22371 roots=3518 budget-failures=0 winding=196 bound-requests=77061 bound-evaluations=47246 cache-hits=6885 failure-cache-hits=1463 bound-ms=329.732"
+        ],
+        "work": [
+          "WORK jacobians=18822 directions=122570 residual-directions=23094 record-builds=44 record-nodes=6412 record-rebinds=264 direct-spline-point-columns=0",
+          "WORK jacobians=18814 directions=122514 residual-directions=23086 record-builds=44 record-nodes=6412 record-rebinds=264 direct-spline-point-columns=0",
+          "WORK jacobians=18814 directions=122514 residual-directions=23086 record-builds=44 record-nodes=6412 record-rebinds=264 direct-spline-point-columns=0"
+        ],
+        "captureSha256": "ad9515f98f969c9e7b3574b55c86714441c9c203bd871360e968ed61536d7dc8"
+      }
+    ],
+    "workAudit": {
+      "repetitions": 60,
+      "rootWorkLines": 96,
+      "prebuildRaw0": 10,
+      "loadMin": 4.6,
+      "loadMax": 6.63,
+      "modulusComponentsRecomputed": 1080
+    }
+  },
+  "controls": {
+    "nativeMvid": "2408afd5-6caa-4e4c-9b47-cce6660273fc",
+    "nativeSha256": "1f33b5daac52f28fbfcb710d713b53686fffa7eb12138ac24f8c46cd5a37b9af",
+    "stack": {
+      "sectionEntryBytes": 312,
+      "entries": 64,
+      "additionalBytes": 19968,
+      "findExistingArrayBytes": 15392,
+      "findAllExplicitArrayBytes": 35360,
+      "rootFindExplicitArrayBytes": 2848,
+      "pointBytes": 64,
+      "isolationBytes": 40,
+      "nodeBytes": 112
+    },
+    "controls": [
+      {
+        "case": "three-branches",
+        "status": "Success",
+        "nodes": 32,
+        "edges": 29,
+        "remaining": 32659,
+        "actualHits": 26
+      },
+      {
+        "case": "no-root-support",
+        "status": "Success",
+        "nodes": 0,
+        "edges": 0,
+        "remaining": 32767,
+        "actualHits": 0
+      },
+      {
+        "case": "shifted-source",
+        "status": "Success",
+        "nodes": 0,
+        "edges": 0,
+        "remaining": 32767,
+        "actualHits": 0
+      },
+      {
+        "case": "strict",
+        "status": "Success",
+        "nodes": 32,
+        "edges": 29,
+        "remaining": 32659,
+        "actualHits": 26
+      },
+      {
+        "case": "output-small",
+        "status": "OutputTooSmall",
+        "nodes": 1,
+        "edges": 0,
+        "remaining": 32762,
+        "actualHits": 0
+      },
+      {
+        "case": "budget-empty",
+        "status": "NotConverged",
+        "nodes": 0,
+        "edges": 0,
+        "remaining": -1,
+        "actualHits": 0
+      }
+    ],
+    "realPkVersion": "38.0.150",
+    "sealedProducts": [
+      {
+        "label": "quality/00-curved-candidate",
+        "referenceBody": 195,
+        "actualBody": 51,
+        "globalDiffs": [
+          {
+            "type": 21940,
+            "masters": 1,
+            "similars": 1
+          },
+          {
+            "type": 21941,
+            "masters": 9,
+            "similars": 9
+          },
+          {
+            "type": 21943,
+            "masters": 21,
+            "similars": 21
+          },
+          {
+            "type": 21944,
+            "masters": 0,
+            "similars": 0
+          },
+          {
+            "type": 21946,
+            "masters": 14,
+            "similars": 14
+          },
+          {
+            "type": 21947,
+            "masters": 0,
+            "similars": 0
+          }
+        ],
+        "localDiffs": [
+          {
+            "masterFace": 302,
+            "similarFace": 57,
+            "type": 21949,
+            "masterEntity": 242,
+            "similarEntity": 168,
+            "masterClass": 500,
+            "similarClass": 500,
+            "masterLogical": 0,
+            "similarLogical": 0,
+            "masterInt": 4,
+            "similarInt": 33,
+            "masterDouble": 0,
+            "similarDouble": 0,
+            "masterDoubleBits": "0000000000000000",
+            "similarDoubleBits": "0000000000000000",
+            "diagnostic": true
+          },
+          {
+            "masterFace": 302,
+            "similarFace": 57,
+            "type": 21949,
+            "masterEntity": 284,
+            "similarEntity": 169,
+            "masterClass": 500,
+            "similarClass": 500,
+            "masterLogical": 0,
+            "similarLogical": 0,
+            "masterInt": 4,
+            "similarInt": 33,
+            "masterDouble": 0,
+            "similarDouble": 0,
+            "masterDoubleBits": "0000000000000000",
+            "similarDoubleBits": "0000000000000000",
+            "diagnostic": true
+          },
+          {
+            "masterFace": 291,
+            "similarFace": 64,
+            "type": 21949,
+            "masterEntity": 242,
+            "similarEntity": 168,
+            "masterClass": 500,
+            "similarClass": 500,
+            "masterLogical": 0,
+            "similarLogical": 0,
+            "masterInt": 4,
+            "similarInt": 33,
+            "masterDouble": 0,
+            "similarDouble": 0,
+            "masterDoubleBits": "0000000000000000",
+            "similarDoubleBits": "0000000000000000",
+            "diagnostic": true
+          },
+          {
+            "masterFace": 288,
+            "similarFace": 63,
+            "type": 21949,
+            "masterEntity": 284,
+            "similarEntity": 169,
+            "masterClass": 500,
+            "similarClass": 500,
+            "masterLogical": 0,
+            "similarLogical": 0,
+            "masterInt": 4,
+            "similarInt": 33,
+            "masterDouble": 0,
+            "similarDouble": 0,
+            "masterDoubleBits": "0000000000000000",
+            "similarDoubleBits": "0000000000000000",
+            "diagnostic": true
+          }
+        ],
+        "facePairRecords": [
+          {
+            "masterFace": 302,
+            "similarFace": 57,
+            "localDiffCount": 2
+          },
+          {
+            "masterFace": 291,
+            "similarFace": 64,
+            "localDiffCount": 1
+          },
+          {
+            "masterFace": 288,
+            "similarFace": 63,
+            "localDiffCount": 1
+          }
+        ],
+        "referenceType": 5601,
+        "actualType": 5601,
+        "mask": {
+          "o_t_version": 1,
+          "max_diffs": 1024,
+          "all_tests": false,
+          "acc_dev_tests": false,
+          "tol_dev_tests": true,
+          "num_tests": true,
+          "class_tests": true,
+          "sense_tests": true,
+          "tol_tests": true,
+          "missing_tests": true,
+          "non_match_tests": true
+        },
+        "nativeError": 0,
+        "globalResult": 21921,
+        "localResult": 21930,
+        "facePairs": 3,
+        "status": "Verified",
+        "gmXtSha256": "e2175c978745f265fb8f61b5db92a18c81fe9f6a0541bc51b059bada0150eaff",
+        "pkXtSha256": "27ff529db5104ea6e0f33c3c2cf7820dd32458608644081a3fe1a0009f73b434",
+        "originalStep": 0
+      },
+      {
+        "label": "quality/01-solidblend-candidate",
+        "referenceBody": 462,
+        "actualBody": 339,
+        "globalDiffs": [
+          {
+            "type": 21940,
+            "masters": 1,
+            "similars": 1
+          },
+          {
+            "type": 21941,
+            "masters": 7,
+            "similars": 7
+          },
+          {
+            "type": 21943,
+            "masters": 15,
+            "similars": 15
+          },
+          {
+            "type": 21944,
+            "masters": 0,
+            "similars": 0
+          },
+          {
+            "type": 21946,
+            "masters": 10,
+            "similars": 10
+          },
+          {
+            "type": 21947,
+            "masters": 0,
+            "similars": 0
+          }
+        ],
+        "localDiffs": [
+          {
+            "masterFace": 535,
+            "similarFace": 345,
+            "type": 21949,
+            "masterEntity": 546,
+            "similarEntity": 427,
+            "masterClass": 500,
+            "similarClass": 500,
+            "masterLogical": 0,
+            "similarLogical": 0,
+            "masterInt": 5,
+            "similarInt": 27,
+            "masterDouble": 0,
+            "similarDouble": 0,
+            "masterDoubleBits": "0000000000000000",
+            "similarDoubleBits": "0000000000000000",
+            "diagnostic": true
+          },
+          {
+            "masterFace": 536,
+            "similarFace": 346,
+            "type": 21949,
+            "masterEntity": 524,
+            "similarEntity": 429,
+            "masterClass": 500,
+            "similarClass": 500,
+            "masterLogical": 0,
+            "similarLogical": 0,
+            "masterInt": 5,
+            "similarInt": 27,
+            "masterDouble": 0,
+            "similarDouble": 0,
+            "masterDoubleBits": "0000000000000000",
+            "similarDoubleBits": "0000000000000000",
+            "diagnostic": true
+          },
+          {
+            "masterFace": 530,
+            "similarFace": 350,
+            "type": 21949,
+            "masterEntity": 546,
+            "similarEntity": 427,
+            "masterClass": 500,
+            "similarClass": 500,
+            "masterLogical": 0,
+            "similarLogical": 0,
+            "masterInt": 5,
+            "similarInt": 27,
+            "masterDouble": 0,
+            "similarDouble": 0,
+            "masterDoubleBits": "0000000000000000",
+            "similarDoubleBits": "0000000000000000",
+            "diagnostic": true
+          },
+          {
+            "masterFace": 530,
+            "similarFace": 350,
+            "type": 21949,
+            "masterEntity": 524,
+            "similarEntity": 429,
+            "masterClass": 500,
+            "similarClass": 500,
+            "masterLogical": 0,
+            "similarLogical": 0,
+            "masterInt": 5,
+            "similarInt": 27,
+            "masterDouble": 0,
+            "similarDouble": 0,
+            "masterDoubleBits": "0000000000000000",
+            "similarDoubleBits": "0000000000000000",
+            "diagnostic": true
+          }
+        ],
+        "facePairRecords": [
+          {
+            "masterFace": 535,
+            "similarFace": 345,
+            "localDiffCount": 1
+          },
+          {
+            "masterFace": 536,
+            "similarFace": 346,
+            "localDiffCount": 1
+          },
+          {
+            "masterFace": 530,
+            "similarFace": 350,
+            "localDiffCount": 2
+          }
+        ],
+        "referenceType": 5601,
+        "actualType": 5601,
+        "mask": {
+          "o_t_version": 1,
+          "max_diffs": 1024,
+          "all_tests": false,
+          "acc_dev_tests": false,
+          "tol_dev_tests": true,
+          "num_tests": true,
+          "class_tests": true,
+          "sense_tests": true,
+          "tol_tests": true,
+          "missing_tests": true,
+          "non_match_tests": true
+        },
+        "nativeError": 0,
+        "globalResult": 21921,
+        "localResult": 21930,
+        "facePairs": 3,
+        "status": "Verified",
+        "gmXtSha256": "a0124e947773a09ab592c7dda92a0147c34b50f8e3e06cd5519541cf753f1b42",
+        "pkXtSha256": "1f37d48acee672430a170bb650e27ac3f288da96d8fb837d9bc328a605722146",
+        "originalStep": 0
+      },
+      {
+        "label": "active-shortedge-lifecycle-capture",
+        "referenceBody": 731,
+        "actualBody": 571,
+        "globalDiffs": [
+          {
+            "type": 21940,
+            "masters": 1,
+            "similars": 1
+          },
+          {
+            "type": 21941,
+            "masters": 10,
+            "similars": 10
+          },
+          {
+            "type": 21943,
+            "masters": 23,
+            "similars": 23
+          },
+          {
+            "type": 21944,
+            "masters": 0,
+            "similars": 0
+          },
+          {
+            "type": 21946,
+            "masters": 15,
+            "similars": 15
+          },
+          {
+            "type": 21947,
+            "masters": 0,
+            "similars": 0
+          }
+        ],
+        "localDiffs": [],
+        "facePairRecords": [],
+        "referenceType": 5601,
+        "actualType": 5601,
+        "mask": {
+          "o_t_version": 1,
+          "max_diffs": 1024,
+          "all_tests": false,
+          "acc_dev_tests": false,
+          "tol_dev_tests": true,
+          "num_tests": true,
+          "class_tests": true,
+          "sense_tests": true,
+          "tol_tests": true,
+          "missing_tests": true,
+          "non_match_tests": true
+        },
+        "nativeError": 0,
+        "globalResult": 21921,
+        "localResult": 21931,
+        "facePairs": 0,
+        "status": "Verified",
+        "gmXtSha256": "a16c3a536cdee80f5109f33e6bf7605d3d1ef06dc2a1277f27b2ea5eed2467c9",
+        "pkXtSha256": "a7a6e660ae68bff4a7d7973a3357426b26955671984e69a46562593d563c6000",
+        "originalStep": 4
+      }
+    ]
+  },
+  "q2Focused": {
+    "actualExit": 0,
+    "total": "30",
+    "passed": "30",
+    "failed": "0",
+    "trxSha256": "37e2084f53840c205371233da090a854a1a5e257c66aaca828a83e3f7f8dc7d8"
+  },
+  "q2OneNurbs": {
+    "rawExit": 2,
+    "checks": {
+      "pass": 16,
+      "missing": 13
+    },
+    "captureErrors": [],
+    "kernelMvid": "7d809bdd-0251-4438-b614-944378ca9c80",
+    "kernelDllSha256": "8aee15333ad4b2b717a472d61d3576656350608fee49528d3a5a1d1936185f42",
+    "captureSha256": "122b1d2ef1c931905082e120ee6940be824e2b15656e523c6946d3111b5f5fea",
+    "scope": "One complete Linux current-source consumer, not Mac timings"
+  },
+  "materials": {
+    "originalMaterialBindingPath": "temp_docs/section-controlled/material-binding-current.json",
+    "originalMaterialBindingSha256": "c01f2ab37f9eb2a55b5da9c50ede3be554e153366c6a0ab1d43e89dea01fd698",
+    "finalXtFiles": [
+      {
+        "path": "temp_docs/section-controlled/window/00-sphere-baseline/products/equal-overlap-15902-0-reference.x_t",
+        "sha256": "83ef0af850c509ea041e0fcf2cf3bc0a0a56b60a5d13c9b10800a6bf890a9407",
+        "role": "PK reference product",
+        "commit": "553b2c6c01d3862411f3b6a03735dc22ee20dc11",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/00-sphere-baseline/products/equal-overlap-15902-0-managed.x_t",
+        "sha256": "7043b4bfa23bded3c2605483a359e9a736d59261fed5fd3a5f4449ca229a702b",
+        "role": "GM product",
+        "commit": "553b2c6c01d3862411f3b6a03735dc22ee20dc11",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/01-sphere-candidate/products/equal-overlap-15902-0-reference.x_t",
+        "sha256": "83ef0af850c509ea041e0fcf2cf3bc0a0a56b60a5d13c9b10800a6bf890a9407",
+        "role": "PK reference product",
+        "commit": "a770a49d07b43dbe05d284f5e11c2d6adfc40fd6",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/01-sphere-candidate/products/equal-overlap-15902-0-managed.x_t",
+        "sha256": "7043b4bfa23bded3c2605483a359e9a736d59261fed5fd3a5f4449ca229a702b",
+        "role": "GM product",
+        "commit": "a770a49d07b43dbe05d284f5e11c2d6adfc40fd6",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/02-sphere-candidate/products/equal-overlap-15902-0-reference.x_t",
+        "sha256": "83ef0af850c509ea041e0fcf2cf3bc0a0a56b60a5d13c9b10800a6bf890a9407",
+        "role": "PK reference product",
+        "commit": "a770a49d07b43dbe05d284f5e11c2d6adfc40fd6",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/02-sphere-candidate/products/equal-overlap-15902-0-managed.x_t",
+        "sha256": "7043b4bfa23bded3c2605483a359e9a736d59261fed5fd3a5f4449ca229a702b",
+        "role": "GM product",
+        "commit": "a770a49d07b43dbe05d284f5e11c2d6adfc40fd6",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/03-sphere-baseline/products/equal-overlap-15902-0-reference.x_t",
+        "sha256": "83ef0af850c509ea041e0fcf2cf3bc0a0a56b60a5d13c9b10800a6bf890a9407",
+        "role": "PK reference product",
+        "commit": "553b2c6c01d3862411f3b6a03735dc22ee20dc11",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/03-sphere-baseline/products/equal-overlap-15902-0-managed.x_t",
+        "sha256": "7043b4bfa23bded3c2605483a359e9a736d59261fed5fd3a5f4449ca229a702b",
+        "role": "GM product",
+        "commit": "553b2c6c01d3862411f3b6a03735dc22ee20dc11",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/04-planar-baseline/products/overlap-two-axes-15902-0-reference.x_t",
+        "sha256": "8e6510827c62a076a52f849dadb5c6c382dab66d83ce5c17f8afab8a84a558b6",
+        "role": "PK reference product",
+        "commit": "553b2c6c01d3862411f3b6a03735dc22ee20dc11",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/04-planar-baseline/products/overlap-two-axes-15902-0-managed.x_t",
+        "sha256": "2f9e15f719acf50a6dfd740c7722ef8db11d631ec964a2fbd36eeb56f22cf1ac",
+        "role": "GM product",
+        "commit": "553b2c6c01d3862411f3b6a03735dc22ee20dc11",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/05-planar-candidate/products/overlap-two-axes-15902-0-reference.x_t",
+        "sha256": "8e6510827c62a076a52f849dadb5c6c382dab66d83ce5c17f8afab8a84a558b6",
+        "role": "PK reference product",
+        "commit": "a770a49d07b43dbe05d284f5e11c2d6adfc40fd6",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/05-planar-candidate/products/overlap-two-axes-15902-0-managed.x_t",
+        "sha256": "2f9e15f719acf50a6dfd740c7722ef8db11d631ec964a2fbd36eeb56f22cf1ac",
+        "role": "GM product",
+        "commit": "a770a49d07b43dbe05d284f5e11c2d6adfc40fd6",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/06-planar-candidate/products/overlap-two-axes-15902-0-reference.x_t",
+        "sha256": "8e6510827c62a076a52f849dadb5c6c382dab66d83ce5c17f8afab8a84a558b6",
+        "role": "PK reference product",
+        "commit": "a770a49d07b43dbe05d284f5e11c2d6adfc40fd6",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/06-planar-candidate/products/overlap-two-axes-15902-0-managed.x_t",
+        "sha256": "2f9e15f719acf50a6dfd740c7722ef8db11d631ec964a2fbd36eeb56f22cf1ac",
+        "role": "GM product",
+        "commit": "a770a49d07b43dbe05d284f5e11c2d6adfc40fd6",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/07-planar-baseline/products/overlap-two-axes-15902-0-reference.x_t",
+        "sha256": "8e6510827c62a076a52f849dadb5c6c382dab66d83ce5c17f8afab8a84a558b6",
+        "role": "PK reference product",
+        "commit": "553b2c6c01d3862411f3b6a03735dc22ee20dc11",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/07-planar-baseline/products/overlap-two-axes-15902-0-managed.x_t",
+        "sha256": "2f9e15f719acf50a6dfd740c7722ef8db11d631ec964a2fbd36eeb56f22cf1ac",
+        "role": "GM product",
+        "commit": "553b2c6c01d3862411f3b6a03735dc22ee20dc11",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/08-curved-baseline/products/block-15902-gm-target-before.x_t",
+        "sha256": "7126d7ecbf2faef432d83ba3dbf5fa4a5b44305c2dafde3f1d568550e264d6f9",
+        "role": "GM before input",
+        "commit": "553b2c6c01d3862411f3b6a03735dc22ee20dc11",
+        "repetition": null
+      },
+      {
+        "path": "temp_docs/section-controlled/window/08-curved-baseline/products/block-15902-pk-target-before.x_t",
+        "sha256": "e5a88f05567aef4bb6cd372b7b2a28252e7006cf43d4d05fd0d93e5606ca00b1",
+        "role": "PK before input",
+        "commit": "553b2c6c01d3862411f3b6a03735dc22ee20dc11",
+        "repetition": null
+      },
+      {
+        "path": "temp_docs/section-controlled/window/08-curved-baseline/products/block-15902-0-native.x_t",
+        "sha256": "dcca213ad214d4f1471c274f3d552ec20a2699f582fa85605d8d85bcfbbd733a",
+        "role": "PK reference product",
+        "commit": "553b2c6c01d3862411f3b6a03735dc22ee20dc11",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/08-curved-baseline/products/block-15902-pk-tool1-before.x_t",
+        "sha256": "c530dd2aa4026a6add64b5f22d5784dc95e0b4baf4bb43b1262cdeaa9a35fd24",
+        "role": "PK before input",
+        "commit": "553b2c6c01d3862411f3b6a03735dc22ee20dc11",
+        "repetition": null
+      },
+      {
+        "path": "temp_docs/section-controlled/window/08-curved-baseline/products/block-15902-gm-tool1-before.x_t",
+        "sha256": "f2105af378e1820dbc06dce8baf47b5f4d252b2df5f68224a75baac097d91009",
+        "role": "GM before input",
+        "commit": "553b2c6c01d3862411f3b6a03735dc22ee20dc11",
+        "repetition": null
+      },
+      {
+        "path": "temp_docs/section-controlled/window/08-curved-baseline/products/block-15902-0.x_t",
+        "sha256": "06bf15b755ce844303bd634076d79702fae93663cfd008b23b4e1da38983b86d",
+        "role": "GM product",
+        "commit": "553b2c6c01d3862411f3b6a03735dc22ee20dc11",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/09-curved-candidate/products/block-15902-gm-target-before.x_t",
+        "sha256": "7126d7ecbf2faef432d83ba3dbf5fa4a5b44305c2dafde3f1d568550e264d6f9",
+        "role": "GM before input",
+        "commit": "a770a49d07b43dbe05d284f5e11c2d6adfc40fd6",
+        "repetition": null
+      },
+      {
+        "path": "temp_docs/section-controlled/window/09-curved-candidate/products/block-15902-pk-target-before.x_t",
+        "sha256": "e5a88f05567aef4bb6cd372b7b2a28252e7006cf43d4d05fd0d93e5606ca00b1",
+        "role": "PK before input",
+        "commit": "a770a49d07b43dbe05d284f5e11c2d6adfc40fd6",
+        "repetition": null
+      },
+      {
+        "path": "temp_docs/section-controlled/window/09-curved-candidate/products/block-15902-0-native.x_t",
+        "sha256": "dcca213ad214d4f1471c274f3d552ec20a2699f582fa85605d8d85bcfbbd733a",
+        "role": "PK reference product",
+        "commit": "a770a49d07b43dbe05d284f5e11c2d6adfc40fd6",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/09-curved-candidate/products/block-15902-pk-tool1-before.x_t",
+        "sha256": "c530dd2aa4026a6add64b5f22d5784dc95e0b4baf4bb43b1262cdeaa9a35fd24",
+        "role": "PK before input",
+        "commit": "a770a49d07b43dbe05d284f5e11c2d6adfc40fd6",
+        "repetition": null
+      },
+      {
+        "path": "temp_docs/section-controlled/window/09-curved-candidate/products/block-15902-gm-tool1-before.x_t",
+        "sha256": "f2105af378e1820dbc06dce8baf47b5f4d252b2df5f68224a75baac097d91009",
+        "role": "GM before input",
+        "commit": "a770a49d07b43dbe05d284f5e11c2d6adfc40fd6",
+        "repetition": null
+      },
+      {
+        "path": "temp_docs/section-controlled/window/09-curved-candidate/products/block-15902-0.x_t",
+        "sha256": "06bf15b755ce844303bd634076d79702fae93663cfd008b23b4e1da38983b86d",
+        "role": "GM product",
+        "commit": "a770a49d07b43dbe05d284f5e11c2d6adfc40fd6",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/10-curved-candidate/products/block-15902-gm-target-before.x_t",
+        "sha256": "7126d7ecbf2faef432d83ba3dbf5fa4a5b44305c2dafde3f1d568550e264d6f9",
+        "role": "GM before input",
+        "commit": "a770a49d07b43dbe05d284f5e11c2d6adfc40fd6",
+        "repetition": null
+      },
+      {
+        "path": "temp_docs/section-controlled/window/10-curved-candidate/products/block-15902-pk-target-before.x_t",
+        "sha256": "e5a88f05567aef4bb6cd372b7b2a28252e7006cf43d4d05fd0d93e5606ca00b1",
+        "role": "PK before input",
+        "commit": "a770a49d07b43dbe05d284f5e11c2d6adfc40fd6",
+        "repetition": null
+      },
+      {
+        "path": "temp_docs/section-controlled/window/10-curved-candidate/products/block-15902-0-native.x_t",
+        "sha256": "dcca213ad214d4f1471c274f3d552ec20a2699f582fa85605d8d85bcfbbd733a",
+        "role": "PK reference product",
+        "commit": "a770a49d07b43dbe05d284f5e11c2d6adfc40fd6",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/10-curved-candidate/products/block-15902-pk-tool1-before.x_t",
+        "sha256": "c530dd2aa4026a6add64b5f22d5784dc95e0b4baf4bb43b1262cdeaa9a35fd24",
+        "role": "PK before input",
+        "commit": "a770a49d07b43dbe05d284f5e11c2d6adfc40fd6",
+        "repetition": null
+      },
+      {
+        "path": "temp_docs/section-controlled/window/10-curved-candidate/products/block-15902-gm-tool1-before.x_t",
+        "sha256": "f2105af378e1820dbc06dce8baf47b5f4d252b2df5f68224a75baac097d91009",
+        "role": "GM before input",
+        "commit": "a770a49d07b43dbe05d284f5e11c2d6adfc40fd6",
+        "repetition": null
+      },
+      {
+        "path": "temp_docs/section-controlled/window/10-curved-candidate/products/block-15902-0.x_t",
+        "sha256": "06bf15b755ce844303bd634076d79702fae93663cfd008b23b4e1da38983b86d",
+        "role": "GM product",
+        "commit": "a770a49d07b43dbe05d284f5e11c2d6adfc40fd6",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/11-curved-baseline/products/block-15902-gm-target-before.x_t",
+        "sha256": "7126d7ecbf2faef432d83ba3dbf5fa4a5b44305c2dafde3f1d568550e264d6f9",
+        "role": "GM before input",
+        "commit": "553b2c6c01d3862411f3b6a03735dc22ee20dc11",
+        "repetition": null
+      },
+      {
+        "path": "temp_docs/section-controlled/window/11-curved-baseline/products/block-15902-pk-target-before.x_t",
+        "sha256": "e5a88f05567aef4bb6cd372b7b2a28252e7006cf43d4d05fd0d93e5606ca00b1",
+        "role": "PK before input",
+        "commit": "553b2c6c01d3862411f3b6a03735dc22ee20dc11",
+        "repetition": null
+      },
+      {
+        "path": "temp_docs/section-controlled/window/11-curved-baseline/products/block-15902-0-native.x_t",
+        "sha256": "dcca213ad214d4f1471c274f3d552ec20a2699f582fa85605d8d85bcfbbd733a",
+        "role": "PK reference product",
+        "commit": "553b2c6c01d3862411f3b6a03735dc22ee20dc11",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/11-curved-baseline/products/block-15902-pk-tool1-before.x_t",
+        "sha256": "c530dd2aa4026a6add64b5f22d5784dc95e0b4baf4bb43b1262cdeaa9a35fd24",
+        "role": "PK before input",
+        "commit": "553b2c6c01d3862411f3b6a03735dc22ee20dc11",
+        "repetition": null
+      },
+      {
+        "path": "temp_docs/section-controlled/window/11-curved-baseline/products/block-15902-gm-tool1-before.x_t",
+        "sha256": "f2105af378e1820dbc06dce8baf47b5f4d252b2df5f68224a75baac097d91009",
+        "role": "GM before input",
+        "commit": "553b2c6c01d3862411f3b6a03735dc22ee20dc11",
+        "repetition": null
+      },
+      {
+        "path": "temp_docs/section-controlled/window/11-curved-baseline/products/block-15902-0.x_t",
+        "sha256": "06bf15b755ce844303bd634076d79702fae93663cfd008b23b4e1da38983b86d",
+        "role": "GM product",
+        "commit": "553b2c6c01d3862411f3b6a03735dc22ee20dc11",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/12-solidblend-baseline/products/plane-nurbs-fillet.x_t",
+        "sha256": "c3bf85af219f8a80477cec7c5245ad0128f8cecaf3832ead278f5c898a5deb73",
+        "role": "GM product",
+        "commit": "553b2c6c01d3862411f3b6a03735dc22ee20dc11",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/13-solidblend-candidate/products/plane-nurbs-fillet.x_t",
+        "sha256": "c3bf85af219f8a80477cec7c5245ad0128f8cecaf3832ead278f5c898a5deb73",
+        "role": "GM product",
+        "commit": "a770a49d07b43dbe05d284f5e11c2d6adfc40fd6",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/14-solidblend-candidate/products/plane-nurbs-fillet.x_t",
+        "sha256": "c3bf85af219f8a80477cec7c5245ad0128f8cecaf3832ead278f5c898a5deb73",
+        "role": "GM product",
+        "commit": "a770a49d07b43dbe05d284f5e11c2d6adfc40fd6",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/15-solidblend-baseline/products/plane-nurbs-fillet.x_t",
+        "sha256": "c3bf85af219f8a80477cec7c5245ad0128f8cecaf3832ead278f5c898a5deb73",
+        "role": "GM product",
+        "commit": "553b2c6c01d3862411f3b6a03735dc22ee20dc11",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/16-shortedge-baseline/products/a1-r0.5-t1E-07-reverseFalse-default-input-fresh.x_t",
+        "sha256": "4f1bbeecd440662f01321103c93a529973fce0b69c77dc97f22533a58e20093a",
+        "role": "GM received fresh input",
+        "commit": "553b2c6c01d3862411f3b6a03735dc22ee20dc11",
+        "repetition": null
+      },
+      {
+        "path": "temp_docs/section-controlled/window/16-shortedge-baseline/products/a1-r0.5-t1E-07-reverseFalse-default-native.x_t",
+        "sha256": "b1b0028feca8fd51e0b4b5615d4c34ad81adbee43648dd6c5e320ef9af464655",
+        "role": "PK reference product",
+        "commit": "553b2c6c01d3862411f3b6a03735dc22ee20dc11",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/16-shortedge-baseline/products/a1-r0.5-t1E-07-reverseFalse-default-input.x_t",
+        "sha256": "262963ce0b899972272970ace0eff5da8b9161dbf007bd01f20a9d3037a8d1a2",
+        "role": "PK seed",
+        "commit": "553b2c6c01d3862411f3b6a03735dc22ee20dc11",
+        "repetition": null
+      },
+      {
+        "path": "temp_docs/section-controlled/window/16-shortedge-baseline/products/a1-r0.5-t1E-07-reverseFalse-default-native-fresh.x_t",
+        "sha256": "f40cb59d40da89562198984850ed47910d6dac25f51c76342c9fd865bc3b5da3",
+        "role": "PK product received and re-exported by GM",
+        "commit": "553b2c6c01d3862411f3b6a03735dc22ee20dc11",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/16-shortedge-baseline/products/a1-r0.5-t1E-07-reverseFalse-default-self.x_t",
+        "sha256": "37ac232e62340c29f4f6ba94807775b7d39ba3a64d445c75791499c1a811b0ba",
+        "role": "GM product",
+        "commit": "553b2c6c01d3862411f3b6a03735dc22ee20dc11",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/17-shortedge-candidate/products/a1-r0.5-t1E-07-reverseFalse-default-input-fresh.x_t",
+        "sha256": "4f1bbeecd440662f01321103c93a529973fce0b69c77dc97f22533a58e20093a",
+        "role": "GM received fresh input",
+        "commit": "a770a49d07b43dbe05d284f5e11c2d6adfc40fd6",
+        "repetition": null
+      },
+      {
+        "path": "temp_docs/section-controlled/window/17-shortedge-candidate/products/a1-r0.5-t1E-07-reverseFalse-default-native.x_t",
+        "sha256": "b1b0028feca8fd51e0b4b5615d4c34ad81adbee43648dd6c5e320ef9af464655",
+        "role": "PK reference product",
+        "commit": "a770a49d07b43dbe05d284f5e11c2d6adfc40fd6",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/17-shortedge-candidate/products/a1-r0.5-t1E-07-reverseFalse-default-input.x_t",
+        "sha256": "262963ce0b899972272970ace0eff5da8b9161dbf007bd01f20a9d3037a8d1a2",
+        "role": "PK seed",
+        "commit": "a770a49d07b43dbe05d284f5e11c2d6adfc40fd6",
+        "repetition": null
+      },
+      {
+        "path": "temp_docs/section-controlled/window/17-shortedge-candidate/products/a1-r0.5-t1E-07-reverseFalse-default-native-fresh.x_t",
+        "sha256": "f40cb59d40da89562198984850ed47910d6dac25f51c76342c9fd865bc3b5da3",
+        "role": "PK product received and re-exported by GM",
+        "commit": "a770a49d07b43dbe05d284f5e11c2d6adfc40fd6",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/17-shortedge-candidate/products/a1-r0.5-t1E-07-reverseFalse-default-self.x_t",
+        "sha256": "37ac232e62340c29f4f6ba94807775b7d39ba3a64d445c75791499c1a811b0ba",
+        "role": "GM product",
+        "commit": "a770a49d07b43dbe05d284f5e11c2d6adfc40fd6",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/18-shortedge-candidate/products/a1-r0.5-t1E-07-reverseFalse-default-input-fresh.x_t",
+        "sha256": "4f1bbeecd440662f01321103c93a529973fce0b69c77dc97f22533a58e20093a",
+        "role": "GM received fresh input",
+        "commit": "a770a49d07b43dbe05d284f5e11c2d6adfc40fd6",
+        "repetition": null
+      },
+      {
+        "path": "temp_docs/section-controlled/window/18-shortedge-candidate/products/a1-r0.5-t1E-07-reverseFalse-default-native.x_t",
+        "sha256": "b1b0028feca8fd51e0b4b5615d4c34ad81adbee43648dd6c5e320ef9af464655",
+        "role": "PK reference product",
+        "commit": "a770a49d07b43dbe05d284f5e11c2d6adfc40fd6",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/18-shortedge-candidate/products/a1-r0.5-t1E-07-reverseFalse-default-input.x_t",
+        "sha256": "262963ce0b899972272970ace0eff5da8b9161dbf007bd01f20a9d3037a8d1a2",
+        "role": "PK seed",
+        "commit": "a770a49d07b43dbe05d284f5e11c2d6adfc40fd6",
+        "repetition": null
+      },
+      {
+        "path": "temp_docs/section-controlled/window/18-shortedge-candidate/products/a1-r0.5-t1E-07-reverseFalse-default-native-fresh.x_t",
+        "sha256": "f40cb59d40da89562198984850ed47910d6dac25f51c76342c9fd865bc3b5da3",
+        "role": "PK product received and re-exported by GM",
+        "commit": "a770a49d07b43dbe05d284f5e11c2d6adfc40fd6",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/18-shortedge-candidate/products/a1-r0.5-t1E-07-reverseFalse-default-self.x_t",
+        "sha256": "37ac232e62340c29f4f6ba94807775b7d39ba3a64d445c75791499c1a811b0ba",
+        "role": "GM product",
+        "commit": "a770a49d07b43dbe05d284f5e11c2d6adfc40fd6",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/19-shortedge-baseline/products/a1-r0.5-t1E-07-reverseFalse-default-input-fresh.x_t",
+        "sha256": "4f1bbeecd440662f01321103c93a529973fce0b69c77dc97f22533a58e20093a",
+        "role": "GM received fresh input",
+        "commit": "553b2c6c01d3862411f3b6a03735dc22ee20dc11",
+        "repetition": null
+      },
+      {
+        "path": "temp_docs/section-controlled/window/19-shortedge-baseline/products/a1-r0.5-t1E-07-reverseFalse-default-native.x_t",
+        "sha256": "b1b0028feca8fd51e0b4b5615d4c34ad81adbee43648dd6c5e320ef9af464655",
+        "role": "PK reference product",
+        "commit": "553b2c6c01d3862411f3b6a03735dc22ee20dc11",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/19-shortedge-baseline/products/a1-r0.5-t1E-07-reverseFalse-default-input.x_t",
+        "sha256": "262963ce0b899972272970ace0eff5da8b9161dbf007bd01f20a9d3037a8d1a2",
+        "role": "PK seed",
+        "commit": "553b2c6c01d3862411f3b6a03735dc22ee20dc11",
+        "repetition": null
+      },
+      {
+        "path": "temp_docs/section-controlled/window/19-shortedge-baseline/products/a1-r0.5-t1E-07-reverseFalse-default-native-fresh.x_t",
+        "sha256": "f40cb59d40da89562198984850ed47910d6dac25f51c76342c9fd865bc3b5da3",
+        "role": "PK product received and re-exported by GM",
+        "commit": "553b2c6c01d3862411f3b6a03735dc22ee20dc11",
+        "repetition": 2
+      },
+      {
+        "path": "temp_docs/section-controlled/window/19-shortedge-baseline/products/a1-r0.5-t1E-07-reverseFalse-default-self.x_t",
+        "sha256": "37ac232e62340c29f4f6ba94807775b7d39ba3a64d445c75791499c1a811b0ba",
+        "role": "GM product",
+        "commit": "553b2c6c01d3862411f3b6a03735dc22ee20dc11",
+        "repetition": 2
+      }
+    ],
+    "qualityShortedgeFinalProductRepetition": 5,
+    "boundary": "GM live product, private PK snapshot and independent PK reference are separate; inputs/seeds are not fabricated rep2; original curved role/tracking missing retained"
+  },
+  "actualAuditExecutions": [
+    {
+      "path": "temp_docs/section-review-evidence-01.log",
+      "sha256": "9daf578627d0c9ee5457cb6a16f68162df07896fde907945be0c49affe2abf62",
+      "observedProcessExit": 0
+    },
+    {
+      "path": "temp_docs/section-review-evidence-02.log",
+      "sha256": "8a6f37b29460e61bab2eab82939f1a9d0666a587d84e88a8d100dafa46b6dcda",
+      "observedProcessExit": 0
+    },
+    {
+      "path": "temp_docs/section-review-measurement-01.log",
+      "sha256": "2bb647f3a3d354594fb0d39fb942272f833b369443a13f006da4e9854080c337",
+      "observedProcessExit": 0
+    },
+    {
+      "path": "temp_docs/section-review-measurement-02.log",
+      "sha256": "8c6ac5753b374a8450da4eeb4be9b3d68556188ad455a57ae25b1b48c4b264bf",
+      "observedProcessExit": 0
+    },
+    {
+      "path": "temp_docs/section-review-bindings-01.log",
+      "sha256": "8cae87331dd85ba75a008b1d9714d17d9bf037d425a69990a78aa253fe13d138",
+      "observedProcessExit": 0
+    },
+    {
+      "path": "temp_docs/section-review-controls-01.log",
+      "sha256": "227cf6aad47d9d9996524101833fb33478cd10645ccc5296242ee7a72cf09b95",
+      "observedProcessExit": 0
+    },
+    {
+      "path": "temp_docs/section-review-focused-driver.log",
+      "sha256": "3c39b69cafd05860536d8df0a061266a354164bdd5343d454934ca38eab97f7a",
+      "observedProcessExit": 0
+    },
+    {
+      "path": "temp_docs/section-review-consumer-driver.log",
+      "sha256": "97ac6786be51546dc17a918a50e7391a99c340461385f7554f962eb4358b7ddb",
+      "observedProcessExit": 2
+    }
+  ]
+}
