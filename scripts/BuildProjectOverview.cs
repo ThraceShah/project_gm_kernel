@@ -297,7 +297,8 @@ void Delivery(string runId,string label,string commit,string utc,string note)
 {
     var o=new JsonObject();o["runId"]=JsonValue.Create(runId);o["label"]=JsonValue.Create(label);o["commit"]=JsonValue.Create(commit);o["utc"]=JsonValue.Create(utc);o["note"]=JsonValue.Create(note);deliveries.Add((JsonNode)o);
 }
-Delivery("20261112T132500Z-queryab597","Native 查询与物性规范化验收快照：ab597e8a / 交付 f633b51d","ab597e8a","2026-11-12T13:25:00Z","query and numerics closure");
+Delivery("20261112T072500Z-queryab597","Native 查询与物性规范化验收快照（修订版）：ab597e8a / 交付 f633b51d","ab597e8a","2026-11-12T07:25:00Z","query and numerics closure (revised metadata delivery)");
+Delivery("20261112T132500Z-queryab597","Native 查询与物性规范化验收快照（原件/错元数据已只读归档）：ab597e8a","ab597e8a","2026-11-12T13:25:00Z","archived run; see docs/query-numerics-ab597-publish-receipt.md");
 Delivery("20261112T045837Z-projcc47871","Projection cc47871 测量窗口（当前版本复验 5 op）","cc478711","2026-11-12T04:58:37Z","current-version measurement window");
 Delivery("20261112T002227Z-uperf1654","统一性能 1654 窗口（历史复验 5 op）","1654dbf2","2026-11-12T00:22:27Z","historical measurement window");
 Delivery("20261111T223759Z-unified4b","统一内核 4b（功能/质量快照）","4b2405e","2026-11-11T22:37:59Z","unified snapshot");
@@ -442,7 +443,7 @@ Record("suite.linux-2025","Linux ab597 套件 2025/2025 全过（原 raw 0，gua
 Record("suite.mac-2000","Mac 统一包套件 2000/1998/2（原 raw 1）","fail","2 supportingBlend NotConverged 保留（同 Mac baseline 133 窄复现）；栈修复实质记录；不入建模分母。","docs/uperf-1654-publish-receipt.md");
 Record("suite.linux-1974","Linux unified4b 套件 1974/1974（原 raw 0）","pass","历史 2 项本 TRX Passed；不代签 Mac 全绿。","docs/unified-4b-publish-receipt.md");
 Record("mass.contract-ab597","当前物性合同验收与 Joint 72 历史报告重判分列（ab597）","pass","当前物性合同已接受（整体量规范化与保守外包围）：五解析圆柱 10 份报告 Verified，一般曲面 1e-7 目标仍未认证；Joint 72 份历史报告按新标准重判（主 900 分量 312V/588U → 348V/552U；回读 180 分量 84V/96U → 144V/36U；总 1080 唯一分量 396V/684U → 492V/588U/0D；144U→V，48V→U 均为 12 volume/12 mass/24 cog.z；最多五整体物理量，不宣传 1080 独立认证）。","docs/Native_Query_Numerics_Independent_Review.md");
-Record("mass.faq-geometry-vs-mass","物性数值释疑：为何严格几何绿但物性仍为未决（U）？","pass","1) 严格几何求交/修剪与拓扑重构是局部逼近（1e-8/1e-5），不等于全域刚体积分误差自动受控；2) 误差传播需具体几何前提（全域单射法向与曲率控制），现有通用 compare 不自动给出；3) 现不少实体 GM 与 PK 估计值差很小（1e-10），但 PK 自带 modulus 模量误差界较宽（3e-7），严格外包围导致上界超标；4) 新标准采用有量纲依据的整体量规范化（体积/Rg/trace），无随意放宽；5) U（未决）代表当前积分误差界无法出具高置信度证明，不代表几何损坏，也不代表物性已全解决。","docs/Native_Query_Numerics_Independent_Review.md");
+Record("mass.faq-geometry-vs-mass","物性数值释疑：为何几何等价但物性仍为未决（U）？","pass","1) 几何比较通过与 BODY_check 拓扑/几何有效性仅证明实体在容差意义下结构自洽，不等于全域零几何误差，亦不自动满足刚体积分误差预算；2) 局部边界误差向体积分传播需要具体的几何与法向约束前提，通用 compare 并不建立该积分误差界；3) 许多实体 GM 与 PK 估计值偏差极小，但 PK 自身附带的 modulus 模量误差界较宽，在保守外包围判定下导致区间上界超标；4) 新标准采用有量纲物理依据的整体量规范化（以特征尺度/体积/回转半径/惯量迹归一），符合用户授权研究标准；5) 评定为 U（未决）代表现有外包围界尚不能出具高确定性通过证明，不代表几何损坏，亦不等于物性问题已完全解决。","docs/Native_Query_Numerics_Independent_Review.md");
 Record("query.probes-510","510 四组完整四方 On 分类表与有限平面边界证明（ab597）","unresolved","direct self 495V/15U/0D、import 494V/16U/0D，0 API error；native 自差 7 行（102/153/204/254/289/390/441）、Capture 另 339=8 行；9 点由有限 plane 区域上界证明精度内；62 半/双距离派生控制相等；15/16U 显著可见；旧 self 其余 495 原四列缺失明确 missing。","docs/Native_Query_Numerics_Independent_Review.md");
 Record("mass.component-ledger","物性分量总账：主 900 分量 312V/588U/0D + 额外 180；唯一总账 1080 分量 396V/684U/0D","unresolved","分量不是功能 case；不重复计数。","docs/projection-cc47871-publish-receipt.md");
 Record("perf.targets","性能目标未达（各窗口分源口径）：cc47871 当前 shortedge 配对 331.97129x（比中位 332.04468x）、solidblend 253.84728x（比中位 244.25723x）、planar 回退 +78.105%；历史 1654 shortedge 387.35924x","unresolved","窗口不相乘、口径不混；主体性能目标未达。","docs/projection-cc47871-publish-receipt.md");
@@ -473,7 +474,7 @@ overview["currentVersion"]=new JsonObject{
     {"calculation",JsonValue.Create("ab597e8a24b2ef23753507c8ca3e43d12edcc650 / cc47871133fb7d536ffa7fd050066c51f4905708")},
     {"native",JsonValue.Create("ab597e8a / fe3fa037")},
     {"acceptanceReview",JsonValue.Create("3e7ac1b1273c56530bfbd50f0cb6bdffb08e4fd7 / 7b20d7f1046ad5b6f54f8601edd739fa5d54a901")},
-    {"windowUtc",JsonValue.Create("2026-11-12T04:58:37Z .. 2026-11-12T13:25:00Z")}
+    {"windowUtc",JsonValue.Create("2026-11-12T04:58:37Z .. 2026-11-12T07:25:00Z")}
 };
 overview["catalog"]=catalogItems;overview["boundaryRegisters"]=boundaries;overview["verificationRecords"]=records;
 overview["deliveries"]=deliveries;overview["sourceIndex"]=sourceIndex;overview["summary"]=summary;overview["mappingAudit"]=mappingAudit;
