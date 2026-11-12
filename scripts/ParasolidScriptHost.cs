@@ -19,6 +19,7 @@ internal static unsafe class ParasolidScriptHost
         int userFieldLength = 0,
         Action? configureRollback = null)
     {
+        NativeRuntimePolicy.VerifyStartup();
         session = null;
         if (!TryPrepare(label, scriptPath, out message))
             return false;

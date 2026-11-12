@@ -1,4 +1,11 @@
 <Project>
+  <ItemGroup Condition="'$(UseParasolidScriptHost)' == 'true' Or '$(UseNativeRuntimePolicy)' == 'true'">
+    <RuntimeHostConfigurationOption Include="System.Runtime.TieredCompilation" Value="true" />
+    <RuntimeHostConfigurationOption Include="System.Runtime.TieredPGO" Value="true" />
+    <RuntimeHostConfigurationOption Include="System.Runtime.TieredCompilation.QuickJit" Value="true" />
+    <RuntimeHostConfigurationOption Include="System.Runtime.TieredCompilation.QuickJitForLoops" Value="true" />
+    <Compile Include="$(MSBuildThisFileDirectory)NativeRuntimePolicy.cs" Link="NativeRuntimePolicy.cs" />
+  </ItemGroup>
   <ItemGroup Condition="'$(UsePskernelSharpUsings)' == 'true'">
     <Compile Include="$(MSBuildThisFileDirectory)../third_party/PKToy/PskernelSharp/Using.cs" Link="PskernelSharp.Using.cs" />
   </ItemGroup>

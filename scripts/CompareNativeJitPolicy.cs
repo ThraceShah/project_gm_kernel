@@ -41,6 +41,7 @@ foreach(var (tier,index) in new[]{(0,0),(1,1),(1,2),(0,3)})
     info.Environment["DOTNET_TieredCompilation"]=tier.ToString(CultureInfo.InvariantCulture);info.Environment["DOTNET_TieredPGO"]="1";
     info.Environment["DOTNET_TC_QuickJit"]="1";info.Environment["DOTNET_TC_QuickJitForLoops"]="1";info.Environment["DOTNET_ReadyToRun"]="0";
     info.Environment["MSBUILDDISABLENODEREUSE"]="1";
+    info.Environment["GM_JIT_POLICY_COMPARE"]="fixed-il-abba";
     if(index<2)
     {
         var proof=StartInfo("dotnet",root);proof.Environment.Clear();foreach(var entry in info.Environment)proof.Environment[entry.Key]=entry.Value;
