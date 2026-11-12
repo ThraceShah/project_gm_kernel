@@ -418,13 +418,9 @@ internal static partial class JointNestedBlendEvaluation
             if(SplineContactMatches(cache[uv],source,boxes[uv],boxes[uv+1]))continue;
             var status=CacheSplineContact(program,source,boxes[uv],boxes[uv+1],ref cache[uv]);if(status!=AlgorithmStatus.Success)return status;
         }
+        if(cartesianSpline)return CartesianSplineJacobian(program,nodes,variables[..n],parameter,equations[..n],fixedCharts,cache,matrix);
         var firstColumn=0;
-        if(cartesianSpline)
-        {
-            var status=CartesianSplinePointColumns(program,nodes,variables[..n],parameter,equations[..n],fixedCharts,cache,matrix);
-            if(status!=AlgorithmStatus.Success)return status;firstColumn=3;
-        }
-        else if(PlaneSplinePointColumns(program,nodes,boxes,parameter,fixedCharts,cache,matrix,out var pointStatus))
+        if(PlaneSplinePointColumns(program,nodes,boxes,parameter,fixedCharts,cache,matrix,out var pointStatus))
         {
             if(pointStatus!=AlgorithmStatus.Success)return pointStatus;firstColumn=3;
         }
@@ -432,8 +428,7 @@ internal static partial class JointNestedBlendEvaluation
         {
             ModelingPerformance.ResidualDirection();
             variables[column]=new(boxes[column],1);
-            var status=cartesianSpline?CartesianSplineResidual(program,nodes,variables[..n],parameter,equations[..n],fixedCharts,cache)
-                :IntervalResidual(program,nodes,variables[..n],parameter,equations[..n],fixedCharts,cache);if(status!=AlgorithmStatus.Success)return status;
+            var status=IntervalResidual(program,nodes,variables[..n],parameter,equations[..n],fixedCharts,cache);if(status!=AlgorithmStatus.Success)return status;
             for(var row=0;row<n;row++)matrix[row*n+column]=equations[row].Derivative;variables[column]=new(boxes[column],0);
         }
         return AlgorithmStatus.Success;

@@ -58,22 +58,43 @@ internal static partial class JointNestedBlendEvaluation
         return AlgorithmStatus.Success;
     }
 
-    // XYZ is affine in G. Validate the same frame once, then assemble its
-    // three exact columns; UV still differentiates the full changing frame.
-    private static AlgorithmStatus CartesianSplinePointColumns(in NestedBlendProgram program,ReadOnlySpan<Occurrence> nodes,
+    // G is affine in XYZ. Its two native UV directions share the spline
+    // differential's value work, with the original scalar interval expressions.
+    private static AlgorithmStatus CartesianSplineJacobian(in NestedBlendProgram program,ReadOnlySpan<Occurrence> nodes,
         ReadOnlySpan<IntervalDual> variables,IntervalNumber parameter,Span<IntervalDual> equations,
         ReadOnlySpan<BufferOffset> charts,ReadOnlySpan<IntervalSplineContact> cache,Span<IntervalNumber> matrix)
     {
-        var status=CartesianSplineResidual(program,nodes,variables,parameter,equations,charts,cache);if(status!=AlgorithmStatus.Success)return status;
         var spine=program.Spines[nodes[0].Spine];var splineRow=program.Surfaces[spine.First].IsBSpline?0:1;
+        var spline=program.Surfaces[splineRow==0?spine.First:spine.Second];
         var plane=program.Surfaces[splineRow==0?spine.Second:spine.First];var axis=plane.Analytic.Axis;
-        var chord=Chart(program,nodes[0].Spine)[charts[0]].Chord;
+        Span<IntervalNumber> local=stackalloc IntervalNumber[18];scoped ReadOnlySpan<IntervalNumber> hull;
+        if(!cache.IsEmpty&&SplineContactMatches(cache[3],spline,variables[3].Value,variables[4].Value))hull=cache[3].Values;
+        else
+        {
+            var status=IntervalSplineBounds(program,spline,variables[3].Value,variables[4].Value,local);if(status!=AlgorithmStatus.Success)return status;hull=local;
+        }
+        var foot=SplineUvVector(hull,0,3,6);var su=SplineUvVector(hull,3,9,12);var sv=SplineUvVector(hull,6,12,15);
+        var cross=SplineDifferentialVector.Cross(su,sv);var length=cross.Norm();var uLength=su.Norm();var vLength=sv.Norm();
+        if(!length.Finite||!uLength.Finite||!vLength.Finite||!(length.Value.Lower>0&&uLength.Value.Lower>0&&vLength.Value.Lower>0))return AlgorithmStatus.NotConverged;
+        var normal=cross/length;if(!normal.Finite)return AlgorithmStatus.NotConverged;
+        var point=new SplineDifferentialVector(new(variables[0].Value,0,0),new(variables[1].Value,0,0),new(variables[2].Value,0,0));
+        var delta=point-foot-normal*spline.Offset;if(!delta.Finite)return AlgorithmStatus.NotConverged;
+        var spatial=IntervalPoint(variables,0);
+        equations[1-splineRow]=IntervalVector.Dot(spatial-new IntervalVector(plane.Analytic.Origin),new IntervalVector(axis))*plane.NormalSense;
+        var chart=Chart(program,nodes[0].Spine)[charts[0]];
+        var found=SpineParameterMap.Interval(spine,chart,parameter,spatial,out equations[2]);if(found!=AlgorithmStatus.Success)return found;
+        if(!equations[1-splineRow].Finite||!equations[2].Finite)return AlgorithmStatus.NotConverged;
         for(var column=0;column<3;column++)
         {
             matrix[splineRow*5+column]=column==0?1:0;matrix[3*5+column]=column==1?1:0;matrix[4*5+column]=column==2?1:0;
             matrix[(1-splineRow)*5+column]=new IntervalNumber(column==0?axis.X:column==1?axis.Y:axis.Z)*plane.NormalSense;
-            matrix[2*5+column]=column==0?chord.X:column==1?chord.Y:chord.Z;
+            matrix[2*5+column]=column==0?chart.Chord.X:column==1?chart.Chord.Y:chart.Chord.Z;
         }
+        matrix[splineRow*5+3]=delta.X.U;matrix[splineRow*5+4]=delta.X.V;
+        matrix[3*5+3]=delta.Y.U;matrix[3*5+4]=delta.Y.V;matrix[4*5+3]=delta.Z.U;matrix[4*5+4]=delta.Z.V;
+        matrix[(1-splineRow)*5+3]=matrix[(1-splineRow)*5+4]=equations[1-splineRow].Derivative;
+        matrix[2*5+3]=matrix[2*5+4]=equations[2].Derivative;
+        equations[splineRow]=new(delta.X.Value,delta.X.V);equations[3]=new(delta.Y.Value,delta.Y.V);equations[4]=new(delta.Z.Value,delta.Z.V);
         ModelingPerformance.SplinePointColumns();return AlgorithmStatus.Success;
     }
 

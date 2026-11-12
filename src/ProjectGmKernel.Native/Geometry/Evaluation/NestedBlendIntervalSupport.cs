@@ -117,14 +117,17 @@ internal static partial class JointNestedBlendEvaluation
             var lo=Math.Max(a,up.Lower);var hi=Math.Min(b,up.Upper);var low=Math.Max(c,vp.Lower);var high=Math.Min(d,vp.Upper);
             if(lo>hi||low>high)continue;
             var status=BezierSurfaceBounds.Extract(source,i,j,poles);if(status!=AlgorithmStatus.Success)return status;
-            status=BezierSurfaceBounds.BoundRectangularSecond(new(poles[..(4*(source.UDegree+1)*(source.VDegree+1))],source.UDegree,source.VDegree,new(a,b,c,d)),new(lo,hi,low,high),local);if(status!=AlgorithmStatus.Success)return status;
+            var patch=new BezierSurfacePatch(poles[..(4*(source.UDegree+1)*(source.VDegree+1))],source.UDegree,source.VDegree,new(a,b,c,d));
+            var native=ue==0&&ve==0;
+            status=native?BezierSurfaceBounds.BoundSecond(patch,new(lo,hi,low,high),local[..18])
+                :BezierSurfaceBounds.BoundRectangularSecond(patch,new(lo,hi,low,high),local);if(status!=AlgorithmStatus.Success)return status;
             // Exactly the same tensor-product linear extension as the public
             // B-surface evaluator; polynomial extrapolation would be wrong.
             if(ue!=0)for(var k=0;k<=2;k++)for(var axis=0;axis<3;axis++){local[3*k+axis]+=dx*local[9+3*k+axis];local[18+3*k+axis]=0;}
             if(ve!=0)for(var k=0;k<=2;k++)for(var axis=0;axis<3;axis++){local[9*k+axis]+=dy*local[9*k+3+axis];local[9*k+6+axis]=0;}
             for(var k=0;k<6;k++)
             {
-                var at=k==0?0:k==1?9:k==2?3:k==3?18:k==4?12:6;
+                var at=native?3*k:k==0?0:k==1?9:k==2?3:k==3?18:k==4?12:6;
                 for(var axis=0;axis<3;axis++)hull[3*k+axis]=found?IntervalNumber.Hull(hull[3*k+axis],local[at+axis]):local[at+axis];
             }
             found=true;

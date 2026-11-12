@@ -237,10 +237,29 @@ internal static class BezierSurfaceBounds
     internal static AlgorithmStatus BoundSecond(in BezierSurfacePatch patch,in SurfaceParameterBox box,Span<IntervalNumber> output)
     {
         if(output.Length<18)return AlgorithmStatus.WorkspaceTooSmall;
-        Span<IntervalNumber> jets=stackalloc IntervalNumber[27];var status=BoundRectangularSecond(patch,box,jets);if(status!=AlgorithmStatus.Success)return status;
-        jets[..3].CopyTo(output);jets.Slice(9,3).CopyTo(output[3..]);jets.Slice(3,3).CopyTo(output[6..]);jets.Slice(18,3).CopyTo(output[9..]);jets.Slice(12,3).CopyTo(output[12..]);jets.Slice(6,3).CopyTo(output[15..]);
+        // Total-order two is sufficient here. Rectangular order three/four
+        // belongs to the native linear-extension consumer, not this jet set.
+        Span<IntervalNumber> homogeneous=stackalloc IntervalNumber[36];var status=Bound(patch,box,output[..9],homogeneous);if(status!=AlgorithmStatus.Success)return status;
+        HomogeneousJetHull(patch,box,2,0,homogeneous.Slice(24,4));
+        HomogeneousJetHull(patch,box,1,1,homogeneous.Slice(16,4));
+        HomogeneousJetHull(patch,box,0,2,homogeneous.Slice(8,4));
+        var weight=homogeneous[3];if(weight.Lower<=0)return AlgorithmStatus.NumericalFailure;
+        for(var i=0;i<=2;i++)for(var j=0;j<=2-i;j++)
+        {
+            if(i+j!=2)continue;var target=SecondJetOffset(i,j);
+            for(var d=0;d<3;d++)
+            {
+                var value=homogeneous[4*(3*i+j)+d];
+                for(var a=0;a<=i;a++)for(var b=0;b<=j;b++)
+                {if(a==i&&b==j)continue;var coefficient=(i==2&&a==1?2:1)*(j==2&&b==1?2:1);value-=coefficient*output[SecondJetOffset(a,b)+d]*homogeneous[4*(3*(i-a)+(j-b))+3];}
+                output[target+d]=value/weight;if(!output[target+d].Finite)return AlgorithmStatus.NumericalFailure;
+            }
+        }
         return AlgorithmStatus.Success;
     }
+
+    private static BufferOffset SecondJetOffset(DerivativeOrder u,DerivativeOrder v)
+        =>u==0?(v==0?0:v==1?6:15):u==1?(v==0?3:12):9;
 
     // Rectangular jets (i,j), 0<=i,j<=2, u-major. Mixed order three
     // is needed to bound the exact linear extension of a rational surface.
