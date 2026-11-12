@@ -38,8 +38,8 @@ curved共5328次BoundSegment（含显示/检查），immutable阶段384次成功
 
 八组实际当前几何闭环source均1850534，捕获无errors/fail：curved/NURBS/std各原2，pass/missing为14/13、16/13、35/17；rigid.125原0且51/1 missing保留；exactmirror8原2且29/23；shortedge双产品生命周期copy/删源/镜像缩放/cut1/可编辑自XT reload/cut2/cleanup原2且133/77；NURBS生命周期原2且16/13；curved中间subtract/reload后Boolean原2且17/26。真实PK fresh receive/full/strict/finite、modulus物性、实际input provenance/roles缺失保持当前三态合同，导出/显示/检查在真实来源上，不用point-only脚本。单操作与下游组合分别验收。
 
-最终普通三操作Jac为**672/4179/18822**，对accepted1654的2688/4648/18951；各根/SSI/roots/winding/budget保持。有限8槽探查后curved恰为96×7次，而NURBS少67×7次；这是实际工作量减少，不是CPU占比或最终倍率。只有cold开发完整操作数据，必要稳定同机窗口尚未执行，不挂旧−11.97%、旧217或185之前的倍率。
+最终普通三操作Jac为**672/4179/18822**，对accepted1654的2688/4648/18951；各根/SSI/roots/winding/budget保持。有限8槽探查后curved恰为96×7次，而NURBS少67×7次；这是实际工作量减少，不是CPU占比或最终倍率。只有cold开发完整操作数据时不作倍率；后续固定同机唯一五操作窗口已完成，原冷暖和三态见 `docs/Joint_Controlled_Measurement.md`，不挂旧−11.97%、旧217或185之前的倍率。
 
 八组实际loaded Native MVID `b53b178e-b0ac-46d6-99c9-e48970e75ea3`、DLL SHA `a5289e5c8eed72e42f69e8429688cfb62aa5cf21a73997fc9fa1600a9f9b5347`。完整套件testhooks Native MVID `dda9c0b8-6f0e-4b7a-a98c-9a650a9fce10`、SHA `3284174582bdb03c9cebe4a31bc1c711f786ab9b5ddca351ce2cb01236930766`；Tests MVID `543ae321-61ca-46b1-92a8-d59f9e9c75ad`、SHA `42e1b47850ff66bafba29a0fb08130986d8c8f29f587bc6dd61a8f3597a59b18`。共10个PE/portable-PDB链接逐核335 Native/166 tests tracked文档，generated/unmapped另列；三个测试DLL和三个PDB前后字节相同。普通producer实际loaded见证与测试sealed文件/前后清单见证分列，未补造start/end或测试loader观察。
 
-机器收据为 `docs/joint-work/quality-receipt.json` 与 `docs/joint-work/source-binary-binding.json`。全部原件在 `temp_docs/joint-work/`，补正owner三操作原件104文件经逐hash复制到owner-trace-original并保留原路径来源。核验器原0只签字节/来源一致，不把七个模型原2洗成0，也不签当前包独立接受、main集成或发布。下一步是这一固定完整包的一次集中主要算法/集成接受和必要稳定同机公共当前门测量；PK整体目标仍未完成。
+机器收据为 `docs/joint-work/quality-receipt.json` 与 `docs/joint-work/source-binary-binding.json`。全部原件在 `temp_docs/joint-work/`，补正owner三操作原件104文件经逐hash复制到owner-trace-original并保留原路径来源。核验器原0只签字节/来源一致，不把七个模型原2洗成0，也不签当前包独立接受、main集成或发布。固定完整包的主要算法/集成独审已启动，必要同机窗口已完成，代码及测量整体接受尚待结论，原performanceQualified和checker状态不改绿；PK整体目标仍未完成。
