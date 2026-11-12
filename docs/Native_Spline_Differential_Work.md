@@ -8,4 +8,4 @@ Bezier BoundSecond现在只求实际请求的总阶≤2的18分量，保持原�
 
 初始定向93/93、原exit0。原SplineCartesianRowTests的25元素逐位方向对照、rational/两种顺序/extension/变frame导数/正则性负例/nearest/witness及零分配保持原期望。新增BezierSecondJetTests对U/V次数0、1、2、4、8、16交叉、rational/非rational、点/边界/区间/轻度Bezier数学延伸盒，18个分量逐位对原27分量映射；短输出、非正权失败和零分配同时通过。也执行原Bounds/SplineCache/SupportingBlend/完整RegularSolidBlend消费者。日志/TRX/初始diff在 `temp_docs/spline-differential/`。
 
-这是已验证小步源码进展。当前完整API收益、完整产品/生命周期和集中独立接受仍待；接下来先用相同当前runner/Compare/Mass/Capture与真实PK做有限开发对照，弱方向及时停止，不先堆全suite/ABBA或新增字段微审。原Unresolved/Missing/raw exits分层，未做NativeAOT/Windows或公开C ABI改动。
+后续一次完整API开发对照仅观察−3.617%且波动明显，本实现不进入正式候选，结算见 `docs/Rejected_Spline_Differential_Work.md`。93项已通过数学/状态控制及原12pair证据保持，不追加全套、ABBA或字段微审；后续从已接受17eedbf独立推进，不沿用本实验或以工作量代签完整收益。
