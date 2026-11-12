@@ -49,7 +49,7 @@ public class ConicConstraintSubstitutionTests
         Assert.Equal(AlgorithmStatus.NotConverged,JointNestedBlendEvaluation.TestConicSubstitutionMatrix(program,boxes,matrix,directional));
     }
 
-    private static NestedBlendProgram Program(bool ellipse,bool reversed,bool cylinder,bool degenerate=false,bool boundCylinder=false)
+    internal static NestedBlendProgram Program(bool ellipse,bool reversed,bool cylinder,bool degenerate=false,bool boundCylinder=false)
     {
         BlendSurfaceInstruction[] surfaces=[
             new(){IsBlend=true,Spine=0,First=1,Second=2,Range0=.5,Range1=.5,NormalSense=1},

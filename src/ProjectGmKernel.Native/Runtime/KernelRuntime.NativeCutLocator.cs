@@ -23,6 +23,11 @@ internal static unsafe partial class KernelRuntime
         if(root.Certified==PlanePairCylinderLineCertificate
             ||root.Certified==NativePlaneCertificate&&cut.Construction==CutConstruction.AnalyticCylinderPlaneConic)
             return LocateCertifiedCylinderConic(cut,root,ref parameter,ref isolation,out handled);
+        if(root.Certified==NativePlaneCertificate&&root.Root.Vertex>=0&&root.Root.NativeEnd!=FiniteNativeEnd.None)
+        {
+            var nativeEnd=LocateNativeCutEndpoint(cut,root,out parameter,out isolation,out handled);
+            if(handled||nativeEnd!=0)return nativeEnd;
+        }
         if(root.Certified!=NativePlaneCertificate||root.Root.Vertex>=0||!(root.Root.SpatialError>0)||!double.IsFinite(root.Root.SpatialError))return 0;
         var source=Curves[GetCurveSlotByTag(root.Curve)];var target=Curves[GetCurveSlotByTag(cut.Curve)];
         if(source.Class!=CurveClass.ICurve||(target.Class!=CurveClass.ICurve&&target.Class!=CurveClass.Line)
@@ -79,6 +84,45 @@ internal static unsafe partial class KernelRuntime
                 program,to.ProgramSpine,SameSheetSupport(to.Surface0Tag,root.ContactSurface),out parameter,out isolation,out handled);
         }
         finally{CommandScratch.ThreadArenaOffset=checkpoint;}
+    }
+
+    private static int LocateNativeCutEndpoint(in SheetCutCurve cut,in RegularBoundaryRoot root,
+        out double parameter,out IntervalNumber isolation,out bool handled)
+    {
+        parameter=0;isolation=UncertifiedStation;handled=false;
+        var source=Curves[GetCurveSlotByTag(root.Curve)];var target=Curves[GetCurveSlotByTag(cut.Curve)];
+        if(source.Class!=CurveClass.ICurve||target.Class!=CurveClass.ICurve)return 0;
+        var from=ICurveDataPool[source.DataIndex];var to=ICurveDataPool[target.DataIndex];
+        if(from.ProgramBlock<=0||to.ProgramBlock<=0||from.IsBlendContact!=0||to.IsBlendContact!=0
+            ||!(SameSheetSupport(from.Surface0Tag,root.ContactSurface)||SameSheetSupport(from.Surface1Tag,root.ContactSurface))
+            ||!(SameSheetSupport(to.Surface0Tag,root.ContactSurface)&&SameSheetSupport(to.Surface1Tag,root.CuttingSurface)
+                ||SameSheetSupport(to.Surface1Tag,root.ContactSurface)&&SameSheetSupport(to.Surface0Tag,root.CuttingSurface)))return 0;
+        var sourceProgram=GetNestedBlendProgram(from.ProgramBlock,from.ProgramSurfaceCount,from.ProgramSpineCount,from.ProgramChartCount,from.ProgramScalarCount);
+        var program=GetNestedBlendProgram(to.ProgramBlock,to.ProgramSurfaceCount,to.ProgramSpineCount,to.ProgramChartCount,to.ProgramScalarCount);
+        var definition=program.Spines[to.ProgramSpine];if(SpineParameterMap.Explicit(definition))return 0;
+        var charts=program.Charts.Slice(definition.ChartOffset,definition.ChartCount);
+        Span<IntervalNumber> witness=stackalloc IntervalNumber[7],bounds=stackalloc IntervalNumber[9];
+        if(JointNestedBlendEvaluation.BoundSharedSpineWitness(sourceProgram,from.ProgramSpine,
+            new(root.Root.Lower,root.Root.Upper,0,0),bounds,capture:witness)!=AlgorithmStatus.Success)return 0;
+        var precision=Math.Max(OperationIntersection.DistanceTolerance,Vertices[root.Root.Vertex].Tolerance);
+        for(var end=0;end<2;end++)
+        {
+            var station=end==0?cut.First:cut.Last;var node=end==0?charts[0]:charts[^1];if(node.Parameter!=station)continue;
+            if(JointNestedBlendEvaluation.BoundSharedSpineWitness(program,to.ProgramSpine,new(station,station,0,0),bounds,require:witness)!=AlgorithmStatus.Success)continue;
+            // The source explicitly names its actual original endpoint.
+            // Keep the complete common rolling state to exclude a different
+            // branch, then require the stored native end and its complete
+            // support tube to lie in that vertex's precision neighbourhood.
+            var radius=new IntervalNumber(-root.Root.SpatialError,root.Root.SpatialError);
+            var px=IntervalNumber.Hull(IntervalNumber.Hull(bounds[0],new(node.Position.X)),witness[0]+radius)-root.Root.Point.X;
+            var py=IntervalNumber.Hull(IntervalNumber.Hull(bounds[1],new(node.Position.Y)),witness[1]+radius)-root.Root.Point.Y;
+            var pz=IntervalNumber.Hull(IntervalNumber.Hull(bounds[2],new(node.Position.Z)),witness[2]+radius)-root.Root.Point.Z;
+            var distance=new IntervalVector(px,py,pz).Norm().Value;
+            if(!distance.Finite||distance.Upper>precision)continue;
+            if(handled)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+            handled=true;parameter=station;isolation=new(station);
+        }
+        return 0;
     }
 
     private static int LocateCertifiedBladeCut(in SheetCutCurve cut,in RegularBoundaryRoot root,
@@ -346,7 +390,8 @@ internal static unsafe partial class KernelRuntime
         var definition=program.Spines[cutSpine];
         var position=new IntervalVector(witness[0],witness[1],witness[2]);
         var charts=program.Charts.Slice(definition.ChartOffset,definition.ChartCount);
-        BufferOffset foundChart=-1;var paired=false;var native=default(IntervalNumber);var covered=cut.First;var station=0.0;
+        BufferOffset foundChart=-1,boundaryChart=-1;var paired=false;var native=default(IntervalNumber);var covered=cut.First;var station=0.0;var boundaryCandidate=false;
+        var boundaryProjection=default(IntervalNumber);
         for(var chart=0;chart<charts.Length-1;chart++)
         {
             ref readonly var frame=ref charts[chart];
@@ -364,8 +409,24 @@ internal static unsafe partial class KernelRuntime
             // the target's contraction box, including the nearest station
             // of a shared explicit rolling spine. Overlap alone is not a
             // correspondence; this proves uniqueness in the same branch.
-            if(projected.Lower<first||projected.Upper>last
-                ||JointNestedBlendEvaluation.BoundSharedSpineWitness(program,cutSpine,new(lo,hi,0,0),bounds,require:witness)!=AlgorithmStatus.Success)
+            // A straddling auxiliary gauge stays unresolved until its one
+            // adjacent native junction has a complete branch/precision proof.
+            // A different admitted gauge must not erase that uncertainty.
+            if(projected.Lower<first||projected.Upper>last)
+            {
+                boundaryCandidate=true;
+                if(foundChart>=0)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                if(boundaryChart>=0)
+                {
+                    if(boundaryChart!=chart-1||witness.Length!=7
+                        ||!TryNativeChartJunction(program,cutSpine,chart,cut.First,cut.Last,boundaryProjection,projected,witness,out native))
+                        return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                    foundChart=boundaryChart;boundaryChart=-1;paired=true;station=frame.Parameter;continue;
+                }
+                boundaryChart=chart;boundaryProjection=projected;continue;
+            }
+            if(boundaryChart>=0)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+            if(JointNestedBlendEvaluation.BoundSharedSpineWitness(program,cutSpine,new(lo,hi,0,0),bounds,require:witness)!=AlgorithmStatus.Success)
                 return ParasolidConstants.PK_ERROR_cant_do_intersect;
             if(foundChart>=0)
             {
@@ -383,11 +444,48 @@ internal static unsafe partial class KernelRuntime
                 :enclosure.Midpoint;
         }
         if(covered!=cut.Last)return ParasolidConstants.PK_ERROR_cant_do_intersect;
-        if(foundChart<0)return ParasolidConstants.PK_ERROR_not_on_curve;
+        if(foundChart<0)return boundaryCandidate?ParasolidConstants.PK_ERROR_cant_do_intersect:ParasolidConstants.PK_ERROR_not_on_curve;
         parameter=station;isolation=native;
         return 0;
 
         static bool Separated(IntervalNumber a,IntervalNumber b)=>a.Upper<b.Lower||b.Upper<a.Lower;
+    }
+
+    private static bool TryNativeChartJunction(in NestedBlendProgram program,BlendSpineIndex spine,BufferOffset knotIndex,
+        double first,double last,IntervalNumber leftProjection,IntervalNumber rightProjection,ReadOnlySpan<IntervalNumber> witness,
+        out IntervalNumber station)
+    {
+        station=UncertifiedStation;
+        var definition=program.Spines[spine];var charts=program.Charts.Slice(definition.ChartOffset,definition.ChartCount);
+        var knot=charts[knotIndex];
+        if(knotIndex<=0||knotIndex>=charts.Length-1||knot.Parameter<=first||knot.Parameter>=last
+            ||!leftProjection.Finite||!rightProjection.Finite
+            ||leftProjection.Lower>knot.Parameter||leftProjection.Upper<knot.Parameter
+            ||rightProjection.Lower>knot.Parameter||rightProjection.Upper<knot.Parameter)return false;
+        Span<IntervalNumber> left=stackalloc IntervalNumber[9],right=stackalloc IntervalNumber[9];
+        if(JointNestedBlendEvaluation.BoundSharedSpineJunction(program,spine,knotIndex-1,
+                new(leftProjection.Lower,leftProjection.Upper,0,0),witness,left)!=AlgorithmStatus.Success
+            ||JointNestedBlendEvaluation.BoundSharedSpineJunction(program,spine,knotIndex,
+                new(rightProjection.Lower,rightProjection.Upper,0,0),witness,right)!=AlgorithmStatus.Success
+            ||IntervalVector.Dot(new(left[3],left[4],left[5]),new(right[3],right[4],right[5])).Value.Lower<=0)return false;
+        // This is a native-precision association to the stored CHART point,
+        // not a claim that the two rounded affine gauges have an exact common
+        // mathematical zero. Both complete branch tubes and the source state
+        // must fit in that point's session-precision ball. Distinct source
+        // events still require their own identity proof in reconciliation.
+        var dx=Radius(left,right,witness,0,knot.Position.X);var dy=Radius(left,right,witness,1,knot.Position.Y);var dz=Radius(left,right,witness,2,knot.Position.Z);
+        var distanceSquared=dx*dx+dy*dy+dz*dz;var precision=new IntervalNumber(OperationIntersection.DistanceTolerance);
+        if(!distanceSquared.Finite||distanceSquared.Upper>(precision*precision).Lower)return false;
+        station=new(Math.Max(first,Math.Min(leftProjection.Lower,rightProjection.Lower)),
+            Math.Min(last,Math.Max(leftProjection.Upper,rightProjection.Upper)));
+        return station.Finite;
+
+        static IntervalNumber Radius(ReadOnlySpan<IntervalNumber> left,ReadOnlySpan<IntervalNumber> right,
+            ReadOnlySpan<IntervalNumber> witness,BufferOffset axis,double anchor)
+        {
+            var hull=IntervalNumber.Hull(IntervalNumber.Hull(left[axis],right[axis]),witness[axis]);
+            return new IntervalNumber((hull-anchor).Magnitude);
+        }
     }
 
     private static bool SameRollingChartContinuation(in NestedBlendProgram program,BlendSpineIndex spine,

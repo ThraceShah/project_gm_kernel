@@ -37,8 +37,9 @@ internal static partial class JointNestedBlendEvaluation
             var cell=pending[--count];status=Bound(program,blend,cell,bounds);
             if(status==AlgorithmStatus.Success)
             {
-                var point=new IntervalVector(bounds[0],bounds[1],bounds[2]);
-                var signed=IntervalVector.Dot(point-origin,normal).Value/normalLength;
+                status=BoundProjectedPlaneFunctional(program,blend,cell,bounds,normal,0,origin,normal,0,out var height);
+                if(status!=AlgorithmStatus.Success)return status;
+                var signed=height/normalLength;
                 if(signed.Lower>distance||signed.Upper< -distance)return AlgorithmStatus.Success;
                 PlaneJacobian(bounds,x,y,out a,out b,out c,out d);
                 var first=new IntervalNumber((1-m00*a-m01*c).Magnitude)+(m00*b+m01*d).Magnitude;
@@ -86,28 +87,76 @@ internal static partial class JointNestedBlendEvaluation
         var a=new IntervalVector(first.Axis);var b=new IntervalVector(second.Axis);
         var lambda=new IntervalNumber(0,1);
         var alpha=lambda*(IntervalVector.Dot(a,normal).Value/ns);var beta=lambda*(IntervalVector.Dot(b,normal).Value/ns);
-        var projectedA=a-normal*alpha;var projectedB=b-normal*beta;
         var firstOrigin=new IntervalVector(first.Origin);var secondOrigin=new IntervalVector(second.Origin);
         Span<IntervalNumber> bounds=stackalloc IntervalNumber[9];
         var status=Bound(program,blend,domain,bounds);if(status!=AlgorithmStatus.Success)return status;
         var du=new IntervalVector(bounds[3],bounds[4],bounds[5]);var dv=new IntervalVector(bounds[6],bounds[7],bounds[8]);
-        var fu=IntervalVector.Dot(projectedA,du).Value;var fv=IntervalVector.Dot(projectedA,dv).Value;
-        var gu=IntervalVector.Dot(projectedB,du).Value;var gv=IntervalVector.Dot(projectedB,dv).Value;
+        var nu=IntervalVector.Dot(normal,du).Value;var nv=IntervalVector.Dot(normal,dv).Value;
+        var fu=IntervalVector.Dot(a,du).Value-alpha*nu;var fv=IntervalVector.Dot(a,dv).Value-alpha*nv;
+        var gu=IntervalVector.Dot(b,du).Value-beta*nu;var gv=IntervalVector.Dot(b,dv).Value-beta*nv;
         var det=fu*gv-fv*gu;
-        if(!fu.Finite||fu.ContainsZero||!gv.Finite||gv.ContainsZero||!det.Finite||det.ContainsZero)return AlgorithmStatus.NotConverged;
+        if(!fu.Finite||!fv.Finite||!gu.Finite||!gv.Finite||!det.Finite||det.ContainsZero)return AlgorithmStatus.NotConverged;
+        // The two wall equations need not align with the native UV axes.
+        // Pivot and eliminate their linear coupling using a fixed, invertible
+        // row operation. F=G=0 is unchanged for every homotopy lambda; only
+        // the rectangle's sign proof uses H=G-gamma*F. Sampling the midpoint
+        // chooses gamma, while the complete interval determinant and all
+        // four boundary signs still decide acceptance.
+        if(fu.ContainsZero||!gu.ContainsZero&&gu.Magnitude>fu.Magnitude)
+        {
+            (a,b)=(b,a);(firstOrigin,secondOrigin)=(secondOrigin,firstOrigin);(alpha,beta)=(beta,alpha);
+            (fu,gu)=(gu,fu);(fv,gv)=(gv,fv);
+        }
+        if(fu.ContainsZero)return AlgorithmStatus.NotConverged;
+        var gamma=gu.Midpoint/fu.Midpoint;if(!double.IsFinite(gamma))return AlgorithmStatus.NotConverged;
+        var combined=b-a*gamma;
+        var combinedAlpha=lambda*(IntervalVector.Dot(combined,normal).Value/ns);
+        var constantF=IntervalVector.Dot(origin-firstOrigin,a).Value;
+        var constantH=IntervalVector.Dot(origin-secondOrigin,b).Value-gamma*constantF;
         Span<IntervalNumber> walls=stackalloc IntervalNumber[4];
         for(var side=0;side<4;side++)
         {
             var u=side==0?box.U0:box.U1;var v=side==2?box.V0:box.V1;
             var boundary=side<2?new SurfaceParameterBox(u,u,box.V0,box.V1):new SurfaceParameterBox(box.U0,box.U1,v,v);
             status=Bound(program,blend,boundary,bounds);if(status!=AlgorithmStatus.Success)return status;
-            var point=new IntervalVector(bounds[0],bounds[1],bounds[2]);
-            var height=IntervalVector.Dot(point-origin,normal).Value;
-            walls[side]=side<2?IntervalVector.Dot(point-firstOrigin,a).Value-alpha*height
-                :IntervalVector.Dot(point-secondOrigin,b).Value-beta*height;
+            status=side<2?BoundProjectedPlaneFunctional(program,blend,boundary,bounds,a,constantF,origin,normal,alpha,out walls[side])
+                :BoundProjectedPlaneFunctional(program,blend,boundary,bounds,combined,constantH,origin,normal,combinedAlpha,out walls[side]);
+            if(status!=AlgorithmStatus.Success)return status;
         }
-        return Opposite(walls[0],walls[1])&&Opposite(walls[2],walls[3])?AlgorithmStatus.Success:AlgorithmStatus.NotConverged;
+        if(!Opposite(walls[0],walls[1])||!Opposite(walls[2],walls[3]))return AlgorithmStatus.NotConverged;
+        return AlgorithmStatus.Success;
 
         static bool Opposite(IntervalNumber a,IntervalNumber b)=>a.Upper<0&&b.Lower>0||a.Lower>0&&b.Upper<0;
+    }
+
+    // Linear plane functionals keep their native UV correlation. Projecting
+    // a world AABB first loses cancellation after a rotation, even for a
+    // nearly planar strip. Both the direct and mean-value forms enclose the
+    // same functional for every fixed homotopy lambda; intersect their bounds.
+    internal static AlgorithmStatus BoundPlaneFunctional(in NestedBlendProgram program,BlendSurfaceIndex blend,
+        in SurfaceParameterBox box,in IntervalVector coefficient,in IntervalVector origin,out IntervalNumber range)
+    {
+        range=default;Span<IntervalNumber> bounds=stackalloc IntervalNumber[9];
+        var status=Bound(program,blend,box,bounds);if(status!=AlgorithmStatus.Success)return status;
+        return BoundProjectedPlaneFunctional(program,blend,box,bounds,coefficient,0,origin,default,0,out range);
+    }
+
+    private static AlgorithmStatus BoundProjectedPlaneFunctional(in NestedBlendProgram program,BlendSurfaceIndex blend,
+        in SurfaceParameterBox box,ReadOnlySpan<IntervalNumber> bounds,in IntervalVector coefficient,IntervalNumber constant,
+        in IntervalVector origin,in IntervalVector projectionNormal,IntervalNumber projection,out IntervalNumber range)
+    {
+        range=default;Span<IntervalNumber> center=stackalloc IntervalNumber[9];
+        var u=box.U0+(box.U1-box.U0)*.5;var v=box.V0+(box.V1-box.V0)*.5;
+        var status=Bound(program,blend,new(u,u,v,v),center);if(status!=AlgorithmStatus.Success)return status;
+        var p=new IntervalVector(bounds[0],bounds[1],bounds[2])-origin;
+        var q=new IntervalVector(center[0],center[1],center[2])-origin;
+        var du=new IntervalVector(bounds[3],bounds[4],bounds[5]);var dv=new IntervalVector(bounds[6],bounds[7],bounds[8]);
+        var raw=IntervalVector.Dot(p,coefficient).Value+constant-projection*IntervalVector.Dot(p,projectionNormal).Value;
+        var anchor=IntervalVector.Dot(q,coefficient).Value+constant-projection*IntervalVector.Dot(q,projectionNormal).Value;
+        var fu=IntervalVector.Dot(du,coefficient).Value-projection*IntervalVector.Dot(du,projectionNormal).Value;
+        var fv=IntervalVector.Dot(dv,coefficient).Value-projection*IntervalVector.Dot(dv,projectionNormal).Value;
+        var mean=anchor+fu*(new IntervalNumber(box.U0,box.U1)-u)+fv*(new IntervalNumber(box.V0,box.V1)-v);
+        range=new(Math.Max(raw.Lower,mean.Lower),Math.Min(raw.Upper,mean.Upper));
+        return range.Finite?AlgorithmStatus.Success:AlgorithmStatus.NumericalFailure;
     }
 }

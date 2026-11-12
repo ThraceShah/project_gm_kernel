@@ -21,7 +21,6 @@ internal static unsafe partial class KernelRuntime
         ref SheetArrangement model,Span<byte> selected,ReadOnlySpan<byte> reversed,Span<SheetCutCurve> owned,ref BufferCount ownedCount,
         Span<SheetHalfedge> halfedges,Span<ModelingCoedge> cycleCoedges,Span<SheetCycle> cycles)
     {
-        if(model.TangencyCount==0)return 0;
         // Reserve the rest of the working resolution for the projected
         // boundary reattachment and the two adjacent face representations.
         var precision=model.Tolerance*.5;
@@ -33,20 +32,20 @@ internal static unsafe partial class KernelRuntime
             var flat=model.Faces[cell.PlaneFace].Surface;var wall=model.Faces[cell.WallFace].Surface;var cross=model.Faces[cell.CrossFace].Surface;
             if(!RegularAnalyticPlane(flat,out var a)||!RegularAnalyticPlane(wall,out var b)||!RegularAnalyticPlane(cross,out var c))continue;
             var original=model.Points[cell.Original];
-            if(!ExactProjectionEqual(original,a.Origin,a.Axis)||!ExactProjectionEqual(original,b.Origin,b.Axis)
-                ||!CertifyPlanarSliver(model,cell,a,b,c,precision,out var footprint)
-                ||!TryProjectedPlaneVertex(a,b,c,original,out var corner)
+            if(!NativeProjectedVertexOnPlane(original,a,precision)||!NativeProjectedVertexOnPlane(original,b,precision))continue;
+            if(!CertifyPlanarSliver(model,cell,a,b,c,precision,out var footprint,out var proofDomain))continue;
+            if(!TryProjectedPlaneVertex(a,b,c,original,out var corner)
                 ||!SliverOuterEdge(model,selected,cell,cell.PlaneEnd,cell.PlaneFace,cell.CrossFace,out var planeEdge)
                 ||!SliverOuterEdge(model,selected,cell,cell.WallEnd,cell.WallFace,cell.CrossFace,out var wallEdge)
-                ||!SliverOuterEdge(model,selected,cell,cell.Original,cell.PlaneFace,cell.WallFace,out var continuation)
-                ||!SliverLeavesOriginalLine(model,continuation,cell.Original,a,b,corner)
+                ||!SliverOuterEdge(model,selected,cell,cell.Original,cell.PlaneFace,cell.WallFace,out var continuation))continue;
+            if(!SliverLeavesOriginalLine(model,continuation,cell.Original,a,b,corner)
                 ||!TryRetargetSliverLine(model.Edges[planeEdge],cell.PlaneEnd,a,c,corner,precision,out var newPlaneEdge,out var planeAtStart)
                 ||!TryRetargetSliverLine(model.Edges[wallEdge],cell.WallEnd,b,c,corner,precision,out var newWallEdge,out var wallAtStart))continue;
             var wallInput=inputSources.IndexOf(model.Sources[cell.WallFace]);var crossInput=inputSources.IndexOf(model.Sources[cell.CrossFace]);
-            if(wallInput<0||crossInput<0||!SliverInsideToolTrim(input,wallInput,crossInput,b,c,footprint))continue;
+            if(wallInput<0||crossInput<0||!SliverInsideToolTrim(input,wallInput,crossInput,b,c,footprint,model.Faces[f].Surface,proofDomain,a,precision))continue;
             involved[0]=cell.PlaneSide;involved[1]=cell.WallSide;involved[2]=cell.CrossSide;
             involved[3]=planeEdge;involved[4]=wallEdge;involved[5]=continuation;
-            if(!SliverExcludesOtherBoundaries(model,selected,involved,footprint))continue;
+            if(!SliverExcludesOtherBoundaries(model,selected,involved,footprint,model.Faces[f].Surface,proofDomain,a,precision))continue;
 
             var point=Vector(corner.X.Value.Midpoint,corner.Y.Value.Midpoint,corner.Z.Value.Midpoint);
             var direction=Sub(point,original);var length=OperationIntersection.Norm(direction);
@@ -146,9 +145,9 @@ internal static unsafe partial class KernelRuntime
     }
 
     private static bool CertifyPlanarSliver(in SheetArrangement model,in PlanarSliver candidate,
-        in AnalyticSurface plane,in AnalyticSurface wall,in AnalyticSurface cross,double precision,out IntervalBox3 footprint)
+        in AnalyticSurface plane,in AnalyticSurface wall,in AnalyticSurface cross,double precision,out IntervalBox3 footprint,out SurfaceParameterBox domain)
     {
-        footprint=default;var face=model.Faces[candidate.Cell];var support=Surfaces[GetSurfaceSlotByTag(face.Surface)];
+        footprint=default;domain=default;var face=model.Faces[candidate.Cell];var support=Surfaces[GetSurfaceSlotByTag(face.Surface)];
         var retained=model.Faces[candidate.PlaneFace];var flat=Surfaces[GetSurfaceSlotByTag(retained.Surface)];
         var data=BlendedEdgeDataPool[support.DataIndex];var program=GetNestedBlendProgram(data);
         Span<IntervalNumber> bounds=stackalloc IntervalNumber[9];
@@ -168,11 +167,13 @@ internal static unsafe partial class KernelRuntime
         // This is only a search window around the existing event. The
         // walls must bracket a unique corner over the entire homotopy.
         var transition=new SurfaceParameterBox(cu-du,cu+du,cv-dv,cv+dv);
-        var domain=new SurfaceParameterBox(Math.Min(u.Lower,transition.U0),Math.Max(u.Upper,transition.U1),
+        domain=new SurfaceParameterBox(Math.Min(u.Lower,transition.U0),Math.Max(u.Upper,transition.U1),
             Math.Min(v.Lower,transition.V0),Math.Max(v.Upper,transition.V1));
-        if(JointNestedBlendEvaluation.CertifyProjectedPlaneCorner(program,data.ProgramRoot,transition,plane,wall,cross,domain)!=AlgorithmStatus.Success)return false;
-        if(JointNestedBlendEvaluation.CertifyPlanarProjection(program,data.ProgramRoot,domain,plane,precision,out var onPlane,out var sameOrientation)!=AlgorithmStatus.Success
-            ||!onPlane||sameOrientation!=(LocalSenseSign(face.Sense)*LocalSenseSign(support.Sense)==LocalSenseSign(retained.Sense)*LocalSenseSign(flat.Sense)))return false;
+        var cornerStatus=JointNestedBlendEvaluation.CertifyProjectedPlaneCorner(program,data.ProgramRoot,transition,plane,wall,cross,domain);
+        if(cornerStatus!=AlgorithmStatus.Success)return false;
+        var projectionStatus=JointNestedBlendEvaluation.CertifyPlanarProjection(program,data.ProgramRoot,domain,plane,precision,out var onPlane,out var sameOrientation);
+        if(projectionStatus!=AlgorithmStatus.Success||!onPlane
+            ||sameOrientation!=(LocalSenseSign(face.Sense)*LocalSenseSign(support.Sense)==LocalSenseSign(retained.Sense)*LocalSenseSign(flat.Sense)))return false;
         if(JointNestedBlendEvaluation.Bound(program,data.ProgramRoot,domain,bounds)!=AlgorithmStatus.Success)return false;
         var margin=new IntervalNumber(-precision,precision);
         var x=bounds[0]+margin;var y=bounds[1]+margin;var z=bounds[2]+margin;
@@ -185,9 +186,22 @@ internal static unsafe partial class KernelRuntime
         corner=default;var anchor=new IntervalVector(original);var n=new IntervalVector(a.Axis);var m=new IntervalVector(b.Axis);var k=new IntervalVector(c.Axis);
         var line=IntervalVector.Cross(n,m);var det=IntervalVector.Dot(line,k).Value;
         if(!det.Finite||det.ContainsZero)return false;
-        // The original event already satisfies the first two equations.
-        corner=anchor+line*(IntervalVector.Dot(new IntervalVector(c.Origin)-anchor,k).Value/det);
+        // Native point/plane incidence is within modelling precision. Solve
+        // all three represented equations: a transformed original point is
+        // not an exact zero of the first two floating-point plane equations.
+        var ra=IntervalVector.Dot(new IntervalVector(a.Origin)-anchor,n).Value;
+        var rb=IntervalVector.Dot(new IntervalVector(b.Origin)-anchor,m).Value;
+        var rc=IntervalVector.Dot(new IntervalVector(c.Origin)-anchor,k).Value;
+        corner=anchor+(IntervalVector.Cross(m,k)*ra+IntervalVector.Cross(k,n)*rb+line*rc)/det;
         return corner.Finite;
+    }
+
+    private static bool NativeProjectedVertexOnPlane(in KernelVector3 point,in AnalyticSurface plane,double precision)
+    {
+        var normal=new IntervalVector(plane.Axis);var length=normal.Norm().Value;
+        var residual=IntervalVector.Dot(new IntervalVector(point)-new IntervalVector(plane.Origin),normal).Value;
+        precision=Math.Min(precision,OperationIntersection.DistanceTolerance);
+        return length.Lower>0&&residual.Finite&&residual.Magnitude<=(length*precision).Lower;
     }
 
     private static bool SliverOuterEdge(in SheetArrangement model,ReadOnlySpan<byte> selected,in PlanarSliver cell,
@@ -249,7 +263,7 @@ internal static unsafe partial class KernelRuntime
     }
 
     private static bool SliverExcludesOtherBoundaries(in SheetArrangement model,ReadOnlySpan<byte> selected,
-        ReadOnlySpan<BufferOffset> involved,in IntervalBox3 footprint)
+        ReadOnlySpan<BufferOffset> involved,in IntervalBox3 footprint,SurfTag rolling,in SurfaceParameterBox proofDomain,in AnalyticSurface reference,double precision)
     {
         Span<byte> tested=stackalloc byte[model.NE];tested.Clear();
         Span<IntervalNumber> pending=stackalloc IntervalNumber[48];var visited=0;
@@ -263,6 +277,7 @@ internal static unsafe partial class KernelRuntime
                 {
                     if(tested[use.Edge]!=0||involved.Contains(use.Edge))continue;tested[use.Edge]=1;
                     var edge=model.Edges[use.Edge];var curve=Curves[GetCurveSlotByTag(edge.Curve)];
+                    if(SliverExcludesNativeLine(rolling,proofDomain,reference,precision,edge))continue;
                     var count=1;pending[0]=new(edge.Start,edge.End);
                     while(count>0)
                     {
@@ -280,7 +295,7 @@ internal static unsafe partial class KernelRuntime
     }
 
     private static bool SliverInsideToolTrim(in RegularBoundaryView input,BufferOffset wall,BufferOffset cross,
-        in AnalyticSurface a,in AnalyticSurface b,in IntervalBox3 footprint)
+        in AnalyticSurface a,in AnalyticSurface b,in IntervalBox3 footprint,SurfTag rolling,in SurfaceParameterBox proofDomain,in AnalyticSurface reference,double precision)
     {
         var first=input.Faces[wall];var second=input.Faces[cross];BufferOffset shared=-1;
         for(var l=0;l<first.LoopCount;l++)
@@ -312,7 +327,11 @@ internal static unsafe partial class KernelRuntime
                     if(use.Edge==shared)continue;
                     var source=input.Edges[use.Edge];
                     if(!TryFiniteCarrierExtent(new(){Curve=source.Curve,First=source.Start,Last=source.End},Curves[GetCurveSlotByTag(source.Curve)],out var trim)
-                        ||!ThirdFaceBoxesDisjoint(footprint,trim,0))return false;
+                        ||!ThirdFaceBoxesDisjoint(footprint,trim,0))
+                    {
+                        if(SliverExcludesNativeLine(rolling,proofDomain,reference,precision,source))continue;
+                        return false;
+                    }
                 }
             }
         }
@@ -327,6 +346,28 @@ internal static unsafe partial class KernelRuntime
             }
             return false;
         }
+    }
+
+    private static bool SliverExcludesNativeLine(SurfTag rolling,in SurfaceParameterBox domain,in AnalyticSurface reference,double precision,
+        in ModelingEdge edge)
+    {
+        var curve=Curves[GetCurveSlotByTag(edge.Curve)];
+        if(curve.Class!=CurveClass.Line||!TryReadExplicitSpineCurve(curve,out var line))return false;
+        var data=BlendedEdgeDataPool[Surfaces[GetSurfaceSlotByTag(rolling)].DataIndex];var program=GetNestedBlendProgram(data);
+        var direction=new IntervalVector(line.First);var origin=new IntervalVector(line.Origin);
+        for(var axis=0;axis<3;axis++)
+        {
+            // Every point of this finite boundary also lies on its native
+            // line. A strict functional gap excludes the complete line,
+            // including the unchanged precision cube around the UV patch.
+            var basis=axis==0?reference.Axis:axis==1?reference.X:reference.Y;
+            var normal=IntervalVector.Cross(new IntervalVector(basis),direction);
+            if(IntervalVector.Dot(normal,normal).Value.Lower<=0)continue;
+            if(JointNestedBlendEvaluation.BoundPlaneFunctional(program,data.ProgramRoot,domain,normal,origin,out var range)!=AlgorithmStatus.Success)continue;
+            var margin=(new IntervalNumber(normal.X.Value.Magnitude)+normal.Y.Value.Magnitude+normal.Z.Value.Magnitude)*precision;
+            if(range.Lower>margin.Upper||range.Upper< -margin.Upper)return true;
+        }
+        return false;
     }
 
     private static int RearrangeSliverNeighbor(scoped ref SheetArrangement model,BufferOffset index,BufferOffset removed,BufferOffset replacement,

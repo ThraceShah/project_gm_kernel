@@ -25,6 +25,10 @@ internal readonly ref struct SurfaceIntersectionPatch
     private readonly bool isSpine;
     private readonly byte supportParameterSide;
     private readonly bool supportParameterUv;
+    private readonly bool supportPeriodicPhase;
+    private readonly double supportPhaseReference;
+    private readonly double supportPhaseV,supportRayDu,supportRayDv;
+    private readonly ReadOnlySpan<AnalyticSurface> cylinderPhaseSupport;
     private readonly byte isoAxis, sweepAxis;
     private readonly double isoParameter;
     private readonly bool parameterLine;
@@ -41,7 +45,7 @@ internal readonly ref struct SurfaceIntersectionPatch
     private readonly EntityGeneration cacheGeneration;
     private readonly KernelSense cacheSense;
     internal SurfaceParameterBox Domain{get;}
-    internal bool IsProcedural=>isBlend||normalOffset!=0||!curveDomains.IsEmpty;
+    internal bool IsProcedural=>isBlend||normalOffset!=0||!curveDomains.IsEmpty||!cylinderPhaseSupport.IsEmpty;
     internal bool UVariable=>isBlend||!curveDomains.IsEmpty||bezier.UDegree>0;
     internal bool VVariable=>isBlend&&!isSpine||bezier.VDegree>0;
     internal SplineDegree UDegree=>!curveDomains.IsEmpty?curveDegree:isBlend?1:bezier.UDegree;
@@ -62,10 +66,14 @@ internal readonly ref struct SurfaceIntersectionPatch
     // (native u,native v,0), solely a read-only scalar-root calculation view.
     internal SurfaceIntersectionPatch(NestedBlendProgram program,BlendSpineIndex spine,BufferOffset side,double lower,double upper,bool includeV)
         :this(program,spine,side,lower,upper){supportParameterUv=includeV;}
+    internal SurfaceIntersectionPatch(NestedBlendProgram program,BlendSpineIndex spine,BufferOffset side,double lower,double upper,double phaseReference,double phaseV,double du,double dv)
+        :this(program,spine,side,lower,upper){supportPeriodicPhase=true;supportPhaseReference=phaseReference;supportPhaseV=phaseV;supportRayDu=du;supportRayDv=dv;}
     internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,Span<SurfaceBoundCacheEntry> entries,bool pinned=false)
     {this=source;cache=entries;pinnedCache=pinned;}
     internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,GeomTag tag,EntityGeneration generation,KernelSense sense)
     {this=source;cacheTag=tag;cacheGeneration=generation;cacheSense=sense;}
+    internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,ReadOnlySpan<AnalyticSurface> cylinder,double qU,double qV,double slope)
+    {this=source;cylinderPhaseSupport=cylinder;supportPhaseReference=qU;supportPhaseV=qV;supportRayDu=slope;cache=default;hasCellProof=false;}
     internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,bool constantU,double parameter,double lower,double upper)
     {this=source;isoAxis=constantU?(byte)1:(byte)2;isoParameter=parameter;Domain=new(lower,upper,0,1);cache=default;if(source.isoAxis!=0||source.sweepAxis!=0||source.parameterLine)hasCellProof=false;}
     internal SurfaceIntersectionPatch(SurfaceIntersectionPatch curve,BufferOffset axis,double height)
@@ -76,13 +84,13 @@ internal readonly ref struct SurfaceIntersectionPatch
     {this=source;provenCell=cell;hasCellProof=true;}
     internal AlgorithmStatus BoundCell(in SurfaceParameterBox cell,Span<IntervalNumber> output,out SurfaceIntersectionPatch certified)
     {
-        certified=this;var status=Bound(cell,output);if(status!=AlgorithmStatus.Success||output.Length<9||isoAxis!=0||sweepAxis!=0||parameterLine||supportParameterSide!=0||!curveDomains.IsEmpty)return status;
+        certified=this;var status=Bound(cell,output);if(status!=AlgorithmStatus.Success||output.Length<9||isoAxis!=0||sweepAxis!=0||parameterLine||supportParameterSide!=0||!curveDomains.IsEmpty||!cylinderPhaseSupport.IsEmpty)return status;
         for(var i=0;i<9;i++)if(!output[i].Finite)return status;
         certified=new(this,cell);return status;
     }
     internal bool ExactCorner(double u,double v,Span<IntervalNumber> homogeneous)
     {
-        if(isBlend||normalOffset!=0||isoAxis!=0||sweepAxis!=0||parameterLine||supportParameterSide!=0||!curveDomains.IsEmpty)return false;
+        if(isBlend||normalOffset!=0||isoAxis!=0||sweepAxis!=0||parameterLine||supportParameterSide!=0||!curveDomains.IsEmpty||!cylinderPhaseSupport.IsEmpty)return false;
         var i=bezier.UDegree==0||u==bezier.Domain.U0?0:u==bezier.Domain.U1?bezier.UDegree:-1;
         var j=bezier.VDegree==0||v==bezier.Domain.V0?0:v==bezier.Domain.V1?bezier.VDegree:-1;
         if(i<0||j<0)return false;
@@ -103,6 +111,12 @@ internal readonly ref struct SurfaceIntersectionPatch
     }
     private AlgorithmStatus BoundCore(in SurfaceParameterBox box,Span<IntervalNumber> output)
     {
+        var status=BoundGeometryCore(box,output);
+        return status==AlgorithmStatus.Success&&!cylinderPhaseSupport.IsEmpty
+            ?CylindricalParameterRay.Bound(cylinderPhaseSupport[0],supportPhaseReference,supportPhaseV,supportRayDu,output):status;
+    }
+    private AlgorithmStatus BoundGeometryCore(in SurfaceParameterBox box,Span<IntervalNumber> output)
+    {
         if(!curveDomains.IsEmpty)
         {
             if(normalOffset!=0||isoAxis!=0||sweepAxis!=0||parameterLine||supportParameterSide!=0)return AlgorithmStatus.Unsupported;
@@ -112,16 +126,20 @@ internal readonly ref struct SurfaceIntersectionPatch
         {
             if(normalOffset!=0||isoAxis!=0||sweepAxis!=0||parameterLine||output.Length<9)return AlgorithmStatus.Unsupported;
             var demand=(byte)(supportParameterSide+(supportParameterUv?8:0));
-            if(ModelingPerformance.TryBound(cacheTag,cacheGeneration,cacheSense,surface,true,box,output,out var cached,double.NaN,demand))return cached;
+            // The shared cache key has no query phase. The local span cache
+            // still belongs to exactly this immutable scalar equation.
+            if(!supportPeriodicPhase&&ModelingPerformance.TryBound(cacheTag,cacheGeneration,cacheSense,surface,true,box,output,out var cached,double.NaN,demand))return cached;
             Span<IntervalNumber> parameter=stackalloc IntervalNumber[4];
             var started=ModelingPerformance.StartBound();
-            var found=supportParameterUv?JointNestedBlendEvaluation.BoundSpineSupportUv(blend,surface,box.U0,box.U1,supportParameterSide-1,parameter)
+            var found=supportPeriodicPhase?JointNestedBlendEvaluation.BoundSpineSupportPhase(blend,surface,box.U0,box.U1,supportParameterSide-1,
+                    supportPhaseReference,supportPhaseV,supportRayDu,supportRayDv,parameter)
+                :supportParameterUv?JointNestedBlendEvaluation.BoundSpineSupportUv(blend,surface,box.U0,box.U1,supportParameterSide-1,parameter)
                 :JointNestedBlendEvaluation.BoundSpineSupportU(blend,surface,box.U0,box.U1,supportParameterSide-1,parameter[..2]);
             ModelingPerformance.EndBound(started);
             if(found!=AlgorithmStatus.Success)return found;
             output[..9].Clear();output[0]=parameter[0];output[3]=parameter[1];
-            if(supportParameterUv){output[1]=parameter[2];output[4]=parameter[3];}
-            ModelingPerformance.StoreBound(cacheTag,cacheGeneration,cacheSense,surface,true,box,output,AlgorithmStatus.Success,double.NaN,demand);return found;
+            if(supportParameterUv||supportPeriodicPhase){output[1]=parameter[2];output[4]=parameter[3];}
+            if(!supportPeriodicPhase)ModelingPerformance.StoreBound(cacheTag,cacheGeneration,cacheSense,surface,true,box,output,AlgorithmStatus.Success,double.NaN,demand);return found;
         }
         if(normalOffset!=0&&isBlend)return AlgorithmStatus.Unsupported;
         var mapped=isoAxis==1?new SurfaceParameterBox(isoParameter,isoParameter,box.U0,box.U1)
@@ -201,7 +219,7 @@ internal readonly ref struct SurfaceIntersectionPatch
     // recomputed with Bound; estimates never reject a search cell.
     internal AlgorithmStatus Estimate(double u,double v,Span<IntervalNumber> output)
     {
-        if(!isBlend||isoAxis!=0||sweepAxis!=0||parameterLine||supportParameterSide!=0)return Bound(new(u,u,v,v),output);
+        if(!isBlend||isoAxis!=0||sweepAxis!=0||parameterLine||supportParameterSide!=0||!cylinderPhaseSupport.IsEmpty)return Bound(new(u,u,v,v),output);
         Span<KernelVector3> jets=stackalloc KernelVector3[4];SurfaceDerivativeLayout.TryCreate(1,1,out var layout);
         var status=isSpine?JointNestedBlendEvaluation.EvaluateSpine(blend,surface,u,1,jets):JointNestedBlendEvaluation.Evaluate(blend,surface,u,v,layout,jets);if(status!=AlgorithmStatus.Success)return status;
         for(var i=0;i<3;i++){var p=i==0?jets[0]:i==1?jets[isSpine?1:2]:isSpine?default:jets[1];output[3*i]=p.X;output[3*i+1]=p.Y;output[3*i+2]=p.Z;}return AlgorithmStatus.Success;
@@ -210,7 +228,7 @@ internal readonly ref struct SurfaceIntersectionPatch
     internal AlgorithmStatus SupportRange(in SurfaceParameterBox box,in KernelVector3 direction,ReadOnlySpan<IntervalNumber> bounds,out IntervalNumber range)
     {
         range=default;
-        if(!isBlend&&normalOffset==0&&isoAxis==0&&sweepAxis==0&&!parameterLine&&curveDomains.IsEmpty)
+        if(!isBlend&&normalOffset==0&&isoAxis==0&&sweepAxis==0&&!parameterLine&&curveDomains.IsEmpty&&cylinderPhaseSupport.IsEmpty)
         {
             Span<IntervalNumber> poles=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars];var status=BezierSurfaceBounds.Restrict(bezier,box,poles);if(status!=AlgorithmStatus.Success)return status;
             range=new(double.PositiveInfinity,double.NegativeInfinity);

@@ -19,13 +19,24 @@ internal static partial class JointNestedBlendEvaluation
         BufferOffset side,Span<IntervalNumber> result)
         =>result.Length==4?BoundSpineSupportParameters(program,spine,first,last,side,result):AlgorithmStatus.InvalidInput;
 
+    // (sin(u-q), derivative, cos(u-q), derivative) from the actual child
+    // conic centre. This periodic native coordinate has no artificial atan
+    // branch cut and never reconstructs a support foot from the query XYZ.
+    internal static AlgorithmStatus BoundSpineSupportPhase(in NestedBlendProgram program,BlendSpineIndex spine,double first,double last,
+        BufferOffset side,double reference,double referenceV,double du,double dv,Span<IntervalNumber> result)
+        =>result.Length==4&&double.IsFinite(reference)&&double.IsFinite(referenceV)&&double.IsFinite(du)&&double.IsFinite(dv)&&(du!=0||dv!=0)
+            ?BoundSpineSupportParameters(program,spine,first,last,side,result,reference,referenceV,du,dv):AlgorithmStatus.InvalidInput;
+
     private static AlgorithmStatus BoundSpineSupportParameters(in NestedBlendProgram program,BlendSpineIndex spine,double first,double last,
-        BufferOffset side,Span<IntervalNumber> result)
+        BufferOffset side,Span<IntervalNumber> result,double phaseReference=double.NaN,double phaseReferenceV=0,double phaseDu=0,double phaseDv=1)
     {
         if(spine<0||spine>=program.Spines.Length||side is <0 or >1||last<first)return AlgorithmStatus.InvalidInput;
         var definition=program.Spines[spine];var support=program.Surfaces[side==0?definition.First:definition.Second];
+        var phase=double.IsFinite(phaseReference);
         if(SpineParameterMap.Explicit(definition)||!support.IsBlend&&!support.IsBSpline
-            ||support.IsBlend&&SpineParameterMap.Periodic(program.Spines[support.Spine]))return AlgorithmStatus.Unsupported;
+            ||support.IsBlend&&SpineParameterMap.Periodic(program.Spines[support.Spine])&&!phase)return AlgorithmStatus.Unsupported;
+        if(phase&&(!support.IsBlend||!SpineParameterMap.Periodic(program.Spines[support.Spine])
+            ||program.Spines[support.Spine].Curve.Kind is not (CurveClass.Circle or CurveClass.Ellipse)))return AlgorithmStatus.Unsupported;
         var charts=Chart(program,spine);if(first<charts[0].Parameter||last>charts[^1].Parameter)return AlgorithmStatus.InvalidInput;
         Span<SurfaceParameterBox> pending=stackalloc SurfaceParameterBox[64];Span<BufferCount> depths=stackalloc BufferCount[64];
         Span<IntervalNumber> output=stackalloc IntervalNumber[9],parameter=stackalloc IntervalNumber[result.Length];
@@ -37,7 +48,8 @@ internal static partial class JointNestedBlendEvaluation
             while(count>0)
             {
                 if(++visited>8192)return AlgorithmStatus.NotConverged;var index=--count;var box=pending[index];var depth=depths[index];
-                var status=BoundSegment(program,-1,spine,box,output,supportParameter:parameter,parameterSide:side);
+                var status=BoundSegment(program,-1,spine,box,output,supportParameter:parameter,parameterSide:side,
+                    phaseReference:phaseReference,phaseReferenceV:phaseReferenceV,phaseDu:phaseDu,phaseDv:phaseDv);
                 if(status==AlgorithmStatus.Success)
                 {for(var k=0;k<result.Length;k++)result[k]=IntervalNumber.Hull(result[k],parameter[k]);continue;}
                 if(status!=AlgorithmStatus.NotConverged)return status;

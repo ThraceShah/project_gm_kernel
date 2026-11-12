@@ -63,6 +63,34 @@ public unsafe class FiniteNativeBoundaryRayTests:IDisposable
     }
 
     [Fact]
+    public void NativeChartJunctionKeepsTheCompleteBranchWitnessAndRejectsAReversedOrDistantChart()
+    {
+        var text=File.ReadAllText(Path.Combine(AppContext.BaseDirectory,"Fixtures","generated-short-edge-native.x_t"));
+        Assert.Equal(0,XtBrepImportTests.Receive(text,out var body));Assert.True(KernelRuntime.TryResolveBodySlot(body,out var slot));
+        Span<IntervalNumber> witness=stackalloc IntervalNumber[7],bounds=stackalloc IntervalNumber[9];
+        var edge=KernelRuntime.Bodies[slot].FirstEdgeBody;
+        for(var e=0;e<KernelRuntime.Bodies[slot].EdgeCountBody;e++,edge=KernelRuntime.Edges[edge].NextInBody)
+        {
+            var curve=KernelRuntime.GetCurveByTag(KernelRuntime.Edges[edge].CurveTag);if(curve.Class!=CurveClass.ICurve)continue;
+            var data=KernelRuntime.ICurveDataPool[curve.DataIndex];if(data.ProgramBlock<=0||data.IsBlendContact!=0)continue;
+            var source=KernelRuntime.GetNestedBlendProgram(data.ProgramBlock,data.ProgramSurfaceCount,data.ProgramSpineCount,data.ProgramChartCount,data.ProgramScalarCount);
+            var spine=data.ProgramSpine;var definition=source.Spines[spine];var frames=source.Charts.Slice(definition.ChartOffset,definition.ChartCount);
+            if(frames.Length<3)continue;var at=frames[1].Parameter;
+            if(JointNestedBlendEvaluation.BoundSharedSpineWitness(source,spine,new(at,at,0,0),bounds,capture:witness)!=AlgorithmStatus.Success)continue;
+            for(var i=0;i<3;i++)witness[i]+=new IntervalNumber(-1e-12,1e-12);
+            var charts=source.Charts.ToArray();var target=new NestedBlendProgram(source.Surfaces,source.Spines,charts,source.Scalars,source.Workspace);
+            Assert.Equal(0,KernelRuntime.TestLocateSharedChart(target,spine,frames[0].Parameter,frames[2].Parameter,witness,out var located));
+            Assert.InRange(at,located.Lower,located.Upper);
+            charts[definition.ChartOffset+1].Position.X+=1e-5;
+            Assert.NotEqual(0,KernelRuntime.TestLocateSharedChart(target,spine,frames[0].Parameter,frames[2].Parameter,witness,out _));
+            charts[definition.ChartOffset+1]=frames[1];charts[definition.ChartOffset+1].Scale=-frames[1].Scale;
+            Assert.NotEqual(0,KernelRuntime.TestLocateSharedChart(target,spine,frames[0].Parameter,frames[2].Parameter,witness,out _));
+            return;
+        }
+        Assert.Fail("No procedural rolling CHART junction with a complete seven-variable witness");
+    }
+
+    [Fact]
     public void AdjacentGaugesShareAnOrientedRollingRootButAReversedGaugeDoesNot()
     {
         var text=File.ReadAllText(Path.Combine(AppContext.BaseDirectory,"Fixtures","generated-short-edge-native.x_t"));

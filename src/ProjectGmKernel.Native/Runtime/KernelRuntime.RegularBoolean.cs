@@ -176,6 +176,7 @@ internal static unsafe partial class KernelRuntime
             LastRegularBooleanStage=RegularBooleanStage.Split;ModelingPerformance.Stage(RegularBooleanStage.Split);
             var coincident=false;for(var i=0;i<familyCount;i++)coincident|=families[i].Relation==SurfacePairRelation.CoincidentArea;
             if(coincident){error=ConnectCoincidentLineCuts(input,cuts[..cutCount],ref model);if(error!=0)return error;}
+            error=JoinNativeSourceEndpoints(input,cuts[..cutCount],ref model);if(error!=0)return error;
             error=SplitRegularSourceEdges(input,originalEdges[..ne],sourceEdges,owned,ref ownedCount,ref model,coincident);if(error!=0)return error;
             Span<SheetCutCurve> faceCuts=stackalloc SheetCutCurve[RegularCutLimit];
             for(var f=0;f<nf;f++)

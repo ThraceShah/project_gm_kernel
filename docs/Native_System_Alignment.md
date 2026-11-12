@@ -768,5 +768,52 @@ raw 2 单独保留 3 项物性区间 Unresolved。该开发组合还含未提交
 另一个同轴弧半开射线计数试验导致默认 Fix 材料选择失败，原始
 `native-finite-system-default-v1.log/.exit` raw 134 保留。该候选已撤回，默认 v2
 恢复通过；不能只依靠其制造解或较晚的失败阶段保留一个改变分类的近似规则。
+
+## 原生端点、参数消费者及投影接续的共同实现
+
+本轮接续将已有 arrangement 继续用于发布，没有建立新模型或通用 Engine。处理链中
+已落地的结构变化如下，case 名称、坐标、tag 和变换选项均不参与内核算法分派。
+
+| 处理点 | 当前实现与边界 |
+|---|---|
+| native 有限接触 | 原始顶点、实体 precision、完整有限段曲率与 Taylor 排除界共同认证端点接触簇；精度接触的 `ScalarRootIsolation.Certified` 保持 false，不冒充数学方程的精确零点 |
+| CHART 交接 | 共同位置/中心/native-u 七变量见证、两侧收缩与方向、存储点精度球共同处理内部交界；未证明的另一个候选不能因某段已接受就消失；原生端点只能匹配一个已声明的 cut CHART 端点 |
+| 事件与有限原边 | 同一有限源的 cylinder/plane 精度事件保留 occurrence、generation、witness；只有声明的 cut 端、原顶点、有限参数包围和独立支撑关系共同证明时才接续端点；已隔离的不同内部根不参加这项归并 |
+| 输入边接续 | 生成的直线片段仅在两端事件相同、完整仿射误差界在原生 precision 内且源唯一时复用输入片段；不合并不同原边 occurrence，不以两个近 XYZ 样本代替完整直线证明 |
+| 有限 UV 射线 | 非周期 Blend 直接消费共同求解的 native u/v；周期 phase 使用原生 conic centre。圆柱采用实际 native frame 的对偶基，轴向射线不能决定时保持原查询点并认证斜向参数射线；两种情况均复用原标量根隔离及原预算 |
+| 塌缩端的参数闭合 | 两条原接触、整个中间 UV 条带及 native 端点共同给出线性精度界，再闭合已有参数图；没有参数 epsilon 或坐标白名单 |
+| 薄片接续 | 从原顶点实际相邻的支撑柱面取得接触法向，并用 native 角精度区分切向与横截；投影角点解全部三个平面方程，不要求变换后的点精确满足前两式 |
+| 投影的连续证明 | 在 native UV 上对线性平面函数保留导数相关性，取直接界与均值界的交集；固定可逆行变换消除墙方程耦合，所有 homotopy 参数、完整矩形、四面符号、投影单射/方向及边界排除仍须通过 |
+| 有限刀具边界 | 世界 AABB 仍做快筛；重叠时可由原生方向的完整线性范围证明与整条边界直线分离，保留原 precision cube。未证明的相交/预算耗尽仍拒绝，不将 AABB 重叠当真实侵入 |
+
+上述精度解释来自官方 FD 17.2/17.2.2/17.3 和 XT CHART 定义；源顶点、支撑及参数
+关系来自实际 native 数据与源码；GM 算法改变来自固定 diff。PK 同模型运行证明该
+适用族的最终行为对齐，不能据此声称已观测 PK 内部采用相同的行变换或区间算法。
+optional `intersection_data` 的 UV 必须匹配 hvecs；其存在不授权用未经认证的 UV
+近似替代最终几何证明。
+
+镜像、尺度 1.7、逆刀具顺序的联合场景此前为 raw 134（先 157/5018，后来虽发布但
+严格比较为 PK 18/47/31、GM 19/49/32）。这些原退出码与原文件保留。
+`temp_docs/native-system-alignment/native-projected-tool-functional-v1.log/.exit` 现在 raw 2：
+独立 PK/GM Fix、独立同选项双工具 Boolean、GM fresh XT fullcheck/strict compare、
+有限 ICurve/UV、原生有限 face/fin、48 个材料探针和 6 个投影材料探针通过；3 项
+物性区间仍为 Unresolved。真实程序集 fe0f5699ccbb87690bbb1eba7d85b905463dbfc2a1f4326cda17ff641de59d42
+与 PDB 已原字节冻结在 `temp_docs/native-system-alignment/native-projected-tool-functional-v1-managed-production/`，
+生产源为 `3ac81cfc` 加 `temp_docs/native-system-alignment/native-projected-tool-functional-v1-source.diff`；这是开发
+源码快照，不冒充干净提交或独立接受。
+
+临时诊断移除后，`native-parameter-clean-v1.log/.exit` 重复上述真实端到端验收，
+raw 2、仍为 3 项物性 U，真实程序集为
+048613d7a887f32caa56d31757b955c774746ac5f0322a7b9a1363a6ae130ceb。
+该二进制/PDB、source head/diff 已另存于同目录同名前缀，未覆盖前次数据。
+`native-parameter-clean-managed-v1.log/.exit` 332/332 raw 0，包含原始根/事件负例、
+滚动网络、分配/回滚及新增 Native 参数/投影证明。此前新投影测试缺 using 的编译
+退出 1 单独保留，不记成建模失败；修正后 `native-projection-parameter-math-v2` 28/28 raw 0。
+
+这次实现是计算主线的一次共同机制进展，尚非原总体目标的完整接受。仍需在稳定
+提交上集中完成跨族、尺度/顺序、copy/delete/transform/reload 再建模、原始 510 分源
+查询、完整托管回归及同源关键消费者验收；周期 Blend phase 当前只有数学边界检查，
+不能继承本次非周期 Blend/真实圆柱消费者的 PK 资格。一般曲面物性 U、高价/非正则
+事件和原计划其他未执行类别继续按既有章节登记，不因本次局部几何拓扑通过而消失。
 原510/588U、统一固定包、完整最终回归、周期分支、Mac及集中独立接受仍须按实际
 新源执行；本节不替随后source或未执行范围取得资格。

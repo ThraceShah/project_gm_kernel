@@ -32,10 +32,10 @@ internal static unsafe partial class KernelRuntime
             var rational=IntersectRationalContactRay(surface,record,query,du,dv,edge,output,out count,out var handled);
             if(handled||rational!=AlgorithmStatus.Success)return rational;
         }
-        if(du==0&&dv!=0&&record.Class==CurveClass.ICurve&&ICurveDataPool[record.DataIndex].ProgramBlock>0
+        if((du!=0||dv!=0)&&record.Class==CurveClass.ICurve&&ICurveDataPool[record.DataIndex].ProgramBlock>0
             &&Surfaces[surfaceSlot].Class==SurfaceClass.BlendSurface)
         {
-            var nativeStatus=IntersectNativeBlendVerticalRay(surface,query,dv,edge,output,out count,out var handled);
+            var nativeStatus=IntersectNativeBlendParameterRay(surface,query,du,dv,edge,output,out count,out var handled);
             if(handled)return nativeStatus;
         }
         if(record.Class==CurveClass.Circle&&Surfaces[surfaceSlot].Class==SurfaceClass.BlendSurface
@@ -110,7 +110,7 @@ internal static unsafe partial class KernelRuntime
         OperationIntersection.Sort(output[..count]);return AlgorithmStatus.Success;
     }
 
-    private static AlgorithmStatus IntersectNativeBlendVerticalRay(SurfTag surface,PK_UV_s query,double direction,in ModelingEdge edge,
+    private static AlgorithmStatus IntersectNativeBlendParameterRay(SurfTag surface,PK_UV_s query,double du,double dv,in ModelingEdge edge,
         Span<OperationIntersectionPoint> output,out BufferCount count,out bool handled)
     {
         count=0;handled=true;var data=ICurveDataPool[Curves[GetCurveSlotByTag(edge.Curve)].DataIndex];
@@ -119,25 +119,59 @@ internal static unsafe partial class KernelRuntime
         var definition=program.Spines[data.ProgramSpine];var charts=program.Charts.Slice(definition.ChartOffset,definition.ChartCount);
         var support=program.Surfaces[side==0?definition.First:definition.Second];
         if(!support.IsBlend)return AlgorithmStatus.Unsupported;
-        if(SpineParameterMap.Periodic(program.Spines[support.Spine])){handled=false;return AlgorithmStatus.Success;}
-        var level=new AnalyticSurface(SurfaceClass.Plane,new(){X=query.param[0]},new(){X=1},new(){Y=1});
+        var periodic=SpineParameterMap.Periodic(program.Spines[support.Spine]);
+        if(periodic&&dv==0)
+        {
+            var finite=Surfaces[GetSurfaceSlotByTag(surface)];
+            // One angular lift is meaningful only on a single native period.
+            // Wider finite uses need multiple occurrences, not a nearest lift.
+            if(!(finite.UMax>finite.UMin)||finite.UMax-finite.UMin>Math.Tau)
+                return AlgorithmStatus.Unsupported;
+        }
+        var level=periodic?new AnalyticSurface(SurfaceClass.Plane,default,new(){X=1},new(){Y=1})
+            :new AnalyticSurface(SurfaceClass.Plane,new(){X=query.param[0],Y=query.param[1]},new(){X=dv,Y=-du},new(){Z=1});
         Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[IntersectionPointCapacity];
         Span<ScalarRootIsolation> isolated=stackalloc ScalarRootIsolation[IntersectionPointCapacity],accepted=stackalloc ScalarRootIsolation[IntersectionPointCapacity];
         Span<SurfaceBoundCacheEntry> cache=stackalloc SurfaceBoundCacheEntry[128];cache.Clear();
+        Span<IntervalNumber> phaseBounds=stackalloc IntervalNumber[9];
         Span<KernelVector3> point=stackalloc KernelVector3[1];Span<double> paired=stackalloc double[4];var covered=edge.Start;
         for(var chart=0;chart<charts.Length-1;chart++)
         {
             var first=Math.Max(edge.Start,charts[chart].Parameter);var last=Math.Min(edge.End,charts[chart+1].Parameter);if(!(last>first))continue;
             if(first>covered)return AlgorithmStatus.NotConverged;covered=last;
-            var coordinate=new SurfaceIntersectionPatch(new SurfaceIntersectionPatch(program,data.ProgramSpine,side,first,last),cache);
+            var nativeCoordinate=periodic?new SurfaceIntersectionPatch(program,data.ProgramSpine,side,first,last,query.param[0],query.param[1],du,dv)
+                :new SurfaceIntersectionPatch(program,data.ProgramSpine,side,first,last,true);
+            var coordinate=new SurfaceIntersectionPatch(nativeCoordinate,cache);
             var record=Curves[GetCurveSlotByTag(edge.Curve)];coordinate=new(coordinate,edge.Curve,record.Header.Generation,record.Sense);var n=0;
-            var status=SurfaceIsoPlaneRoots.Find(coordinate,level,first,last,roots,ref n,0,true,isolated,use:RootIsolationUse.NativeSupportCoordinate);if(status!=AlgorithmStatus.Success)return status;
+            var status=SurfaceIsoPlaneRoots.Find(coordinate,level,first,last,roots,ref n,0,true,isolated,use:RootIsolationUse.NativeSupportCoordinate);
+            if(status!=AlgorithmStatus.Success)
+            {
+                LastSheetAlgorithmStatus=status;
+                return status;
+            }
             for(var root=0;root<n;root++)
             {
+                if(periodic)
+                {
+                    var station=isolated[root].Root;
+                    status=coordinate.Bound(new(station.Lower,station.Upper,0,0),phaseBounds);if(status!=AlgorithmStatus.Success)return status;
+                    if(phaseBounds[1].Upper<0)continue;
+                    if(!(phaseBounds[1].Lower>0))return AlgorithmStatus.NotConverged;
+                }
                 var duplicate=false;for(var previous=0;previous<count;previous++)duplicate|=accepted[previous].SameRoot(isolated[root]);if(duplicate)continue;
                 status=JointNestedBlendEvaluation.EvaluateSpine(program,data.ProgramSpine,roots[root].First,0,point,paired);if(status!=AlgorithmStatus.Success)return status;
+                var along=dv!=0?(paired[2*side+1]-query.param[1])/dv:(paired[2*side]-query.param[0])/du;
+                if(periodic&&dv==0)
+                {
+                    var recordSurface=Surfaces[GetSurfaceSlotByTag(surface)];var u=paired[2*side];
+                    u+=Math.Tau*Math.Round(((recordSurface.UMin+recordSurface.UMax)*.5-u)/Math.Tau);
+                    along=(u-query.param[0])/du;
+                }
+                var uHit=Math.FusedMultiplyAdd(along,du,query.param[0]);var vHit=Math.FusedMultiplyAdd(along,dv,query.param[1]);
+                var finite=Surfaces[GetSurfaceSlotByTag(surface)];
+                if(uHit<finite.UMin||uHit>finite.UMax||vHit<finite.VMin||vHit>finite.VMax)continue;
                 if(count==output.Length||count==accepted.Length)return AlgorithmStatus.OutputTooSmall;
-                accepted[count]=isolated[root];output[count++]=new(){Point=point[0],First=(paired[2*side+1]-query.param[1])/direction,Second=roots[root].First,Kind=IntersectionVectorKind.Simple};
+                accepted[count]=isolated[root];output[count++]=new(){Point=point[0],First=along,Second=roots[root].First,Kind=IntersectionVectorKind.Simple};
             }
         }
         if(covered!=edge.End)return AlgorithmStatus.NotConverged;

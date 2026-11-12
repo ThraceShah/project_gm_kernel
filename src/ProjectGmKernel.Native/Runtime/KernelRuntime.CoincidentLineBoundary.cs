@@ -9,6 +9,36 @@ namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
+    // Native topology may associate two admitted equations at one finite
+    // carrier event within linear precision (FD 17.2.1). This does not prove
+    // equality of their mathematical scalar roots. The whole union of both
+    // isolated station boxes must fit one precision neighbourhood on this
+    // same input occurrence, and satisfy both surface distance bounds.
+    private static bool SameNativeLineCylinderPlaneEvent(in BoundaryParameter a,in BoundaryParameter b,double precision)
+    {
+        if(a.Carrier!=b.Carrier||a.Generation!=b.Generation||a.Witness==0||a.Witness!=b.Witness
+            ||a.SourceOccurrence<0||a.SourceOccurrence!=b.SourceOccurrence||!double.IsFinite(precision)||!(precision>0))return false;
+        var carrier=GetCurveSlotByTag(a.Carrier);var first=GetSurfaceSlotByTag(a.Surface);var second=GetSurfaceSlotByTag(b.Surface);
+        if(carrier<0||first<0||second<0||Curves[carrier].Class!=CurveClass.Line||Curves[carrier].Header.Generation!=a.Generation)return false;
+        if(Surfaces[first].Class==SurfaceClass.Cylinder)(first,second)=(second,first);
+        if(Surfaces[first].Class!=SurfaceClass.Plane||Surfaces[second].Class!=SurfaceClass.Cylinder
+            ||!TryReadExplicitSpineCurve(Curves[carrier],out var line)||!TryPrepareSurface(Surfaces[first],out var plane)
+            ||!TryPrepareSurface(Surfaces[second],out var cylinder))return false;
+        var overlap=IntersectStationBounds(new(a.Lower,a.Upper),new(b.Lower,b.Upper));if(!overlap.Finite)return false;
+        var complete=new IntervalNumber(Math.Min(a.Lower,b.Lower),Math.Max(a.Upper,b.Upper));if(!complete.Finite)return false;
+        precision=Math.Min(precision,OperationIntersection.DistanceTolerance);
+        var direction=new IntervalVector(line.First);
+        if((direction.Norm().Value*(new IntervalNumber(complete.Upper)-complete.Lower)).Upper>precision)return false;
+        var point=new IntervalVector(line.Origin)+direction*new IntervalDual(complete,0);
+        var normal=new IntervalVector(plane.Axis);var length=normal.Norm().Value;
+        var gap=IntervalVector.Dot(point-new IntervalVector(plane.Origin),normal).Value;
+        if(!(length.Lower>0)||!gap.Finite||gap.Magnitude>(length*precision).Lower)return false;
+        var axis=new IntervalVector(cylinder.Axis);var norm=IntervalVector.Dot(axis,axis).Value;if(!(norm.Lower>0))return false;
+        var offset=point-new IntervalVector(cylinder.Origin);var radial=offset-axis*(IntervalVector.Dot(offset,axis)/norm);
+        var distance=radial.Norm().Value-cylinder.Radius;
+        return distance.Finite&&distance.Magnitude<=precision;
+    }
+
     private static bool SameCertifiedLineCylinderPlaneRoot(in BoundaryParameter a,in BoundaryParameter b)
     {
         var carrier=GetCurveSlotByTag(a.Carrier);var first=GetSurfaceSlotByTag(a.Surface);var second=GetSurfaceSlotByTag(b.Surface);
@@ -146,6 +176,37 @@ internal static unsafe partial class KernelRuntime
             if(lower!=(same?edge.StartVertex:edge.EndVertex)||upper!=(same?edge.EndVertex:edge.StartVertex)
                 ||lo<a.Lower||lo>a.Upper||hi<b.Lower||hi>b.Upper)continue;
             if(fragment>=0)return false;fragment=i;
+        }
+        return fragment>=0;
+    }
+
+    private static bool FindNativeFiniteLineFragment(CurveTag cut,double first,double last,BoundaryEventId lower,BoundaryEventId upper,
+        ReadOnlySpan<SheetSourceEdge> sources,ReadOnlySpan<ModelingEdge> edges,out BufferOffset fragment)
+    {
+        fragment=-1;if(lower<0||upper<0||lower==upper||!(last>first)
+            ||Curves[GetCurveSlotByTag(cut)].Class!=CurveClass.Line
+            ||!TryReadExplicitSpineCurve(Curves[GetCurveSlotByTag(cut)],out var a))return false;
+        foreach(var source in sources)
+        for(var i=source.First;i<source.First+source.Count;i++)
+        {
+            var edge=edges[i];if(!(edge.End>edge.Start)||Curves[GetCurveSlotByTag(edge.Curve)].Class!=CurveClass.Line
+                ||edge.StartVertex!=lower&&edge.EndVertex!=lower||edge.StartVertex!=upper&&edge.EndVertex!=upper
+                ||!TryReadExplicitSpineCurve(Curves[GetCurveSlotByTag(edge.Curve)],out var b))continue;
+            var positive=LocalSenseSign(Curves[GetCurveSlotByTag(edge.Curve)].Sense)>0;
+            var from=lower==(positive?edge.StartVertex:edge.EndVertex)?edge.Start:edge.End;var to=from==edge.Start?edge.End:edge.Start;
+            if(SpineParameterMap.Interval(a,new(first,0),out var pa,out _)!=AlgorithmStatus.Success
+                ||SpineParameterMap.Interval(a,new(last,0),out var qa,out _)!=AlgorithmStatus.Success
+                ||SpineParameterMap.Interval(b,new(from,0),out var pb,out _)!=AlgorithmStatus.Success
+                ||SpineParameterMap.Interval(b,new(to,0),out var qb,out _)!=AlgorithmStatus.Success)continue;
+            // The two carriers already share both finite event identities.
+            // Their affine correspondence's error over the complete segment
+            // is the convex hull of its endpoint errors. This is a native
+            // finite-edge precision proof, not infinite-line equality or a
+            // sampled near-XYZ deduplication of different source occurrences.
+            var d=pa-pb;var e=qa-qb;var error=new IntervalVector(
+                IntervalNumber.Hull(d.X.Value,e.X.Value),IntervalNumber.Hull(d.Y.Value,e.Y.Value),IntervalNumber.Hull(d.Z.Value,e.Z.Value)).Norm().Value;
+            if(!error.Finite||error.Upper>OperationIntersection.DistanceTolerance)continue;
+            if(fragment>=0&&fragment!=i)return false;fragment=i;
         }
         return fragment>=0;
     }
@@ -433,6 +494,14 @@ internal static unsafe partial class KernelRuntime
     }
 
 #if KERNEL_TEST_HOOKS
+    internal static bool TestNativeFiniteLineFragment(CurveTag cut,CurveTag source,double length,bool sameEvents,bool duplicateSource)
+    {
+        Span<ModelingEdge> edges=stackalloc ModelingEdge[2];
+        edges[0]=edges[1]=new(){Curve=source,Start=0,End=length,StartVertex=0,EndVertex=1};
+        Span<SheetSourceEdge> sources=stackalloc SheetSourceEdge[2];sources[0]=new(){First=0,Count=1};sources[1]=new(){First=1,Count=1};
+        return FindNativeFiniteLineFragment(cut,0,length,0,sameEvents?1:2,sources[..(duplicateSource?2:1)],edges,out _);
+    }
+
     internal static bool TestInheritedLineFragment(CurveTag cut,CurveTag source,double first,double last,
         double sourceFirst,double sourceLast,bool sameEnd)
     {

@@ -53,6 +53,112 @@ internal static unsafe partial class KernelRuntime
     private static bool TryStationaryNativePlaneEnd(in ModelingEdge edge,SurfTag cuttingSurface,
         ReadOnlySpan<VertexSlot> originals,Span<OperationIntersectionPoint> roots,Span<ScalarRootIsolation> stations,
         Span<double> errors,out BufferCount count,out FiniteCurveSurfaceRoot endpoint)
+        =>TryExactStationaryNativePlaneEnd(edge,cuttingSurface,originals,roots,stations,errors,out count,out endpoint)
+            ||TryPrecisionStationaryNativePlaneEnd(edge,cuttingSurface,originals,roots,stations,errors,out count,out endpoint);
+
+    // FD 17.2.2 treats an unresolved pair at a tangent as one contact when
+    // its normal separation is within native linear precision. This is a
+    // finite endpoint event, not a certificate that f(endpoint) is exactly
+    // zero. The existing ScalarRootIsolation.Certified flag stays false.
+    private static bool TryPrecisionStationaryNativePlaneEnd(in ModelingEdge edge,SurfTag cuttingSurface,
+        ReadOnlySpan<VertexSlot> originals,Span<OperationIntersectionPoint> roots,Span<ScalarRootIsolation> stations,
+        Span<double> errors,out BufferCount count,out FiniteCurveSurfaceRoot endpoint)
+    {
+        count=0;endpoint=default;var curve=Curves[GetCurveSlotByTag(edge.Curve)];
+        if(curve.Class!=CurveClass.ICurve||!TryBoundaryPlane(GetSurfaceSlotByTag(cuttingSurface),out var plane))return false;
+        var data=ICurveDataPool[curve.DataIndex];if(data.ProgramBlock<=0||data.IsBlendContact!=0)return false;
+        var program=GetNestedBlendProgram(data.ProgramBlock,data.ProgramSurfaceCount,data.ProgramSpineCount,data.ProgramChartCount,data.ProgramScalarCount);
+        var spine=program.Spines[data.ProgramSpine];if(SpineParameterMap.Explicit(spine))return false;
+        var charts=program.Charts.Slice(spine.ChartOffset,spine.ChartCount);var normal=new IntervalVector(plane.Axis);
+        var normalLength=normal.Norm().Value;if(!(normalLength.Lower>0))return false;
+        Span<IntervalNumber> atBounds=stackalloc IntervalNumber[9],bounds=stackalloc IntervalNumber[9];
+        for(var end=0;end<2;end++)
+        {
+            var upper=end!=0;var source=upper==(LocalSenseSign(curve.Sense)>0)?edge.EndVertex:edge.StartVertex;
+            if(source<0||source>=originals.Length||originals[source]<0||SheetOriginalVertex(originals[source],out var vertex)!=0)continue;
+            var precision=Math.Max(OperationIntersection.DistanceTolerance,Vertices[originals[source]].Tolerance);
+            var vertexGap=IntervalVector.Dot(new IntervalVector(vertex)-new IntervalVector(plane.Origin),normal).Value;
+            if(!double.IsFinite(precision)||!vertexGap.Finite||vertexGap.Magnitude>(normalLength*precision).Lower)continue;
+            var at=upper?edge.End:edge.Start;var chart=0;
+            while(chart<charts.Length-2&&(charts[chart+1].Parameter<at||!upper&&charts[chart+1].Parameter==at))chart++;
+            if(at<charts[chart].Parameter||at>charts[chart+1].Parameter)continue;
+            var inner=upper?Math.Max(edge.Start,charts[chart].Parameter):Math.Min(edge.End,charts[chart+1].Parameter);
+            var middle=at+(inner-at)*.5;if(middle==at)continue;
+            var domain=upper?new SurfaceParameterBox(middle,at,0,0):new(at,middle,0,0);
+            if(JointNestedBlendEvaluation.BoundSpine(program,data.ProgramSpine,new(at,at,0,0),atBounds)!=AlgorithmStatus.Success
+                ||JointNestedBlendEvaluation.BoundSpineProjectedAcceleration(program,data.ProgramSpine,domain,plane.Axis,out var acceleration)!=AlgorithmStatus.Success
+                ||!acceleration.Finite||acceleration.ContainsZero
+                ||JointNestedBlendEvaluation.BoundSpine(program,data.ProgramSpine,domain,bounds)!=AlgorithmStatus.Success)continue;
+            var junction=(new IntervalVector(atBounds[0],atBounds[1],atBounds[2])-new IntervalVector(vertex)).Norm().Value.Upper;
+            var gap=AnalyticLevelSet.Value(atBounds,plane);var slope=AnalyticLevelSet.Derivative(atBounds,plane,3);
+            if(!double.IsFinite(junction)||junction>precision||!gap.Finite||!slope.Finite)continue;
+            var curvature=Math.Min(Math.Abs(acceleration.Lower),Math.Abs(acceleration.Upper));
+            var critical=new IntervalNumber(slope.Magnitude)/curvature;
+            var speed=new IntervalVector(bounds[3],bounds[4],bounds[5]).Norm().Value;
+            if(!(speed*critical+junction).Finite||(speed*critical+junction).Upper>precision)continue;
+            var minimum=new IntervalNumber(gap.Magnitude)+slope.Magnitude*critical+.5*acceleration.Magnitude*critical*critical;
+            if(!minimum.Finite||minimum.Upper>(normalLength*precision).Lower)continue;
+            // Taylor's inequality excludes all other zeros on the terminal
+            // half beyond this one tangent cluster. No XYZ root deduplication
+            // or shortened unresolved remainder is used.
+            var d=new IntervalNumber(slope.Magnitude);var e=new IntervalNumber(gap.Magnitude);
+            var rootWidth=(d+IntervalDual.Sqrt(new(d*d+2*curvature*e,0)).Value)/curvature;
+            if(!rootWidth.Finite||rootWidth.Upper>=Math.Abs(middle-at))continue;
+            var lo=upper?edge.Start:middle;var hi=upper?middle:edge.End;
+            if(lo<hi&&IntersectFiniteIntersectionCurvePlane(edge.Curve,lo,hi,plane,roots,out count,stations,errors)!=AlgorithmStatus.Success){count=0;continue;}
+            if(count>=roots.Length||count>=stations.Length||count>=errors.Length){count=0;return false;}
+            var kind=upper?IntersectionVectorKind.End:IntersectionVectorKind.Start;
+            var transverse=NativePrecisionStationaryRay(program,data,plane,originals[source],vertex,precision);
+            endpoint=new(){Point=vertex,Vertex=originals[source],Kind=kind,NativeEnd=upper?FiniteNativeEnd.Last:FiniteNativeEnd.First,
+                TransverseStationary=transverse?(byte)2:(byte)0,Parameter=at,Lower=at,Upper=at,SpatialError=junction};
+            var index=count++;if(!upper){roots[..index].CopyTo(roots[1..]);stations[..index].CopyTo(stations[1..]);errors[..index].CopyTo(errors[1..]);index=0;}
+            roots[index]=new(){Point=vertex,First=at,Kind=kind};stations[index]=new(){Root=new(at)};errors[index]=junction;
+            return true;
+        }
+        return false;
+    }
+
+    private static bool NativePrecisionStationaryRay(in NestedBlendProgram program,in ICurveData source,
+        in AnalyticSurface cutting,VertexSlot original,in KernelVector3 point,double precision)
+    {
+        // FD 17.2's native angular precision is distinct from a numerical
+        // solver threshold. Flag 2 records a precision contact; it never
+        // changes ScalarRootIsolation.Certified to an exact zero proof.
+        const double nativeAngularPrecision=1e-11;
+        var definition=program.Spines[source.ProgramSpine];var side=program.Surfaces[definition.First].IsBlend?0:1;
+        var blend=side==0?definition.First:definition.Second;if(!program.Surfaces[blend].IsBlend)return false;
+        var section=program.Surfaces[side==0?definition.Second:definition.First];
+        if(section.IsBlend||section.IsBSpline||section.Analytic.Kind!=SurfaceClass.Plane)return false;
+        var tag=Surfaces[GetSurfaceSlotByTag(source.Surface0Tag)].Class==SurfaceClass.BlendSurface?source.Surface0Tag:source.Surface1Tag;
+        var record=Surfaces[GetSurfaceSlotByTag(tag)];if(record.Class!=SurfaceClass.BlendSurface)return false;
+        var band=BlendedEdgeDataPool[record.DataIndex];var found=false;var transverse=false;
+        for(var contact=0;contact<2;contact++)
+        {
+            var support=contact==0?band.Surface0Tag:band.Surface1Tag;
+            if(!TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(support)],out var cylinder)||cylinder.Kind!=SurfaceClass.Cylinder)continue;
+            var body=Vertices[original].Body;var face=Bodies[body].FirstFaceBody;var incident=false;
+            for(var f=0;f<Bodies[body].FaceCountBody;f++,face=Faces[face].NextInBody)
+                if(SameSheetSupport(Faces[face].SurfTag,support)&&FaceUsesRollingVertex(face,original)){incident=true;break;}
+            if(!incident)continue;if(found)return false;found=true;
+            // Native incidence identifies which supporting cylinder supplies
+            // the contact normal at the stored vertex. A corrected implicit
+            // CHART foot is not substituted for that original endpoint.
+            var axis=new IntervalVector(cylinder.Axis);var norm=IntervalVector.Dot(axis,axis).Value;if(!(norm.Lower>0))return false;
+            var offset=new IntervalVector(point)-new IntervalVector(cylinder.Origin);
+            var normal=offset-axis*(IntervalVector.Dot(offset,axis)/norm);var length=normal.Norm().Value;
+            if(!(length.Lower>0)||(length-cylinder.Radius).Magnitude>precision)return false;
+            var tangent=IntervalVector.Cross(normal,new IntervalVector(section.Analytic.Axis));var planeNormal=new IntervalVector(cutting.Axis);
+            var scale=tangent.Norm().Value*planeNormal.Norm().Value;
+            if(!(scale.Lower>0)||IntervalVector.Dot(tangent,planeNormal).Value.Magnitude>(scale*nativeAngularPrecision).Lower)return false;
+            var ray=IntervalVector.Cross(normal,planeNormal);
+            transverse=ray.Norm().Value.Lower>(normal.Norm().Value*planeNormal.Norm().Value*nativeAngularPrecision).Upper;
+        }
+        return found&&transverse;
+    }
+
+    private static bool TryExactStationaryNativePlaneEnd(in ModelingEdge edge,SurfTag cuttingSurface,
+        ReadOnlySpan<VertexSlot> originals,Span<OperationIntersectionPoint> roots,Span<ScalarRootIsolation> stations,
+        Span<double> errors,out BufferCount count,out FiniteCurveSurfaceRoot endpoint)
     {
         count=0;endpoint=default;
         var curve=Curves[GetCurveSlotByTag(edge.Curve)];

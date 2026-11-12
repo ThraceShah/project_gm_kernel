@@ -285,7 +285,8 @@ internal static unsafe partial class KernelRuntime
                         if(anchor.SourceOccurrence==known.SourceOccurrence)
                             same|=anchor.Surface==known.Surface?anchor.Witness==known.Witness
                                 :exact||SameCertifiedLinePlaneRoot(anchor.Carrier,known.Surface,anchor.Surface)
-                                    ||SameCertifiedConicPlaneRoot(anchor,known)||SameCertifiedLineCylinderPlaneRoot(anchor,known);
+                                    ||SameCertifiedConicPlaneRoot(anchor,known)||SameCertifiedLineCylinderPlaneRoot(anchor,known)
+                                    ||SameNativeLineCylinderPlaneEvent(anchor,known,Tolerance);
                     }
                     continue;
                 }
@@ -576,6 +577,15 @@ internal static unsafe partial class KernelRuntime
                 var span=wrap?cut.Last-first+last-cut.First:last-first;
                 if(!(span>(model.RequireBoundaryAssociations||certified||cut.InheritedSourceEdge!=0?0:1e-12)))continue;
                 if(certified&&Math.BitIncrement(first)>=last)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+                if(model.RequireBoundaryAssociations&&!closed&&!wrap&&cut.InheritedSourceEdge==0
+                    &&FindNativeFiniteLineFragment(cut.Curve,first,last,endpoints[i],endpoints[j],sources,model.Edges[..model.NE],out var nativeInherited))
+                {
+                    var present=false;for(var h=0;h<nh;h++)present|=halfedges[h].Edge==nativeInherited;
+                    if(present)continue;
+                    var added=AddSheetHalfedge(surface,ref model,nativeInherited,1,halfedges,ref nh,face,faceSense:sense);if(added!=0)return added;
+                    added=AddSheetHalfedge(surface,ref model,nativeInherited,0,halfedges,ref nh,face,faceSense:sense);if(added!=0)return added;
+                    continue;
+                }
                 if(cut.InheritedSourceEdge!=0)
                 {
                     var source=cut.InheritedSourceEdge-1;

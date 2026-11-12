@@ -71,7 +71,7 @@ internal static unsafe partial class KernelRuntime
     // A cylinder is periodic in u. An axial UV ray avoids an artificial seam:
     // its exact spatial carrier is a radial half-plane, not a UV polygon.
     // Noncontractible top/bottom loops then combine into the finite face band.
-    private static int CylindricalLoopWinding(SurfTag surface,ReadOnlySpan<ModelingEdge> edges,
+    private static int AxialCylindricalLoopWinding(SurfTag surface,ReadOnlySpan<ModelingEdge> edges,
         ReadOnlySpan<ModelingCoedge> loop,PK_UV_s query,out BufferCount winding)
     {
         winding=0;if(!TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(surface)],out var cylinder))return ParasolidConstants.PK_ERROR_not_implemented;
@@ -87,9 +87,10 @@ internal static unsafe partial class KernelRuntime
             for(var i=0;i<count;i++)
             {
                 var root=roots[i];if(Dot(Sub(root.Point,cylinder.Origin),radial)<=0)continue;
-                if(root.Kind!=IntersectionVectorKind.Simple)return ParasolidConstants.PK_ERROR_eval_failure;
+                LastSheetParameter=root.First;
+                if(root.Kind!=IntersectionVectorKind.Simple){LastSheetPartitionStage=SheetPartitionStage.RayTangency;return ParasolidConstants.PK_ERROR_eval_failure;}
                 var along=Dot(Sub(root.Point,cylinder.Origin),cylinder.Axis)-query.param[1];
-                if(along< -1e-10)continue;if(Math.Abs(along)<1e-10)return ParasolidConstants.PK_ERROR_eval_failure;
+                if(along< -1e-10)continue;if(Math.Abs(along)<1e-10){LastSheetPartitionStage=SheetPartitionStage.RayOrigin;return ParasolidConstants.PK_ERROR_eval_failure;}
                 var duplicate=false;for(var j=0;j<i;j++)
                 {
                     if(Dot(Sub(roots[j].Point,cylinder.Origin),radial)<=0||ProfileDistance(root.Point,roots[j].Point)>=1e-9)continue;
@@ -101,13 +102,14 @@ internal static unsafe partial class KernelRuntime
                 if(duplicate)continue;
                 var epsilon=1e-10*Math.Max(1,edge.End-edge.Start);
                 if(edge.StartVertex>=0&&(Math.Abs(root.First-edge.Start)<epsilon||Math.Abs(root.First-edge.End)<epsilon))
-                    return ParasolidConstants.PK_ERROR_eval_failure;
+                {LastSheetPartitionStage=SheetPartitionStage.RayEndpoint;return ParasolidConstants.PK_ERROR_eval_failure;}
                 var error=SheetCurveUV(surface,edge.Curve,root.First,coedge.Forward!=0,out _,out var tangent,out _);if(error!=0)return error;
                 if(Math.Abs(tangent.param[0])<=1e-10*(Math.Abs(tangent.param[0])+Math.Abs(tangent.param[1])))
-                    return ParasolidConstants.PK_ERROR_eval_failure;
+                {LastSheetPartitionStage=SheetPartitionStage.RayTangency;return ParasolidConstants.PK_ERROR_eval_failure;}
                 winding+=tangent.param[0]<0?1:-1;
             }
         }
         return 0;
     }
+
 }

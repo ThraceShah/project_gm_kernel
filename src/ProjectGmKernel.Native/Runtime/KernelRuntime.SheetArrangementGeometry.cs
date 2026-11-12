@@ -1,4 +1,5 @@
 using ProjectGmKernel.Native.Computation;
+using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Geometry.Caching;
@@ -288,13 +289,41 @@ internal static unsafe partial class KernelRuntime
                 ||!TryAnalyticBlendContactMap(surface,cb,second.Start,second.End,out var vb,out var shiftB,out var scaleB)||va==vb)continue;
             var ta=(a.Forward!=0)==(LocalSenseSign(ca.Sense)>0)?first.End:first.Start;
             var tb=(b.Forward!=0)==(LocalSenseSign(cb.Sense)>0)?second.Start:second.End;
-            var u=shiftA+scaleA*ta;if(u!=shiftB+scaleB*tb||u!=record.UMin&&u!=record.UMax)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+            var u=shiftA+scaleA*ta;
+            if((u!=shiftB+scaleB*tb||u!=record.UMin&&u!=record.UMax)
+                &&!TryCollapsedNativeChartEnd(surface,ca,ta,u,va,cb,tb,shiftB+scaleB*tb,vb,out u))
+                return ParasolidConstants.PK_ERROR_cant_do_intersect;
             var along=(u-query.param[0])/du;var v=query.param[1]+along*dv;
             if(along<=0||v<Math.Min(va,vb)||v>Math.Max(va,vb))continue;
             if(v==va||v==vb)return ParasolidConstants.PK_ERROR_eval_failure;
             winding+=(vb-va)*du>0?1:-1;
         }
         return 0;
+    }
+
+    // The two finite contacts declare one original vertex. Admit a rounded
+    // native end only when the entire intervening U/V strip and both native
+    // curve endpoints fit one linear-precision neighbourhood. No parameter
+    // epsilon or endpoint XYZ match replaces this complete geometry bound.
+    private static bool TryCollapsedNativeChartEnd(SurfTag surface,in CurveRecord first,double firstT,double firstU,double firstV,
+        in CurveRecord second,double secondT,double secondU,double secondV,out double endpoint)
+    {
+        endpoint=0;var record=Surfaces[GetSurfaceSlotByTag(surface)];var middle=record.UMin+(record.UMax-record.UMin)*.5;
+        if(Math.Max(firstU,secondU)<middle)endpoint=record.UMin;
+        else if(Math.Min(firstU,secondU)>middle)endpoint=record.UMax;
+        else return false;
+        if(!TryReadExplicitSpineCurve(first,out var a)||!TryReadExplicitSpineCurve(second,out var b)
+            ||SpineParameterMap.Interval(a,new(firstT,0),out var pointA,out _)!=AlgorithmStatus.Success
+            ||SpineParameterMap.Interval(b,new(secondT,0),out var pointB,out _)!=AlgorithmStatus.Success)return false;
+        var blend=BlendedEdgeDataPool[record.DataIndex];var program=GetNestedBlendProgram(blend,record);
+        Span<IntervalNumber> bounds=stackalloc IntervalNumber[9];
+        if(JointNestedBlendEvaluation.Bound(program,blend.ProgramRoot,
+            new(Math.Min(endpoint,Math.Min(firstU,secondU)),Math.Max(endpoint,Math.Max(firstU,secondU)),Math.Min(firstV,secondV),Math.Max(firstV,secondV)),bounds)!=AlgorithmStatus.Success)return false;
+        var x=IntervalNumber.Hull(bounds[0],IntervalNumber.Hull(pointA.X.Value,pointB.X.Value));
+        var y=IntervalNumber.Hull(bounds[1],IntervalNumber.Hull(pointA.Y.Value,pointB.Y.Value));
+        var z=IntervalNumber.Hull(bounds[2],IntervalNumber.Hull(pointA.Z.Value,pointB.Z.Value));
+        var diameter=new IntervalVector(new IntervalNumber(x.Upper)-x.Lower,new IntervalNumber(y.Upper)-y.Lower,new IntervalNumber(z.Upper)-z.Lower).Norm().Value;
+        return diameter.Finite&&diameter.Upper<=OperationIntersection.DistanceTolerance;
     }
 
     internal static int SheetSourceContains(FaceSlot face,PK_UV_s query,out bool inside)

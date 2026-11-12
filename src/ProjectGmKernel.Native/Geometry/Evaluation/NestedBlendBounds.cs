@@ -45,6 +45,20 @@ internal static partial class JointNestedBlendEvaluation
         return BoundSegment(program,-1,spine,domain,output,captureWitness:capture,requireWitness:require,rootChart:chart);
     }
 
+    // A CHART cell is an auxiliary affine gauge. Certify its local
+    // continuation at an internal knot without changing the native domain.
+    // This entry admits only the two cells incident to that knot and keeps
+    // the complete shared state/nearest-branch contraction requirement.
+    internal static AlgorithmStatus BoundSharedSpineJunction(in NestedBlendProgram program,BlendSpineIndex spine,
+        BufferOffset chart,in SurfaceParameterBox domain,ReadOnlySpan<IntervalNumber> witness,Span<IntervalNumber> output)
+    {
+        var charts=Chart(program,spine);
+        if(!domain.Valid||chart<0||chart>=charts.Length-1||output.Length<9||witness.Length!=7
+            ||domain.U0<charts[Math.Max(0,chart-1)].Parameter||domain.U1>charts[Math.Min(charts.Length-1,chart+2)].Parameter)
+            return AlgorithmStatus.InvalidInput;
+        return BoundSegment(program,-1,spine,domain,output,requireWitness:witness,rootChart:chart);
+    }
+
     internal static AlgorithmStatus BoundSpineCurvature(in NestedBlendProgram program,BlendSpineIndex spine,double parameter,BufferOffset side,out IntervalNumber curvature)
     {
         curvature=default;if(side is <0 or >1||SpineParameterMap.Explicit(program.Spines[spine]))return AlgorithmStatus.Unsupported;
@@ -148,7 +162,8 @@ internal static partial class JointNestedBlendEvaluation
         Span<IntervalNumber> curvature=default,BufferOffset curvatureSide=0,Span<IntervalNumber> supportParameter=default,BufferOffset parameterSide=0,
         Span<IntervalNumber> captureWitness=default,ReadOnlySpan<IntervalNumber> requireWitness=default,BufferOffset rootChart=-1,
         Span<double> anchorContacts=default,Span<IntervalNumber> acceleration=default,KernelVector3 accelerationNormal=default,
-        Span<BufferOffset> captureCharts=default,ReadOnlySpan<BufferOffset> requireCharts=default)
+        Span<BufferOffset> captureCharts=default,ReadOnlySpan<BufferOffset> requireCharts=default,double phaseReference=double.NaN,
+        double phaseReferenceV=0,double phaseDu=0,double phaseDv=1)
     {
         var plain=reachBudget.IsEmpty&&curvature.IsEmpty&&supportParameter.IsEmpty&&captureWitness.IsEmpty&&requireWitness.IsEmpty&&rootChart<0
             &&anchorContacts.IsEmpty&&acceleration.IsEmpty&&captureCharts.IsEmpty&&requireCharts.IsEmpty;
@@ -311,6 +326,32 @@ internal static partial class JointNestedBlendEvaluation
         if(plain)WriteTube(program,spine,domain,nodes,boxes[..n],image[..n]);
         if(parameterIndex>=0)
         {
+            if(double.IsFinite(phaseReference))
+            {
+                var phaseRoot=program.Spines[spine];var phaseSupport=program.Surfaces[parameterSide==0?phaseRoot.First:phaseRoot.Second];
+                if(parameterChild<0||supportParameter.Length!=4)return AlgorithmStatus.Unsupported;
+                var conic=program.Spines[phaseSupport.Spine].Curve;
+                for(var i=0;i<n;i++)variables[i]=new(boxes[i],image[i]);
+                status=BoundSpineSupportSection(program,nodes,variables[..n],parameterChild,phaseSupport,splineCache,out var phaseV);
+                if(status!=AlgorithmStatus.Success)return status;
+                if(phaseDv==0)
+                {
+                    supportParameter[0]=(phaseV-phaseReferenceV).Value;supportParameter[1]=phaseV.Derivative;
+                    supportParameter[2]=1;supportParameter[3]=0;return AlgorithmStatus.Success;
+                }
+                var delta=IntervalPoint(variables,nodes[parameterChild].Offset)-new IntervalVector(conic.Origin);
+                var a=new IntervalVector(conic.First);var b=new IntervalVector(conic.Second);
+                var aa=IntervalVector.Dot(a,a);var bb=IntervalVector.Dot(b,b);var ab=IntervalVector.Dot(a,b);var determinant=aa*bb-ab*ab;
+                if(!(determinant.Value.Lower>0))return AlgorithmStatus.NotConverged;
+                var da=IntervalVector.Dot(delta,a);var db=IntervalVector.Dot(delta,b);
+                var x=(bb*da-ab*db)/determinant;var y=(aa*db-ab*da)/determinant;
+                var reference=new IntervalDual(phaseReference,0)+(phaseV-phaseReferenceV)*(new IntervalNumber(phaseDu)/phaseDv);
+                IntervalDual.SinCos(reference,out var sine,out var cosine);
+                var cross=y*cosine-x*sine;var dot=x*cosine+y*sine;
+                if(!cross.Finite||!dot.Finite)return AlgorithmStatus.NotConverged;
+                supportParameter[0]=cross.Value;supportParameter[1]=cross.Derivative;
+                supportParameter[2]=dot.Value;supportParameter[3]=dot.Derivative;return AlgorithmStatus.Success;
+            }
             supportParameter[1]=image[parameterIndex];
             if(supportParameter.Length==2)return AlgorithmStatus.Success;
             for(var i=0;i<n;i++)variables[i]=new(boxes[i],image[i]);
