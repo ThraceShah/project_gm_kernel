@@ -163,7 +163,20 @@ internal static unsafe partial class KernelRuntime
         if(procedural.ProgramBlock>0)
         {
             var program=GetNestedBlendProgram(procedural.ProgramBlock,procedural.ProgramSurfaceCount,procedural.ProgramSpineCount,procedural.ProgramChartCount,procedural.ProgramScalarCount);
+            var definition=program.Spines[procedural.ProgramSpine];
+            var chartPoint=-1;
+            if(!SpineParameterMap.Explicit(definition))
+            {
+                var charts=program.Charts.Slice(definition.ChartOffset,definition.ChartCount);
+                for(var i=0;i<charts.Length;i++)if(t==charts[i].Parameter){chartPoint=definition.ChartOffset+i;break;}
+            }
+            // XT defines an exact CHART parameter by its stored position.
+            // Joint support solves supply one-sided derivatives, as on the
+            // ordinary ICurve path; they do not replace that defining D0.
+            if(chartPoint>=0&&order==0&&!tangentRequired)
+            {values[0]=program.Charts[chartPoint].Position;return AlgorithmStatus.Success;}
             var proceduralStatus=JointNestedBlendEvaluation.EvaluateSpine(program,procedural.ProgramSpine,t,tangentRequired?Math.Max(order,1):order,values);
+            if(proceduralStatus==AlgorithmStatus.Success&&chartPoint>=0)values[0]=program.Charts[chartPoint].Position;
             if(proceduralStatus==AlgorithmStatus.Success&&tangentRequired)direction=Unit(values[1]);return proceduralStatus;
         }
         var prepareStatus = TryPrepareICurveView(in record, out var view, out var chartFailure);

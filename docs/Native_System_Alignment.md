@@ -720,5 +720,32 @@ reload、48材料点、finite/nativefin/full/strict全部通过，raw2保留mass
 仍在后续RootProjection返回157；独立PK成品及原raw134全部保留，没有补签完成。
 一次额外携带位置AABB的试验没有改变这个阻断且增加临时存储，已撤回；当前继续
 核真实共享支持/CHART见证及有限参数投影，不能把这次试验或候选测试数量算作能力。
+
+### CHART 点是原生定义，公开求值不得用重解覆盖
+
+官方 XT 第 6 章 Intersection curves 的 Chart 部分明确：参数恰等于 CHART 点参数时，
+D0 为存储点；段内才由两支持与 CHART 平面定义。源码核查发现普通 ICurve 路径已遵守，
+有 compiled programme 的公开 `CurveEval` 却绕过该分类，重解后覆盖了原点。
+本次将相同合同用于 compiled implicit ICurve：精确 native 参数直接返回原点，
+请求导数时保留原联合求解的单侧导数并恢复存储 D0；相邻参数不吸附。
+联合区间求解器的数学方程及预算没有因此改动。
+
+`scripts/NativeChartPointOracle.cs` 对同字节独立 PK/GM 回读的曲线按实际参数和位置
+唯一配对，记录精确 CHART 参数和两侧相邻浮点参数。开发执行
+`temp_docs/native-system-alignment/native-chart-contract-v1.log/.exit` 为 raw 0，
+3 条曲线、10 个点；真实 PK 到存储点约 0–1.8e-15，旧 GM 有约 6e-12 重解偏移。
+修正后的 `native-chart-contract-v2.log/.exit` raw 0，同时要求精确参数的 GM D0
+逐坐标等于存储点。两次 assembly 分别为 c056db99f63ab9a23d7f065e11b0156c3e50152683959e1912fbabe70e9a3c96
+和 a46423653ac00e62ea6b51934276dd27447bfb0b4b7f13f95a1ff97cb1d23899；均为带在研
+改动的实际开发程序集，不冒充干净提交的完整交付。
+
+同平台有界 GDB 的 `native-chart-chain-gdb-v1.log/.exit` debugger/inferior 均为 0，
+实际栈为 `PK_CURVE_eval → QCU_cvec_at_parm → QCU_deparm_intersection →
+QCU_svecs_from_parm → svecs_from_parm → QCU__icurve_eval_chord_plane`。
+这是动态观察的该分支；`QCU__icurve_eval_step` 断点未命中，不推断其不存在。
+MCP 的优化求值器空调用表也不是没有内部调用的证据。
+`native-chart-anchor-managed-v1.log/.exit` 37/37 raw 0；该修正没有签署仍失败的
+新增联合 Boolean。周期 native phase 的六个数学包围检查另为
+`periodic-support-phase-math-v1.log/.exit` 6/6 raw 0，仍需真实周期 PK 消费者验收。
 原510/588U、统一固定包、完整最终回归、周期分支、Mac及集中独立接受仍须按实际
 新源执行；本节不替随后source或未执行范围取得资格。
