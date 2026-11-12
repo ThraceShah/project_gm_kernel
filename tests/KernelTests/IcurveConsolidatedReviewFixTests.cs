@@ -77,9 +77,24 @@ public unsafe class IcurveConsolidatedReviewFixTests : IDisposable
         var generation = 0L;
         var violations = 0L;
         var hits = 0L;
-
-        var writers = Enumerable.Range(0, writerThreads).Select(_ => Task.Run(() =>
+        // Begin with live keys and release six dedicated workers together.
+        // Thread-pool scheduling may otherwise complete every reader before
+        // the first publish, which exercises no concurrent cache hit at all.
+        for (var i = 0; i < keySpace; i++)
         {
+            var p = i * 0.25;
+            GeometryEvaluationCache.Publish(in identity, new CurveSample(p,
+                Vector(p, 2 * p, 0), Vector(3 * p, 0, 0), default, 0,
+                ICurveQueryKind.RegularChartInterval, ChartSide.Right, 0,
+                0, SampleSourceKind.CorrectedRoot, ICurveConstraintPlan.I3));
+        }
+        Assert.True(GeometryEvaluationCache.TryGetExact(in identity, 0,
+            ICurveQueryKind.RegularChartInterval, ChartSide.Right, 0, 0, out _));
+        using var start = new System.Threading.Barrier(writerThreads + readerThreads);
+
+        var writers = Enumerable.Range(0, writerThreads).Select(_ => Task.Factory.StartNew(() =>
+        {
+            start.SignalAndWait();
             for (var i = 0; i < iterations; i++)
             {
                 var p = (i % keySpace) * 0.25;
@@ -94,9 +109,10 @@ public unsafe class IcurveConsolidatedReviewFixTests : IDisposable
                     ICurveQueryKind.RegularChartInterval, ChartSide.Right, 0,
                     0, SampleSourceKind.CorrectedRoot, ICurveConstraintPlan.I3));
             }
-        })).ToArray();
-        var readers = Enumerable.Range(0, readerThreads).Select(_ => Task.Run(() =>
+        }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default)).ToArray();
+        var readers = Enumerable.Range(0, readerThreads).Select(_ => Task.Factory.StartNew(() =>
         {
+            start.SignalAndWait();
             for (var i = 0; i < iterations; i++)
             {
                 var p = (i % keySpace) * 0.25;
@@ -110,7 +126,7 @@ public unsafe class IcurveConsolidatedReviewFixTests : IDisposable
                     || sample.Position.Z != sample.First.Z) // torn generation mix
                     System.Threading.Interlocked.Increment(ref violations);
             }
-        })).ToArray();
+        }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default)).ToArray();
         Task.WaitAll(writers.Concat(readers).ToArray());
 
         Assert.True(hits > 0, "the fixture must produce at least one hit for the test to mean anything");
