@@ -1,0 +1,29 @@
+./scripts/ExteriorContactBooleanOracle.cs.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./scripts/ExteriorContactBooleanOracle.cs.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+CASE height=0
+SSI own h=0 error=0 points=1 curves=0 seconds=0.024731
+SSI PK h=0 error=0 points=1 curves=0
+source native full BODY_check: 0 faults
+source received full BODY_check: 0 faults
+source topology 0: native=2 own=2
+source topology 1: native=2 own=2
+source topology 2: native=6 own=6
+source topology 3: native=12 own=12
+source topology 4: native=8 own=8
+source topology 5: native=6 own=6
+source material regions: native=0:1,1:1, own=0:1,1:1
+source compare=21921/21931, face_pairs=0
+global diff=21940, entities=1/1
+global diff=21941, entities=6/6
+global diff=21943, entities=12/12
+global diff=21944, entities=0/0
+global diff=21946, entities=8/8
+global diff=21947, entities=0/0
+source PK mass: volume=1.3333333312975255/1.3333333312975255, area=6.947455927863367/6.947455927863367, max normalized residual=5.189658280668654E-18
+BOOLEAN own h=0 op=15901 error=0 n=0 seconds=3.254703 stage=Classify faces=11/-1
+BOOLEAN PK h=0 op=15901 error=0 n=0
+PASS strict exterior contact SSI/Boolean consumers
+
+STDERR

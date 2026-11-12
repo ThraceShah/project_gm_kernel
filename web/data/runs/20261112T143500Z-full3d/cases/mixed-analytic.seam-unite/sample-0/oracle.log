@@ -1,0 +1,22 @@
+./src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./scripts/MixedAnalyticBooleanOracle.cs.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./scripts/MixedAnalyticBooleanOracle.cs.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+web strict fresh XT: global=21921 local=21931 face_pairs=0
+seam-15903 topology 0: native=2 self=2
+seam-15903 topology 1: native=2 self=2
+seam-15903 topology 2: native=10 self=10
+seam-15903 topology 3: native=16 self=16
+seam-15903 topology 4: native=8 self=8
+seam-15903 compare=21921/21931, face_pairs=0
+global diff=21940, entities=1/1
+global diff=21941, entities=10/10
+global diff=21943, entities=16/16
+global diff=21944, entities=0/0
+global diff=21946, entities=8/8
+global diff=21947, entities=0/0
+seam-15903 classified 150 independent vectors
+PASS seam-15903
+PASS all 1 mixed analytic Boolean cases
+
+STDERR

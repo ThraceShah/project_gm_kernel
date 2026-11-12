@@ -37,7 +37,7 @@ var receipt = JsonNode.Parse(File.ReadAllText(receiptPath))!.AsObject();
 
 // The review receipt binds the original report; re-check the two machine files
 // we derive from are the ones the review accepted.
-if (receipt["runnerPerformanceQualified"]?.GetValue<bool>() != false) throw new InvalidDataException("review receipt must keep performanceQualified=false");
+if (receipt["runnerPerformanceQualified"]?.GetValue<bool>() != false) throw new InvalidDataException("review receipt must keep runnerPerformanceQualified=false");
 if (summary["candidateMeasurementCommit"]?.GetValue<string>() != Measurement) throw new InvalidDataException("candidate measurement commit mismatch");
 if (summary["baselineCommit"]?.GetValue<string>() != Baseline) throw new InvalidDataException("baseline commit mismatch");
 if (summary["sources"]?["candidate"]?["commit"]?.GetValue<string>() != Measurement || summary["sources"]?["candidate"]?["nativeTree"]?.GetValue<string>() != Native || summary["sources"]?["candidate"]?["srcTree"]?.GetValue<string>() != Src) throw new InvalidDataException("candidate source layers mismatch");
@@ -89,7 +89,7 @@ foreach (var (shape, catalogId) in catalogIdOf)
     var paired = candidate["warmPairedGmPkMedian"]!.GetValue<double>();
     var ratioOfMedians = candidate["ratioOfWarmMedians"]!.GetValue<double>();
     var note = "Section 2c0e4ea 单窗口 " + WindowStart + " .. " + WindowEnd +
-               "（Mac M4，20 proc/60 pairs/120 API，4 planar raw0/16 other raw2/runner2，performanceQualified=false）：" +
+               "（Mac M4，20 proc/60 pairs/120 API，4 planar raw0/16 other raw2/runner2，runnerPerformanceQualified=false）：" +
                "暖中位 GM " + G17(gmBefore) + "→" + G17(gmAfter) + " ms（" + G17(change) + "%）；" +
                "候选配对 GM/PK ratioMedian " + G17(paired) + " / 中位数之比 " + G17(ratioOfMedians) + "（两口径分列不互换）；" +
                "全部冷暖/minmax/逐 rep 见原 operation-summary；两回退（curved +" + G17(operations["curved"]["changePercent"]!.GetValue<double>()) +

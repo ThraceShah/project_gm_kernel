@@ -1,0 +1,17 @@
+./src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./scripts/AnalyticBooleanOracle.cs.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./scripts/AnalyticBooleanOracle.cs.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+web strict fresh XT: global=21921 local=21931 face_pairs=0
+rotated-bases-15902 body compare: global=21921, local=21931, global entries=6, face pairs=0.
+  global entry=21940, master count=1, received count=1
+  global entry=21941, master count=2, received count=2
+  global entry=21943, master count=1, received count=1
+  global entry=21944, master count=0, received count=0
+  global entry=21946, master count=0, received count=0
+  global entry=21947, master count=0, received count=0
+rotated-bases-15902 volume=23.03834572748666/23.038345744093274, area=50.26548193690323/50.265481961168334
+PASS rotated-bases-15902
+PASS all 1 independent analytic Boolean fixtures, point classifications, entity lifetimes, tracking and strict XT body comparison.
+
+STDERR

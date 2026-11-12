@@ -25,14 +25,25 @@ if (primaryCases.Count != secondaryCases.Count || !primaryCases.Keys.All(seconda
 
 static bool Attempted(JsonObject c) => c["execution"]?["attempted"]?.GetValue<bool>() == true;
 static bool HasSteps(JsonObject c) => c["steps"] is JsonArray s && s.Count > 0;
+static string Status(JsonObject c) => c["status"]?.GetValue<string>() ?? "";
+// A timeout/unreached placeholder step has no captured geometry; only a real
+// before/after mesh counts as an executed display result.
+static bool RealGeometry(JsonObject c) => c["steps"] is JsonArray s && s.OfType<JsonObject>().Any(st =>
+    st["gm"]?["before"] != null || st["gm"]?["after"] != null || st["pk"]?["before"] != null || st["pk"]?["after"] != null);
+// An interrupted capture can leave only `before` meshes; a completed operation
+// additionally has an `after` product. That is the real distinction to adopt on.
+static bool AfterGeometry(JsonObject c) => c["steps"] is JsonArray s && s.OfType<JsonObject>().Any(st =>
+    st["gm"]?["after"] != null || st["pk"]?["after"] != null);
 
 var adopted = new JsonArray();
 var conflicts = new JsonArray();
 foreach (var (id, fromSecondary) in secondaryCases)
 {
     var target = primaryCases[id];
-    var take = Attempted(fromSecondary) && (!Attempted(target) || (!HasSteps(target) && HasSteps(fromSecondary)));
-    if (Attempted(fromSecondary) && Attempted(target) && HasSteps(target) && HasSteps(fromSecondary))
+    // A completed successful re-run supersedes an interrupted/timeout record of
+    // the same case; two successful executions of the same case are a conflict.
+    var take = Attempted(fromSecondary) && (!Attempted(target) || (!AfterGeometry(target) && AfterGeometry(fromSecondary)) || (Status(fromSecondary) == "pass" && Status(target) != "pass"));
+    if (Attempted(fromSecondary) && Attempted(target) && Status(target) == "pass" && Status(fromSecondary) == "pass")
         conflicts.Add((JsonNode?)JsonValue.Create(id));
     if (!take) continue;
     // Copy this case's own evidence tree, then adopt its manifest record.
@@ -62,6 +73,36 @@ provenance["merge"] = new JsonObject
     ["note"] = "Disjoint shards of the same registry merged for one workbench run; per-case evidence directories copied byte-for-byte, no re-execution.",
 };
 primaryManifest["run"]!["provenance"] = provenance;
+
+// Optional final identity for the merged workbench run: rename the run directory
+// and the data index descriptor together so the served id matches the manifest.
+var finalId = Option("--final-run-id", "");
+if (finalId.Length > 0 && finalId != primaryManifest["run"]!["id"]!.GetValue<string>())
+{
+    var oldId = primaryManifest["run"]!["id"]!.GetValue<string>();
+    var renamed = Path.Combine(Path.GetDirectoryName(primary)!, finalId);
+    if (Directory.Exists(renamed)) throw new IOException("final run directory already exists: " + finalId);
+    primaryManifest["run"]!["id"] = finalId;
+    primaryManifest["run"]!["provenance"]!["merge"]!["finalRunId"] = finalId;
+    primaryManifest["run"]!["provenance"]!["merge"]!["firstShardRunId"] = oldId;
+    File.WriteAllText(primaryManifestPath + ".tmp", primaryManifest.ToJsonString());
+    File.Move(primaryManifestPath + ".tmp", primaryManifestPath, true);
+    Directory.Move(primary, renamed);
+    primary = renamed;
+    primaryManifestPath = Path.Combine(primary, "manifest.json");
+    var indexPath = Path.Combine(data, "index.json");
+    var index = JsonNode.Parse(File.ReadAllText(indexPath))!.AsObject();
+    foreach (var descriptor in index["runs"]!.AsArray().OfType<JsonObject>())
+    {
+        if (descriptor["id"]?.GetValue<string>() != oldId) continue;
+        descriptor["id"] = finalId;
+        descriptor["manifest"] = $"runs/{finalId}/manifest.json";
+        descriptor["label"] = "全目录真实三维工作台：463 具名建模用例（GM/PK before/after/tool 与 entity 角色）";
+    }
+    if (index["latestRunId"]?.GetValue<string>() == oldId) index["latestRunId"] = finalId;
+    File.WriteAllText(indexPath + ".tmp", index.ToJsonString());
+    File.Move(indexPath + ".tmp", indexPath, true);
+}
 File.WriteAllText(primaryManifestPath + ".tmp", primaryManifest.ToJsonString());
 File.Move(primaryManifestPath + ".tmp", primaryManifestPath, true);
 

@@ -1,0 +1,17 @@
+./scripts/LocalOperationOracle.cs.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./scripts/LocalOperationOracle.cs.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+web strict fresh XT: global=21921 local=21931 face_pairs=0
+cylinder-rim-chamfer volume=168.20505946340234/168.20505946340234, area=165.0210711626669/165.0210711626669
+cylinder-rim-chamfer raw: global=21921, local=21931, face pairs=0
+  global=21940 reference=1 received=1
+  global=21941 reference=4 received=4
+  global=21943 reference=3 received=3
+  global=21944 reference=0 received=0
+  global=21946 reference=0 received=0
+  global=21947 reference=0 received=0
+PASS cylinder-rim-chamfer
+Local operation oracle: 1 passed, 0 failed.
+
+STDERR

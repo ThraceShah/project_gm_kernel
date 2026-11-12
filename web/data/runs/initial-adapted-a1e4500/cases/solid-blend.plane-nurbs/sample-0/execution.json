@@ -1,1 +1,0 @@
-{"exitCode":0,"timedOut":false,"budgetSeconds":180,"arguments":["run","--file","scripts/RegularSolidBlendOracle.cs","-c","Release","-p:UseSharedCompilation=false","--","plane-nurbs","rounding-only"],"logSha256":"ea33da9aaf92238a9b2acebbf493108f461cd16697a4c25c700afa4550fafaf1"}

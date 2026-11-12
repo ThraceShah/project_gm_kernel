@@ -1,0 +1,30 @@
+./scripts/RegularCurvedBooleanOracle.cs.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./scripts/RegularCurvedBooleanOracle.cs.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+web strict fresh XT: global=21921 local=21930 face_pairs=3
+  faces=1116/488 diff=21949 entities=1078/477 counts=4/33 values=0/0
+  faces=1116/488 diff=21949 entities=1087/475 counts=4/33 values=0/0
+  faces=1085/479 diff=21949 entities=1087/475 counts=4/33 values=0/0
+  faces=1082/481 diff=21949 entities=1078/477 counts=4/33 values=0/0
+block-15901 topology 0: native=2 own=2
+block-15901 topology 1: native=2 own=2
+block-15901 topology 2: native=6 own=6
+block-15901 topology 3: native=12 own=12
+block-15901 topology 4: native=8 own=8
+block-15901 compare=21921/21930, face_pairs=3
+global diff=21940, entities=1/1
+global diff=21941, entities=6/6
+global diff=21943, entities=12/12
+global diff=21944, entities=0/0
+global diff=21946, entities=8/8
+global diff=21947, entities=0/0
+CHART face=0, diff=21949, entity=854/1191, class=500/500, int=4/33, value=0/0
+CHART face=0, diff=21949, entity=897/1192, class=500/500, int=4/33, value=0/0
+CHART face=1, diff=21949, entity=897/1192, class=500/500, int=4/33, value=0/0
+CHART face=2, diff=21949, entity=854/1191, class=500/500, int=4/33, value=0/0
+block-15901 classified 125 independent vectors
+PASS block-15901
+PASS all 1 regular curved Boolean cases
+
+STDERR

@@ -207,6 +207,7 @@ void AddCase(string id, string title, string status, JsonArray steps, JsonArray 
 {
     var c = new JsonObject();
     c["id"] = id; c["title"] = title; c["family"] = "boolean"; c["operation"] = "section performance (2c0e4ea vs 553b2c6/cc47871 baseline)"; c["status"] = status;
+    c["suite"] = id switch { "section.sphere" => "analytic-boolean", "section.planar" => "planar-boolean", "section.curved" => "regular-curved", "section.solidblend" => "solid-blend", "section.shortedge" => "short-edge", _ => "section" };
     var parameters = new JsonObject();
     parameters["candidate"] = JsonValue.Create(Candidate); parameters["candidateNative"] = JsonValue.Create(CandidateNative);
     parameters["candidateSrc"] = JsonValue.Create(CandidateSrc); parameters["baseline"] = JsonValue.Create(Baseline);

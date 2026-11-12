@@ -1,0 +1,22 @@
+./scripts/RegularCurvedBooleanOracle.cs.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./scripts/RegularCurvedBooleanOracle.cs.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+web strict fresh XT: global=21921 local=21931 face_pairs=0
+reloaded-block-15901 topology 0: native=2 own=2
+reloaded-block-15901 topology 1: native=2 own=2
+reloaded-block-15901 topology 2: native=8 own=8
+reloaded-block-15901 topology 3: native=18 own=18
+reloaded-block-15901 topology 4: native=12 own=12
+reloaded-block-15901 compare=21921/21931, face_pairs=0
+global diff=21940, entities=1/1
+global diff=21941, entities=8/8
+global diff=21943, entities=18/18
+global diff=21944, entities=0/0
+global diff=21946, entities=12/12
+global diff=21947, entities=0/0
+reloaded-block-15901 classified 125 independent vectors
+PASS reloaded-block-15901
+PASS all 1 regular curved Boolean cases
+
+STDERR

@@ -125,7 +125,11 @@ export async function fetchManifestData(
         fromFixture: false,
       };
     }
-    const json = (await res.json()) as ManifestData;
+    // The manifest may be stored as a gzip transport member; the index
+    // descriptor names it explicitly with a .gz path.
+    const encoding = manifestRelPath.endsWith('.gz') ? 'gzip' as const : undefined;
+    const bytes = await readDataBytes(res, encoding, url);
+    const json = JSON.parse(new TextDecoder().decode(bytes)) as ManifestData;
     return { data: json, error: null, fromFixture: false };
   } catch (err) {
     if ((err as Error)?.name === 'AbortError') {

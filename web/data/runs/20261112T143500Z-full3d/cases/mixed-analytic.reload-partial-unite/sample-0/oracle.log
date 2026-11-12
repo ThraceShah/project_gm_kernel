@@ -1,0 +1,23 @@
+./scripts/MixedAnalyticBooleanOracle.cs.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./scripts/MixedAnalyticBooleanOracle.cs.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+./src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj : warning NU1903: Package 'Microsoft.DotNet.ILCompiler' 10.0.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-p3jp-9v83-76w9
+web strict fresh XT: global=21921 local=21931 face_pairs=0
+web strict fresh XT: global=21921 local=21931 face_pairs=0
+reload-partial-15903 topology 0: native=2 self=2
+reload-partial-15903 topology 1: native=2 self=2
+reload-partial-15903 topology 2: native=12 self=12
+reload-partial-15903 topology 3: native=30 self=30
+reload-partial-15903 topology 4: native=20 self=20
+reload-partial-15903 compare=21921/21931, face_pairs=0
+global diff=21940, entities=1/1
+global diff=21941, entities=12/12
+global diff=21943, entities=30/30
+global diff=21944, entities=0/0
+global diff=21946, entities=20/20
+global diff=21947, entities=0/0
+reload-partial-15903 classified 150 independent vectors
+PASS reload-partial-15903
+PASS all 1 mixed analytic Boolean cases
+
+STDERR

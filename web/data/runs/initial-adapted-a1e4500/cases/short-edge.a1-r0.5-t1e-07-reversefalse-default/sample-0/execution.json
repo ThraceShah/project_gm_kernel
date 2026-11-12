@@ -1,1 +1,0 @@
-{"exitCode":0,"timedOut":false,"budgetSeconds":180,"arguments":["run","--file","scripts/ShortEdgeBlendOracle.cs","-c","Release","-p:UseSharedCompilation=false","--","--angle=1","--radius=0.5","--tolerance=1e-07"],"logSha256":"eb6e77784fef6cb5e1e7dfe0261bc01654daee010117c6b848c66dfb4921c7ca"}

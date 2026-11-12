@@ -1,1 +1,0 @@
-{"exitCode":0,"timedOut":false,"budgetSeconds":180,"arguments":["run","--file","scripts/BooleanOperationOracle.cs","-c","Release","-p:UseSharedCompilation=false","--"],"logSha256":"e04f5d1584f50cc5545680455c2bc8518016d141b0352e0967c7ec61bf653be8"}
