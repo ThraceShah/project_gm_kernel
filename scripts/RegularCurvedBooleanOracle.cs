@@ -21,6 +21,8 @@ Require(outputName.Length>0&&outputName.All(c=>char.IsAsciiLetterOrDigit(c)||c i
 var directory=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","regular-curved-boolean-oracle",outputName);
 Require(!Directory.Exists(directory),"Existing evidence is immutable");Directory.CreateDirectory(directory);ParasolidMassProperties.BeginEvidence(directory);
 var filter=args.FirstOrDefault(x=>!x.StartsWith("--",StringComparison.Ordinal));
+Require(!args.Contains("--persistence",StringComparer.Ordinal)||args.Contains("--tracking",StringComparer.Ordinal),"persistence control requires tracking");
+Require(!args.Contains("--finite-provenance",StringComparer.Ordinal)||args.Contains("--tracking",StringComparer.Ordinal),"finite provenance control requires tracking");
 if(!ParasolidScriptHost.TryStartSession("Independent regular curved solid Booleans",out var host,out var message))throw new Exception(message);
 using(host)unsafe
 {
@@ -33,7 +35,7 @@ using(host)unsafe
             if(t.Stage is KernelRuntime.BoundaryTraceStage.UnresolvedOrder or KernelRuntime.BoundaryTraceStage.Successor)
                 Console.WriteLine($"BOUNDARY_TRACE stage={t.Stage} surface={t.Surface} curve={t.Curve} other={t.ProductCurve} edge={t.Edge} next={t.NextEdge} events={t.StartEvent}/{t.EndEvent} angles={t.StartAngle:R}/{t.EndAngle:R}");
         };
-        var passed=0;var failures=0;
+        var passed=0;var failures=0;var persistenceDifferences=0;
         foreach(var kind in new[]{"block","nurbs","closed-cut","disjoint","enclosed-tool","enclosed-target","two-tools","mixed-disjoint","continuous","reloaded","reloaded-block","same-domain","same-domain-reloaded","same-domain-partial","same-domain-partial-reloaded"})
         foreach(var function in new[]{PK_boolean_unite_c,PK_boolean_intersect_c,PK_boolean_subtract_c})
         {
@@ -44,8 +46,10 @@ using(host)unsafe
             {
                 Exception? ownFailure=null,nativeFailure=null;int[] ours=[],reference=[];var intermediate=new Dictionary<string,int>();
                 var oursTracking=new List<string>();var nativeTracking=new List<string>();
-                try{ours=Produce(true,kind,function,evidenceDirectory:directory,trackingEnabled:args.Contains("--tracking",StringComparer.Ordinal),trackingShape:oursTracking);}catch(Exception ex){ownFailure=ex;}
-                try{reference=Produce(false,kind,function,evidenceDirectory:directory,intermediate:intermediate,trackingEnabled:args.Contains("--tracking",StringComparer.Ordinal),trackingShape:nativeTracking);}catch(Exception ex){nativeFailure=ex;}
+                var oursPersistence=args.Contains("--persistence",StringComparer.Ordinal)?new List<string>():null;
+                var nativePersistence=args.Contains("--persistence",StringComparer.Ordinal)?new List<string>():null;
+                try{ours=Produce(true,kind,function,evidenceDirectory:directory,trackingEnabled:args.Contains("--tracking",StringComparer.Ordinal),trackingShape:oursTracking,persistenceShape:oursPersistence,finiteProvenance:args.Contains("--finite-provenance",StringComparer.Ordinal));}catch(Exception ex){ownFailure=ex;}
+                try{reference=Produce(false,kind,function,evidenceDirectory:directory,intermediate:intermediate,trackingEnabled:args.Contains("--tracking",StringComparer.Ordinal),trackingShape:nativeTracking,persistenceShape:nativePersistence,finiteProvenance:args.Contains("--finite-provenance",StringComparer.Ordinal));}catch(Exception ex){nativeFailure=ex;}
                 foreach(var stage in intermediate)
                 {
                     try
@@ -60,6 +64,11 @@ using(host)unsafe
                 }
                 if(ownFailure!=null||nativeFailure!=null)throw new AggregateException(new[]{ownFailure,nativeFailure}.OfType<Exception>());
                 Require(oursTracking.Order().SequenceEqual(nativeTracking.Order()),name+" tracking source owner/class relations");
+                if(oursPersistence!=null&&nativePersistence!=null)
+                {
+                    var same=oursPersistence.Order().SequenceEqual(nativePersistence.Order());if(!same)persistenceDifferences++;
+                    Console.WriteLine($"PERSISTENCE_COMPARISON case={name} exact_owner_class_counts={same} gm={oursPersistence.Count} pk={nativePersistence.Count} status={(same?"Verified":"Unresolved")}");
+                }
                 Require(ours.Length==reference.Length,name+" body count");
                 var matched=new bool[reference.Length];
                 for(var i=0;i<ours.Length;i++)
@@ -78,12 +87,13 @@ using(host)unsafe
             }
         }
         Require(failures==0,$"{failures} regular curved Boolean cases failed");Console.WriteLine($"GEOMETRY_TOPOLOGY_PASS all {passed} regular curved Boolean cases mass_unresolved={ParasolidMassProperties.UnresolvedCount}");
-        if(ParasolidMassProperties.UnresolvedCount!=0)Environment.ExitCode=2;
+        Console.WriteLine($"PERSISTENCE_SUMMARY unresolved={persistenceDifferences}");
+        if(ParasolidMassProperties.UnresolvedCount!=0||persistenceDifferences!=0)Environment.ExitCode=2;
     }
     finally{KernelRuntime.TraceFiniteBoundary=null;Check(KernelRuntime.SessionStop(),"own session stop");}
 }
 
-static unsafe int[] Produce(bool own,string kind,int function,double tolerance=1e-5,double scale=1,string? evidenceDirectory=null,Dictionary<string,int>? intermediate=null,bool trackingEnabled=false,List<string>? trackingShape=null)
+static unsafe int[] Produce(bool own,string kind,int function,double tolerance=1e-5,double scale=1,string? evidenceDirectory=null,Dictionary<string,int>? intermediate=null,bool trackingEnabled=false,List<string>? trackingShape=null,List<string>? persistenceShape=null,bool finiteProvenance=false)
 {
     var target=Roof(own,0,0,0,.8);int tool;
     if(kind.StartsWith("same-domain",StringComparison.Ordinal))
@@ -135,16 +145,18 @@ static unsafe int[] Produce(bool own,string kind,int function,double tolerance=1
     if(WebProgressCapture.Enabled||trackingEnabled)
     {
         var originalOwners=new Dictionary<int,(int Owner,int Class)>();
+        var originalCopies=new Dictionary<int,int>();var proofBodies=new List<int>();
         if(trackingEnabled)
         {
             var inputs=new[]{target}.Concat(new ReadOnlySpan<int>(tools,toolCount).ToArray()).ToArray();
             for(var b=0;b<inputs.Length;b++)
             {
-                foreach(var cls in new[]{PK_CLASS_face,PK_CLASS_edge})
+                if(finiteProvenance)foreach(var pair in CaptureTopologyMap(own,inputs[b],proofBodies,evidenceDirectory,$"{kind}-{function}-{(own?"gm":"pk")}-source{b}"))originalCopies.Add(pair.Key,pair.Value);
+                foreach(var cls in new[]{PK_CLASS_face,PK_CLASS_edge,PK_CLASS_vertex})
                 {
                     int n;int* topology;
-                    Check(own?(cls==PK_CLASS_face?KernelRuntime.BodyAskFaces(inputs[b],&n,&topology):KernelRuntime.BodyAskEdges(inputs[b],&n,&topology))
-                        :(cls==PK_CLASS_face?PK_BODY_ask_faces(inputs[b],&n,&topology):PK_BODY_ask_edges(inputs[b],&n,&topology)),"snapshot original tracking topology");
+                    Check(own?(cls==PK_CLASS_face?KernelRuntime.BodyAskFaces(inputs[b],&n,&topology):cls==PK_CLASS_edge?KernelRuntime.BodyAskEdges(inputs[b],&n,&topology):KernelRuntime.BodyAskVertices(inputs[b],&n,&topology))
+                        :(cls==PK_CLASS_face?PK_BODY_ask_faces(inputs[b],&n,&topology):cls==PK_CLASS_edge?PK_BODY_ask_edges(inputs[b],&n,&topology):PK_BODY_ask_vertices(inputs[b],&n,&topology)),"snapshot original tracking topology");
                     try{for(var t=0;t<n;t++)originalOwners.Add(topology[t],(b,cls));}
                     finally{Check(own?KernelRuntime.MemoryFree(topology):PK_MEMORY_free(topology),"free original tracking topology");}
                 }
@@ -179,15 +191,123 @@ static unsafe int[] Produce(bool own,string kind,int function,double tolerance=1
                     trackingShape?.Add(record.track+"/"+string.Join(',',origins.Order())+"/"+cls);
                 }
             }
+            if(persistenceShape!=null)foreach(var body in output)foreach(var cls in new[]{PK_CLASS_face,PK_CLASS_edge,PK_CLASS_vertex})
+            {
+                int n;int* topology;
+                Check(own?(cls==PK_CLASS_face?KernelRuntime.BodyAskFaces(body,&n,&topology):cls==PK_CLASS_edge?KernelRuntime.BodyAskEdges(body,&n,&topology):KernelRuntime.BodyAskVertices(body,&n,&topology))
+                    :(cls==PK_CLASS_face?PK_BODY_ask_faces(body,&n,&topology):cls==PK_CLASS_edge?PK_BODY_ask_edges(body,&n,&topology):PK_BODY_ask_vertices(body,&n,&topology)),"published persistence topology");
+                var retained=0;
+                try{for(var t=0;t<n;t++)if(originalOwners.TryGetValue(topology[t],out var source)){persistenceShape.Add(source.Owner+":"+source.Class);retained++;}}
+                finally{if(topology!=null)Check(own?KernelRuntime.MemoryFree(topology):PK_MEMORY_free(topology),"free published persistence topology");}
+                Console.WriteLine($"PERSISTENCE side={(own?"gm":"pk")} case={kind}-{function} class={cls} retained={retained} total={n}");
+            }
+            if(finiteProvenance&&error==0)
+            {
+                var productCopies=new Dictionary<int,int>();
+                for(var b=0;b<output.Length;b++)foreach(var pair in CaptureTopologyMap(own,output[b],proofBodies,evidenceDirectory,$"{kind}-{function}-{(own?"gm":"pk")}-product{b}"))productCopies.Add(pair.Key,pair.Value);
+                CheckFiniteTrackingSources(tracking,originalOwners,originalCopies,productCopies,$"{(own?"gm":"pk")}-{kind}-{function}");
+            }
             WebProgressCapture.BooleanAfter(own,output,ms,error,result.result,&tracking);Check(error,"web tracked Boolean");return output;
         }
-        finally {if(own){KernelRuntime.TopolTrackResultFree((M.PK_TOPOL_track_r_s*)&tracking);KernelRuntime.BooleanResultFree((M.PK_boolean_r_s*)&result);}else{PK_TOPOL_track_r_f(&tracking);PK_boolean_r_f(&result);}}
+        finally
+        {
+            if(own){KernelRuntime.TopolTrackResultFree((M.PK_TOPOL_track_r_s*)&tracking);KernelRuntime.BooleanResultFree((M.PK_boolean_r_s*)&result);}else{PK_TOPOL_track_r_f(&tracking);PK_boolean_r_f(&result);}
+            foreach(var snapshot in proofBodies){var tag=snapshot;Check(PK_ENTITY_delete(1,&tag),"release finite provenance snapshot");}
+        }
     }
     var finalError=own?KernelRuntime.BodyBoolean(target,toolCount,tools,(M.PK_BODY_boolean_o_s*)&options,&count,&bodies):PK_BODY_boolean(target,toolCount,tools,&options,&count,&bodies);
     Console.WriteLine($"STEP_API side={(own?"gm":"pk")} case={kind}-{function} operation=final-boolean error={finalError} count={count}");
     Check(finalError,$"{(own?"own":"native")} {kind} Boolean");
     try{var result=new int[count];new ReadOnlySpan<int>(bodies,count).CopyTo(result);if(kind=="mixed-disjoint"&&function==PK_boolean_unite_c)Require(result.Contains(tools[1]),"disjoint tool body identity");return result;}
     finally{if(bodies!=null)Check(own?KernelRuntime.MemoryFree(bodies):PK_MEMORY_free(bodies),"Boolean buffers");}
+}
+
+static unsafe Dictionary<int,int> CaptureTopologyMap(bool own,int body,List<int> snapshots,string? directory,string label)
+{
+    byte[] bytes;var identifiers=new Dictionary<int,(int Identifier,int Class)>();
+    if(own)
+    {
+        Check(XtWriter.CaptureDisplay(body,out var text,out var bindings,out _,out _),"capture actual XT and identifier bindings");
+        bytes=System.Text.Encoding.UTF8.GetBytes(text);
+        foreach(var binding in bindings)identifiers.Add(binding.Entity,(binding.Identifier,binding.Class));
+    }
+    else
+    {
+        bytes=TransmitNative(body);
+        foreach(var cls in new[]{PK_CLASS_face,PK_CLASS_edge,PK_CLASS_vertex})
+        {
+            int n;int* tags;Check(cls==PK_CLASS_face?PK_BODY_ask_faces(body,&n,&tags):cls==PK_CLASS_edge?PK_BODY_ask_edges(body,&n,&tags):PK_BODY_ask_vertices(body,&n,&tags),"native source identifiers");
+            try{for(var i=0;i<n;i++){int id;Check(PK_ENTITY_ask_identifier(tags[i],&id),"source persistent identifier");identifiers.Add(tags[i],(id,cls));}}
+            finally{if(tags!=null)PK_MEMORY_free(tags);}
+        }
+    }
+    var copy=Receive(bytes);snapshots.Add(copy);CheckBody(copy,label+" finite provenance snapshot");var byIdentifier=new Dictionary<int,(int Tag,int Class)>();
+    foreach(var cls in new[]{PK_CLASS_face,PK_CLASS_edge,PK_CLASS_vertex})
+    {
+        int n;int* tags;Check(cls==PK_CLASS_face?PK_BODY_ask_faces(copy,&n,&tags):cls==PK_CLASS_edge?PK_BODY_ask_edges(copy,&n,&tags):PK_BODY_ask_vertices(copy,&n,&tags),"snapshot topology");
+        try{for(var i=0;i<n;i++){int id;Check(PK_ENTITY_ask_identifier(tags[i],&id),"received persistent identifier");byIdentifier.Add(id,(tags[i],cls));}}
+        finally{if(tags!=null)PK_MEMORY_free(tags);}
+    }
+    var result=new Dictionary<int,int>();
+    foreach(var pair in identifiers)
+    {
+        Require(byIdentifier.TryGetValue(pair.Value.Identifier,out var entity)&&entity.Class==pair.Value.Class,"exact XT persistent-ID/class binding");result.Add(pair.Key,entity.Tag);
+    }
+    if(directory!=null)
+    {
+        File.WriteAllBytes(Path.Combine(directory,label+"-binding.x_t"),bytes);
+        File.WriteAllLines(Path.Combine(directory,label+"-binding.csv"),new[]{"original,identifier,class,received"}.Concat(identifiers.Select(pair=>$"{pair.Key},{pair.Value.Identifier},{pair.Value.Class},{result[pair.Key]}")));
+    }
+    Console.WriteLine($"FINITE_PROVENANCE_BIND label={label} entities={result.Count} sha256={Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(bytes))}");return result;
+}
+
+static unsafe void CheckFiniteTrackingSources(PK_TOPOL_track_r_t tracking,Dictionary<int,(int Owner,int Class)> owners,
+    Dictionary<int,int> sources,Dictionary<int,int> products,string label)
+{
+    var positive=0;var negative=false;var maximum=0.0;double precision;Check(PK_SESSION_ask_precision(&precision),"finite provenance precision");var threshold=precision;
+    for(var r=0;r<tracking.n_track_records;r++)
+    {
+        var record=tracking.track_records[r];var product=products[record.product_topols[0]];
+        for(var s=0;s<record.n_original_topols;s++)
+        {
+            var origin=record.original_topols[s];Require(FiniteWitness(product,sources[origin],out var gap),$"{label} finite source mismatch original={origin} product={record.product_topols[0]} gap={gap:R}");
+            positive++;maximum=Math.Max(maximum,gap);
+            if(!negative)foreach(var other in owners)
+            {
+                if(other.Key==origin||other.Value!=owners[origin])continue;
+                if(!FiniteWitness(product,sources[other.Key],out var wrongGap))
+                {negative=true;Console.WriteLine($"FINITE_PROVENANCE_NEGATIVE label={label} wrong_original={other.Key} product={record.product_topols[0]} gap={wrongGap:R}");break;}
+            }
+        }
+    }
+    Require(positive==0||negative,label+" finite witness must reject a wrong source with the same owner/class");
+    Console.WriteLine($"FINITE_PROVENANCE_PASS label={label} relations={positive} maximum_nominal_witness_gap={maximum:R} negative={negative} continuum_proof=False");
+
+    bool FiniteWitness(int edge,int source,out double minimum)
+    {
+        minimum=double.PositiveInfinity;int curve,cls;PK_VECTOR_t* ends=stackalloc PK_VECTOR_t[2];PK_INTERVAL_t range;PK_LOGICAL_t sense;
+        Check(PK_EDGE_ask_geometry(edge,PK_LOGICAL_true,&curve,&cls,ends,&range,&sense),"finite product edge");
+        var options=new PK_TOPOL_range_vector_o_t{opt_level=PK_range_opt_accuracy_c};
+        for(var i=0;i<7;i++)
+        {
+            PK_VECTOR_t point;Check(PK_CURVE_eval(curve,range.value[0]+(range.value[1]-range.value[0])*i/6,0,&point),"finite product station");
+            PK_range_result_t found;PK_range_1_r_t nearest;var error=PK_TOPOL_range_vector(source,point,&options,&found,&nearest);
+            if(error==0&&found==PK_range_result_found_c)minimum=Math.Min(minimum,Distance(point,nearest.end.vector));
+        }
+        int sourceClass;Check(PK_ENTITY_ask_class(source,&sourceClass),"finite source class");
+        if(sourceClass==PK_CLASS_edge)
+        {
+            int sourceCurve;PK_INTERVAL_t sourceRange;
+            Check(PK_EDGE_ask_geometry(source,PK_LOGICAL_true,&sourceCurve,&cls,ends,&sourceRange,&sense),"finite original edge");
+            for(var i=1;i<6;i++)
+            {
+                PK_VECTOR_t point;Check(PK_CURVE_eval(sourceCurve,sourceRange.value[0]+(sourceRange.value[1]-sourceRange.value[0])*i/6,0,&point),"finite original station");
+                PK_range_result_t found;PK_range_1_r_t nearest;var error=PK_TOPOL_range_vector(edge,point,&options,&found,&nearest);
+                if(error==0&&found==PK_range_result_found_c)minimum=Math.Min(minimum,Distance(point,nearest.end.vector));
+            }
+        }
+        return double.IsFinite(minimum)&&minimum<=threshold;
+    }
 }
 static void PrintProfile(string operation,double apiMs)
 {

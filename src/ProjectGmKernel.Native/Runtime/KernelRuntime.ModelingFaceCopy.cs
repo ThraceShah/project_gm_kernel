@@ -20,7 +20,7 @@ internal static unsafe partial class KernelRuntime
         }
         if (finCount > 16384) return ParasolidConstants.PK_ERROR_not_implemented;
         var scratch = CommandScratch.Current;
-        var memory = scratch.Take((finCount * 100 + loopCount * 8 + input.Length * 32 + 7) / 8);
+        var memory = scratch.Take((finCount * 120 + loopCount * 8 + input.Length * 40 + 7) / 8);
         if (memory.IsEmpty) return ParasolidConstants.PK_ERROR_memory_full;
         try
         {
@@ -32,21 +32,13 @@ internal static unsafe partial class KernelRuntime
             var coedges = ModelSpan<ModelingCoedge>(bytes, ref offset, finCount);
             var loops = ModelSpan<ModelingLoop>(bytes, ref offset, loopCount);
             var faces = ModelSpan<ModelingFace>(bytes, ref offset, input.Length);
-            var sourceSurfaces = ModelSpan<SurfTag>(bytes, ref offset, input.Length);
+            var finCurves = ModelSpan<CurveTag>(bytes, ref offset, finCount);
             if (offset > bytes.Length) return ParasolidConstants.PK_ERROR_memory_full;
             var nv = 0; var ne = 0; var nc = 0; var nl = 0;
             for (var f = 0; f < input.Length; f++)
             {
                 ref readonly var source = ref Faces[input[f]];
-                var surface = 0;
-                for (var i = 0; i < f; i++) if (sourceSurfaces[i] == source.SurfTag) { surface = faces[i].Surface; break; }
-                if (surface == 0)
-                {
-                    var error = TryCloneEntityCore(source.SurfTag, out surface);
-                    if (error != 0) return error;
-                }
-                sourceSurfaces[f] = source.SurfTag;
-                faces[f] = new ModelingFace { Surface = surface,
+                faces[f] = new ModelingFace { Surface = source.SurfTag,
                     Sense = source.Orientation == ParasolidConstants.PK_TOPOL_sense_negative_c ? ParasolidConstants.PK_TOPOL_sense_negative_c : ParasolidConstants.PK_TOPOL_sense_positive_c,
                     FirstLoop = nl, LoopCount = source.LoopCount };
                 var loop = source.FirstLoop;
@@ -63,8 +55,6 @@ internal static unsafe partial class KernelRuntime
                             ref readonly var edge = ref Edges[original];
                             if (edge.CurveTag <= 0 || !TryProfileEdgeRange(in edge, out var start, out var end))
                                 return ParasolidConstants.PK_ERROR_not_implemented;
-                            var error = TryCloneEntityCore(edge.CurveTag, out var curve);
-                            if (error != 0) return error;
                             var a = -1; var b = -1;
                             for (var side = 0; side < 2; side++)
                             {
@@ -83,13 +73,47 @@ internal static unsafe partial class KernelRuntime
                                 if (side == 0) a = index; else b = index;
                             }
                             e = ne; oldEdges[ne] = original;
-                            edges[ne++] = new ModelingEdge { Curve = curve, StartVertex = a, EndVertex = b, Start = start, End = end };
+                            edges[ne++] = new ModelingEdge { Curve = edge.CurveTag, StartVertex = a, EndVertex = b, Start = start, End = end };
                         }
+                        finCurves[nc] = Fins[fin].Curve;
                         coedges[nc++] = new ModelingCoedge { Edge = e, Forward = Fins[fin].Sense == '+' ? (byte)1 : (byte)0 };
                     }
                 }
             }
-            return BuildModelingBrep(vertices[..nv], edges[..ne], coedges[..nc], loops[..nl], faces, solid, out body, products);
+            var sourceGeometry = ModelSpan<GeomTag>(bytes,ref offset,input.Length+ne+nc);
+            var clonedGeometry = ModelSpan<GeomTag>(bytes,ref offset,input.Length+ne+nc);
+            if(offset>bytes.Length)return ParasolidConstants.PK_ERROR_memory_full;
+            var geometryCount=0;
+            for(var f=0;f<input.Length;f++)sourceGeometry[geometryCount++]=faces[f].Surface;
+            for(var e=0;e<ne;e++)sourceGeometry[geometryCount++]=edges[e].Curve;
+            for(var c=0;c<nc;c++)if(finCurves[c]>0)sourceGeometry[geometryCount++]=finCurves[c];
+            // One copy context preserves exact surface/curve/pcurve sharing.
+            // In particular each fin's SP-curve uses the new incident support.
+            var error=TryCloneEntitiesCore(sourceGeometry[..geometryCount],clonedGeometry[..geometryCount]);if(error!=0)return error;
+            geometryCount=0;
+            for(var f=0;f<input.Length;f++)faces[f].Surface=clonedGeometry[geometryCount++];
+            for(var e=0;e<ne;e++)edges[e].Curve=clonedGeometry[geometryCount++];
+            for(var c=0;c<nc;c++)if(finCurves[c]>0)finCurves[c]=clonedGeometry[geometryCount++];
+            Span<EdgeSlot> edgeProducts=stackalloc EdgeSlot[ne];
+            error=BuildModelingBrep(vertices[..nv],edges[..ne],coedges[..nc],loops[..nl],faces,solid,out body,products,edgeProducts:edgeProducts);if(error!=0)return error;
+            var target=TagRec(body).Slot;var vertex=Bodies[target].FirstVertexBody;
+            for(var v=0;v<nv;v++,vertex=Vertices[vertex].NextInBody)Vertices[vertex].Tolerance=Vertices[oldVertices[v]].Tolerance;
+            for(var e=0;e<ne;e++)Edges[edgeProducts[e]].Tolerance=Edges[oldEdges[e]].Tolerance;
+            for(var f=0;f<input.Length;f++)
+            {
+                var targetLoop=Faces[products[f]].FirstLoop;
+                for(var l=faces[f].FirstLoop;l<faces[f].FirstLoop+faces[f].LoopCount;l++,targetLoop=Loops[targetLoop].NextInFace)
+                {
+                    var fin=Loops[targetLoop].FirstFin;
+                    for(var c=loops[l].FirstCoedge;c<loops[l].FirstCoedge+loops[l].CoedgeCount;c++,fin=Fins[fin].NextInLoop)
+                    {
+                        if(finCurves[c]<=0)continue;
+                        error=AcquireFinCurveReference(fin,finCurves[c]);if(error!=0)return error;
+                        error=TryAdoptDependentGeometry(finCurves[c]);if(error!=0)return error;
+                    }
+                }
+            }
+            RebuildBoundaryGeometryLinks(target,resetOwners:true);return 0;
         }
         finally { scratch.Return(memory); }
     }

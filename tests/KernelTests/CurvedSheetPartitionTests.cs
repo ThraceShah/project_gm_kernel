@@ -63,6 +63,44 @@ public unsafe class CurvedSheetPartitionTests : IDisposable
     }
 
     [Fact]
+    public void TrimCopiesNativeVertexPrecisionAndUsesThePublishedSupportInItsIntersectionCurve()
+    {
+        var body=Sheet();var plane=Plane(.25);int count;int* edges;
+        Assert.Equal(0,KernelRuntime.BodyImprintPlane(body,plane,1e-8,&count,&edges));
+        var slot=KernelRuntime.ResolveTagRecord(body).Slot;
+        var original=new Dictionary<KernelVector3,double>();var vertex=KernelRuntime.Bodies[slot].FirstVertexBody;
+        for(var v=0;v<KernelRuntime.Bodies[slot].VertexCountBody;v++,vertex=KernelRuntime.Vertices[vertex].NextInBody)
+        {
+            var point=KernelRuntime.Points[KernelRuntime.GetPointSlotByTag(KernelRuntime.Vertices[vertex].PointTag)].Position;
+            // Configure a local-precision input fixture, without moving points.
+            var precision=1e-6+point.X*1e-7;KernelRuntime.Vertices[vertex].Tolerance=precision;original.Add(point,precision);
+        }
+        SessionMemoryOwner.DropBodyXt(slot);
+        var seed=KernelRuntime.Faces[KernelRuntime.Bodies[slot].FirstFaceBody].Header.Tag;
+        try{Assert.Equal(0,KernelRuntime.BodyTrim(body,count,edges,1,&seed,1));}
+        finally{KernelRuntime.MemoryFree(edges);}
+        var surface=KernelRuntime.Faces[KernelRuntime.Bodies[slot].FirstFaceBody].SurfTag;
+        vertex=KernelRuntime.Bodies[slot].FirstVertexBody;
+        for(var v=0;v<KernelRuntime.Bodies[slot].VertexCountBody;v++,vertex=KernelRuntime.Vertices[vertex].NextInBody)
+        {
+            var record=KernelRuntime.Vertices[vertex];var point=KernelRuntime.Points[KernelRuntime.GetPointSlotByTag(record.PointTag)].Position;
+            Assert.Equal(original[point],record.Tolerance);
+        }
+        var edge=KernelRuntime.Bodies[slot].FirstEdgeBody;var intersection=false;
+        for(var e=0;e<KernelRuntime.Bodies[slot].EdgeCountBody;e++,edge=KernelRuntime.Edges[edge].NextInBody)
+        {
+            var curve=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(KernelRuntime.Edges[edge].CurveTag)];if(curve.Class!=CurveClass.ICurve)continue;
+            var data=KernelRuntime.ICurveDataPool[curve.DataIndex];Assert.True(data.Surface0Tag==surface||data.Surface1Tag==surface);intersection=true;
+        }
+        Assert.True(intersection);
+        int copy;Assert.Equal(0,KernelRuntime.EntityCopy(body,&copy));Assert.Equal(0,KernelRuntime.EntityDelete(1,&body));
+        var bytes=XtBrepImportTests.Transmit(copy);Assert.Equal(0,KernelRuntime.EntityDelete(1,&copy));Assert.Equal(0,XtBrepImportTests.Receive(bytes,out var restored));
+        slot=KernelRuntime.ResolveTagRecord(restored).Slot;vertex=KernelRuntime.Bodies[slot].FirstVertexBody;
+        for(var v=0;v<KernelRuntime.Bodies[slot].VertexCountBody;v++,vertex=KernelRuntime.Vertices[vertex].NextInBody)Assert.True(KernelRuntime.Vertices[vertex].Tolerance>=1e-6);
+        Assert.Equal(0,KernelRuntime.EntityDelete(1,&restored));Assert.Equal(0,KernelRuntime.Curves.AliveCount);
+    }
+
+    [Fact]
     public void SingularCrossingFailsAtomically()
     {
         var body = Sheet(true); var plane = Plane(0); int n = 5; int* edges = (int*)1;

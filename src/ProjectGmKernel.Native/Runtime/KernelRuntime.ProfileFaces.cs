@@ -387,7 +387,7 @@ internal static unsafe partial class KernelRuntime
         return true;
     }
 
-    private static bool TryProfileEdgeRange(in EdgeRecord edge, out double a, out double b)
+    internal static bool TryProfileEdgeRange(in EdgeRecord edge, out double a, out double b)
     {
         a = edge.ParameterStart; b = edge.ParameterEnd;
         if (edge.HasParameterRange != 0) return double.IsFinite(a) && double.IsFinite(b) && b > a;

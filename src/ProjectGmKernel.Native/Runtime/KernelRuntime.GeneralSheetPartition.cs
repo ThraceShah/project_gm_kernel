@@ -33,7 +33,7 @@ internal static unsafe partial class KernelRuntime
             var view=GetBSurfaceView(BSurfaceDataStore[Surfaces[support].DataIndex]);
             if(!GeneralSurfaceContinuity(view))return ParasolidConstants.PK_ERROR_not_implemented;
         }
-        var scratch=CommandScratch.Current;var memory=scratch.Take(160000);
+        var scratch=CommandScratch.Current;var memory=scratch.Take(160000+SheetPointLimit);
         if(memory.IsEmpty)return ParasolidConstants.PK_ERROR_memory_full;
         try
         {
@@ -41,6 +41,7 @@ internal static unsafe partial class KernelRuntime
             var model=new SheetArrangement
             {
                 Points=ModelSpan<KernelVector3>(bytes,ref cursor,SheetPointLimit),OriginalVertices=ModelSpan<VertexSlot>(bytes,ref cursor,SheetPointLimit),
+                VertexPrecisions=ModelSpan<double>(bytes,ref cursor,SheetPointLimit),
                 Edges=ModelSpan<ModelingEdge>(bytes,ref cursor,SheetEdgeLimit),CutEdges=ModelSpan<byte>(bytes,ref cursor,SheetEdgeLimit),
                 Coedges=ModelSpan<ModelingCoedge>(bytes,ref cursor,SheetCoedgeLimit),Loops=ModelSpan<ModelingLoop>(bytes,ref cursor,SheetLoopLimit),
                 Faces=ModelSpan<ModelingFace>(bytes,ref cursor,SheetFaceLimit),Sources=ModelSpan<FaceSlot>(bytes,ref cursor,SheetFaceLimit),
@@ -72,7 +73,14 @@ internal static unsafe partial class KernelRuntime
             if(model.NF>products.Length||model.NF>sourceFaces.Length||model.NF>sides.Length)return ParasolidConstants.PK_ERROR_not_implemented;
             LastSheetPartitionStage=SheetPartitionStage.TopologyBuild;
             error=BuildModelingBrep(model.Points[..model.NP],model.Edges[..model.NE],model.Coedges[..model.NC],model.Loops[..model.NL],model.Faces[..model.NF],false,
-                out partition,products[..model.NF]);if(error!=0)return error;
+                out partition,products[..model.NF],cloneBoundaryCurves:true);if(error!=0)return error;
+            var vertex=Bodies[TagRec(partition).Slot].FirstVertexBody;
+            for(var v=0;v<model.NP;v++,vertex=Vertices[vertex].NextInBody)Vertices[vertex].Tolerance=model.VertexPrecisions[v];
+            for(var e=0;e<model.NE;e++)
+            {
+                var curve=model.Edges[e].Curve;var earlier=false;for(var p=0;p<e;p++)earlier|=model.Edges[p].Curve==curve;
+                if(earlier)continue;error=EntityDelete(1,&curve);if(error!=0)return error;
+            }
             model.Sources[..model.NF].CopyTo(sourceFaces);model.Sides[..model.NF].CopyTo(sides);faceCount=model.NF;
             var edge=Bodies[TagRec(partition).Slot].FirstEdgeBody;
             for(var i=0;i<model.NE;i++,edge=Edges[edge].NextInBody)if(model.CutEdges[i]!=0)

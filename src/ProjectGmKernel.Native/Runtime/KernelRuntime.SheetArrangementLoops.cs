@@ -67,7 +67,12 @@ internal static unsafe partial class KernelRuntime
             if(parent<0){LastSheetPartitionStage=SheetPartitionStage.CycleNesting;LastSheetParameter=i;return ParasolidConstants.PK_ERROR_bad_loop;}cycles[i].Parent=parent;
         }
         var ownedSurface=surface;
-        if(!borrowGeometry){var cloneError=TryCloneEntityCore(surface,out ownedSurface);if(cloneError!=0)return cloneError;}
+        if(!borrowGeometry)
+        {
+            ownedSurface=0;
+            for(var f=0;f<model.NF;f++)if(model.Sources[f]>=0&&Faces[model.Sources[f]].SurfTag==surface){ownedSurface=model.Faces[f].Surface;break;}
+            if(ownedSurface==0){var cloneError=TryCloneEntityCore(surface,out ownedSurface);if(cloneError!=0)return cloneError;}
+        }
         Geometry.Evaluation.AnalyticSurface cutter=default;
         if(!borrowGeometry)TryPrepareSurface(Surfaces[GetSurfaceSlotByTag(plane)],out cutter);
         SurfaceDerivativeLayout.TryCreate(0,0,out var layout);Span<KernelVector3> point=stackalloc KernelVector3[1];

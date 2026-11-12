@@ -101,6 +101,22 @@ internal static unsafe partial class KernelRuntime
             }
             if (best.DistanceUpper > 1e-8) return ParasolidConstants.PK_ERROR_not_on_curve; value = best.U;
         }
+        else if(record.Class==CurveClass.SPCurve)
+        {
+            var data=SpCurveDataPool[record.DataIndex];var support=GetSurfaceSlotByTag(data.SurfTag);var basis=GetCurveSlotByTag(data.BCurveTag);
+            if(support<0||basis<0||Surfaces[support].Class!=SurfaceClass.BSurface||Curves[basis].Class!=CurveClass.BCurve)return ParasolidConstants.PK_ERROR_not_implemented;
+            var surface=GetBSurfaceView(BSurfaceDataStore[Surfaces[support].DataIndex]);var uv=GetBCurveView(BCurveDataStore[Curves[basis].DataIndex]);
+            if(uv.Periodic)return ParasolidConstants.PK_ERROR_not_implemented;
+            var best=new ProjectionPoint{DistanceUpper=double.PositiveInfinity};Span<IntervalNumber> poles=stackalloc IntervalNumber[4*17];
+            for(var knot=uv.Degree;knot<uv.VertexCount;knot++)
+            {
+                var first=uv.Knots[knot];var last=uv.Knots[knot+1];if(!(last>first))continue;
+                var status=SpCurveBezier.FromSpline(surface,uv,knot,first,last,poles,out var degree);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+                status=BSplineProjection.Closest(new(poles[..(4*(degree+1))],degree,0,new(first,last,0,1)),point,1e-10,ref best);
+                if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+            }
+            if(best.DistanceUpper>1e-8)return ParasolidConstants.PK_ERROR_not_on_curve;value=best.U;
+        }
         else if (record.Class == CurveClass.ICurve)
         {
             ref readonly var procedural=ref ICurveDataPool[record.DataIndex];

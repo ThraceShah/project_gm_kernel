@@ -242,12 +242,26 @@ public unsafe class RegularCurvedBooleanTests:IDisposable
         var target=RoofSolid();var tool=BooleanOperationTests.Block(.25,.25,.25,1,1,1);var options=BooleanOperationTests.Options(operation);options.tracking=1;
         int count;int* tags;Assert.Equal(0,KernelRuntime.BodyAskFaces(target,&count,&tags));var targetFaces=new ReadOnlySpan<int>(tags,count).ToArray();KernelRuntime.MemoryFree(tags);
         Assert.Equal(0,KernelRuntime.BodyAskFaces(tool,&count,&tags));var toolFaces=new ReadOnlySpan<int>(tags,count).ToArray();KernelRuntime.MemoryFree(tags);
+        var inputEdges=SnapshotEdges(target).Concat(SnapshotEdges(tool)).ToDictionary(x=>x.Tag);
+        var inputVertices=SnapshotVertices(target).Concat(SnapshotVertices(tool)).ToDictionary(x=>x.Tag);
         PK_TOPOL_track_r_s tracking=default;PK_boolean_r_s result=default;
         var error=KernelRuntime.BodyBoolean2(target,1,&tool,&options,&tracking,&result);
         Assert.True(error==0,$"error={error} stage={KernelRuntime.LastRegularBooleanStage} pair={KernelRuntime.LastRegularBooleanFace}/{KernelRuntime.LastRegularBooleanOtherFace} sheet={KernelRuntime.LastSheetPartitionStage} status={KernelRuntime.LastSheetAlgorithmStatus}");
         try
         {
             Assert.Equal(6,tracking.n_track_records);Assert.Equal(1,result.n_bodies);
+            var productEdges=SnapshotEdges(result.bodies[0]);var retainedEdges=productEdges.Where(x=>inputEdges.ContainsKey(x.Tag)).ToArray();
+            var productVertices=SnapshotVertices(result.bodies[0]);var retainedVertices=productVertices.Where(x=>inputVertices.ContainsKey(x.Tag)).ToArray();
+            // Counts from the independent PK same-operation control. Keeping
+            // faces alone used to invalidate every edge and vertex handle.
+            Assert.True(retainedEdges.Length>0);Assert.True(retainedVertices.Length>0);
+            if(operation==ParasolidConstants.PK_boolean_subtract_c){Assert.Equal(15,retainedEdges.Length);Assert.Equal(8,retainedVertices.Length);}
+            foreach(var edge in retainedEdges)
+            {
+                var original=inputEdges[edge.Tag];Assert.Equal(original.Kind,edge.Kind);
+                Assert.True(edge.First>=original.First&&edge.Last<=original.Last);
+            }
+            foreach(var vertex in retainedVertices)Assert.Equal(inputVertices[vertex.Tag].Point,vertex.Point);
             for(var i=0;i<tracking.n_track_records;i++)
             {
                 var record=tracking.track_records[i];Assert.Equal(ParasolidConstants.PK_TOPOL_track_derive_c,record.track);
@@ -264,6 +278,33 @@ public unsafe class RegularCurvedBooleanTests:IDisposable
             Assert.True(bytes.Length>0);Assert.Equal(0,KernelRuntime.EntityDelete(1,&copy));
         }
         finally{Assert.Equal(0,KernelRuntime.TopolTrackResultFree(&tracking));Assert.Equal(0,KernelRuntime.BooleanResultFree(&result));}
+
+        static (int Tag,CurveClass Kind,double First,double Last)[] SnapshotEdges(int body)
+        {
+            int n;int* tags;Assert.Equal(0,KernelRuntime.BodyAskEdges(body,&n,&tags));
+            try
+            {
+                var output=new (int,CurveClass,double,double)[n];
+                for(var i=0;i<n;i++)
+                {
+                    var edge=KernelRuntime.Edges[KernelRuntime.ResolveTagRecord(tags[i]).Slot];
+                    var curve=KernelRuntime.Curves[KernelRuntime.ResolveTagRecord(edge.CurveTag).Slot];Assert.True(KernelRuntime.TryProfileEdgeRange(edge,out var first,out var last));output[i]=(tags[i],curve.Class,first,last);
+                }
+                return output;
+            }
+            finally{KernelRuntime.MemoryFree(tags);}
+        }
+        static (int Tag,KernelVector3 Point)[] SnapshotVertices(int body)
+        {
+            int n;int* tags;Assert.Equal(0,KernelRuntime.BodyAskVertices(body,&n,&tags));
+            try
+            {
+                var output=new (int,KernelVector3)[n];
+                for(var i=0;i<n;i++){var vertex=KernelRuntime.Vertices[KernelRuntime.ResolveTagRecord(tags[i]).Slot];output[i]=(tags[i],KernelRuntime.Points[KernelRuntime.ResolveTagRecord(vertex.PointTag).Slot].Position);}
+                return output;
+            }
+            finally{KernelRuntime.MemoryFree(tags);}
+        }
     }
 
     [Fact]
@@ -294,6 +335,34 @@ public unsafe class RegularCurvedBooleanTests:IDisposable
         }
         try{Assert.Equal(1,count);BooleanOperationTests.Counts(bodies[0],9,21,14);}
         finally{if(bodies!=null)KernelRuntime.MemoryFree(bodies);}
+    }
+
+    [Fact]
+    public void FailureAfterIdentityTransferRestoresBothInputsAndTracking()
+    {
+        var target=RoofSolid();var tool=BooleanOperationTests.Block(.25,.25,.25,1,1,1);
+        var before=XtBrepImportTests.Transmit(target);var beforeTool=XtBrepImportTests.Transmit(tool);
+        var curves=KernelRuntime.Curves.AliveCount;var surfaces=KernelRuntime.Surfaces.AliveCount;
+        var blocks=KernelRuntime.BlocksLiveBytes;var returns=KernelRuntime.ReturnOutstandingBlocks;
+        var targetGeneration=KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(target).Slot].Header.Generation;
+        var toolGeneration=KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(tool).Slot].Header.Generation;
+        var options=BooleanOperationTests.Options(ParasolidConstants.PK_boolean_subtract_c);options.tracking=1;
+        var previous=KernelRuntime.TraceFiniteBoundary;var observed=false;
+        KernelRuntime.TraceFiniteBoundary=trace=>
+        {
+            if(trace.Stage!=KernelRuntime.BoundaryTraceStage.PreservedIdentity)return;
+            observed=true;Assert.True(KernelRuntime.IsValidTag(KernelRuntime.Edges[trace.SourceEdge].Header.Tag));
+            KernelRuntime.InjectAllocationFailure(0);
+        };
+        PK_TOPOL_track_r_s tracking=default;PK_boolean_r_s result=default;
+        try{Assert.Equal(ParasolidConstants.PK_ERROR_memory_full,KernelRuntime.BodyBoolean2(target,1,&tool,&options,&tracking,&result));}
+        finally{KernelRuntime.TraceFiniteBoundary=previous;KernelRuntime.InjectAllocationFailure(-1);}
+        Assert.True(observed);Assert.Equal(0,result.n_bodies);Assert.True(result.bodies==null);Assert.True(tracking.track_records==null);
+        Assert.Equal(before,XtBrepImportTests.Transmit(target));Assert.Equal(beforeTool,XtBrepImportTests.Transmit(tool));
+        Assert.Equal(targetGeneration,KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(target).Slot].Header.Generation);
+        Assert.Equal(toolGeneration,KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(tool).Slot].Header.Generation);
+        Assert.Equal(curves,KernelRuntime.Curves.AliveCount);Assert.Equal(surfaces,KernelRuntime.Surfaces.AliveCount);
+        Assert.Equal(blocks,KernelRuntime.BlocksLiveBytes);Assert.Equal(returns,KernelRuntime.ReturnOutstandingBlocks);
     }
 
     [Fact]

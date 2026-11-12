@@ -39,6 +39,7 @@ internal static unsafe partial class KernelRuntime
             Span<BoundaryEventId> aliases=stackalloc BoundaryEventId[SheetPointLimit];
             for(var i=0;i<aliases.Length;i++)aliases[i]=i;
             model.EventAliases=aliases;
+            Span<BufferOffset> edgeAliases=stackalloc BufferOffset[SheetEdgeLimit];model.EdgeAliases=edgeAliases;
             Span<RegularBooleanOrigin> origins=default;
             var inputEdges=ModelSpan<ModelingEdge>(bytes,ref cursor,RegularInputEdges);var originalEdges=ModelSpan<EdgeSlot>(bytes,ref cursor,RegularInputEdges);
             var inputCoedges=ModelSpan<ModelingCoedge>(bytes,ref cursor,RegularInputCoedges);var inputLoops=ModelSpan<ModelingLoop>(bytes,ref cursor,RegularInputLoops);
@@ -184,12 +185,9 @@ internal static unsafe partial class KernelRuntime
             LastRegularBooleanStage=RegularBooleanStage.Classify;ModelingPerformance.Stage(RegularBooleanStage.Classify);
             if(options->tracking!=0)
             {
-                trackingMemory=scratch.Take((SheetEdgeLimit*sizeof(BufferOffset)+model.NC*sizeof(RegularBooleanOrigin)+sizeof(double)-1)/sizeof(double));
+                trackingMemory=scratch.Take((model.NC*sizeof(RegularBooleanOrigin)+sizeof(double)-1)/sizeof(double));
                 if(trackingMemory.IsEmpty)return ParasolidConstants.PK_ERROR_memory_full;
-                var originBytes=MemoryMarshal.AsBytes(trackingMemory);var originCursor=0;
-                model.EdgeAliases=ModelSpan<BufferOffset>(originBytes,ref originCursor,SheetEdgeLimit);
-                for(var e=0;e<model.NE;e++)model.EdgeAliases[e]=e;
-                origins=ModelSpan<RegularBooleanOrigin>(originBytes,ref originCursor,model.NC);
+                origins=MemoryMarshal.Cast<double,RegularBooleanOrigin>(trackingMemory)[..model.NC];
             }
             var originCount=ReadRegularBooleanOrigins(ref model,origins);
             if(coincident){error=UnifyRegularCoincidentEdges(ref model);if(error!=0)return error;}

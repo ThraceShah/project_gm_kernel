@@ -139,12 +139,17 @@ internal static unsafe partial class KernelRuntime
         count=0;var slot=GetCurveSlotByTag(curve);if(slot<0)return AlgorithmStatus.InvalidInput;
         if(Curves[slot].Class==CurveClass.ICurve&&ICurveDataPool[Curves[slot].DataIndex].IsBlendContact!=0)
             return IntersectBlendContactPlane(slot,first,last,cutting,output,out count);
-        if(Curves[slot].Class==CurveClass.SPCurve)return IntersectBlendIsoparamPlane(slot,first,last,cutting,output,out count);
+        if(Curves[slot].Class==CurveClass.SPCurve
+            &&Surfaces[GetSurfaceSlotByTag(SpCurveDataPool[Curves[slot].DataIndex].SurfTag)].Class==SurfaceClass.BlendSurface)
+            return IntersectBlendIsoparamPlane(slot,first,last,cutting,output,out count);
         if(Curves[slot].Class!=CurveClass.ICurve)
         {
             var interval=new PK_INTERVAL_s();interval.value[0]=first;interval.value[1]=last;
             var error=ResolveIntersectionCurve(curve,interval,out var span);if(error!=0)return AlgorithmStatus.Unsupported;
-            var status=IntersectSurfaceCurve(cutting,span,output,out count);
+            var kind=Curves[span.Slot].Class;
+            var status=kind==CurveClass.ICurve?IntersectSheetCurvePlane(Curves[span.Slot].Header.Tag,span.Lower,span.Upper,cutting,output,out count)
+                :kind==CurveClass.SPCurve?IntersectNativeSpCurvePlane(span,cutting,output,out count)
+                :IntersectSurfaceCurve(cutting,span,output,out count);
             if(status!=AlgorithmStatus.Success)return status;
             for(var i=0;i<count;i++)output[i].First=(output[i].First-span.Offset)/span.Scale;
             OperationIntersection.Sort(output[..count]);return AlgorithmStatus.Success;

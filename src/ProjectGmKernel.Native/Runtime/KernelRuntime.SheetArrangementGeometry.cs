@@ -42,6 +42,14 @@ internal static unsafe partial class KernelRuntime
         if(TryFiniteSectionChart(sectionCharts,surface,curve,parameter,parameter,out var sectionChart))
             return EvaluateFiniteSectionChart(sectionChart,in Curves[slot],parameter,forward,out uv,out tangent,out point);
         if(double.IsNaN(first)){first=Curves[slot].TMin;last=Curves[slot].TMax;}
+        if(Curves[slot].Class==CurveClass.TRCurve)
+        {
+            var interval=new PK_INTERVAL_s();interval.value[0]=first;interval.value[1]=last;
+            var error=ResolveIntersectionCurve(curve,interval,out var native);if(error!=0)return error;
+            var senseMap=LocalSenseSign(Curves[slot].Sense)*native.Scale*LocalSenseSign(Curves[native.Slot].Sense);
+            return SheetCurveUV(surface,Curves[native.Slot].Header.Tag,native.Offset+native.Scale*parameter,senseMap<0?!forward:forward,
+                out uv,out tangent,out point,native.Lower,native.Upper);
+        }
         var kind=Surfaces[GetSurfaceSlotByTag(surface)].Class;
         if(kind is SurfaceClass.Cone or SurfaceClass.Torus&&TryCoaxialCircleChart(surface,Curves[slot],out var phase,out var direction,out var stationV))
         {
@@ -317,7 +325,18 @@ internal static unsafe partial class KernelRuntime
         out WrappedCutCharts mapping)
     {
         curve=0;lower=first;upper=last;mapping=default;
-        if(!wrap)return TryCloneEntityCore(original,out curve);
+        if(!wrap)
+        {
+            var source=Curves[GetCurveSlotByTag(original)];
+            if(source.Class!=CurveClass.TRCurve||first==source.TMin&&last==source.TMax)return TryCloneEntityCore(original,out curve);
+            var interval=new PK_INTERVAL_s();interval.value[0]=first;interval.value[1]=last;
+            var error=ResolveIntersectionCurve(original,interval,out var native);if(error!=0)return error;
+            error=TryCloneEntityCore(Curves[native.Slot].Header.Tag,out var basis);if(error!=0)return error;
+            var trim=new PK_TRCURVE_sf_s{basis_curve=basis};
+            trim.t_int.value[0]=native.Offset+native.Scale*first;trim.t_int.value[1]=native.Offset+native.Scale*last;
+            CurveTag made=0;error=TrCurveCreateImplementation(&trim,&made);if(error!=0)return error;curve=made;
+            ref var bounded=ref Curves[GetCurveSlotByTag(curve)];bounded.Sense=source.Sense;lower=bounded.TMin;upper=bounded.TMax;return 0;
+        }
         LastSheetPartitionStage=SheetPartitionStage.PeriodicArc;LastSheetCurve=original;LastSheetParameter=first;
         var record=Curves[GetCurveSlotByTag(original)];
         if(record.Class is CurveClass.Circle or CurveClass.Ellipse)

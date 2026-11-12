@@ -36,12 +36,29 @@ internal static unsafe partial class KernelRuntime
     {
         var source=edge.Curve;
         var record=Curves[GetCurveSlotByTag(source)];
-        if(record.Class==CurveClass.ICurve&&first>0&&second>0)
+        if(record.Class==CurveClass.ICurve&&first>0)
         {
             var data=ICurveDataPool[record.DataIndex];
             // A BLEND_BOUND contact has its own dependency on the rolling
             // support inside the blend, in addition to the incident face.
             if(data.IsBlendContact!=0)return TryCloneEntityCore(source,out clone);
+            if(second==0||second==first)
+            {
+                var onFirst=SameChart(data.Surface0Tag,first);var onSecond=SameChart(data.Surface1Tag,first);
+                if(onFirst!=onSecond)
+                {
+                    var workspace=CommandScratchBorrow(Math.Min(8192,Math.Max(128,NextTagValue)));
+                    if(workspace.IsEmpty){clone=0;return ParasolidConstants.PK_ERROR_memory_full;}
+                    try
+                    {
+                        var context=new EntityCopyContext{Pairs=MemoryMarshal.Cast<double,EntityCopyPair>(workspace)};
+                        context.Add(onFirst?data.Surface0Tag:data.Surface1Tag,first);
+                        return CloneEntity(source,ref context,0,out clone);
+                    }
+                    finally{CommandScratchReturn(workspace);}
+                }
+            }
+            if(second==0)return TryCloneEntityCore(source,out clone);
             var forward=SameChart(data.Surface0Tag,first)&&SameChart(data.Surface1Tag,second);
             var reverse=SameChart(data.Surface0Tag,second)&&SameChart(data.Surface1Tag,first);
             if(forward!=reverse||forward&&first==second)

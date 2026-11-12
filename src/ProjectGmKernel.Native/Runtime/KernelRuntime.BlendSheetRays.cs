@@ -13,6 +13,16 @@ internal static unsafe partial class KernelRuntime
         Span<OperationIntersectionPoint> output,out BufferCount count)
     {
         count=0;var surfaceSlot=GetSurfaceSlotByTag(surface);var curveSlot=GetCurveSlotByTag(edge.Curve);var record=Curves[curveSlot];
+        if(record.Class==CurveClass.TRCurve)
+        {
+            var interval=new PK_INTERVAL_s();interval.value[0]=edge.Start;interval.value[1]=edge.End;
+            if(ResolveIntersectionCurve(edge.Curve,interval,out var native)!=0)return AlgorithmStatus.Unsupported;
+            var mapped=edge;mapped.Curve=Curves[native.Slot].Header.Tag;mapped.Start=native.Lower;mapped.End=native.Upper;
+            if(LocalSenseSign(record.Sense)*native.Scale*LocalSenseSign(Curves[native.Slot].Sense)<0)(mapped.StartVertex,mapped.EndVertex)=(mapped.EndVertex,mapped.StartVertex);
+            var found=IntersectParametricBoundaryRay(surface,query,du,dv,mapped,output,out count);if(found!=AlgorithmStatus.Success)return found;
+            for(var i=0;i<count;i++)output[i].Second=(output[i].Second-native.Offset)/native.Scale;
+            return AlgorithmStatus.Success;
+        }
         if(record.Class==CurveClass.ICurve&&ICurveDataPool[record.DataIndex].IsBlendContact!=0)
             return IntersectBlendContactRay(surface,query,du,dv,edge,output,out count);
         if(TryAnalyticBlendContactMap(surface,record,edge.Start,edge.End,out var section,out var shift,out var scale))

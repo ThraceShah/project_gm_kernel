@@ -12,8 +12,12 @@ using ProjectGmKernel.Native.Runtime;
 using M = ProjectGmKernel.Native.Generated;
 using static parasolid;
 
-var directory = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ScriptPath())!, "..", "temp_docs", "curved-sheet-partition-oracle"));
+var outputName=args.Single(x=>x.StartsWith("--output-name=",StringComparison.Ordinal))["--output-name=".Length..];
+if(outputName.Length==0||!outputName.All(c=>char.IsAsciiLetterOrDigit(c)||c is '-' or '_'))throw new ArgumentException("one new output directory name is required");
+var directory = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ScriptPath())!, "..", "temp_docs", "curved-sheet-partition-oracle",outputName));
+if(Directory.Exists(directory))throw new InvalidOperationException("Existing execution evidence is immutable");
 Directory.CreateDirectory(directory); var report = new StringBuilder();
+var filter=args.FirstOrDefault(x=>!x.StartsWith("--",StringComparison.Ordinal));
 void Log(string message) { Console.WriteLine(message); report.AppendLine(message); }
 try
 {
@@ -24,6 +28,7 @@ try
         var start = new M.PK_SESSION_start_o_s { o_t_version = 1 }; Check(KernelRuntime.SessionStart(&start), "self start");
         try
         {
+            if(args.Contains("--precision-lifecycle",StringComparer.Ordinal)){PrecisionLifecycle(directory,Log);return;}
             var failures = 0; var passed = 0;
             foreach (var kind in new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 })
             foreach (var operation in new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 })
@@ -33,7 +38,7 @@ try
                 var name = (kind==10?"open-nurbs-blend":kind>=8?(kind==9?"rational":"polynomial")+"-closed-loop":kind == 6 ? "isoparametric-line" : kind == 7 ? "tensor-isoparametric" : (kind % 2 == 1 ? "rational" : "polynomial") + (kind < 2 ? "-bilinear" : kind <4 ? "-cubic" : "-multispan-cubic"))
                     + "-" + new[] { "imprint", "trim-keep", "trim-remove", "section-front", "section-back", "section-both", "second-plane", "repeat-plane", "annulus-front", "annulus-back", "annulus-both" }[operation];
                 if(kind==10&&operation>=7)name="open-nurbs-blend-"+(operation==7?"trim-second-plane":"repeat-second-plane");
-                if(args.Length!=0&&!name.Contains(args[0],StringComparison.Ordinal))continue;
+                if(filter!=null&&!name.Contains(filter,StringComparison.Ordinal))continue;
                 try
                 {
                     int[] ours,reference;
@@ -67,6 +72,98 @@ try
 }
 catch (Exception ex) { Log("FAIL: " + ex.Message); Environment.ExitCode = 1; }
 finally { File.WriteAllText(Path.Combine(directory, "report.txt"), report.ToString()); }
+
+static unsafe void PrecisionLifecycle(string directory,Action<string> log)
+{
+    PK_SESSION_kernel_version_t version;Check(PK_SESSION_ask_kernel_version(&version),"native version");
+    log($"PK_VERSION {version.major_revision}.{version.minor_revision}.{version.build_number}");
+    log("GM_ASSEMBLY sha256="+Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(typeof(KernelRuntime).Assembly.Location))));
+    foreach(var scale in new[]{.125,1.7,8.0})
+    {
+        var label="native-precision-"+scale.ToString("R",System.Globalization.CultureInfo.InvariantCulture);
+        var source=Produce(false,0,0)[0];int n;int* vertices;Check(PK_BODY_ask_vertices(source,&n,&vertices),"native precision vertices");
+        try{for(var v=0;v<n;v++){int point;PK_POINT_sf_t data;Check(PK_VERTEX_ask_point(vertices[v],&point),"native precision point");Check(PK_POINT_ask(point,&data),"native precision location");Check(PK_VERTEX_set_precision(vertices[v],1e-6+data.position.coord[0]*1e-7),"set actual native local precision");}}
+        finally{if(vertices!=null)PK_MEMORY_free(vertices);}
+        CheckBody(source,label+" native input",log);var input=TransmitReference(source);File.WriteAllBytes(Path.Combine(directory,label+"-input.x_t"),input);
+        log($"INPUT label={label} sha256={Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(input))}");
+        var managed=ReceiveManaged(input);var reference=Receive(input);Check(PK_ENTITY_delete(1,&source),"delete native input source");
+        int copy;Check(KernelRuntime.EntityCopy(managed,&copy),"managed copy before trim");Check(KernelRuntime.EntityDelete(1,&managed),"delete managed source before trim");managed=copy;
+        Check(PK_ENTITY_copy(reference,&copy),"native copy before trim");Check(PK_ENTITY_delete(1,&reference),"delete native source before trim");reference=copy;
+        Trim(true,managed);Trim(false,reference);Verify(managed,reference,label+"-trim");
+        Transform(true,managed,scale);Transform(false,reference,scale);Verify(managed,reference,label+"-transformed");
+        var managedBytes=Transmit(managed);var nativeBytes=TransmitReference(reference);
+        Check(KernelRuntime.EntityDelete(1,&managed),"delete managed product before reload");Check(PK_ENTITY_delete(1,&reference),"delete native product before reload");
+        managed=ReceiveManaged(managedBytes);reference=Receive(nativeBytes);
+        Require(KernelRuntime.TryResolveBodySlot(managed,out var slot)&&!KernelRuntime.Xt.IsOpaque(slot),"editable precision reload");
+        var faceRecord=KernelRuntime.Faces[KernelRuntime.Bodies[slot].FirstFaceBody];var supportRecord=KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(faceRecord.SurfTag)];
+        log($"RELOADED body_type={KernelRuntime.Bodies[slot].BodyType} faces={KernelRuntime.Bodies[slot].FaceCountBody} support={supportRecord.Class}");
+        if(supportRecord.Class==SurfaceClass.BSurface){var data=KernelRuntime.BSurfaceDataStore[supportRecord.DataIndex];log($"RELOADED_SPLINE closed={data.IsUClosed}/{data.IsVClosed} periodic={data.IsUPeriodic}/{data.IsVPeriodic} degrees={data.UDegree}/{data.VDegree} vertices={data.NUVertices}/{data.NVVertices} knots={string.Join(',',data.UExpandedKnotsSpan().ToArray())}/{string.Join(',',data.VExpandedKnotsSpan().ToArray())}");}
+        var reloadEdge=KernelRuntime.Bodies[slot].FirstEdgeBody;
+        for(var e=0;e<KernelRuntime.Bodies[slot].EdgeCountBody;e++,reloadEdge=KernelRuntime.Edges[reloadEdge].NextInBody)
+        {
+            var edge=KernelRuntime.Edges[reloadEdge];var curve=KernelRuntime.GetCurveSlotByTag(edge.CurveTag);
+            log($"RELOADED_EDGE curve={(curve<0?"missing":KernelRuntime.Curves[curve].Class)} explicit_range={edge.HasParameterRange} range={edge.ParameterStart:R}/{edge.ParameterEnd:R} finite={KernelRuntime.TryProfileEdgeRange(edge,out _,out _)} precision={edge.Tolerance:R}");
+            if(curve>=0&&KernelRuntime.Curves[curve].Class==CurveClass.TRCurve)
+            {
+                var trim=KernelRuntime.TrCurveDataPool[KernelRuntime.Curves[curve].DataIndex];var basis=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(trim.BasisCurveTag)];
+                log($"RELOADED_TR_BASIS kind={basis.Class} limits={trim.Parm1:R}/{trim.Parm2:R}");
+            }
+        }
+        var plane=new PK_PLANE_sf_t();plane.basis_set.location=new(0,0,scale*.5+.125);plane.basis_set.axis=new(0,0,1);plane.basis_set.ref_direction=new(1,0,0);
+        int cutter;Check(KernelRuntime.PlaneCreate((M.PK_PLANE_sf_s*)&plane,&cutter),"managed post-reload plane");
+        int* cuts;Check(KernelRuntime.BodyImprintPlane(managed,cutter,1e-8,&n,&cuts),"managed model after reload");Require(n==1,"managed finite reloaded cut");if(cuts!=null)KernelRuntime.MemoryFree(cuts);
+        Check(KernelRuntime.EntityDelete(1,&cutter),"delete managed post-reload plane");Check(PK_PLANE_create(&plane,&cutter),"native post-reload plane");
+        Check(PK_BODY_imprint_plane(reference,cutter,1e-8,&n,&cuts),"native model after reload");Require(n==1,"native finite reloaded cut");if(cuts!=null)PK_MEMORY_free(cuts);
+        Check(PK_ENTITY_delete(1,&cutter),"delete native post-reload plane");Verify(managed,reference,label+"-reloaded-model");
+        Check(KernelRuntime.EntityDelete(1,&managed),"delete final managed precision body");Check(PK_ENTITY_delete(1,&reference),"delete final native precision body");
+        log("PASS "+label+" copy/delete/trim/transform/reload/model");
+    }
+
+    void Verify(int managed,int reference,string label)
+    {
+        var bytes=Transmit(managed);var fresh=Receive(bytes);File.WriteAllBytes(Path.Combine(directory,label+"-gm.x_t"),bytes);File.WriteAllBytes(Path.Combine(directory,label+"-pk.x_t"),TransmitReference(reference));
+        try{CheckBody(fresh,label+" fresh",log);CheckBody(reference,label+" reference",log);ParasolidBodyCompare.AssertEquivalent(reference,fresh,label);}
+        finally{Check(PK_ENTITY_delete(1,&fresh),"delete precision verification body");}
+        log("GEOMETRY_TOPOLOGY_PRECISION_PASS "+label);
+    }
+    void Trim(bool own,int body)
+    {
+        int n;int* faces;Check(own?KernelRuntime.BodyAskFaces(body,&n,&faces):PK_BODY_ask_faces(body,&n,&faces),"trim finite faces");var seed=0;
+        int count=0;int* boundary=null;
+        try
+        {
+            for(var f=0;f<n;f++)
+            {
+                Check(own?KernelRuntime.FaceAskEdges(faces[f],&count,&boundary):PK_FACE_ask_edges(faces[f],&count,&boundary),"trim finite boundary");
+                if(count==3){seed=faces[f];break;}
+                if(boundary!=null)Check(own?KernelRuntime.MemoryFree(boundary):PK_MEMORY_free(boundary),"free other face boundary");boundary=null;
+            }
+            Require(seed!=0,"native finite triangular cell");
+            Check(own?KernelRuntime.BodyTrim(body,count,boundary,1,&seed,PK_LOGICAL_true):PK_BODY_trim(body,count,boundary,1,&seed,PK_LOGICAL_true),"local-precision whole-face trim");
+        }
+        finally{if(boundary!=null)Check(own?KernelRuntime.MemoryFree(boundary):PK_MEMORY_free(boundary),"free trim boundary");if(faces!=null)Check(own?KernelRuntime.MemoryFree(faces):PK_MEMORY_free(faces),"free trim faces");}
+    }
+    void Transform(bool own,int body,double scale)
+    {
+        M.PK_TRANSF_sf_s form=default;form.matrix[0]=-scale;form.matrix[5]=form.matrix[10]=scale;form.matrix[15]=1;form.matrix[3]=.25;form.matrix[7]=-.375;form.matrix[11]=.125;
+        int tag;Check(own?KernelRuntime.TransfCreate(&form,&tag):PK_TRANSF_create((PK_TRANSF_sf_t*)&form,&tag),"precision mirror and scale");
+        int count;int* replacements;PK_LOGICAL_t* exact;
+        Check(own?KernelRuntime.BodyTransform(body,tag,0,&count,&replacements,(byte**)&exact):PK_BODY_transform(body,tag,0,&count,&replacements,&exact),"transform local precision body");
+        if(replacements!=null)Check(own?KernelRuntime.MemoryFree(replacements):PK_MEMORY_free(replacements),"free transform replacements");
+        if(exact!=null)Check(own?KernelRuntime.MemoryFree(exact):PK_MEMORY_free(exact),"free transform exactness");
+        Check(own?KernelRuntime.EntityDelete(1,&tag):PK_ENTITY_delete(1,&tag),"delete precision transform");
+    }
+}
+
+static unsafe int ReceiveManaged(byte[] bytes)
+{
+    fixed(byte* p=bytes)
+    {
+        var block=new M.PK_MEMORY_block_s{bytes=p,n_bytes=(nuint)bytes.Length};var options=new M.PK_PART_receive_o_s{o_t_version=1,transmit_format=PK_transmit_format_text_c};int n;int* parts;
+        Check(KernelRuntime.PartReceiveB(block,&options,&n,&parts),"managed receive native precision fixture");
+        try{Require(n==1,"one editable precision sheet");return parts[0];}finally{if(parts!=null)KernelRuntime.MemoryFree(parts);}
+    }
+}
 
 static unsafe int[] Produce(bool self, int kind, int operation)
 {

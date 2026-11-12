@@ -193,7 +193,7 @@ internal static unsafe partial class KernelRuntime
         if (curveSlot < 0 || edge.StartVertex < 0 || edge.EndVertex < 0 || edge.StartVertex == edge.EndVertex)
             return AlgorithmStatus.Success;
         var curve = Curves[curveSlot];
-        if (curve.Class is not (CurveClass.BCurve or CurveClass.ICurve or CurveClass.TRCurve or CurveClass.Circle or CurveClass.Ellipse)) return AlgorithmStatus.Success;
+        if (curve.Class is not (CurveClass.BCurve or CurveClass.ICurve or CurveClass.TRCurve or CurveClass.SPCurve or CurveClass.Circle or CurveClass.Ellipse)) return AlgorithmStatus.Success;
         if (curve.Class == CurveClass.BCurve)
         {
             var data = BCurveDataStore[curve.DataIndex];

@@ -100,8 +100,10 @@ internal static unsafe partial class KernelRuntime
         }
         Span<BodyTag> products=stackalloc BodyTag[componentCount],retained=stackalloc BodyTag[componentCount];retained.Clear();
         Span<FaceSlot> faceProducts=stackalloc FaceSlot[model.NF];faceProducts.Fill(-1);
-        Span<EdgeSlot> edgeProducts=options->tracking==0?default:stackalloc EdgeSlot[model.NE];edgeProducts.Fill(-1);
-        Span<EdgeSlot> builtEdges=options->tracking==0?default:stackalloc EdgeSlot[model.NE];
+        Span<EdgeSlot> edgeProducts=stackalloc EdgeSlot[model.NE];edgeProducts.Fill(-1);
+        Span<EdgeSlot> builtEdges=stackalloc EdgeSlot[model.NE];
+        Span<VertexSlot> vertexProducts=stackalloc VertexSlot[model.NP];vertexProducts.Fill(-1);
+        Span<VertexSlot> builtVertices=stackalloc VertexSlot[model.NP];
         Span<FaceSlot> builtFaces=stackalloc FaceSlot[model.NF];Span<byte> cavityFaces=stackalloc byte[model.NF];cavityFaces.Clear();var productCount=0;
         LastRegularBooleanStage=RegularBooleanStage.Assemble;
         for(var c=0;c<componentCount;c++)if(cavity[c]==0)
@@ -117,11 +119,14 @@ internal static unsafe partial class KernelRuntime
                 if(!edgeProducts.IsEmpty)foreach(var range in sourceEdges)
                     if(Edges[range.Source].Body==TagRec(inputs[owner]).Slot)
                         for(var e=range.First;e<range.First+range.Count;e++)edgeProducts[model.CanonicalEdge(e)]=range.Source;
+                for(var v=0;v<model.NP;v++)
+                    if(model.OriginalVertices[v]>=0&&Vertices[model.OriginalVertices[v]].Body==TagRec(inputs[owner]).Slot)vertexProducts[v]=model.OriginalVertices[v];
             }
             else
             {
-                var error=CloneRegularBoundaryBody(ref model,members[..n],reversed,cavityFaces,out products[productCount],builtFaces[..n],builtEdges);if(error!=0)return error;
+                var error=CloneRegularBoundaryBody(ref model,members[..n],reversed,cavityFaces,out products[productCount],builtFaces[..n],builtEdges,builtVertices);if(error!=0)return error;
                 for(var e=0;e<builtEdges.Length;e++)if(builtEdges[e]>=0)edgeProducts[e]=builtEdges[e];
+                for(var v=0;v<builtVertices.Length;v++)if(builtVertices[v]>=0)vertexProducts[v]=builtVertices[v];
                 if(productCount==0)retained[productCount]=inputs[0];
                 else if(options->function==ParasolidConstants.PK_boolean_unite_c)
                     for(var b=1;b<inputs.Length;b++)
@@ -153,6 +158,8 @@ internal static unsafe partial class KernelRuntime
             if(n==0)continue;var error=PreserveModelingFaceHandles(sourceBody,targetBody,originals[..n],replacements[..n]);if(error!=0)return error;
             originals[..n].CopyTo(moved[movedCount..]);movedCount+=n;
         }
+        var persistence=PreserveRegularBooleanBoundary(inputs,products[..productCount],ref model,sourceEdges,edgeProducts,vertexProducts,tracking);
+        if(persistence!=0)return persistence;
         var returned=AllocateReturnSlice(productCount);if(returned==null)return ParasolidConstants.PK_ERROR_memory_full;
         for(var p=0;p<productCount;p++)if(retained[p]!=0&&retained[p]!=products[p])
         {var replace=ReplaceProfileBody(TagRec(retained[p]).Slot,TagRec(products[p]).Slot);if(replace!=0)return replace;products[p]=retained[p];}
@@ -202,9 +209,9 @@ internal static unsafe partial class KernelRuntime
     }
 
     private static int CloneRegularBoundaryBody(scoped ref SheetArrangement model,scoped ReadOnlySpan<BufferOffset> indices,scoped ReadOnlySpan<byte> reversed,
-        scoped ReadOnlySpan<byte> cavityFaces,out BodyTag body,scoped Span<FaceSlot> products,scoped Span<EdgeSlot> edgeProducts=default)
+        scoped ReadOnlySpan<byte> cavityFaces,out BodyTag body,scoped Span<FaceSlot> products,scoped Span<EdgeSlot> edgeProducts=default,scoped Span<VertexSlot> vertexProducts=default)
     {
-        body=0;if(!edgeProducts.IsEmpty&&edgeProducts.Length<model.NE)return ParasolidConstants.PK_ERROR_bad_parameter;
+        body=0;if(!edgeProducts.IsEmpty&&edgeProducts.Length<model.NE||!vertexProducts.IsEmpty&&vertexProducts.Length<model.NP)return ParasolidConstants.PK_ERROR_bad_parameter;
         var scratch=CommandScratch.Current;var memory=scratch.Take(70000);if(memory.IsEmpty)return ParasolidConstants.PK_ERROR_memory_full;
         try
         {
@@ -291,6 +298,12 @@ internal static unsafe partial class KernelRuntime
                 }
             var vertex=Bodies[TagRec(body).Slot].FirstVertexBody;
             for(var i=0;i<np;i++,vertex=Vertices[vertex].NextInBody)Vertices[vertex].Tolerance=vertexPrecisions[i];
+            if(!vertexProducts.IsEmpty)
+            {
+                Span<VertexSlot> builtVertices=stackalloc VertexSlot[np];vertex=Bodies[TagRec(body).Slot].FirstVertexBody;
+                for(var i=0;i<np;i++,vertex=Vertices[vertex].NextInBody)builtVertices[i]=vertex;
+                for(var v=0;v<model.NP;v++)vertexProducts[v]=vertexMap[v]<0?-1:builtVertices[vertexMap[v]];
+            }
             return TransferRegularPointLoops(ref model,indices,body);
         }
         finally{scratch.Return(memory);}
