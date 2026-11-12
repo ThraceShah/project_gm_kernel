@@ -450,4 +450,22 @@ BSplineProjection。该单次栈是实际调用链，不能解释成各帧排他
 支持UV，保持Blend radial normal定义、NormalSense及误差检查。没有删nearest证书，
 没有换参数或创建新的求解器。实际 `native-chart-witness-managed.log/.exit`
 22/22、exit0，覆盖原来昂贵的回读/再Cut分类、100/200尺度接触查询、Blend求交及
-精度控制；仍需随后固定源的完整回归、真实PK及集中性能验证。
+精度控制。
+
+随后固定源 `8b929da83f9f039ab3bcd5b210bfd492aaa7408c` 的完整托管回归
+实际2101/2101、raw exit0、13.6835分钟。四族各两个独立输入的Fix/Boolean以及
+三族各三尺度的copy/delete、反射旋转/尺度、XT回读后再Boolean均真实PK
+full-check/strict通过；两个执行raw exit2，物性U保持。原生SP的24族48查询及有限
+wire生命周期验证raw exit0。四项执行及原始XT绑定的实际Native SHA均为
+`9bc6ac8a0281ca246d537bb73ba64da43d2cb3ea26b3018af9f8cb5f5518d9b3`。
+托管整suite日志没有额外打印assembly SHA，包中PE/PDB源绑定独立记录，不能用它
+补造测试进程的加载观测。
+
+固定策略下该四族16次GM API合计32087.767ms；先前同平台TC1两次分别63214.930和
+62528.253ms。它证明这个有界工作负载的实际整操作代价下降，PK差距仍大，未取得
+独立性能接受。测试suite耗时包含不同测试与配置，不据历史未知配置作性能归因。
+`docs/native-operation-alignment/8b929-delivery-evidence.json` 明列源、执行、raw exit和
+未决；封存 `temp_docs/native-system-delivery/checkpoint-8b929.zip` 为26463934字节，
+SHA `c7d58d06ec750e55a6e734a4965272cb20633d5623dd6490eefec8279008151f`。
+包内源archive与两个GM DLL/PDB逐编译文档核对；JIT ABBA原日志另标1bbf源，
+未纳入厂商库或诊断工具目录。这个可复核checkpoint不表示原总体建模目标完成。

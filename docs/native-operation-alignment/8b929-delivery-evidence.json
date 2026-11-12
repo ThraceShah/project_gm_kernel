@@ -1,0 +1,18 @@
+{
+  "scope": "Fixed owner-tested integration checkpoint; whole modeling objective remains in progress, independent acceptance pending",
+  "sourceCommit": "8b929da83f9f039ab3bcd5b210bfd492aaa7408c",
+  "executions": [
+    { "name": "full-managed", "log": "temp_docs/native-system-alignment/8b929-full-managed.log", "exit": "temp_docs/native-system-alignment/8b929-full-managed.exit", "rawExit": 0, "result": "2101/2101", "runtime": "TC1 PGO1 QuickJit1 QuickJitForLoops1 ReadyToRun0", "durationMinutes": 13.6835 },
+    { "name": "whole-model-operation", "log": "temp_docs/native-system-alignment/8b929-whole-operation.log", "exit": "temp_docs/native-system-alignment/8b929-whole-operation.exit", "rawExit": 2, "geometryTopology": "4 families x 2 fresh inputs: independent Fix and Boolean full-check/strict pass; plane/NURBS lifecycle included", "mass": "Unresolved, original raw exit 2", "ownerMeasuredGmApiMilliseconds": 32087.767, "performance": "Bounded owner measurement only; prior same-platform fixed-policy TC1 processes 63214.930 and 62528.253 ms; significant gap to PK remains" },
+    { "name": "transformed-reload-remodel", "log": "temp_docs/native-system-alignment/8b929-lifecycle-remodel.log", "exit": "temp_docs/native-system-alignment/8b929-lifecycle-remodel.exit", "rawExit": 2, "geometryTopology": "3 independent families, each direct Fix/Boolean plus 3 scales: copy/delete, reflection/rotation/scale, XT reload and independent transformed-tool Boolean full-check/strict pass", "mass": "Unresolved preserved", "performance": "Not a formal timing run" },
+    { "name": "native-sp-lifecycle", "log": "temp_docs/native-system-alignment/8b929-native-sp.log", "exit": "temp_docs/native-system-alignment/8b929-native-sp.exit", "rawExit": 0, "geometryTopology": "24 native SP families / 48 queries, copy-delete-mirror-scale-reload, finite native range, D0/D1 and strict fresh-XT bounded-wire checks pass", "curveComparison": "17 samples and bidirectional distances; no arbitrary-curve continuum equivalence claim", "mass": "Not applicable: wires" }
+  ],
+  "directories": [
+    "temp_docs/regular-solid-blend-oracle/fixed-8b929-whole-operation",
+    "temp_docs/regular-solid-blend-oracle/fixed-8b929-remodel",
+    "temp_docs/native-spcurve-oracle/fixed-8b929-sp-lifecycle",
+    "temp_docs/native-system-evidence-8b929"
+  ],
+  "historicalExecutionScope": "Staged JIT ABBA evidence belongs to source 1bbf3daedb787e8e5cf520f3ee1ea5cd077a4316, not this assembly; original 83649 full-suite interruption remains separate",
+  "remaining": ["Native finite-face extent eligibility", "Native surface adoption and geometry-part ownership", "510 boundary observations and exact partial-domain tag persistence", "Physical mass certificate unresolved", "Remaining original modeling categories", "Final independent Native/math acceptance and cross-platform verification"]
+}
