@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Header } from './components/Header';
+import { OverviewPanel } from './components/OverviewPanel';
 import { Sidebar } from './components/Sidebar';
 import { ViewportContainer } from './components/ViewportContainer';
 import { TimelineControl } from './components/TimelineControl';
@@ -7,6 +8,7 @@ import { InspectionPanel } from './components/InspectionPanel';
 import { comparisonLabel, useComparisonEvidence } from './components/ComparisonView';
 import {
   fetchIndexData,
+  fetchOverviewData,
   fetchManifestData,
   fetchStepMeshes,
   isFixtureModeForced,
@@ -18,6 +20,7 @@ import {
   MeshData,
   CaseFamily,
   CaseStatus,
+  ProjectOverview,
 } from './types/contract';
 import { formatStatus } from './utils/formatters';
 import { AlertCircle, RefreshCw, Layers, Database, Sparkles } from 'lucide-react';
@@ -38,6 +41,9 @@ export const App: React.FC = () => {
   const [isLoadingManifest, setIsLoadingManifest] = useState<boolean>(false);
 
   // Filter States
+  const [viewMode, setViewMode] = useState<'overview' | 'runs'>('overview');
+  const [overviewData, setOverviewData] = useState<ProjectOverview | null>(null);
+  const [overviewError, setOverviewError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [familyFilter, setFamilyFilter] = useState<CaseFamily | 'all'>('all');
   const [statusFilter, setStatusFilter] = useState<CaseStatus | 'all'>('all');
@@ -98,6 +104,12 @@ export const App: React.FC = () => {
   }, [loadIndex, useFixture]);
 
   // 2. Load Manifest when selectedRunId changes or refresh is requested
+  useEffect(() => {
+    let cancelled = false;
+    fetchOverviewData().then((r) => { if (!cancelled) { setOverviewData(r.data); setOverviewError(r.error); } });
+    return () => { cancelled = true; };
+  }, [refreshCount]);
+
   useEffect(() => {
     if (!indexData || !selectedRunId) return;
 
@@ -261,7 +273,34 @@ export const App: React.FC = () => {
     setUseFixture(next);
   };
 
+  if (viewMode === 'overview' && !overviewData && overviewError) {
+    return (
+      <div className="h-screen w-screen flex items-center justify-center bg-slate-50">
+        <div data-testid="overview-load-error" className="text-center text-slate-500 space-y-2 p-6 border border-slate-200 rounded bg-white">
+          <div className="text-sm font-semibold">项目整体进度数据加载失败（显示缺失，不使用假数据）</div>
+          <div className="text-xs">{overviewError}</div>
+          <button onClick={() => setRefreshCount((c) => c + 1)} className="text-xs px-3 py-1.5 rounded border border-slate-300 hover:bg-slate-100">重新加载</button>
+        </div>
+      </div>
+    );
+  }
+  if (viewMode === 'overview' && overviewData) {
+    return (
+      <div className="h-screen w-screen overflow-hidden">
+        <OverviewPanel overview={overviewData} onOpenRuns={(runId, caseId) => {
+          setViewMode('runs');
+          if (runId) { setSelectedRunId(runId); if (caseId) setSelectedCaseId(caseId); }
+        }} />
+      </div>
+    );
+  }
+
   return (
+    <>
+      <button data-testid="back-to-overview" onClick={() => setViewMode('overview')}
+        className="absolute top-2 right-2 z-50 text-[11px] px-2 py-1 rounded border border-slate-300 bg-white/90 hover:bg-slate-100 shadow-sm">
+        ← 回到项目整体进度
+      </button>
     <div className="flex flex-col h-screen w-full bg-slate-100 overflow-hidden font-sans">
       {/* Top Header */}
       <Header
@@ -483,6 +522,7 @@ export const App: React.FC = () => {
         </div>
       )}
     </div>
+  </>
   );
 };
 

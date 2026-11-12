@@ -207,3 +207,45 @@ export interface MeshData {
 
 export type StandardView = 'iso' | 'front' | 'top' | 'right';
 
+
+// ---- Project overview (current contract; produced by scripts/BuildProjectOverview.cs)
+export interface OverviewStatusCell {
+  status: 'pass' | 'fail' | 'unresolved' | 'unverified' | 'na';
+  lastVerified: { commit: string; tree: string; host: string; exit: string; evidence: string };
+  note: string;
+}
+export interface OverviewCatalogItem {
+  id: string;
+  title: string;
+  suite: string;
+  family: string;
+  operation: string;
+  parametersDefinition: Record<string, unknown>;
+  source: string;
+  selector: string;
+  dimensions: {
+    function: OverviewStatusCell;
+    mass: OverviewStatusCell;
+    query: OverviewStatusCell;
+    performance: OverviewStatusCell;
+    currentVersion?: string;
+  };
+  history?: { label: string; status: string; note: string }[];
+}
+export interface OverviewNamedItem {
+  id: string; title: string; status: string; note: string; evidence: string; inModelingDenominator: boolean;
+}
+export interface OverviewDelivery { runId: string; label: string; commit: string; utc: string; note: string; }
+export interface OverviewSourceItem { name: string; identity: string; where: string; note: string; }
+export interface ProjectOverview {
+  schemaVersion: number;
+  generatedAt: string;
+  catalogVersion: string;
+  currentVersion: Record<string, string>;
+  catalog: OverviewCatalogItem[];
+  boundaryRegisters: OverviewNamedItem[];
+  verificationRecords: OverviewNamedItem[];
+  deliveries: OverviewDelivery[];
+  sourceIndex: OverviewSourceItem[];
+  summary: Record<string, number | string>;
+}

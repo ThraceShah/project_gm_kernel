@@ -1,4 +1,4 @@
-import { IndexData, ManifestData, MeshData, StepMeshRef } from '../types/contract';
+import { IndexData, ManifestData, MeshData, StepMeshRef, ProjectOverview } from '../types/contract';
 import { MeshSelection, realUvDisplay, validateDisplaySelection, progressAssetUrl } from './realUvDisplay';
 
 export interface LoadResult<T> {
@@ -364,4 +364,21 @@ export async function fetchStepMeshes(
   }
 
   return primaryRes;
+}
+
+/**
+ * Fetch the project-wide overview (data/project-overview.json), current contract.
+ */
+export async function fetchOverviewData(signal?: AbortSignal): Promise<LoadResult<ProjectOverview>> {
+  try {
+    const url = progressAssetUrl(`project-overview.json?_t=${Date.now()}`);
+    const res = await fetch(url, { signal });
+    if (!res.ok) {
+      return { data: null, error: `HTTP ${res.status} ${res.statusText}: 无法加载 data/project-overview.json`, fromFixture: false };
+    }
+    const data = (await res.json()) as ProjectOverview;
+    return { data, error: null, fromFixture: false };
+  } catch (e) {
+    return { data: null, error: `无法加载 project-overview.json: ${e instanceof Error ? e.message : String(e)}`, fromFixture: false };
+  }
 }
