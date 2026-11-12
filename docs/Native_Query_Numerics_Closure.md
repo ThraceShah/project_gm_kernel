@@ -96,7 +96,7 @@
 
 历史 `probes-self.log` / `probes-import.log` 原件及其 15/16 条差异的四列/XYZ、对应历史 XT 路径/长度/hash 已只读绑定。旧 self 日志没有持久保存其余 495 点的原始四列，交付中明确为缺失，不由“它们当时相等”的摘要或本轮重放补造；原 imported 四列表与此前 current imported 全 510 表均单独绑定并保留。
 
-交接的当前机器格式为 `docs/query-numerics-closure/results.json`，含逐操作、四组完整逐点当前列、历史实际差异列、逐分量标准前后判、真实 PK 与制造控制分列、全部原退出码、12 组 PE/PDB/source 绑定。`source-manifest.json` 与 `artifact-manifest.json` 分别绑定源码和 279 个实际制品；XT 与 DLL/PDB 本体仅在私有 `temp_docs/`，不提交厂商库。十个 producer 实际封存的 kernel/oracle PE-PDB 与每份 335 个 tracked Native 文档、六个 tracked oracle 文档逐 checksum 匹配；套件为封存输出 PE/PDB/source 核验，没有补造额外运行时 loader 观察。`final-fixed20` 还记录实际映射的 PK 库：Linux x64，91,444,112B，SHA `fc9ba50b40d7e9ee05e02f28c2a29e6ab75b9c91e6b6ba5ea588cf54149b9c52`。
+交接的当前机器格式为 `docs/query-numerics-closure/results.json`，含逐操作、四组完整逐点当前列、历史实际差异列、逐分量标准前后判、真实 PK 与制造控制分列、全部原退出码、12 组 PE/PDB/source 绑定。`source-manifest.json` 与 `artifact-manifest.json` 分别绑定源码和 279 个实际制品；XT 与 DLL/PDB 本体仅在私有 `temp_docs/`，不提交厂商库。五个 producer 各实际封存 kernel/oracle，共十份程序集；每份 kernel 对 335 个 tracked Native 文档、每份 oracle 对六个 tracked 文档逐 checksum 匹配。套件另两份为封存输出 PE/PDB/source 核验，没有补造额外运行时 loader 观察。`final-fixed20` 还记录实际映射的 PK 库：Linux x64，91,444,112B，SHA `fc9ba50b40d7e9ee05e02f28c2a29e6ab75b9c91e6b6ba5ea588cf54149b9c52`。
 
 复放方式由每条 execution 的 `executedInvocation` 记录；运行前仍需统一私有环境 native ensure，输出名改为新名以保留原件。历史标准重判脚本固定核原 ZIP SHA，不作为生产旧格式兼容路径；收集器仅汇总已有执行，不代签其退出码或领域结论。
 
