@@ -148,10 +148,14 @@ internal static class WebProgressDataValidation
                     {
                         Fields(step?[side],"before after",caseId+" step "+side);
                         var encoding=step?[side]?["encoding"]?.GetValue<string>();
+                        // A declared one-sided display scope (e.g. a PK-native corpus
+                        // fixture with no GM modelling) may omit the other side.
+                        var displayScope=step?["displayScope"]?.GetValue<string>();
+                        if(displayScope!=null&&displayScope is not ("pk-only" or "gm-only"))Error(caseId+": invalid displayScope "+displayScope);
                         if(encoding!=null&&encoding!="gzip")Error(caseId+": unsupported step encoding "+encoding);
                         bool Mismatch(JsonNode? reference)=>reference is JsonValue rv&&rv.TryGetValue<string>(out var rel)&&rel.EndsWith(".gz",StringComparison.Ordinal)!=(encoding=="gzip");
                         foreach(var key in new[]{"before","after"})
-                        {var reference=step?[side]?[key];if(reference==null){if(status=="pass")Error(caseId+": passing step lacks "+side+" "+key);continue;}if(Mismatch(reference))Error(caseId+": transport encoding/member mismatch");var file=Resolve(runRoot,reference,caseId);if(file!=null)Mesh(file);}
+                        {var reference=step?[side]?[key];if(reference==null){if(status=="pass"&&displayScope==null)Error(caseId+": passing step lacks "+side+" "+key);continue;}if(Mismatch(reference))Error(caseId+": transport encoding/member mismatch");var file=Resolve(runRoot,reference,caseId);if(file!=null)Mesh(file);}
                         foreach(var key in new[]{"tools","afterBodies"})foreach(var reference in step?[side]?[key]?.AsArray()??[]){if(Mismatch(reference))Error(caseId+": transport encoding/member mismatch");var file=Resolve(runRoot,reference,caseId);if(file!=null)Mesh(file);}
                     }
                 }

@@ -471,7 +471,7 @@ public static unsafe class ParasolidXtCorpusHost
         // purpose is PK XT corpus/schema coverage plus a managed transmit
         // round-trip, so the display is explicitly PK-only and no GM modelling
         // equivalence is claimed.
-        WebProgressCapture.CorpusFixture(false,body,"corpus-fixture",
+        WebProgressCapture.CorpusFixture(false,body,spec.CaseId,
             $"{spec.CaseId}：PK 原生 XT corpus fixture（{spec.Producer}）。原用例验证 schema/transmit 依赖图，并做 managed transmit round-trip（结果存为 evidence 字节），不是 GM 独立建模，故 GM 侧明确未执行，不编造等价性。");
 
         var counts = spec.IsCompound ? AskCompoundCounts(body) : AskCounts(body);

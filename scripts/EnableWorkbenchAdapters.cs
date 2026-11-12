@@ -70,10 +70,16 @@ foreach (var entry in byId.Values.Where(c => c["suite"]?.GetValue<string>() == "
 // PK-native XT corpus fixtures: the original case is a PK corpus/schema check
 // plus a managed transmit round-trip, so the display is the real PK fixture body
 // with an explicit pk-only scope (no GM modelling equivalence is implied).
-foreach (var entry in byId.Values.Where(c => c["suite"]?.GetValue<string>() == "pk-corpus" && c["meshAdapter"]?.GetValue<bool>() != true))
+foreach (var entry in byId.Values.Where(c => c["suite"]?.GetValue<string>() == "pk-corpus"))
 {
+    var id = entry["id"]!.GetValue<string>();
+    var hostCase = id["pk-corpus.".Length..];
+    // The corpus host writes diagnostics under a read-only private corpus root by
+    // default; a writable capture root keeps the original case output intact.
+    entry["arguments"] = new JsonArray("--case", hostCase, "--output", "temp_docs/corpus-capture");
+    entry["selector"] = hostCase;
     entry["meshAdapter"] = true;
-    enabled.Add((JsonNode?)JsonValue.Create(entry["id"]!.GetValue<string>()));
+    enabled.Add((JsonNode?)JsonValue.Create(id));
 }
 
 // Families whose oracle already calls the observer for every fixture: only the

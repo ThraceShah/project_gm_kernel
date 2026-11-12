@@ -222,7 +222,7 @@ var membersFinal = report["members"]!.AsArray().OfType<JsonObject>().ToArray();
 report["files"] = membersFinal.Length;
 // JSON numbers round-trip as int for small values; read them as double and
 // convert, so incremental reports stay type-agnostic.
-long Long(JsonNode? n) => (long)n!.GetValue<double>();
+long Long(JsonNode? n) => (long)double.Parse(n!.ToJsonString(), System.Globalization.CultureInfo.InvariantCulture);
 report["uncompressedBytes"] = membersFinal.Sum(m => Long(m["uncompressedBytes"]));
 report["compressedBytes"] = membersFinal.Sum(m => Long(m["compressedBytes"]));
 File.WriteAllText(reportPath + ".tmp", report.ToJsonString());
