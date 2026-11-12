@@ -161,6 +161,50 @@ internal static class BezierSurfaceBounds
     private static void RestrictCurve(ReadOnlySpan<IntervalNumber> input, SplineDegree degree, IntervalNumber a,
         IntervalNumber b, Span<IntervalNumber> output)
     {
+        var subdivide=degree>=2&&a.Lower>=0&&a.Upper<=1&&b.Lower>=0&&b.Upper<=1;
+#if KERNEL_TEST_HOOKS
+        subdivide&=!UseBlossomRestrictions;
+#endif
+        if(subdivide)
+        {
+            // Two exact restrictions of the same homogeneous polynomial.
+            // Select a divisor bounded away from zero, including rounding.
+            if(b.Lower>=.5)
+            {
+                SplitCurve(input,degree,b,false,output);
+                SplitCurve(output,degree,a/b,true,output);return;
+            }
+            var remainder=1-a;
+            if(remainder.Lower>=.5)
+            {
+                SplitCurve(input,degree,a,true,output);
+                SplitCurve(output,degree,(b-a)/remainder,false,output);return;
+            }
+        }
+        RestrictCurveBlossom(input,degree,a,b,output);
+    }
+
+    private static void SplitCurve(ReadOnlySpan<IntervalNumber> input,SplineDegree degree,IntervalNumber t,bool right,Span<IntervalNumber> output)
+    {
+        Span<IntervalNumber> work=stackalloc IntervalNumber[Math.Min(4*17,4*(degree+1))];
+        input[..(4*(degree+1))].CopyTo(work);
+        var at=right?4*degree:0;work.Slice(at,4).CopyTo(output[at..]);
+        for(var r=1;r<=degree;r++)
+        {
+            for(var j=0;j<=degree-r;j++)for(var d=0;d<4;d++)work[4*j+d]=(1-t)*work[4*j+d]+t*work[4*(j+1)+d];
+            at=right?4*(degree-r):4*r;work.Slice(right?4*(degree-r):0,4).CopyTo(output[at..]);
+        }
+    }
+
+#if KERNEL_TEST_HOOKS
+    internal static bool UseBlossomRestrictions;
+    internal static void TestRestrictCurve(ReadOnlySpan<IntervalNumber> input,SplineDegree degree,IntervalNumber a,IntervalNumber b,Span<IntervalNumber> output,bool blossom)
+    {if(blossom)RestrictCurveBlossom(input,degree,a,b,output);else RestrictCurve(input,degree,a,b,output);}
+#endif
+
+    private static void RestrictCurveBlossom(ReadOnlySpan<IntervalNumber> input, SplineDegree degree, IntervalNumber a,
+        IntervalNumber b, Span<IntervalNumber> output)
+    {
         Span<IntervalNumber> work = stackalloc IntervalNumber[Math.Min(4*17,4*(degree+1))];
         // Blossom evaluation: kth restricted pole has degree-k copies of a
         // and k copies of b. This also supports tiny certification extensions.
