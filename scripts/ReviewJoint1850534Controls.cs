@@ -1,4 +1,5 @@
 #!/usr/bin/env dotnet run
+#:property TargetFramework=net10.0
 #:property AllowUnsafeBlocks=true
 #:property AssemblyName=BooleanOperationOracle
 #:property UsePskernelSharpUsings=true
@@ -23,6 +24,7 @@ using static parasolid;
 var root=Path.GetFullPath(Path.Combine(Path.GetDirectoryName(Source())!,".."));
 Directory.SetCurrentDirectory(root);
 var report=new JsonObject();
+report["q2NativeIdentity"]=new JsonObject{["mvid"]=typeof(KernelRuntime).Assembly.ManifestModule.ModuleVersionId.ToString(),["dllSha256"]=Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(typeof(KernelRuntime).Assembly.Location)))};
 var surfaces=Surfaces();BlendSpineInstruction[] spines=[new(){First=0,Second=1,ChartCount=2},new(){First=0,Second=1,ChartOffset=2,ChartCount=2}];
 BlendChartInstruction[] charts=[new(){Chord=new(){Y=1},Scale=1},new(){Position=new(){Y=1},Parameter=1,Scale=1},new(){Chord=new(){Y=1},Scale=2},new(){Position=new(){Y=1},Parameter=2,Scale=1}];
 var entries=new JointTubeEntry[8];var p=new NestedBlendProgram(surfaces,spines,charts);var cached=new NestedBlendProgram(surfaces,spines,charts,tubeSource:new(41,1,1,1,7),tubeWork:entries);
@@ -32,7 +34,6 @@ foreach(var width in new[]{0.0,.0001,.1})foreach(var v in new[]{-.01,0.0,.2,.7,1
 {
     var box=new SurfaceParameterBox(.4,.4+width,v,v+.01);
     Equal(JointNestedBlendEvaluation.Bound(p,surface,box,expected),JointNestedBlendEvaluation.Bound(cached,surface,box,actual),"frame status");Bits(expected,actual);
-    for(var i=0;i<3;i++)
     {
         var radius=surface==4?.2:.4;var t=v*Math.PI*.5;
         Contains(actual[0],-radius*Math.Sin(t));Contains(actual[1],.4);Contains(actual[2],-radius*Math.Cos(t));
@@ -112,6 +113,7 @@ unsafe
     if(!ParasolidScriptHost.TryStartSession("Joint independent product review",out var host,out var message))throw new Exception(message);
     using(host)
     {
+        PK_SESSION_kernel_version_t version;Check(PK_SESSION_ask_kernel_version(&version),"actual PK version");report["q2PkVersion"]=$"{version.major_revision}.{version.minor_revision}.{version.build_number}";
         var pairs=new JsonArray();ParasolidBodyCompare.Observer=row=>pairs.Add((JsonNode)row);
         foreach(var family in new[]{"active-mirror8-capture","active-nurbs-lifecycle-capture"})
         {
@@ -124,7 +126,8 @@ unsafe
         report["realPkSealedProducts"]=pairs;
     }
 }
-File.WriteAllText("temp_docs/independent-joint-1850534/controls-receipt.json",report.ToJsonString());Console.WriteLine(report.ToJsonString());
+Require(args.Length==1&&args[0].StartsWith("--output-name=",StringComparison.Ordinal),"one new output name is required");var outputName=args[0]["--output-name=".Length..];Require(outputName.Length>0&&outputName.All(x=>char.IsAsciiLetterOrDigit(x)||x is '-' or '_'),"safe output name");
+var receipt="temp_docs/independent-joint-1850534/"+outputName+".json";Require(!File.Exists(receipt),"preserve control evidence");File.WriteAllText(receipt,report.ToJsonString());Console.WriteLine(report.ToJsonString());
 static BlendSurfaceInstruction[] Surfaces()
 {
     var x=new KernelVector3{X=1};var y=new KernelVector3{Y=1};var z=new KernelVector3{Z=1};
@@ -132,7 +135,7 @@ static BlendSurfaceInstruction[] Surfaces()
 }
 static void Equal(AlgorithmStatus a,AlgorithmStatus b,string label)=>Require(a==b,label+" "+a+"/"+b);
 static void Contains(IntervalNumber box,double point)=>Require(box.Lower<=point&&point<=box.Upper,"analytic enclosure");
-static void Bits(ReadOnlySpan<IntervalNumber>a,ReadOnlySpan<IntervalNumber>b){for(var i=0;i<9;i++)Require(a[i].Lower==b[i].Lower&&a[i].Upper==b[i].Upper,"frame equality");}
+static void Bits(ReadOnlySpan<IntervalNumber>a,ReadOnlySpan<IntervalNumber>b){for(var i=0;i<9;i++)Require(BitConverter.DoubleToInt64Bits(a[i].Lower)==BitConverter.DoubleToInt64Bits(b[i].Lower)&&BitConverter.DoubleToInt64Bits(a[i].Upper)==BitConverter.DoubleToInt64Bits(b[i].Upper),"frame bit equality");}
 static void Require(bool value,string label){if(!value)throw new Exception(label);}
 static void Check(int error,string label)=>Require(error==0,label+" error="+error);
 static string Source([CallerFilePath]string path="")=>path;
