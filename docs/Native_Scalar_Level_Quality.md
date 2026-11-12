@@ -1,5 +1,7 @@
 # 原native-v标量包围dd1fd0d完整质量
 
+**停止：唯一五操作窗口未保留完整目标收益，dd1fd0d不进基线、不复测或申请接受；原作者质量/数据保持，见 `docs/Rejected_Native_Scalar_Level_Work.md`。**
+
 固定计算 `dd1fd0da3d0354f4e42ef0c568e5ceaf30f50650` / Native `cd7a2bb031cc859d8985edf6a3b4264ab289e488` / src `fe3a1e1ba600e93a46ef3a4f7ce65c14ad1f376a`；基线为实际读59322ef完整独审后的固定接受b8/e7/Native6a843。实际读本树AGENTS/两架构/全部生产diff及消费者；无b095准备类/借用span等实现，无移动query/norm，不动任何旧包/窗口。连续原式、真实存储轴MᵀM、系数外舍入、同源母cell有限覆盖及完整root/图/nearest/尾界/预算合同见 `docs/Native_Scalar_Level_Work.md`。
 
 Mac完整 **2035/2035、0fail/0skip、原build0/test0、4m36s自然结束**；TRX SHA `942ee94b5f6e96349f7ff4ed155e65027af1202e98c051f3c324074645205b6b`。前后三DLL三PDB每文件hash同，不把清单字段数量差别当文件不同。定向191/191/原0/28s，含非unit存储轴和非正交方向的精确dyadic/decimal原二次式及导数、多点原XYZ式包围交叠（控制非连续证明）、原域外拒绝和零托管分配。完整native有限plane根on/off的存在/方向/认证及隔离域交叠、解析2/3或reverse1/3；不同合法收缩不要求代表参数逐位同。小q.001/零角/无proof/越域/另一轴拒新能力，同域与端点切触保持NotConverged，原185所有验收及失败控制不改。控制hook实际命中不冒ordinary命中率。

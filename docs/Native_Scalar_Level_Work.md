@@ -1,5 +1,7 @@
 # 原native-v标量残差连续包围实验
 
+**停止：唯一五操作窗口未保留完整目标收益，dd1fd0d不进基线、不复测或申请接受；原作者质量/数据保持，见 `docs/Rejected_Native_Scalar_Level_Work.md`。**
+
 从固定接受b8c74b9/e7f0a48/Native6a843隔离，实际读本树AGENTS、两架构及当前源码/初始diff；private native ensure原0/ENV_READY。没有携被停止b095的PreparedSection/PreparedNativeSection/借用span或RootFind准备实现，不改c922/e7/b095原证据，不混q2移动query/norm。原完整79920性能目标继续，不以保存本提交停工。
 
 依据是c922原式与真实PK调研，108有限section/surface求交API0、SP返回t的12原nativev点位置一致，只作接口/参数行为观察，不替连续证明。这里实现同一原生表达式的大q固定u标量level，而不是拟合曲线、简化圆参数或另一模型；小q/零角/不适用源继续原Weight完整值/微分尾界及原区间路径。
