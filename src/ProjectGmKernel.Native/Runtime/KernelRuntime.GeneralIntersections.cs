@@ -40,7 +40,7 @@ internal static unsafe partial class KernelRuntime
         if (av.UDegree > 16 || av.VDegree > 16
             || !GeneralSurfaceContinuity(av)&&!(separatePlaneSections&&analytic&&support.Kind==SurfaceClass.Plane)
             || !analytic && !GeneralSurfaceContinuity(bv)) return AlgorithmStatus.Unsupported;
-        var extent = GeneralSurfaceExtent(av);
+        var extentStatus = NaturalSurfaceExtent(av,out var extent);if(extentStatus!=AlgorithmStatus.Success)return extentStatus;
         if (analytic && !AnalyticBezierPatches.HasDomain(support, extent)) return AlgorithmStatus.Success;
         Span<IntervalNumber> ap = stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars];
         Span<IntervalNumber> bp = stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars];
@@ -197,18 +197,9 @@ internal static unsafe partial class KernelRuntime
         return true;
     }
 
-    private static IntervalBox3 GeneralSurfaceExtent(in BSurfaceView view)
-    {
-        IntervalNumber x = new(double.PositiveInfinity, double.NegativeInfinity), y = x, z = x;
-        for (var i = 0; i < view.UVertexCount * view.VVertexCount; i++)
-        {
-            var at = i * view.Dimension; IntervalNumber w = view.Rational ? view.Vertices[at + 3] : 1;
-            x = IntervalNumber.Hull(x, new IntervalNumber(view.Vertices[at]) / w);
-            y = IntervalNumber.Hull(y, new IntervalNumber(view.Vertices[at + 1]) / w);
-            z = IntervalNumber.Hull(z, new IntervalNumber(view.Vertices[at + 2]) / w);
-        }
-        return new(x.Lower, x.Upper, y.Lower, y.Upper, z.Lower, z.Upper);
-    }
+    // Only consumers which enumerate the native knot spans may use this box.
+    private static AlgorithmStatus NaturalSurfaceExtent(in BSurfaceView view,out IntervalBox3 extent)
+        =>BSurfaceDomainBounds.Position(view,new(view.UStart,view.UEnd,view.VStart,view.VEnd),false,out extent);
 
     private static bool GeneralIntersectionSameNode(SurfaceSlot first, SurfaceSlot second, in SurfaceIntersectionNode a, in SurfaceIntersectionNode b)
     {

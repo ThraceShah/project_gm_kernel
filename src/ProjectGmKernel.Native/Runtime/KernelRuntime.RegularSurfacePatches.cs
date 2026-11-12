@@ -52,16 +52,23 @@ internal static unsafe partial class KernelRuntime
         return found;
     }
 
+    // Encloses exactly the search family enumerated by RegularSurfacePatch:
+    // every native spline cell, or every stored Blend CHART with record v.
+    // This is not by itself a certificate for an arbitrary trimmed face.
     private static AlgorithmStatus RegularSurfaceExtent(SurfaceSlot slot,out IntervalBox3 extent)
     {
         extent=default;var record=Surfaces[slot];
         if(record.Class==SurfaceClass.BSurface)
-        {extent=GeneralSurfaceExtent(GetBSurfaceView(BSurfaceDataStore[record.DataIndex]));return AlgorithmStatus.Success;}
+            return NaturalSurfaceExtent(GetBSurfaceView(BSurfaceDataStore[record.DataIndex]),out extent);
         if(record.Class==SurfaceClass.Sphere&&TryPrepareSurface(record,out var sphere))
         {extent=AnalyticBallBounds(sphere.Origin,sphere.Radius);return AlgorithmStatus.Success;}
         if(record.Class!=SurfaceClass.BlendSurface)return AlgorithmStatus.Unsupported;
-        var data=BlendedEdgeDataPool[record.DataIndex];
-        return BlendExtent(GetNestedBlendProgram(data,record),data.ProgramRoot,new(record.UMin,record.UMax,record.VMin,record.VMax),out extent);
+        var data=BlendedEdgeDataPool[record.DataIndex];var program=GetNestedBlendProgram(data,record);
+        var spine=program.Spines[program.Surfaces[data.ProgramRoot].Spine];var charts=program.Charts.Slice(spine.ChartOffset,spine.ChartCount);
+        if(charts.Length<2)return AlgorithmStatus.Unsupported;
+        var domain=new SurfaceParameterBox(charts[0].Parameter,charts[^1].Parameter,record.VMin,record.VMax);
+        if(!OperationIntersection.CoversBlendRayDomain(program,data.ProgramRoot,domain))return AlgorithmStatus.Unsupported;
+        return BlendExtent(program,data.ProgramRoot,domain,out extent);
     }
 
     // The exact SPCURVEs produced by NestedBlendIsoparam use u=t and a

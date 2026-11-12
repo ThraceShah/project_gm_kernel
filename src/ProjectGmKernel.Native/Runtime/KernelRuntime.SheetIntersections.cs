@@ -199,7 +199,7 @@ internal static unsafe partial class KernelRuntime
         if(!analytic&&b.Class!=SurfaceClass.BSurface)return AlgorithmStatus.Unsupported;
         Span<IntervalNumber> ap=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars],bp=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars];
         Span<SurfaceIntersectionNode> roots=stackalloc SurfaceIntersectionNode[64];
-        var extent=GeneralSurfaceExtent(av);
+        var extentStatus=NaturalSurfaceExtent(av,out var extent);if(extentStatus!=AlgorithmStatus.Success)return extentStatus;
         for(var u=av.UDegree;u<av.UVertexCount;u++)for(var v=av.VDegree;v<av.VVertexCount;v++)
         {
             if(!(av.UKnots[u+1]>av.UKnots[u])||!(av.VKnots[v+1]>av.VKnots[v]))continue;

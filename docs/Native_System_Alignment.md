@@ -346,3 +346,32 @@ native full check/strict及D0/D1全过，exit0。query的PK端另读取实际GM 
 不冒充独立构造。原输入SHA `c7f124ca905cdf9b73c925a7322bae068dcb0309de563e0c1f5d49a230bea3c9`。
 首replay日志的末行source hash误取了未使用factory输入，实际query输入hash另有
 正确记录；保留原日志，v2才纠正该描述，未改模型结果或覆盖原证据。
+
+## 单一计算负责人及显式搜索域
+
+后续执行已统一为本分支单一计算负责人，含正确性、整链性能及统一JIT策略；
+前文Mac分工仅保留为历史阶段记录。Mac原coding worker已停止，其平台可作命令式
+验证平台，不再与本树并行写生产算法。收到的未完成extent两文件只作候选输入，
+经实际读取、准入审查和真实PK对照后才进入本树；没有继承原9项自测的接受资格。
+
+`BSurfaceDomainBounds.Position` 接受明确native UV矩形及是否允许线性外延。
+natural内部仅有限正权源能用控制凸包；外域按native两方向线性延续分区，在原
+Bezier端点/边上对S、Su、Sv、Suv做区间包围，包含双向外延交叉项。
+周期越界保守覆盖整natural周期。无效、未证明权重或无法包围不签Success。
+它是临时只读计算能力，不写新的几何定义、native参数或拟合carrier。
+
+`NaturalSurfaceExtent` 的全部四个消费者现在显式检查该状态，避免直接除权后无条件
+返回Success。`RegularSurfaceExtent` 明确针对其实际patch枚举域：BSurface全部
+native knot cells，Blend全部保存CHART的u及record v；不再用可能较窄的record u
+去证明整个搜索。距离操作与ray共用该域。ray的behind-origin排除、有限上端点和
+slab排除因此使用同一个完整搜索域证据，而非只给新增slab加资格检查。
+这个证据仍不能直接签任意trim face，相关finite-face消费者的native域覆盖继续研发。
+
+实际 `explicit-search-domain-managed-v2.log/.exit` 59/59、exit0，包含共享SSI、
+距离/SP及ray资格控制；不是最终全suite。`bsurface-domain-native-v3.log/.exit`
+真实38.0.150的plain/rational与两组native UV gauge共16个请求域、784个求值通过，
+域含natural、双向外延点、跨四边矩形及内部子域。该测试为求值语义核验，连续包围
+来自区间算法，采样不冒称全域证明；完整建模消费者需另以固定源真实XT复验。
+前两次原exit134保留：原生浮点求值在natural上界给1.0000000000000002，不能要求
+其数值结果严格落入精确函数的凸包上界1。v3单独声明64*2^-52*max(1,abs(component))
+的求值舍入比较，未改生产区间/建模容差；相同native参数两端求值另保留1e-11检查。

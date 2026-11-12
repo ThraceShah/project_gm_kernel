@@ -145,12 +145,12 @@ internal static unsafe partial class KernelRuntime
         {
             var data=BlendedEdgeDataPool[support.DataIndex];var program=GetNestedBlendProgram(data);var spine=program.Spines[program.Surfaces[data.ProgramRoot].Spine];
             operand.IsBlend=true;operand.Bounded=true;operand.Pieces=spine.ChartCount-1;
-            status=BlendExtent(program,data.ProgramRoot,new(support.UMin,support.UMax,support.VMin,support.VMax),out operand.Extent);return status==AlgorithmStatus.Success?0:IntersectionError(status);
+            status=RegularSurfaceExtent(operand.Slot,out operand.Extent);return status==AlgorithmStatus.Success?0:IntersectionError(status);
         }
         if(support.Class==SurfaceClass.BSurface)
         {
             var view=GetBSurfaceView(BSurfaceDataStore[support.DataIndex]);operand.Pieces=(view.UVertexCount-view.UDegree)*(view.VVertexCount-view.VDegree);
-            operand.Bounded=true;operand.Extent=GeneralSurfaceExtent(view);return 0;
+            status=NaturalSurfaceExtent(view,out operand.Extent);operand.Bounded=status==AlgorithmStatus.Success;return status==AlgorithmStatus.Success?0:IntersectionError(status);
         }
         if(!analytic)return ParasolidConstants.PK_ERROR_not_implemented;
         operand.IsAnalytic=true;operand.Pieces=AnalyticBezierPatches.Count(operand.Analytic);if(operand.Pieces<=0)return ParasolidConstants.PK_ERROR_not_implemented;
