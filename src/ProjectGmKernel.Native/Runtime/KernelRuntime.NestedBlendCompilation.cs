@@ -34,6 +34,13 @@ internal static unsafe partial class KernelRuntime
             charts=NestedWorkspace<BlendChartInstruction>(NestedChartLimit);surfaceTags=NestedWorkspace<SurfTag>(NestedSurfaceLimit);spineTags=NestedWorkspace<CurveTag>(NestedSpineLimit);
             scalars=NestedWorkspace<double>(65536);
         }
+        internal readonly NestedBlendProgram ViewForNativeCurve(CurveTag tag,BlendSpineIndex root)
+        {
+            var program=View;var slot=GetCurveSlotByTag(tag);
+            if(slot<0||root<0||root>=nc||spineTags[root]!=tag)return program;
+            var owner=Curves[slot];var source=new JointTubeSource(tag,owner.Header.Generation,owner.Sense,2,-1);
+            return new(program.Surfaces,program.Spines,program.Charts,program.Scalars,program.Workspace,source,ModelingPerformance.JointTubeWorkspace());
+        }
         internal readonly bool Ready=>surfaces.Length==NestedSurfaceLimit&&spines.Length==NestedSpineLimit&&charts.Length==NestedChartLimit&&surfaceTags.Length==NestedSurfaceLimit&&spineTags.Length==NestedSpineLimit&&scalars.Length==65536;
 
         internal AlgorithmStatus Surface(SurfTag tag,out BlendSurfaceIndex index)

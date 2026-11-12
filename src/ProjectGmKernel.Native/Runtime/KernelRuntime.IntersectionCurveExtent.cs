@@ -16,7 +16,7 @@ internal static unsafe partial class KernelRuntime
         {
             var compiler=new NestedProgramCompiler();if(!compiler.Ready)return AlgorithmStatus.WorkspaceTooSmall;
             var status=compiler.Spine(curve,out var spine);if(status!=AlgorithmStatus.Success)return status;
-            var program=compiler.View;var definition=program.Spines[spine];
+            var program=compiler.ViewForNativeCurve(curve,spine);var definition=program.Spines[spine];
             var rootUse=RootIsolationUse.SpatialCurve;
             var a=program.Surfaces[definition.First];var b=program.Surfaces[definition.Second];
             if(a.IsBlend!=b.IsBlend)
@@ -78,7 +78,7 @@ internal static unsafe partial class KernelRuntime
         {
             var compiler=new NestedProgramCompiler();if(!compiler.Ready)return AlgorithmStatus.WorkspaceTooSmall;
             var status=compiler.Spine(curve,out var spine);if(status!=AlgorithmStatus.Success)return status;
-            return BlendExtent(compiler.View,spine,new(first,last,0,0),out extent,spineOnly:true);
+            return BlendExtent(compiler.ViewForNativeCurve(curve,spine),spine,new(first,last,0,0),out extent,spineOnly:true);
         }
         finally{CommandScratch.ThreadArenaOffset=checkpoint;}
     }

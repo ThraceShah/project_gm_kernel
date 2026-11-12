@@ -53,9 +53,10 @@ internal struct BlendChartInstruction
 
 internal readonly ref struct NestedBlendProgram(ReadOnlySpan<BlendSurfaceInstruction> surfaces,
     ReadOnlySpan<BlendSpineInstruction> spines,ReadOnlySpan<BlendChartInstruction> charts,
-    ReadOnlySpan<double> scalars=default,Span<double> workspace=default,DataSlot sourceBlock=-1)
+    ReadOnlySpan<double> scalars=default,Span<double> workspace=default,JointTubeSource tubeSource=default,Span<JointTubeEntry> tubeWork=default)
 {
-    internal DataSlot SourceBlock{get;}=sourceBlock;
+    internal JointTubeSource TubeSource{get;}=tubeSource;
+    internal Span<JointTubeEntry> TubeWork{get;}=tubeWork;
     internal ReadOnlySpan<BlendSurfaceInstruction> Surfaces{get;}=surfaces;
     internal ReadOnlySpan<BlendSpineInstruction> Spines{get;}=spines;
     internal ReadOnlySpan<BlendChartInstruction> Charts{get;}=charts;

@@ -129,13 +129,19 @@ internal static unsafe partial class KernelRuntime
     internal static NestedBlendProgram GetNestedBlendProgram(scoped in BlendedEdgeData data)
         =>GetNestedBlendProgram(data.ProgramBlock,data.ProgramSurfaceCount,data.ProgramSpineCount,data.ProgramChartCount,data.ProgramScalarCount);
 
+    internal static NestedBlendProgram GetNestedBlendProgram(scoped in BlendedEdgeData data,scoped in SurfaceRecord owner)
+    {
+        var program=GetNestedBlendProgram(data);var source=new JointTubeSource(owner.Header.Tag,owner.Header.Generation,owner.Sense,1,data.ProgramBlock);
+        return new(program.Surfaces,program.Spines,program.Charts,program.Scalars,program.Workspace,source,ModelingPerformance.JointTubeWorkspace());
+    }
+
     internal static NestedBlendProgram GetNestedBlendProgram(DataSlot block,BufferCount surfaceCount,BufferCount spineCount,BufferCount chartCount,BufferCount scalarCount=0)
     {
         var pointer=(byte*)DereferenceBlock(block);
         var surfaces=new ReadOnlySpan<BlendSurfaceInstruction>(pointer,surfaceCount);pointer+=surfaceCount*sizeof(BlendSurfaceInstruction);
         var spines=new ReadOnlySpan<BlendSpineInstruction>(pointer,spineCount);pointer+=spineCount*sizeof(BlendSpineInstruction);
         var charts=new ReadOnlySpan<BlendChartInstruction>(pointer,chartCount);pointer+=chartCount*sizeof(BlendChartInstruction);
-        return new(surfaces,spines,charts,new ReadOnlySpan<double>(pointer,scalarCount),CommandScratch.Current.AvailableSpanOfDoubles(),block);
+        return new(surfaces,spines,charts,new ReadOnlySpan<double>(pointer,scalarCount),CommandScratch.Current.AvailableSpanOfDoubles());
     }
 
     private static int BindNestedBlendSpineCore(SurfTag first,SurfTag second,in NestedBlendProgram program,BlendSpineIndex root,CurveTag* result,ReadOnlySpan<double> uv)

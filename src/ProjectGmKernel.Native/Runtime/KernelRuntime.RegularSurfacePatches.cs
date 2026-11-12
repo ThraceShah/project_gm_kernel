@@ -30,7 +30,7 @@ internal static unsafe partial class KernelRuntime
         patch=default;var record=Surfaces[slot];
         if(record.Class==SurfaceClass.BlendSurface)
         {
-            var data=BlendedEdgeDataPool[record.DataIndex];var program=GetNestedBlendProgram(data);
+            var data=BlendedEdgeDataPool[record.DataIndex];var program=GetNestedBlendProgram(data,record);
             var spine=program.Spines[program.Surfaces[data.ProgramRoot].Spine];var charts=program.Charts.Slice(spine.ChartOffset,spine.ChartCount);
             patch=new(program,data.ProgramRoot,new(charts[index].Parameter,charts[index+1].Parameter,record.VMin,record.VMax));
             patch=new(patch,record.Header.Tag,record.Header.Generation,record.Sense);
@@ -61,7 +61,7 @@ internal static unsafe partial class KernelRuntime
         {extent=AnalyticBallBounds(sphere.Origin,sphere.Radius);return AlgorithmStatus.Success;}
         if(record.Class!=SurfaceClass.BlendSurface)return AlgorithmStatus.Unsupported;
         var data=BlendedEdgeDataPool[record.DataIndex];
-        return BlendExtent(GetNestedBlendProgram(data),data.ProgramRoot,new(record.UMin,record.UMax,record.VMin,record.VMax),out extent);
+        return BlendExtent(GetNestedBlendProgram(data,record),data.ProgramRoot,new(record.UMin,record.UMax,record.VMin,record.VMax),out extent);
     }
 
     // The exact SPCURVEs produced by NestedBlendIsoparam use u=t and a

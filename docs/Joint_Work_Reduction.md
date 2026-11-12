@@ -9,3 +9,15 @@
 源记录保守地包含无关live几何，所以只能低估匹配率，不能由不同source/tag/CHART悄悄拼成同一键。按不含v的候选层投影统计时仍保留source/program/spine/CHART/occurrence/中心和完整请求；另一层明确限定普通无witness/reach/curvature/参数输出的tube后才允许比较跨v/输出surface需求，不能直接投影已有九输出UV缓存。只有确定的重复数据和实际整体收益才支持后续实现。
 
 上限为每进程300000 BoundSegment，触顶抛出明确诊断异常，不发布不完整追踪为完整。原始definitions/calls JSONL、当前runner所有质量与rawexit、实际DLL/PDB/source identity一起保留。通用当前helper未改，诊断props仅向BooleanOperationOracle显式开启时添加脚本；最终生产改动会移除此临时分支。没有C ABI更动或AOT/Windows运行。
+
+## 实际一次追踪与已选实现
+
+完整三操作均原2/Unresolved，API均0；Native全n/roots/SSI/winding/budget工作量与1654固定候选相同。原995de01诊断源独立保留在diag/unified-joint-native-995de01，回调/反射/追踪props已从生产候选移除。每进程PID文件与当前runner case的关系由原文件创建时间落在串行process-start窗口内绑定，属于文件时间证据，没有补造进程内case身份观察。
+
+curved共5328次BoundSegment（含显示/检查），immutable阶段384次成功tube，完整需求96键/288次重复，tube payload逐位相同，无额外跨v收益。NURBS共664/immutable122，完整需求96键/26重复；仅投影输出surface/v后55键/67重复、21组跨v，payload仍相同。shortedge共2463/immutable2391，成功tube2020；全需求1645键/375重复，普通无特殊需求1566次/1214键/352重复，主要是compact消费者。存储program以外的编译视图源仍严格通过真实owner准备，不把相同内容自动当同一实体。
+
+实现保存已成功完成原inclusion/nearest及解析导数的完整joint boxes/derivatives/occurrence，不保存或投影九输出UV值。prepared Native program显式带真实source tag/generation/sense、存储surface或原生curve准备种类和原program block；完整program由该受控Native输入准备决定，key另含全部program数量、root spine、精确u endpoint bits及workspace容量。只有当前immutable命令可借工作区；新source/generation/方向/准备种类/block/CHART原生定义或命令不得共享。编译curve准备仅用于新建compiler从该实际ICurve及实际支持/CHART读出的视图，verification临时改写program未授权此identity。
+
+只承认普通完整tube请求；所有witness/capture/requireCharts、reach/curvature/acceleration、support参数和anchor输出都执行原路径。命中仍按请求surface/v重新算frame；失败没有条目。工作区128条（参考本次96/55组普通需求），由原command scope可选native存储拥有，分配失败走未优化算法，不取proof scratch、不增算法预算，scope退出释放。它是单一具体joint中间结果，不是新几何、通用结果框架或历史格式层。
+
+最初使用record生成ToString被Native分配检查拒绝，已换普通readonly值类型；最初测试误用不存在的Contains导致编译原1均留原件。修正后44项相关检查实际原0，含完整tube/解析导数、跨v重新frame逐位相同、tag/gen/sense/kind/block隔离、不同native区间/workspace、坏witness仍失败、退化不发布和0托管分配。普通完整操作/lifecycle、两Mac实际一般原因与最终工作量/收益闭环正在继续，不由44项局部绿灯签整体完成。

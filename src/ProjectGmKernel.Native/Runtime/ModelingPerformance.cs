@@ -4,6 +4,7 @@ using ProjectGmKernel.Native.Computation;
 using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Geometry.Bounds;
 using ProjectGmKernel.Native.Geometry.Intersection;
+using ProjectGmKernel.Native.Geometry.Evaluation;
 
 namespace ProjectGmKernel.Native.Runtime;
 
@@ -27,15 +28,15 @@ internal static unsafe class ModelingPerformance
     internal static bool CacheEnabled=true;
     [ThreadStatic] internal static ModelingProfile Last;
     [ThreadStatic] private static Context* current;
-    [ThreadStatic] private static long jointProbeScope;
-    internal static (long Scope,bool Immutable,KernelRuntime.RegularBooleanStage Stage,RootIsolationUse RootUse) JointProbeContext=>current==null?(0,false,KernelRuntime.RegularBooleanStage.None,RootIsolationUse.Other):(current->JointProbeScope,current->CacheAllowed,current->Stage,current->RootUse);
     private const BufferCount CacheCapacity=32768,CacheProbeLimit=32;
 
     internal struct Context
     {
         internal BoundEntry* Entries;
+        internal JointTubeEntry* Tubes;
+        internal bool TubeAttempted;
         internal bool Capture,CacheAllowed,CacheAttempted;
-        internal long Started,StageStarted,JointProbeScope;
+        internal long Started,StageStarted;
         internal KernelRuntime.RegularBooleanStage Stage;
         internal RootIsolationUse RootUse;
         internal ModelingProfile Profile;
@@ -59,7 +60,7 @@ internal static unsafe class ModelingPerformance
         private readonly Context* context;
         internal Scope(Context* target,bool immutableGeometry=false)
         {
-            context=target;previous=current;*target=default;target->Capture=Enabled;target->JointProbeScope=++jointProbeScope;
+            context=target;previous=current;*target=default;target->Capture=Enabled;
             if(target->Capture)target->Started=target->StageStarted=Stopwatch.GetTimestamp();
             target->CacheAllowed=CacheEnabled&&immutableGeometry;
             current=target;
@@ -91,6 +92,7 @@ internal static unsafe class ModelingPerformance
             else Last=default;
             current=previous;
             if(context->Entries!=null)KernelRuntime.State.Session->Memory->Free(context->Entries);
+            if(context->Tubes!=null)KernelRuntime.State.Session->Memory->Free(context->Tubes);
         }
     }
 
@@ -174,6 +176,15 @@ internal static unsafe class ModelingPerformance
         ref var entry=ref current->Entries[selected];
         entry.Tag=tag;entry.Generation=generation;entry.Sense=sense;entry.Root=root;entry.Kind=kind;entry.Box=box;entry.Status=status;entry.FailureScale=failureScale;
         if(status==AlgorithmStatus.Success)output[..9].CopyTo(entry.Values);
+    }
+    internal static Span<JointTubeEntry> JointTubeWorkspace()
+    {
+        const BufferCount capacity=128;
+        if(current==null||!current->CacheAllowed)return default;
+        if(current->Tubes!=null)return new(current->Tubes,capacity);
+        if(current->TubeAttempted)return default;current->TubeAttempted=true;
+        current->Tubes=(JointTubeEntry*)KernelRuntime.State.Session->Memory->TryAllocate((nuint)(capacity*sizeof(JointTubeEntry)));
+        if(current->Tubes==null)return default;var entries=new Span<JointTubeEntry>(current->Tubes,capacity);entries.Clear();return entries;
     }
     private static bool EnsureEntries()
     {
