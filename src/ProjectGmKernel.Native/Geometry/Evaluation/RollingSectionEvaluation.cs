@@ -63,6 +63,37 @@ internal static class RollingSectionEvaluation
         return point.Finite?AlgorithmStatus.Success:AlgorithmStatus.NotConverged;
     }
 
+    // Only constants of the original interval expression are prepared. The
+    // native-v weights, differentiated tails and finite test stay per request.
+    internal struct PreparedSection
+    {internal IntervalVector First,Second;internal IntervalDual Parameter;internal bool Small;}
+    internal static AlgorithmStatus Prepare(in IntervalVector first,in IntervalVector last,out PreparedSection section)
+    {
+        section=default;var cosine=IntervalVector.Dot(first,last);var q=1-cosine;section.First=first;section.Small=q.Value.Lower<=.125;
+        if(section.Small)
+        {
+            var lower=Math.Max(0,q.Value.Lower);var upper=Math.Min(2,q.Value.Upper);if(upper<lower)return AlgorithmStatus.NotConverged;
+            section.Second=last;section.Parameter=new(new(lower,upper),q.Derivative);
+        }
+        else
+        {
+            var transverse=last-first*cosine;var sine=transverse.Norm();section.Second=transverse/sine;section.Parameter=IntervalDual.Atan2(sine,cosine);
+        }
+        return section.First.Finite&&section.Second.Finite&&section.Parameter.Finite?AlgorithmStatus.Success:AlgorithmStatus.NotConverged;
+    }
+    internal static AlgorithmStatus Bound(in PreparedSection section,IntervalDual v,out IntervalVector point)
+    {
+        point=default;
+        if(section.Small)
+        {
+            var status=Weight(section.Parameter,1-v,out var a);if(status!=AlgorithmStatus.Success)return status;
+            status=Weight(section.Parameter,v,out var b);if(status!=AlgorithmStatus.Success)return status;
+            point=section.First*a+section.Second*b;
+        }
+        else{IntervalDual.SinCos(section.Parameter*v,out var sin,out var cos);point=section.First*cos+section.Second*sin;}
+        return point.Finite?AlgorithmStatus.Success:AlgorithmStatus.NotConverged;
+    }
+
     private static AlgorithmStatus Weight(IntervalDual q,IntervalDual v,out IntervalDual value)
     {
         value=default;if(q.Value.Lower<0||q.Value.Upper>=2)return AlgorithmStatus.NotConverged;

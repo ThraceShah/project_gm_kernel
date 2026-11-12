@@ -15,8 +15,8 @@ internal struct SurfaceBoundCacheEntry
 internal readonly ref struct SurfaceIntersectionPatch
 {
 #if KERNEL_TEST_HOOKS
-    internal static bool UseCertifiedSectionBounds=true;
-    [ThreadStatic] internal static long TestCertifiedSectionBounds;
+    internal static bool UseCertifiedSectionBounds=true,UsePreparedSections=true;
+    [ThreadStatic] internal static long TestCertifiedSectionBounds,TestPreparedSectionBounds;
 #endif
     private readonly BezierSurfacePatch bezier;
     private readonly NestedBlendProgram blend;
@@ -33,6 +33,7 @@ internal readonly ref struct SurfaceIntersectionPatch
     private readonly bool pinnedCache;
     private readonly bool hasCellProof;
     private readonly SurfaceParameterBox provenCell;
+    private readonly ReadOnlySpan<PreparedNativeSection> preparedSection;
     private readonly GeomTag cacheTag;
     private readonly EntityGeneration cacheGeneration;
     private readonly KernelSense cacheSense;
@@ -44,7 +45,7 @@ internal readonly ref struct SurfaceIntersectionPatch
     internal SplineDegree VDegree=>isBlend?(isSpine?0:1):bezier.VDegree;
     internal SurfaceIntersectionPatch(BezierSurfacePatch patch){bezier=patch;blend=default;surface=0;isBlend=isSpine=false;Domain=patch.Domain;}
     internal SurfaceIntersectionPatch(BezierSurfacePatch patch,double offset):this(patch){normalOffset=offset;}
-    internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,double offset){this=source;normalOffset+=offset;cache=default;hasCellProof=false;}
+    internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,double offset){this=source;normalOffset+=offset;cache=default;hasCellProof=false;preparedSection=default;}
     internal SurfaceIntersectionPatch(NestedBlendProgram program,BlendSurfaceIndex root,SurfaceParameterBox domain){bezier=default;blend=program;surface=root;isBlend=true;isSpine=false;Domain=domain;}
     internal SurfaceIntersectionPatch(NestedBlendProgram program,BlendSpineIndex spine,double lower,double upper){bezier=default;blend=program;surface=spine;isBlend=isSpine=true;Domain=new(lower,upper,0,1);}
     // Scalar chart-coordinate adapter, used only for native-t root isolation.
@@ -56,13 +57,26 @@ internal readonly ref struct SurfaceIntersectionPatch
     internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,GeomTag tag,EntityGeneration generation,KernelSense sense)
     {this=source;cacheTag=tag;cacheGeneration=generation;cacheSense=sense;}
     internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,bool constantU,double parameter,double lower,double upper)
-    {this=source;isoAxis=constantU?(byte)1:(byte)2;isoParameter=parameter;Domain=new(lower,upper,0,1);cache=default;if(source.isoAxis!=0||source.sweepAxis!=0||source.parameterLine)hasCellProof=false;}
+    {this=source;isoAxis=constantU?(byte)1:(byte)2;isoParameter=parameter;Domain=new(lower,upper,0,1);cache=default;preparedSection=default;if(source.isoAxis!=0||source.sweepAxis!=0||source.parameterLine)hasCellProof=false;}
     internal SurfaceIntersectionPatch(SurfaceIntersectionPatch curve,BufferOffset axis,double height)
-    {this=curve;sweepAxis=(byte)(axis+1);Domain=new(curve.Domain.U0,curve.Domain.U1,-height,height);cache=default;hasCellProof=false;}
+    {this=curve;sweepAxis=(byte)(axis+1);Domain=new(curve.Domain.U0,curve.Domain.U1,-height,height);cache=default;hasCellProof=false;preparedSection=default;}
     internal SurfaceIntersectionPatch(SurfaceIntersectionPatch source,double u,double v,double du,double dv,double lower,double upper)
-    {this=source;parameterLine=true;lineU=u;lineV=v;lineDU=du;lineDV=dv;Domain=new(lower,upper,0,1);cache=default;hasCellProof=false;}
+    {this=source;parameterLine=true;lineU=u;lineV=v;lineDU=du;lineDV=dv;Domain=new(lower,upper,0,1);cache=default;hasCellProof=false;preparedSection=default;}
     private SurfaceIntersectionPatch(SurfaceIntersectionPatch source,SurfaceParameterBox cell)
     {this=source;provenCell=cell;hasCellProof=true;}
+    private SurfaceIntersectionPatch(SurfaceIntersectionPatch source,ReadOnlySpan<PreparedNativeSection> prepared)
+    {this=source;preparedSection=prepared;}
+    internal SurfaceIntersectionPatch PrepareNativeSection(Span<PreparedNativeSection> storage,double first,double last)
+    {
+#if KERNEL_TEST_HOOKS
+        if(!UsePreparedSections||!UseCertifiedSectionBounds)return this;
+#endif
+        if(!hasCellProof||!isBlend||isSpine||isoAxis!=1||parameterLine||sweepAxis!=0||normalOffset!=0||supportParameterSide!=0
+            ||isoParameter<provenCell.U0||isoParameter>provenCell.U1||first<provenCell.V0||last>provenCell.V1
+            ||!JointNestedBlendEvaluation.CanBoundExplicitSection(blend,surface))return this;
+        var status=JointNestedBlendEvaluation.PrepareExplicitSection(blend,surface,isoParameter,storage,out var count);
+        return status==AlgorithmStatus.Success?new(this,storage[..count]):this;
+    }
     internal AlgorithmStatus BoundCell(in SurfaceParameterBox cell,Span<IntervalNumber> output,out SurfaceIntersectionPatch certified)
     {
         certified=this;var status=Bound(cell,output);if(status!=AlgorithmStatus.Success||output.Length<9||isoAxis!=0||sweepAxis!=0||parameterLine)return status;
@@ -124,8 +138,12 @@ internal readonly ref struct SurfaceIntersectionPatch
             TestCertifiedSectionBounds++;
 #endif
             if(ModelingPerformance.TryBound(cacheTag,cacheGeneration,cacheSense,surface,false,mapped,output,out var reused,double.NaN,demand))return reused;
-            var started=ModelingPerformance.StartBound();
-            var section=JointNestedBlendEvaluation.BoundExplicitSection(blend,surface,isoAxis==1,isoParameter,new(box.U0,box.U1),output);
+            var started=ModelingPerformance.StartBound();var usePrepared=!preparedSection.IsEmpty;
+#if KERNEL_TEST_HOOKS
+            usePrepared&=UsePreparedSections;if(usePrepared)TestPreparedSectionBounds++;
+#endif
+            var section=usePrepared?JointNestedBlendEvaluation.BoundPreparedSection(preparedSection,new(box.U0,box.U1),output)
+                :JointNestedBlendEvaluation.BoundExplicitSection(blend,surface,isoAxis==1,isoParameter,new(box.U0,box.U1),output);
             ModelingPerformance.EndBound(started);
             if(section==AlgorithmStatus.Success)ModelingPerformance.StoreBound(cacheTag,cacheGeneration,cacheSense,surface,false,mapped,output,section,double.NaN,demand);
             return section;

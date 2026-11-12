@@ -23,12 +23,13 @@ internal static class SurfaceIsoPlaneRoots
     internal enum IsolationFailure:byte{None,CurveBound,MeanValue,NewtonEmpty,NewtonDerivative,NewtonBudget,Subdivision,CellBudget,DomainCoverage}
     [ThreadStatic] internal static IsolationFailure LastFailure;
     [ThreadStatic] internal static IntervalNumber LastUnresolvedInterval,LastRequestedInterval,LastLeft,LastRight,LastDerivative;
-    internal static AlgorithmStatus Find(in SurfaceIntersectionPatch curve,in AnalyticSurface plane,double first,double last,
+    internal static AlgorithmStatus Find(in SurfaceIntersectionPatch source,in AnalyticSurface plane,double first,double last,
         Span<OperationIntersectionPoint> output,ref BufferCount count,double tolerance=1e-10,bool strictSeparation=false,
         Span<ScalarRootIsolation> isolation=default,RootIsolationUse use=RootIsolationUse.SurfaceBoundary)
     {
         using var profile=new ModelingPerformance.RootIsolationScope(use);
         if(!AnalyticLevelSet.Supported(plane))return AlgorithmStatus.Unsupported;
+        Span<PreparedNativeSection> section=stackalloc PreparedNativeSection[2];var curve=source.PrepareNativeSection(section,first,last);
         LastFailure=IsolationFailure.None;LastRequestedInterval=new(first,last);
         Span<double> lower=stackalloc double[128],upper=stackalloc double[128];Span<BufferCount> depths=stackalloc BufferCount[128];
         lower[0]=first;upper[0]=last;depths[0]=0;var pending=1;var visited=0;
