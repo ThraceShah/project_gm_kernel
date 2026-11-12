@@ -19,7 +19,7 @@ internal static unsafe partial class KernelRuntime
         var f=Bodies[body].FirstFaceBody;var curved=false;
         for(var i=0;i<Bodies[body].FaceCountBody;i++,f=Faces[f].NextInBody)
         {
-            var slot=GetSurfaceSlotByTag(Faces[f].SurfTag);if(slot<0||Surfaces[slot].Class is not (SurfaceClass.Plane or SurfaceClass.Cylinder or SurfaceClass.Sphere or SurfaceClass.BSurface or SurfaceClass.BlendSurface))return ParasolidConstants.PK_ERROR_not_implemented;
+            var slot=GetSurfaceSlotByTag(Faces[f].SurfTag);if(slot<0||Surfaces[slot].Class is not (SurfaceClass.Plane or SurfaceClass.Cylinder or SurfaceClass.Cone or SurfaceClass.Torus or SurfaceClass.Sphere or SurfaceClass.BSurface or SurfaceClass.BlendSurface))return ParasolidConstants.PK_ERROR_not_implemented;
             if(Surfaces[slot].Class==SurfaceClass.Sphere&&Faces[f].LoopCount==0)return ParasolidConstants.PK_ERROR_not_implemented;
             curved|=Surfaces[slot].Class!=SurfaceClass.Plane;
         }
@@ -35,7 +35,7 @@ internal static unsafe partial class KernelRuntime
             if(cursor>bytes.Length)return ParasolidConstants.PK_ERROR_memory_full;
             Span<BodyTag> input=stackalloc BodyTag[1]{Bodies[body].Header.Tag};Span<BufferOffset> offsets=stackalloc BufferOffset[2];
             LastRegularClassificationStage=RegularClassificationStage.Read;
-            var error=ReadRegularBoundaries(input,points,vertices,edges,sourceEdges,coedges,loops,faces,sources,owners,offsets,out var np,out var ne,out var nc,out var nl,out var nf);if(error!=0)return error;
+            var error=ReadRegularBoundaries(input,points,vertices,edges,sourceEdges,coedges,loops,faces,sources,owners,offsets,out var np,out var ne,out var nc,out var nl,out var nf,classification:true);if(error!=0)return error;
             LastRegularClassificationStage=RegularClassificationStage.Vertices;
             for(var v=0;v<np;v++)if(ProfileDistance(points[v],point)<=1e-8)
             {*enclosure=ParasolidConstants.PK_enclosure_on_c;*topology=Vertices[vertices[v]].Header.Tag;return 0;}

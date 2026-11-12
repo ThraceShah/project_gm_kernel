@@ -21,7 +21,7 @@ internal static unsafe partial class KernelRuntime
     private static int ReadRegularBoundaries(ReadOnlySpan<BodyTag> bodies,Span<KernelVector3> points,Span<VertexSlot> vertices,
         Span<ModelingEdge> edges,Span<EdgeSlot> sourceEdges,Span<ModelingCoedge> coedges,Span<ModelingLoop> loops,
         Span<ModelingFace> faces,Span<FaceSlot> sources,Span<BufferOffset> owners,Span<BufferOffset> offsets,
-        out BufferCount np,out BufferCount ne,out BufferCount nc,out BufferCount nl,out BufferCount nf,Span<double> vertexPrecisions=default)
+        out BufferCount np,out BufferCount ne,out BufferCount nc,out BufferCount nl,out BufferCount nf,Span<double> vertexPrecisions=default,bool classification=false)
     {
         np=ne=nc=nl=nf=0;
         for(var b=0;b<bodies.Length;b++)
@@ -34,7 +34,8 @@ internal static unsafe partial class KernelRuntime
             {
                 if(nf==faces.Length)return ParasolidConstants.PK_ERROR_not_implemented;
                 var record=Faces[face];var sf=GetSurfaceSlotByTag(record.SurfTag);if(sf<0)return ParasolidConstants.PK_ERROR_missing_geom;
-                if(record.LoopCount==0||Surfaces[sf].Class is not (SurfaceClass.Plane or SurfaceClass.Cylinder or SurfaceClass.Sphere or SurfaceClass.BSurface or SurfaceClass.BlendSurface))return ParasolidConstants.PK_ERROR_not_implemented;
+                if(record.LoopCount==0||Surfaces[sf].Class is not (SurfaceClass.Plane or SurfaceClass.Cylinder or SurfaceClass.Sphere or SurfaceClass.BSurface or SurfaceClass.BlendSurface)
+                    &&!(classification&&Surfaces[sf].Class is SurfaceClass.Cone or SurfaceClass.Torus))return ParasolidConstants.PK_ERROR_not_implemented;
                 if(Surfaces[sf].Class==SurfaceClass.BSurface)
                 {
                     var view=GetBSurfaceView(BSurfaceDataStore[Surfaces[sf].DataIndex]);
@@ -131,6 +132,26 @@ internal static unsafe partial class KernelRuntime
                 else if(analytic.Kind==SurfaceClass.Sphere)
                 {
                     var upper=OperationIntersection.Norm(Sub(point,analytic.Origin))+analytic.Radius;
+                    var status=OperationIntersection.AnalyticLine(analytic,point,direction,0,upper+1e-8*Math.Max(1,upper),roots,out n);
+                    if(status!=AlgorithmStatus.Success)return IntersectionError(status);
+                }
+                else if(analytic.Kind is SurfaceClass.Cone or SurfaceClass.Torus)
+                {
+                    double upper;
+                    if(analytic.Kind==SurfaceClass.Torus)
+                        upper=OperationIntersection.Norm(Sub(point,analytic.Origin))+analytic.Radius+analytic.Secondary;
+                    else
+                    {
+                        // Cauchy's bound contains every root of the cone's
+                        // line polynomial, before the existing finite trim test.
+                        var delta=Sub(point,analytic.Origin);var z=Dot(delta,analytic.Axis);var dz=Dot(direction,analytic.Axis);
+                        var radial=Sub(delta,Scale(analytic.Axis,z));var dr=Sub(direction,Scale(analytic.Axis,dz));
+                        var radius=analytic.Radius+analytic.Secondary*z;var slope=analytic.Secondary*dz;
+                        var a=Dot(dr,dr)-slope*slope;var b=2*(Dot(radial,dr)-radius*slope);var c=Dot(radial,radial)-radius*radius;
+                        if(a==0&&b==0){if(c==0)return ParasolidConstants.PK_ERROR_cant_do_intersect;continue;}
+                        upper=a==0?1+Math.Abs(c/b):1+Math.Max(Math.Abs(b/a),Math.Abs(c/a));
+                    }
+                    if(!double.IsFinite(upper))return ParasolidConstants.PK_ERROR_eval_failure;
                     var status=OperationIntersection.AnalyticLine(analytic,point,direction,0,upper+1e-8*Math.Max(1,upper),roots,out n);
                     if(status!=AlgorithmStatus.Success)return IntersectionError(status);
                 }

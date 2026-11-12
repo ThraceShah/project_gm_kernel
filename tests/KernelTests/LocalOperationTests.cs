@@ -120,6 +120,49 @@ public unsafe class LocalOperationTests:IDisposable
     }
 
     [Theory]
+    [InlineData(false,false)] [InlineData(true,false)] [InlineData(false,true)] [InlineData(true,true)]
+    public void CylindricalBlendClassificationUsesFiniteFacesAndReturnsOwnedTopology(bool chamfer,bool both)
+    {
+        int body=0;Assert.Equal(0,KernelRuntime.BodyCreateSolidCyl(3,6,null,&body));var selected=Tags(body,1);
+        SetBlend(both?selected:new[]{selected[0]},chamfer,.4);Fix(body);
+        for(var reload=0;reload<2;reload++)
+        {
+            Classify(body,0,3,ParasolidConstants.PK_enclosure_inside_c,ParasolidConstants.PK_CLASS_region);
+            Classify(body,3.01,3,ParasolidConstants.PK_enclosure_outside_c,ParasolidConstants.PK_CLASS_region);
+            Classify(body,0,-.01,ParasolidConstants.PK_enclosure_outside_c,ParasolidConstants.PK_CLASS_region);
+            Classify(body,3,3,ParasolidConstants.PK_enclosure_on_c,ParasolidConstants.PK_CLASS_face);
+            Classify(body,0,0,ParasolidConstants.PK_enclosure_on_c,ParasolidConstants.PK_CLASS_face);
+            Classify(body,0,6,ParasolidConstants.PK_enclosure_on_c,ParasolidConstants.PK_CLASS_face);
+            foreach(var tag in Tags(body,1))
+            {
+                var edge=KernelRuntime.Edges[KernelRuntime.ResolveTagRecord(tag).Slot];var vector=new PK_VECTOR_s();
+                Assert.Equal(0,KernelRuntime.CurveEval(edge.CurveTag,.713,0,&vector));int enclosure,topology;
+                Assert.Equal(0,KernelRuntime.BodyContainsVector(body,vector,&enclosure,&topology));
+                Assert.Equal(ParasolidConstants.PK_enclosure_on_c,enclosure);Assert.Equal(tag,topology);
+            }
+            if(reload==0)
+            {
+                Assert.Equal(0,XtBrepImportTests.Receive(Transmit(body),out var fresh));
+                Assert.Equal(0,KernelRuntime.EntityDelete(1,&body));body=fresh;
+            }
+        }
+        static void Classify(int body,double radius,double height,int expected,int kind)
+        {
+            var query=new PK_VECTOR_s();query.coord[0]=radius;query.coord[2]=height;int enclosure,topology,actualKind;
+            Assert.Equal(0,KernelRuntime.BodyContainsVector(body,query,&enclosure,&topology));Assert.Equal(expected,enclosure);
+            Assert.Equal(0,KernelRuntime.EntityAskClass(topology,&actualKind));Assert.Equal(kind,actualKind);
+            var slot=KernelRuntime.ResolveTagRecord(topology).Slot;
+            if(kind==ParasolidConstants.PK_CLASS_face)Assert.Contains(topology,Tags(body,0));
+            else
+            {
+                var region=Record(body).FirstRegion;var found=false;
+                for(var i=0;i<Record(body).RegionCount;i++,region=KernelRuntime.Regions[region].NextInBody)found|=region==slot;
+                Assert.True(found);Assert.Equal(expected==ParasolidConstants.PK_enclosure_inside_c,KernelRuntime.Regions[slot].IsSolid!=0);
+            }
+        }
+    }
+
+    [Theory]
     [InlineData(false)] [InlineData(true)]
     public void UnequalChamferRespectsDesignatedFirstSupportFace(bool swapFaces)
     {
