@@ -67,6 +67,17 @@ foreach (var entry in byId.Values.Where(c => c["suite"]?.GetValue<string>() == "
     enabled.Add((JsonNode?)JsonValue.Create(entry["id"]!.GetValue<string>()));
 }
 
+// Planar edit fixtures: the edit loop now captures the real input body before
+// the operation and the real output bodies at return; one case runs exactly its
+// own fixture via the selector.
+foreach (var entry in byId.Values.Where(c => c["suite"]?.GetValue<string>() == "planar-edit"))
+{
+    var id = entry["id"]!.GetValue<string>();
+    entry["selector"] = id["planar-edit.".Length..];
+    entry["meshAdapter"] = true;
+    enabled.Add((JsonNode?)JsonValue.Create(id));
+}
+
 // PK-native XT corpus fixtures: the original case is a PK corpus/schema check
 // plus a managed transmit round-trip, so the display is the real PK fixture body
 // with an explicit pk-only scope (no GM modelling equivalence is implied).

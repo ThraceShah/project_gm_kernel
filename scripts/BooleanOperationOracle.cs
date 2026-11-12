@@ -10,6 +10,7 @@
 global using ManagedBodyTag=System.Int32;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Diagnostics;
 using ProjectGmKernel.Native.Runtime;
 using M=ProjectGmKernel.Native.Generated;
 using static parasolid;
@@ -65,8 +66,11 @@ try
                 }
                 catch(Exception ex){failures++;Log("FAIL "+label+": "+ex.Message);}
             }
-            foreach(var fixture in specialized||WebProgressCapture.Enabled?[]:new[]{"imprint","oblique-imprint","trim-keep","trim-remove","section-both","section-front","section-back","section-miss","section-coincident"})
+            foreach(var fixture in specialized?[]:new[]{"imprint","oblique-imprint","trim-keep","trim-remove","section-both","section-front","section-back","section-miss","section-coincident"})
             {
+                // With capture enabled only the registered fixture runs, so one
+                // case maps to exactly one real edit operation.
+                if(WebProgressCapture.Enabled&&!WebProgressCapture.Select(fixture))continue;
                 count++;
                 try
                 {
@@ -419,6 +423,17 @@ static unsafe int BlockWithBasis(bool own,PK_AXIS2_sf_t axis,double dx,double dy
 static unsafe int[] ProduceEdit(bool own,string fixture,out string contract)
 {
     var trim=fixture.StartsWith("trim");var body=trim?Sheet(own):Block(own,0,0,0,2,2,2,0);
+    // Capture the real edit input before the operation consumes it, then record
+    // the real output bodies at each return; the oracle's own comparison gates
+    // stay unchanged.
+    var captureEdit=WebProgressCapture.Enabled&&WebProgressCapture.Select(fixture);
+    if(captureEdit)WebProgressCapture.Before(own,body,[],fixture,[]);
+    var editStarted=Stopwatch.GetTimestamp();
+    int[] Finish(int[] bodies,int error=0)
+    {
+        if(captureEdit)WebProgressCapture.BooleanAfter(own,error==0?bodies:[],Stopwatch.GetElapsedTime(editStarted).TotalMilliseconds,error,0,null);
+        return bodies;
+    }
     var z=fixture=="section-miss"?3:fixture=="section-coincident"?0:trim?0:1;
     var axis=new PK_AXIS2_sf_t(new(0,0,z),trim?new(1,0,0):fixture=="oblique-imprint"?new(1/Math.Sqrt(2),0,1/Math.Sqrt(2)):new(0,0,1),new(0,1,0));
     int plane=0;var pd=new PK_PLANE_sf_t(axis);
@@ -433,14 +448,14 @@ static unsafe int[] ProduceEdit(bool own,string fixture,out string contract)
             Check(KernelRuntime.BodySectionWithSurf(body,plane,&o,&r),"own section");
             contract=$"{r.front_bodies.length}/{r.back_bodies.length}/{r.front_faces.length}/{r.back_faces.length}";
             var bodies=new ReadOnlySpan<int>(r.front_bodies.array,r.front_bodies.length).ToArray().Concat(new ReadOnlySpan<int>(r.back_bodies.array,r.back_bodies.length).ToArray()).ToArray();
-            if(bodies.Length>0)Require(bodies[0]==body,"own section target identity");KernelRuntime.SectionResultFree(&r);return bodies;
+            if(bodies.Length>0)Require(bodies[0]==body,"own section target identity");KernelRuntime.SectionResultFree(&r);return Finish(bodies);
         }
         else
         {
             PK_section_r_t r=default;Check(PK_BODY_section_with_surf(body,plane,&options,&r),"PK section");
             contract=$"{r.front_bodies.length}/{r.back_bodies.length}/{r.front_faces.length}/{r.back_faces.length}";
             var bodies=new ReadOnlySpan<int>(r.front_bodies.array,r.front_bodies.length).ToArray().Concat(new ReadOnlySpan<int>(r.back_bodies.array,r.back_bodies.length).ToArray()).ToArray();
-            if(bodies.Length>0)Require(bodies[0]==body,"PK section target identity");PK_section_r_f(&r);return bodies;
+            if(bodies.Length>0)Require(bodies[0]==body,"PK section target identity");PK_section_r_f(&r);return Finish(bodies);
         }
     }
     int count=0;int* edges=null;
@@ -455,7 +470,7 @@ static unsafe int[] ProduceEdit(bool own,string fixture,out string contract)
         Check(own?KernelRuntime.BodyTrim(body,count,edges,1,&face,keep):PK_BODY_trim(body,count,edges,1,&face,keep),"trim sheet");
     }
     if(own)KernelRuntime.MemoryFree(edges);else PK_MEMORY_free(edges);
-    return [body];
+    return Finish([body]);
 }
 static unsafe int Sheet(bool own)
 {
