@@ -747,5 +747,26 @@ MCP 的优化求值器空调用表也不是没有内部调用的证据。
 `native-chart-anchor-managed-v1.log/.exit` 37/37 raw 0；该修正没有签署仍失败的
 新增联合 Boolean。周期 native phase 的六个数学包围检查另为
 `periodic-support-phase-math-v1.log/.exit` 6/6 raw 0，仍需真实周期 PK 消费者验收。
+
+### 搜索分片与原生有限域分开验收
+
+解析 Line/Circle/Ellipse spine 的辅助 CHART 分片用于候选搜索，不构成新的模型边界。
+`ParametricSurfaceIntersection.Isolate` 现在接收明确的原生有限域，最终根包围仍须
+整体落入该域；数学扩展域的根仍不自动属于有限输入。Runtime 仅对实际显式解析
+spine 的 Blend 提供原 surface record 的 UV 和原边 native t 域。隐式 spine、
+一般曲面和原搜索预算保持各自原合同，未改成一个大搜索单元。
+新增制造解同时验证内部分片交界可接受、真实有限域外必须拒绝和零托管分配。
+
+在研组合的 `native-finite-system-integrated-managed-v1.log/.exit` 301/301 raw 0；
+它不签署其后源码。`native-finite-system-default-v2.log/.exit` 的真实 Native assembly
+为 100f847eb5c99a998fe6b1069ed3e1d0f40319d712b92392ac0bf84322632291，默认原生自建
+Fix、同模型双工具 Boolean、fresh XT fullcheck/strict compare、有限 ICurve/UV 通过，
+raw 2 单独保留 3 项物性区间 Unresolved。该开发组合还含未提交的端点/UV候选，
+不是上述单个提交的独立资格或完整交付。新增镜像尺度联合场景仍未通过；其实际
+运行已从裁剪推进到分割及 arrangement，不能以阶段推进签署最终 body。
+
+另一个同轴弧半开射线计数试验导致默认 Fix 材料选择失败，原始
+`native-finite-system-default-v1.log/.exit` raw 134 保留。该候选已撤回，默认 v2
+恢复通过；不能只依靠其制造解或较晚的失败阶段保留一个改变分类的近似规则。
 原510/588U、统一固定包、完整最终回归、周期分支、Mac及集中独立接受仍须按实际
 新源执行；本节不替随后source或未执行范围取得资格。

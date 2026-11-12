@@ -162,12 +162,20 @@ internal static unsafe partial class KernelRuntime
         Span<SurfaceIntersectionNode> roots=stackalloc SurfaceIntersectionNode[64];
         Span<IsolatedRootCertificate> certificates=stackalloc IsolatedRootCertificate[64],accepted=stackalloc IsolatedRootCertificate[output.Length];
         var patches=RegularSurfacePatchCount(surface);if(patches==0)return AlgorithmStatus.Unsupported;
+        ParameterCell? nativeDomain=null;var definition=Surfaces[surface];
+        if(definition.Class==SurfaceClass.BlendSurface)
+        {
+            var blend=BlendedEdgeDataPool[definition.DataIndex];var owner=GetNestedBlendProgram(blend,definition);
+            var gauge=owner.Spines[owner.Surfaces[blend.ProgramRoot].Spine].Curve.Kind;
+            if(gauge is CurveClass.Line or CurveClass.Circle or CurveClass.Ellipse)
+                nativeDomain=new ParameterCell{Lower=new(){U=definition.UMin,V=definition.VMin,S=edge.Start},Upper=new(){U=definition.UMax,V=definition.VMax,S=edge.End}};
+        }
         for(var i=0;i<patches;i++)
         {
             var status=RegularSurfacePatch(surface,i,extent,poles,out var patch);if(status!=AlgorithmStatus.Success)return status;
             var box=patch.Domain;if(!(box.U1>box.U0&&box.V1>box.V0))continue;
             var search=new ParameterCell{Lower=new(){U=box.U0,V=box.V0,S=edge.Start},Upper=new(){U=box.U1,V=box.V1,S=edge.End}};
-            status=ParametricSurfaceIntersection.Isolate(patch,path,search,3,roots,out var n,certificates);if(status!=AlgorithmStatus.Success)return status;
+            status=ParametricSurfaceIntersection.Isolate(patch,path,search,3,roots,out var n,certificates,nativeDomain);if(status!=AlgorithmStatus.Success)return status;
             for(var r=0;r<n;r++)
             {
                 var proof=certificates[r];var interval=new IntervalNumber(proof.Second.U0,proof.Second.U1);

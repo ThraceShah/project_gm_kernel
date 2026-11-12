@@ -8,6 +8,34 @@ namespace KernelTests;
 
 public class ParametricSurfaceIntersectionTests
 {
+    [Theory]
+    [InlineData(1,1)] [InlineData(.2,0)]
+    public void SearchPartitionBoundaryDoesNotReplaceTheNativeFiniteDomain(double nativeEnd,int expected)
+    {
+        Span<IntervalNumber> poles=stackalloc IntervalNumber[16]
+            {0,0,0,1, 0,1,0,1, 1,0,0,1, 1,1,0,1};
+        var station=1.0/3;
+        Span<IntervalNumber> line=stackalloc IntervalNumber[8]{station,.4,-1,1,station,.4,1,1};
+        var surface=new SurfaceIntersectionPatch(new BezierSurfacePatch(poles,1,1,new(0,1,0,1)));
+        var curve=new SurfaceIntersectionPatch(new BezierSurfacePatch(line,1,0,new(0,1,0,1)));
+        var search=new ParameterCell{Lower=new(),Upper=new(){U=station,V=1,S=1}};
+        var native=search;native.Upper.U=nativeEnd;
+        Span<SurfaceIntersectionNode> roots=stackalloc SurfaceIntersectionNode[4];
+        Span<IsolatedRootCertificate> proof=stackalloc IsolatedRootCertificate[4];
+        Assert.Equal(AlgorithmStatus.Success,ParametricSurfaceIntersection.Isolate(surface,curve,search,3,roots,out var count,proof,native));
+        Assert.Equal(expected,count);
+        if(count!=0)
+        {
+            Assert.InRange(station,proof[0].First.U0,proof[0].First.U1);
+            Assert.True(IsolatedRootCertificate.Contains(native.First,proof[0].First));
+            Assert.True(IsolatedRootCertificate.Contains(proof[0].FirstDomain,proof[0].First));
+        }
+        var before=GC.GetAllocatedBytesForCurrentThread();
+        var status=ParametricSurfaceIntersection.Isolate(surface,curve,search,3,roots,out count,proof,native);
+        var allocated=GC.GetAllocatedBytesForCurrentThread()-before;
+        Assert.Equal(AlgorithmStatus.Success,status);Assert.Equal(expected,count);Assert.Equal(0,allocated);
+    }
+
     [Fact]
     public void TransversePlanarPatchesDiscoverTheCompleteOpenBranch()
     {

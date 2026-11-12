@@ -229,8 +229,9 @@ internal static class ParametricSurfaceIntersection
 
     internal static AlgorithmStatus Isolate(in SurfaceIntersectionPatch first,in SurfaceIntersectionPatch second,
         in ParameterCell domain,BufferOffset fixedAxis,Span<SurfaceIntersectionNode> roots,out BufferCount rootCount,
-        Span<IsolatedRootCertificate> certificates=default)
+        Span<IsolatedRootCertificate> certificates=default,ParameterCell? nativeDomain=null)
     {
+        var finiteDomain=nativeDomain??domain;
         rootCount = 0;LastRootFailure=GraphFailure.None;LastRootFixedAxis=fixedAxis;
         Span<ParameterCell> pending = stackalloc ParameterCell[160]; pending[0] = domain; var count = 1; var visited = 0;
         Span<IntervalNumber> f = stackalloc IntervalNumber[3]; Span<IntervalNumber> jac = stackalloc IntervalNumber[12];
@@ -301,11 +302,11 @@ internal static class ParametricSurfaceIntersection
                     {
                         // A root certified on a mathematical extension is
                         // not automatically in either finite input domain.
-                        if(!IsolatedRootCertificate.Overlaps(domain.First,enclosure.First)||!IsolatedRootCertificate.Overlaps(domain.Second,enclosure.Second))continue;
+                        if(!IsolatedRootCertificate.Overlaps(finiteDomain.First,enclosure.First)||!IsolatedRootCertificate.Overlaps(finiteDomain.Second,enclosure.Second))continue;
                         if(Contraction(jac,axes,inverse,expanded)>=1)goto Subdivide;
-                        if(!IsolatedRootCertificate.Contains(domain.First,enclosure.First)||!IsolatedRootCertificate.Contains(domain.Second,enclosure.Second))
+                        if(!IsolatedRootCertificate.Contains(finiteDomain.First,enclosure.First)||!IsolatedRootCertificate.Contains(finiteDomain.Second,enclosure.Second))
                         {
-                            if(!ExactFiniteCornerRoot(first,second,domain,expanded,axes,out var corner))goto Subdivide;
+                            if(!ExactFiniteCornerRoot(first,second,finiteDomain,expanded,axes,out var corner))goto Subdivide;
                             point=corner;anchor=enclosure=new(){Lower=corner,Upper=corner};
                         }
                         else
