@@ -6,6 +6,7 @@
 #:property UseParasolidScriptHost=true
 #:property AllowUnsafeBlocks=true
 #:property UseWebProgressCapture=true
+#:property UseRootSectionTrace=true
 using static parasolid;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -22,6 +23,7 @@ using FaceSlot=System.Int32;
 using FinSlot=System.Int32;
 using VertexSlot=System.Int32;
 Console.WriteLine("GM_ASSEMBLY sha256="+Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(typeof(KernelRuntime).Assembly.Location))));
+RootSectionTrace.Install();
 KernelRuntime.ForbidLegacyRegularBlendAssembly=args.Contains("--event-arrangement",StringComparer.Ordinal);
 if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
     KernelRuntime.TraceRollingNetwork=trace=>

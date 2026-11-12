@@ -12,6 +12,9 @@ namespace ProjectGmKernel.Native.Geometry.Intersection;
 // complete boundary and transverse-section isolation decide its connectivity.
 internal static class SurfacePlaneIntersection
 {
+    internal delegate void SectionTrace(long invocation,in SurfaceIntersectionPatch patch,in AnalyticSurface support,BufferOffset axis,double at,double first,double last,double tolerance,bool strictSeparation,bool certified,byte consumer,BufferCount remaining,AlgorithmStatus status,ReadOnlySpan<OperationIntersectionPoint> points,ReadOnlySpan<ScalarRootIsolation> isolations,long cells,long jacobians,long bounds);
+    internal static SectionTrace? TraceSections;
+    [ThreadStatic] private static long traceSequence;
     [ThreadStatic] internal static SurfaceParameterBox LastUnresolvedBox;
     [ThreadStatic] internal static BufferCount LastUnresolvedDepth;
     [ThreadStatic] internal static BufferOffset LastUnresolvedFreeAxis;
@@ -33,6 +36,7 @@ internal static class SurfacePlaneIntersection
     {
         if(!AnalyticLevelSet.Supported(plane))return AlgorithmStatus.Unsupported;
         LastUnresolvedBudget=false;LastBoundaryFailure=BoundaryFailure.None;
+        var invocation=TraceSections!=null&&ModelingPerformance.RootSectionTraceActive?++traceSequence:0;
         Span<SurfaceParameterBox> pending=stackalloc SurfaceParameterBox[128];
         Span<BufferCount> depths=stackalloc BufferCount[128];pending[0]=patch.Domain;depths[0]=0;var count=1;var visited=0;
         Span<IntervalNumber> bounds=stackalloc IntervalNumber[9];
@@ -87,7 +91,7 @@ internal static class SurfacePlaneIntersection
                     status=BoundaryNode(patch,plane,axis,at,upper,boundary,ref n,tolerance);if(status!=AlgorithmStatus.Success)goto Retry;
                     continue;
                 }
-                var nr=0;status=SurfaceIsoPlaneRoots.Find(iso,plane,lower,upper,roots,ref nr,tolerance,strictSeparation,certifiedRoots?isolations:default);if(status!=AlgorithmStatus.Success){LastBoundaryFailure=BoundaryFailure.Roots;goto Retry;}
+                var nr=0;status=FindSection(patch,iso,plane,invocation,axis,at,lower,upper,roots,ref nr,tolerance,strictSeparation,certifiedRoots?isolations:default,0,remaining);if(status!=AlgorithmStatus.Success){LastBoundaryFailure=BoundaryFailure.Roots;goto Retry;}
                 for(var r=0;r<nr;r++)
                 {status=BoundaryNode(patch,plane,axis,at,roots[r].First,boundary,ref n,tolerance,certifiedRoots?isolations[r]:default);if(status!=AlgorithmStatus.Success){LastBoundaryFailure=BoundaryFailure.Node;goto Retry;}}
             }
@@ -107,7 +111,7 @@ internal static class SurfacePlaneIntersection
                 }
                 var lower=free==0?cell.V0:cell.U0;var upper=free==0?cell.V1:cell.U1;
                 var iso=new SurfaceIntersectionPatch(patch,free==0,at,lower,upper);var nr=0;
-                status=SurfaceIsoPlaneRoots.Find(iso,plane,lower,upper,roots,ref nr,tolerance,strictSeparation,certifiedRoots?isolations:default);if(status!=AlgorithmStatus.Success||nr>1){LastBoundaryFailure=BoundaryFailure.Transverse;goto Retry;}
+                status=FindSection(patch,iso,plane,invocation,free,at,lower,upper,roots,ref nr,tolerance,strictSeparation,certifiedRoots?isolations:default,1,remaining);if(status!=AlgorithmStatus.Success||nr>1){LastBoundaryFailure=BoundaryFailure.Transverse;goto Retry;}
                 if(nr==0)continue;
                 status=AddSegment(patch,cell,boundary[i],boundary[i+1],nodes,ref nodeCount,segments,ref segmentCount);if(status!=AlgorithmStatus.Success)return status;
             }
@@ -130,6 +134,18 @@ internal static class SurfacePlaneIntersection
             pending[count]=split==0?new(middle,cell.U1,cell.V0,cell.V1):new(cell.U0,cell.U1,middle,cell.V1);depths[count++]=depth+1;
         }
         return deferIsolatedPoints?AlgorithmStatus.Success:ValidateGraph(nodes[..nodeCount],segments[..segmentCount]);
+    }
+
+    private static AlgorithmStatus FindSection(in SurfaceIntersectionPatch patch,in SurfaceIntersectionPatch iso,in AnalyticSurface plane,long invocation,BufferOffset axis,double at,double first,double last,Span<OperationIntersectionPoint> output,ref BufferCount count,double tolerance,bool strictSeparation,Span<ScalarRootIsolation> isolation,byte consumer,BufferCount remaining)
+    {
+        var before=invocation==0?default:ModelingPerformance.RootSectionTraceCounters();
+        var status=SurfaceIsoPlaneRoots.Find(iso,plane,first,last,output,ref count,tolerance,strictSeparation,isolation);
+        if(invocation!=0)
+        {
+            var after=ModelingPerformance.RootSectionTraceCounters();
+            TraceSections?.Invoke(invocation,patch,plane,axis,at,first,last,tolerance,strictSeparation,!isolation.IsEmpty,consumer,remaining,status,output[..count],isolation.IsEmpty?default:isolation[..count],after.Cells-before.Cells,after.Jacobians-before.Jacobians,after.Bounds-before.Bounds);
+        }
+        return status;
     }
 
     internal static AlgorithmStatus ValidateGraph(ReadOnlySpan<SurfaceIntersectionNode> nodes,ReadOnlySpan<SurfaceIntersectionSegment> segments)

@@ -31,6 +31,7 @@ internal readonly ref struct SurfaceIntersectionPatch
     private readonly EntityGeneration cacheGeneration;
     private readonly KernelSense cacheSense;
     internal SurfaceParameterBox Domain{get;}
+    internal (GeomTag Tag,EntityGeneration Generation,KernelSense Sense,BufferOffset Root,bool Blend,bool Spine) RootSectionTraceIdentity=>(cacheTag,cacheGeneration,cacheSense,surface,isBlend,isSpine);
     internal bool IsProcedural=>isBlend||normalOffset!=0;
     internal bool UVariable=>isBlend||bezier.UDegree>0;
     internal bool VVariable=>isBlend&&!isSpine||bezier.VDegree>0;

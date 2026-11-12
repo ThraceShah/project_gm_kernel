@@ -129,6 +129,8 @@ internal static unsafe class ModelingPerformance
     internal static void SplinePointColumns(){if(current!=null&&current->Capture)current->Profile.DirectSplinePointColumns+=3;}
     internal static void JacobianRecord(BufferCount nodes,bool rebind)
     {if(current!=null&&current->Capture){if(rebind)current->Profile.JacobianRecordRebinds++;else{current->Profile.JacobianRecordBuilds++;current->Profile.JacobianRecordNodes+=nodes;}}}
+    internal static bool RootSectionTraceActive=>current!=null&&current->Capture;
+    internal static (long Cells,long Jacobians,long Bounds) RootSectionTraceCounters()=>current==null?default:(current->Profile.RootCells,current->Profile.JacobianCalls,current->Profile.BoundEvaluations);
     internal static void BoundRequest(){if(current!=null&&current->Capture)current->Profile.BoundRequests++;}
     internal static long StartBound()=>current!=null&&current->Capture?Stopwatch.GetTimestamp():0;
     internal static void EndBound(long started)
