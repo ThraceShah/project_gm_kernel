@@ -30,4 +30,16 @@ curved共5328次BoundSegment（含显示/检查），immutable阶段384次成功
 
 两项Mac旧失败已按真实消费者排查：原fixture的u求界成功，uv求界raw状态NotConverged集中在最后CHART和其上端点（不是修改测试先验）；点求值成功。BoundSpineSupportSection只允许longitudinal>0来用atan(lateral/longitudinal)，因此无法覆盖严格lateral>0而longitudinal跨0的真实右角端点。现在保留原x>0分支，另在严格y>0时用等价π/2−atan(x/y)，π/2向外包围、导数同原商法则。原sine/nearest/分支/有限检查保留；两者均不具严格符号时仍NotConverged，不以误差或采样放行。没有改预算、容差或原测试期望。
 
-包括原两失败和新增半平面制造导数/原点/负轴失败控制在内，54项集中窄验实际原0；这不补签旧1654的1998/2000 raw1，也尚不等于本新源完整suite全绿。初次诊断helper遗漏AllowUnsafeBlocks导致编译原1留存；U与UV两个独立probe的原输出分别保留，不能把U成功误写为UV成功。最终几何/lifecycle、回滚、必要一次稳定测量与集中独审仍按完整目标推进。
+包括原两失败和新增半平面制造导数/原点/负轴失败控制在内，54项集中窄验实际原0；这不补签旧1654的1998/2000 raw1。初次诊断helper遗漏AllowUnsafeBlocks导致编译原1留存；U与UV两个独立probe的原输出分别保留，不能把U成功误写为UV成功。
+
+## 固定完整候选1850534的实际闭环
+
+计算SHA `1850534979379127c8452e85ec2682a86470d96e`；Native树 `1161094e9feff6e92df51f7ac2f16ceba4a42893`，src树 `c53d5d4bc42111fef62cdb08d32bda38f3ff346d`。完整Mac套件实际**2019执行/2019pass/0fail/0skip，build0/test0，约6分钟**；原两SupportingBlend测试期望和已有失败/回滚控制未改。原1654两失败/首次栈溢出、旧raw1与全部历史窗口均不回写。没有Linux/Windows全绿或普遍性能因果声明。
+
+八组实际当前几何闭环source均1850534，捕获无errors/fail：curved/NURBS/std各原2，pass/missing为14/13、16/13、35/17；rigid.125原0且51/1 missing保留；exactmirror8原2且29/23；shortedge双产品生命周期copy/删源/镜像缩放/cut1/可编辑自XT reload/cut2/cleanup原2且133/77；NURBS生命周期原2且16/13；curved中间subtract/reload后Boolean原2且17/26。真实PK fresh receive/full/strict/finite、modulus物性、实际input provenance/roles缺失保持当前三态合同，导出/显示/检查在真实来源上，不用point-only脚本。单操作与下游组合分别验收。
+
+最终普通三操作Jac为**672/4179/18822**，对accepted1654的2688/4648/18951；各根/SSI/roots/winding/budget保持。有限8槽探查后curved恰为96×7次，而NURBS少67×7次；这是实际工作量减少，不是CPU占比或最终倍率。只有cold开发完整操作数据，必要稳定同机窗口尚未执行，不挂旧−11.97%、旧217或185之前的倍率。
+
+八组实际loaded Native MVID `b53b178e-b0ac-46d6-99c9-e48970e75ea3`、DLL SHA `a5289e5c8eed72e42f69e8429688cfb62aa5cf21a73997fc9fa1600a9f9b5347`。完整套件testhooks Native MVID `dda9c0b8-6f0e-4b7a-a98c-9a650a9fce10`、SHA `3284174582bdb03c9cebe4a31bc1c711f786ab9b5ddca351ce2cb01236930766`；Tests MVID `543ae321-61ca-46b1-92a8-d59f9e9c75ad`、SHA `42e1b47850ff66bafba29a0fb08130986d8c8f29f587bc6dd61a8f3597a59b18`。共10个PE/portable-PDB链接逐核335 Native/166 tests tracked文档，generated/unmapped另列；三个测试DLL和三个PDB前后字节相同。普通producer实际loaded见证与测试sealed文件/前后清单见证分列，未补造start/end或测试loader观察。
+
+机器收据为 `docs/joint-work/quality-receipt.json` 与 `docs/joint-work/source-binary-binding.json`。全部原件在 `temp_docs/joint-work/`，补正owner三操作原件104文件经逐hash复制到owner-trace-original并保留原路径来源。核验器原0只签字节/来源一致，不把七个模型原2洗成0，也不签当前包独立接受、main集成或发布。下一步是这一固定完整包的一次集中主要算法/集成接受和必要稳定同机公共当前门测量；PK整体目标仍未完成。
