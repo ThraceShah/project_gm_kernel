@@ -27,13 +27,15 @@ internal static unsafe class ModelingPerformance
     internal static bool CacheEnabled=true;
     [ThreadStatic] internal static ModelingProfile Last;
     [ThreadStatic] private static Context* current;
+    [ThreadStatic] private static long jointProbeScope;
+    internal static (long Scope,bool Immutable,KernelRuntime.RegularBooleanStage Stage,RootIsolationUse RootUse) JointProbeContext=>current==null?(0,false,KernelRuntime.RegularBooleanStage.None,RootIsolationUse.Other):(current->JointProbeScope,current->CacheAllowed,current->Stage,current->RootUse);
     private const BufferCount CacheCapacity=32768,CacheProbeLimit=32;
 
     internal struct Context
     {
         internal BoundEntry* Entries;
         internal bool Capture,CacheAllowed,CacheAttempted;
-        internal long Started,StageStarted;
+        internal long Started,StageStarted,JointProbeScope;
         internal KernelRuntime.RegularBooleanStage Stage;
         internal RootIsolationUse RootUse;
         internal ModelingProfile Profile;
@@ -57,7 +59,7 @@ internal static unsafe class ModelingPerformance
         private readonly Context* context;
         internal Scope(Context* target,bool immutableGeometry=false)
         {
-            context=target;previous=current;*target=default;target->Capture=Enabled;
+            context=target;previous=current;*target=default;target->Capture=Enabled;target->JointProbeScope=++jointProbeScope;
             if(target->Capture)target->Started=target->StageStarted=Stopwatch.GetTimestamp();
             target->CacheAllowed=CacheEnabled&&immutableGeometry;
             current=target;

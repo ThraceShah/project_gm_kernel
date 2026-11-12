@@ -11,7 +11,7 @@ namespace ProjectGmKernel.Native.Geometry.Evaluation;
 internal static partial class JointNestedBlendEvaluation
 {
     private const BufferCount MaxOccurrences=16,MaxVariables=63;
-    private struct Occurrence
+    internal struct Occurrence
     {
         internal BlendSpineIndex Spine;
         internal BufferOffset Offset,Parent,FirstChild,SecondChild;

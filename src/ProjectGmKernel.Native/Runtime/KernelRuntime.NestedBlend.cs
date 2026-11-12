@@ -135,7 +135,7 @@ internal static unsafe partial class KernelRuntime
         var surfaces=new ReadOnlySpan<BlendSurfaceInstruction>(pointer,surfaceCount);pointer+=surfaceCount*sizeof(BlendSurfaceInstruction);
         var spines=new ReadOnlySpan<BlendSpineInstruction>(pointer,spineCount);pointer+=spineCount*sizeof(BlendSpineInstruction);
         var charts=new ReadOnlySpan<BlendChartInstruction>(pointer,chartCount);pointer+=chartCount*sizeof(BlendChartInstruction);
-        return new(surfaces,spines,charts,new ReadOnlySpan<double>(pointer,scalarCount),CommandScratch.Current.AvailableSpanOfDoubles());
+        return new(surfaces,spines,charts,new ReadOnlySpan<double>(pointer,scalarCount),CommandScratch.Current.AvailableSpanOfDoubles(),block);
     }
 
     private static int BindNestedBlendSpineCore(SurfTag first,SurfTag second,in NestedBlendProgram program,BlendSpineIndex root,CurveTag* result,ReadOnlySpan<double> uv)

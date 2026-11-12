@@ -1,0 +1,11 @@
+# Joint共同工作量追踪与后续优化
+
+新开发基线为已独审1654/Native224（公开文档头73b06e1）；完整接受见review/pk-unified-performance-1654@2f8aea492d21f39269e514d9bcd3d8e792e3903b。Mac两NotConverged和三态/描述性性能范围不扩大；旧两个ZIP及已测窗口保持冻结。
+
+先仅做一次有界完整三操作诊断（curved/NURBS/shortedge各fresh pair），不把带诊断API时间当性能测量。临时Native回调无分配，所有JSON/反射/栈与I/O在oracle诊断层；首次把记录器放Native触发AllocationBanCheck原1，原日志及源码留temp_docs/joint-work，不绕检查。
+
+每BoundSegment记录source/generation/sense/ownership的全部live几何保守超集与完整原生program各语义字段（无padding字节，所有double保留bits）、SourceBlock/root/实际occurrence和CHART、原生u/v、中心snapshot、全请求/输出容量/workspace/reach预算和实际require数组。capture输出只读长度、不读未初始化值。每scope有唯一ID与真实immutable标记，scope0/可变阶段单列，不跨scope统计复用。成功tube还记录完成原inclusion/nearest/reach/derivative后的boxes和导数，最终frame成功/失败另列，不把frame失败当无根。
+
+源记录保守地包含无关live几何，所以只能低估匹配率，不能由不同source/tag/CHART悄悄拼成同一键。按不含v的候选层投影统计时仍保留source/program/spine/CHART/occurrence/中心和完整请求；另一层明确限定普通无witness/reach/curvature/参数输出的tube后才允许比较跨v/输出surface需求，不能直接投影已有九输出UV缓存。只有确定的重复数据和实际整体收益才支持后续实现。
+
+上限为每进程300000 BoundSegment，触顶抛出明确诊断异常，不发布不完整追踪为完整。原始definitions/calls JSONL、当前runner所有质量与rawexit、实际DLL/PDB/source identity一起保留。通用当前helper未改，诊断props仅向BooleanOperationOracle显式开启时添加脚本；最终生产改动会移除此临时分支。没有C ABI更动或AOT/Windows运行。

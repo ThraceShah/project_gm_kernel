@@ -141,10 +141,21 @@ internal static partial class JointNestedBlendEvaluation
         output[6]=frame.X.Derivative;output[7]=frame.Y.Derivative;output[8]=frame.Z.Derivative;return AlgorithmStatus.Success;
     }
 
+    private static AlgorithmStatus BoundSegment(in NestedBlendProgram program,BlendSurfaceIndex surface,BlendSpineIndex spine,in SurfaceParameterBox domain,Span<IntervalNumber> output,Span<BufferCount> reachBudget=default,
+        Span<IntervalNumber> curvature=default,BufferOffset curvatureSide=0,Span<IntervalNumber> supportParameter=default,BufferOffset parameterSide=0,
+        Span<IntervalNumber> captureWitness=default,ReadOnlySpan<IntervalNumber> requireWitness=default,BufferOffset rootChart=-1,
+        Span<double> anchorContacts=default,Span<IntervalNumber> acceleration=default,KernelVector3 accelerationNormal=default,
+        Span<BufferOffset> captureCharts=default,ReadOnlySpan<BufferOffset> requireCharts=default)
+    {
+        if(!JointWorkProbe.Enabled)return BoundSegmentCore(program,surface,spine,domain,output,reachBudget,curvature,curvatureSide,supportParameter,parameterSide,captureWitness,requireWitness,rootChart,anchorContacts,acceleration,accelerationNormal,captureCharts,requireCharts);
+        JointWorkProbe.Begin(program,surface,spine,domain,output.Length,reachBudget,curvature.Length,curvatureSide,supportParameter.Length,parameterSide,captureWitness.Length,requireWitness,rootChart,anchorContacts.Length,acceleration.Length,accelerationNormal,captureCharts.Length,requireCharts);
+        var result=AlgorithmStatus.NotRun;try{result=BoundSegmentCore(program,surface,spine,domain,output,reachBudget,curvature,curvatureSide,supportParameter,parameterSide,captureWitness,requireWitness,rootChart,anchorContacts,acceleration,accelerationNormal,captureCharts,requireCharts);return result;}finally{JointWorkProbe.End(result);}
+    }
+
     // Active scratch prefixes are written before use; keep the explicit
     // matrix, RHS and live spline-cache initialization inside their owners.
     [SkipLocalsInit]
-    private static AlgorithmStatus BoundSegment(in NestedBlendProgram program,BlendSurfaceIndex surface,BlendSpineIndex spine,in SurfaceParameterBox domain,Span<IntervalNumber> output,Span<BufferCount> reachBudget=default,
+    private static AlgorithmStatus BoundSegmentCore(in NestedBlendProgram program,BlendSurfaceIndex surface,BlendSpineIndex spine,in SurfaceParameterBox domain,Span<IntervalNumber> output,Span<BufferCount> reachBudget=default,
         Span<IntervalNumber> curvature=default,BufferOffset curvatureSide=0,Span<IntervalNumber> supportParameter=default,BufferOffset parameterSide=0,
         Span<IntervalNumber> captureWitness=default,ReadOnlySpan<IntervalNumber> requireWitness=default,BufferOffset rootChart=-1,
         Span<double> anchorContacts=default,Span<IntervalNumber> acceleration=default,KernelVector3 accelerationNormal=default,
@@ -181,6 +192,7 @@ internal static partial class JointNestedBlendEvaluation
             for(var i=1;i<nodes.Length;i++)
                 if(requireCharts[2*i]!=nodes[i].Spine||requireCharts[2*i+1]!=fixedCharts[i])return AlgorithmStatus.NotConverged;
         }
+        JointWorkProbe.Prepared(nodes,fixedCharts,snapshot,n);
         Span<double> state=stackalloc double[n],jacobian=stackalloc double[n*n],inverse=stackalloc double[n*n],rhs=stackalloc double[n],residual=stackalloc double[n];Span<int> pivots=stackalloc int[n];
         Span<IntervalNumber> boxes=stackalloc IntervalNumber[n],image=stackalloc IntervalNumber[n],centerF=stackalloc IntervalNumber[n];
         Span<IntervalNumber> intervalJacobian=stackalloc IntervalNumber[n*n],remainder=stackalloc IntervalNumber[n*n];
@@ -297,6 +309,7 @@ internal static partial class JointNestedBlendEvaluation
         for(var i=0;i<n;i++)image[i]=-equations[i].Derivative;
         status=substitutedConic?ConicBlockSolve(intervalJacobian[..(n*n)],image[..n])
             :SolveIntervals(intervalJacobian[..(n*n)],image[..n],n);if(status!=AlgorithmStatus.Success)return status;
+        JointWorkProbe.Tube(boxes[..n],image[..n]);
         if(parameterIndex>=0)
         {
             supportParameter[1]=image[parameterIndex];
