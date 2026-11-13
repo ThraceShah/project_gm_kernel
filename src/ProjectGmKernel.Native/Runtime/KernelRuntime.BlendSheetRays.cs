@@ -171,6 +171,13 @@ internal static unsafe partial class KernelRuntime
                 var finite=Surfaces[GetSurfaceSlotByTag(surface)];
                 if(uHit<finite.UMin||uHit>finite.UMax||vHit<finite.VMin||vHit>finite.VMax)continue;
                 if(count==output.Length||count==accepted.Length)return AlgorithmStatus.OutputTooSmall;
+                if(periodic&&TraceFiniteBoundary!=null)
+                {
+                    PK_UV_s hit=default;hit.param[0]=uHit;hit.param[1]=vHit;
+                    TraceFiniteBoundary(new(){Stage=BoundaryTraceStage.NativePeriodicWinding,Curve=edge.Curve,Surface=surface,
+                        Generation=record.Header.Generation,SurfaceGeneration=finite.Header.Generation,First=edge.Start,Last=edge.End,
+                        Source=-1,SourceEdge=-1,SourceFin=-1,Face=-1,Product=-1,Edge=-1,UvStart=query,UvEnd=hit});
+                }
                 accepted[count]=isolated[root];output[count++]=new(){Point=point[0],First=along,Second=roots[root].First,Kind=IntersectionVectorKind.Simple};
             }
         }

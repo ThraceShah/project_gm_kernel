@@ -382,7 +382,12 @@ internal static unsafe partial class KernelRuntime
     internal static int TryAllocateVertices() => Vertices.TryAllocate(out var s) ? s : -1;
     internal static int TryAllocateRegions() => Regions.TryAllocate(out var s) ? s : -1;
     internal static int TryAllocateCurves() => Curves.TryAllocate(out var s) ? s : -1;
-    internal static int TryAllocateSurfaces() => Surfaces.TryAllocate(out var s) ? s : -1;
+    internal static int TryAllocateSurfaces()
+    {
+        if(!Surfaces.TryAllocate(out var slot))return -1;
+        Surfaces[slot].OwnerFace=-1;
+        return slot;
+    }
     internal static int TryAllocateTransforms() => Transforms.TryAllocate(out var s) ? s : -1;
     internal static int TryAllocateCircleData() => CircleDataPool.TryAllocate(out var s) ? s : -1;
     internal static int TryAllocateLineData() => LineDataPool.TryAllocate(out var s) ? s : -1;

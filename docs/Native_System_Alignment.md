@@ -983,3 +983,66 @@ allocation guard 3154 方法 CLEAN，所属 testhost 已退出。
 还揭示另一个独立能力缺口：同圆柱/斜平面、同范围与两点，PK 返回 BLENDSF，
 原生脊线 Ellipse、自然范围 0..2π，GM 返回 5000/未实现。此探针没有建有限
 sheet 或进行 body compare，不能给既有 periodic phase 数学测试补消费者资格。
+
+## 闭合解析脊线进入原生 Blend、有限裁剪及回读链
+
+本节是上述 applicability probe 之后的实际实现。官方 FD 18.2.2/18.3.2.6
+把 Blend 定义为两个支持、带符号的等幅半径及原生 spine/extent，U 沿原曲线、
+V 在接触截弧上。MCP 静态链从 `CNS_blended_edge` 的 offset、`general_case`
+继续到 `ISS_intersect_between_pvecs`、`ISS__seek_intersections` 的解析类别分派，
+`ISS__plane_cylinder` 下含实际 ellipse 构建。Linux PK 38.0.150 的有界 GDB
+`native-periodic-blend-gdb-v3` 实际命中这条 plane/cylinder 分支及
+`MAK_blended_edge`；没有命中本次设置的 curvature-trim/sloping-cylinder
+断点，不声称这些分支已动态覆盖。debugger raw 0 与各次 inferior 自身退出分列。
+
+GM 已有 offset SSI 的精确 Ellipse，只是公开 Blend 创建入口仅接受 Line/Circle，
+随后拒绝 Ellipse。现在直接将同一原生 Ellipse 绑定到既有 Blend compiler；两侧
+offset 的完整系数认证继续执行，不重新采样/拟合一条 ICurve。新入口还要求半径
+严格小于椭圆完整法管的最小曲率半径 `b²/a` 的向外区间下界，未证明或可能奇异
+的整管保持显式拒绝。此充分条件是 GM 的已证明适用边界，不冒称 PK 的全部范围。
+
+spine 的原生 sense 按有序接触径向量的叉积确定，包含两侧 offset 的符号。
+新 mixed-sign 对照最初 strictcompare 失败；同原生 U 的五个截弧采样实际表明
+V 顺序反向，而非可忽略的 chart 数量差异。补上半径符号后，GM 的原生定义、
+求值与 XT 使用同一方向；没有改比较器去白名单这些错误。
+
+实际有限 sheet 消费者又暴露两个共用缺口。其一，旧 `TryAllocateSurfaces`
+给自由圆柱留下 `OwnerFace=0`，当 body 的第一个 face 正好占槽 0，writer 会
+把本应仅作定义依赖的圆柱误写成该 face 的支持。单几何求值正确不证明拥有关系。
+`native-periodic-body-check-gdb-v2` 在真实 PK `TCH__body → num_faces_of_surface`
+处命中错误；原生参考 body 的 `SOL/get_tol` 则只是另一条诊断，未混作 GM 错误。
+分配入口现明确初始化“无 face owner”，没有在导出阶段修补或另造所有权。
+
+其二，SPCurve 的有限 XT edge 恢复要调用原曲线反求，原实现只支持 BSurface
+上的 SPCurve。Blend 上精确原生 UV 定义 `(u=t,v=constant)` 因而丢失有限参数，
+回读仍可传输却无法再建模。现在复用父 Blend 的原生反求，并通过原 SP 曲线 D0
+在原生线性精度内验收；不把父面反求本身当成曲线上点证明。任意非等参 UV 曲线、
+多周期覆盖及跨接缝有限域还没有因此取得资格。
+
+扩展既有 `CurvedSheetPartitionOracle`，让两侧独立执行同参数 API 创建，再分别
+make-sheet、imprint、trim keep/remove、section front/back/both、第二平面及重复
+操作。每步 GM fresh XT 由真实 PK fullcheck，标准 strict helper 仅将 chart
+数量作默认诊断。复制删源、镜像尺度以及各侧自行 XT 回读后再操作另列；GM receive
+还明确要求可编辑，不能靠 opaque 重传取得生命周期通过。新追踪仅报告实际接受的
+周期 winding 根，携带原 curve/surface generation、有限参数及原生 UV；它不改求解。
+
+开发源为 `4dca5f9a` 加本轮固定 diff。生产 Native assembly
+a946cafda903f64a6529605e6dbb11ee3f3f5403e1c6e32c673154737778cd8d 的实际结果：
+
+- `native-periodic-integrated-sheet-suite-v1` raw 0：旧解析/非解析、rational、
+  多 span、闭环及新周期 Blend 共 88 项全部完成 fullcheck/strict，实际接受
+  87 个周期 winding 根，未仅凭新默认模型判框架完成。
+- `native-periodic-blend-mixed-large-v3` raw 0：混合符号、镜像尺度 8、复制删源、
+  可编辑 XT 回读后，九种操作通过，实际周期 winding 根 96。
+- 更早同一机制的镜像 1.7/逆支持次序九项，以及内偏置/镜像尺度 .125 九项各自
+  raw 0，日志分别为 `native-periodic-blend-phase-mirror-v1` 和
+  `native-periodic-blend-inward-small-v1`；它们绑定各自实际程序集，不替后继固定
+  字节补签。前者实际周期根 114，后者早于新增分支追踪。
+
+`native-periodic-definition-managed-v2` 29/29 raw 0 包含复制定义、整周期接触、
+有限 SP 回读反求和离曲线负例及分配失败回滚。后继
+`native-periodic-integrated-full-managed-v1` 已实际完成当前混合符号扩展后的完整
+Release 回归 2159/2159、raw 0，allocation guard CLEAN，所属 testhost 已退出。
+固定包和跨平台关键消费者仍需集中完成；上述 sheet 新能力不等于任意闭合 seam solid、任意高价事件、
+complete/region tracking 或 PK 性能目标全部完成。全部失败开发执行和脚本构建
+错误的 raw exit 独立保留，未被 checker 成功或后次通过覆盖。

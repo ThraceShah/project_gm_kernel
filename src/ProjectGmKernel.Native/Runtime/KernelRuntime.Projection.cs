@@ -101,6 +101,15 @@ internal static unsafe partial class KernelRuntime
             }
             if (best.DistanceUpper > 1e-8) return ParasolidConstants.PK_ERROR_not_on_curve; value = best.U;
         }
+        else if(TryBlendIsoparam(slot,out var blendSupport,out _))
+        {
+            // This native UV definition is exactly (u=t, v=constant).
+            // Reuse the parent inverse and retain the finite parameter curve;
+            // the common D0 check below accepts only an on-curve result.
+            var status=ParameteriseNestedSurface(Surfaces[blendSupport],point,out var uv);
+            if(status!=AlgorithmStatus.Success)return status==AlgorithmStatus.InvalidInput?ParasolidConstants.PK_ERROR_not_on_curve:IntersectionError(status);
+            value=Math.Clamp(uv.param[0],record.TMin,record.TMax);
+        }
         else if(record.Class==CurveClass.SPCurve)
         {
             var data=SpCurveDataPool[record.DataIndex];var support=GetSurfaceSlotByTag(data.SurfTag);var basis=GetCurveSlotByTag(data.BCurveTag);

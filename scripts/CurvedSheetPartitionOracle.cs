@@ -18,7 +18,28 @@ var directory = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ScriptPath()
 if(Directory.Exists(directory))throw new InvalidOperationException("Existing execution evidence is immutable");
 Directory.CreateDirectory(directory); var report = new StringBuilder();
 var filter=args.FirstOrDefault(x=>!x.StartsWith("--",StringComparison.Ordinal));
+var blendLifecycle=args.Contains("--blend-lifecycle",StringComparer.Ordinal);
+var reverseBlendSupports=args.Contains("--reverse-blend-supports",StringComparer.Ordinal);
+var scaleOption=args.SingleOrDefault(x=>x.StartsWith("--blend-scale=",StringComparison.Ordinal));
+var blendScale=scaleOption==null?1:double.Parse(scaleOption["--blend-scale=".Length..],System.Globalization.CultureInfo.InvariantCulture);
+var radiusOption=args.SingleOrDefault(x=>x.StartsWith("--blend-radius=",StringComparison.Ordinal));
+var secondRadiusOption=args.SingleOrDefault(x=>x.StartsWith("--blend-second-radius=",StringComparison.Ordinal));
+var firstRadius=radiusOption==null?.2:double.Parse(radiusOption["--blend-radius=".Length..],System.Globalization.CultureInfo.InvariantCulture);
+var secondRadius=secondRadiusOption==null?firstRadius:double.Parse(secondRadiusOption["--blend-second-radius=".Length..],System.Globalization.CultureInfo.InvariantCulture);
+if(!double.IsFinite(firstRadius)||firstRadius==0||Math.Abs(firstRadius)!=Math.Abs(secondRadius))throw new ArgumentException("equal finite nonzero absolute Blend radii");
+if(!double.IsFinite(blendScale)||blendScale<=0||blendScale!=1&&!blendLifecycle)throw new ArgumentException("positive scale requires Blend lifecycle");
+if((blendLifecycle||reverseBlendSupports||radiusOption!=null||secondRadiusOption!=null)&&filter?.StartsWith("periodic-ellipse-blend",StringComparison.Ordinal)!=true)throw new ArgumentException("periodic Blend family filter required for its lifecycle, radii and support-order controls");
 void Log(string message) { Console.WriteLine(message); report.AppendLine(message); }
+var periodicCrossings=0;
+unsafe
+{
+KernelRuntime.TraceFiniteBoundary=trace=>
+{
+    if(trace.Stage!=KernelRuntime.BoundaryTraceStage.NativePeriodicWinding)return;
+    periodicCrossings++;
+    if(periodicCrossings<=3)Log($"NATIVE_PERIODIC_WINDING curve={trace.Curve}/{trace.Generation} surface={trace.Surface}/{trace.SurfaceGeneration} t={trace.First:R}/{trace.Last:R} query={trace.UvStart.param[0]:R}/{trace.UvStart.param[1]:R} hit={trace.UvEnd.param[0]:R}/{trace.UvEnd.param[1]:R}");
+};
+}
 try
 {
     if (!ParasolidScriptHost.TryStartSession("Independent curved sheet partition oracle", out var host, out var message)) throw new Exception(message);
@@ -30,19 +51,21 @@ try
         {
             if(args.Contains("--precision-lifecycle",StringComparer.Ordinal)){PrecisionLifecycle(directory,Log);return;}
             var failures = 0; var passed = 0;
-            foreach (var kind in new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 })
+            Log("GM_ASSEMBLY sha256="+Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(typeof(KernelRuntime).Assembly.Location))));
+            foreach (var kind in new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 })
             foreach (var operation in new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 })
             {
                 if(kind<8&&operation>=6)continue;
-                if(kind==10&&operation>8)continue;
-                var name = (kind==10?"open-nurbs-blend":kind>=8?(kind==9?"rational":"polynomial")+"-closed-loop":kind == 6 ? "isoparametric-line" : kind == 7 ? "tensor-isoparametric" : (kind % 2 == 1 ? "rational" : "polynomial") + (kind < 2 ? "-bilinear" : kind <4 ? "-cubic" : "-multispan-cubic"))
+                if(kind>=10&&operation>8)continue;
+                var name = (kind==11?"periodic-ellipse-blend":kind==10?"open-nurbs-blend":kind>=8?(kind==9?"rational":"polynomial")+"-closed-loop":kind == 6 ? "isoparametric-line" : kind == 7 ? "tensor-isoparametric" : (kind % 2 == 1 ? "rational" : "polynomial") + (kind < 2 ? "-bilinear" : kind <4 ? "-cubic" : "-multispan-cubic"))
                     + "-" + new[] { "imprint", "trim-keep", "trim-remove", "section-front", "section-back", "section-both", "second-plane", "repeat-plane", "annulus-front", "annulus-back", "annulus-both" }[operation];
                 if(kind==10&&operation>=7)name="open-nurbs-blend-"+(operation==7?"trim-second-plane":"repeat-second-plane");
+                if(kind==11&&operation>=7)name="periodic-ellipse-blend-"+(operation==7?"trim-second-plane":"repeat-second-plane");
                 if(filter!=null&&!name.Contains(filter,StringComparison.Ordinal))continue;
                 try
                 {
                     int[] ours,reference;
-                    if(kind==10)(ours,reference)=ProduceBlendPair(operation);
+                    if(kind>=10)(ours,reference)=ProduceBlendPair(operation,kind==11,directory,reverseBlendSupports,blendLifecycle,blendScale,firstRadius,secondRadius);
                     else {ours=Produce(true,kind,operation);reference=Produce(false,kind,operation);}
                     Require(ours.Length == reference.Length, name + " result count");
                     for(var j=0;j<reference.Length;j++)File.WriteAllBytes(Path.Combine(directory,name+"-"+j+"-reference.x_t"),TransmitReference(reference[j]));
@@ -66,8 +89,10 @@ try
                 catch (Exception ex) { failures++; Log("FAIL " + name + ": " + ex.Message); }
             }
             Require(failures == 0, $"{failures} curved sheet oracle cases failed"); Log($"PASS all {passed} curved sheet cases");
+            if(filter==null||filter.StartsWith("periodic-ellipse-blend",StringComparison.Ordinal))
+            {Log($"NATIVE_PERIODIC_WINDING crossings={periodicCrossings}");Require(periodicCrossings>0,"real periodic native-parameter winding consumer");}
         }
-        finally { Check(KernelRuntime.SessionStop(), "self stop"); }
+        finally { KernelRuntime.TraceFiniteBoundary=null;Check(KernelRuntime.SessionStop(), "self stop"); }
     }
 }
 catch (Exception ex) { Log("FAIL: " + ex.Message); Environment.ExitCode = 1; }
@@ -178,7 +203,7 @@ static unsafe int ReceiveManaged(byte[] bytes)
     {
         var block=new M.PK_MEMORY_block_s{bytes=p,n_bytes=(nuint)bytes.Length};var options=new M.PK_PART_receive_o_s{o_t_version=1,transmit_format=PK_transmit_format_text_c};int n;int* parts;
         Check(KernelRuntime.PartReceiveB(block,&options,&n,&parts),"managed receive native precision fixture");
-        try{Require(n==1,"one editable precision sheet");return parts[0];}finally{if(parts!=null)KernelRuntime.MemoryFree(parts);}
+        try{Require(n==1&&KernelRuntime.TryResolveBodySlot(parts[0],out var body)&&!KernelRuntime.Xt.IsOpaque(body),"one editable native sheet");return parts[0];}finally{if(parts!=null)KernelRuntime.MemoryFree(parts);}
     }
 }
 
@@ -299,35 +324,91 @@ static unsafe int[] Produce(bool self, int kind, int operation)
     finally { Check(self ? KernelRuntime.MemoryFree(edges) : PK_MEMORY_free(edges), "free imprint"); }
 }
 
-static unsafe (int[],int[]) ProduceBlendPair(int operation)
+static unsafe (int[],int[]) ProduceBlendPair(int operation,bool periodic,string directory,bool reverse,bool lifecycle,double scale,double firstRadius,double secondRadius)
 {
     double* poles=stackalloc double[18];for(var i=0;i<3;i++)for(var j=0;j<2;j++){var at=3*(2*i+j);poles[at]=i-1;poles[at+1]=2*j-1;poles[at+2]=(i==1?-.3:.3)+.1*(i-1)*(2*j-1);}
     double* knots=stackalloc double[2]{-1,1};int* um=stackalloc int[2]{3,3};int* vm=stackalloc int[2]{2,2};
     var sf=new PK_BSURF_sf_t{u_degree=2,v_degree=1,n_u_vertices=3,n_v_vertices=2,vertex_dim=3,vertex=poles,n_u_knots=2,n_v_knots=2,u_knot=knots,v_knot=knots,u_knot_mult=um,v_knot_mult=vm,form=PK_BSURF_form_arbitrary_c,u_knot_type=PK_knot_non_uniform_c,v_knot_type=PK_knot_non_uniform_c,self_intersecting=PK_self_intersect_false_c,convexity=PK_convexity_unset_c};
-    int ownSource,nativeSource;Check(KernelRuntime.BSurfCreate((M.PK_BSURF_sf_s*)&sf,&ownSource),"own Blend support");Check(PK_BSURF_create(&sf,&nativeSource),"native Blend support");
-    var wall=new PK_PLANE_sf_t();wall.basis_set.axis=new(0,1,0);wall.basis_set.ref_direction=new(1,0,0);int ownWall,nativeWall;
+    int ownSource,nativeSource;
+    if(periodic)
+    {
+        var cylinder=new PK_CYL_sf_t{radius=1};cylinder.basis_set.axis=new(0,0,1);cylinder.basis_set.ref_direction=new(1,0,0);
+        Check(KernelRuntime.CylCreate((M.PK_CYL_sf_s*)&cylinder,&ownSource),"own periodic Blend support");Check(PK_CYL_create(&cylinder,&nativeSource),"native periodic Blend support");
+    }
+    else{Check(KernelRuntime.BSurfCreate((M.PK_BSURF_sf_s*)&sf,&ownSource),"own Blend support");Check(PK_BSURF_create(&sf,&nativeSource),"native Blend support");}
+    var wall=new PK_PLANE_sf_t();wall.basis_set.axis=periodic?new(0,.6,.8):new(0,1,0);wall.basis_set.ref_direction=new(1,0,0);int ownWall,nativeWall;
     Check(KernelRuntime.PlaneCreate((M.PK_PLANE_sf_s*)&wall,&ownWall),"own Blend wall");Check(PK_PLANE_create(&wall,&nativeWall),"native Blend wall");
-    var options=new PK_SURF_create_blend_o_t();var a=new PK_VECTOR_t(.5,0,.075);var b=new PK_VECTOR_t(-.5,0,.075);int own,native;
-    Check(KernelRuntime.SurfCreateBlend(ownSource,.1,ownWall,.1,*(M.PK_VECTOR_s*)&a,*(M.PK_VECTOR_s*)&b,(M.PK_SURF_create_blend_o_s*)&options,&own),"own independent Blend");
-    Check(PK_SURF_create_blend(nativeSource,.1,nativeWall,.1,a,b,&options,&native),"native independent Blend");
+    var options=new PK_SURF_create_blend_o_t();var a=periodic?new PK_VECTOR_t(1.2,0,.25):new PK_VECTOR_t(.5,0,.075);var b=periodic?new PK_VECTOR_t(0,1.2,-.65):new PK_VECTOR_t(-.5,0,.075);var radius=periodic?firstRadius:.1;var secondRange=periodic?secondRadius:.1;int own,native;
+    Console.WriteLine($"BLEND_INPUT periodic={periodic} first_radius={radius:R} second_radius={secondRange:R} reverse_supports={reverse} lifecycle={lifecycle} scale={scale:R}");
+    Check(PK_SURF_create_blend(reverse?nativeWall:nativeSource,radius,reverse?nativeSource:nativeWall,secondRange,a,b,&options,&native),"native independent Blend");
+    Check(KernelRuntime.SurfCreateBlend(reverse?ownWall:ownSource,radius,reverse?ownSource:ownWall,secondRange,*(M.PK_VECTOR_s*)&a,*(M.PK_VECTOR_s*)&b,(M.PK_SURF_create_blend_o_s*)&options,&own),"own independent Blend");
     var ownDefinition=new M.PK_BLENDSF_sf_s();var nativeDefinition=new PK_BLENDSF_sf_t();
     Check(KernelRuntime.BlendSfAsk(own,&ownDefinition),"own spine");Check(PK_BLENDSF_ask(native,&nativeDefinition),"native spine");
     var ownBox=new M.PK_UVBOX_s();Check(KernelRuntime.SurfAskUvbox(own,&ownBox),"own Blend domain");
-    var lower=ownBox.param[0];var width=ownBox.param[2]-lower;ownBox.param[0]=lower+.4*width;ownBox.param[2]=lower+.6*width;ownBox.param[1]=.15;ownBox.param[3]=.85;
+    var lower=ownBox.param[0];var width=ownBox.param[2]-lower;ownBox.param[0]=lower+(periodic?.08:.4)*width;ownBox.param[2]=lower+(periodic?.18:.6)*width;ownBox.param[1]=.15;ownBox.param[3]=.85;
     var nativeBox=new PK_UVBOX_t();nativeBox.param[1]=.15;nativeBox.param[3]=.85;
+    double nativeMiddle=0;
+    if(periodic)
+    {
+        var p=new M.PK_VECTOR_s();Check(KernelRuntime.CurveEval(ownDefinition.spine,(ownBox.param[0]+ownBox.param[2])*.5,0,&p),"periodic midpoint spine");
+        Check(PK_CURVE_parameterise_vector(nativeDefinition.spine,*(PK_VECTOR_t*)&p,&nativeMiddle),"periodic native lift");
+    }
     for(var end=0;end<2;end++)
     {
         var p=new M.PK_VECTOR_s();Check(KernelRuntime.CurveEval(ownDefinition.spine,ownBox.param[end==0?0:2],0,&p),"own endpoint spine");double t;
-        Check(PK_CURVE_parameterise_vector(nativeDefinition.spine,*(PK_VECTOR_t*)&p,&t),"native endpoint correspondence");nativeBox.param[end==0?0:2]=t;
+        Check(PK_CURVE_parameterise_vector(nativeDefinition.spine,*(PK_VECTOR_t*)&p,&t),"native endpoint correspondence");
+        if(periodic)t+=Math.Tau*Math.Round((nativeMiddle-t)/Math.Tau);
+        nativeBox.param[end==0?0:2]=t;
     }
     if(nativeBox.param[0]>nativeBox.param[2])(nativeBox.param[0],nativeBox.param[2])=(nativeBox.param[2],nativeBox.param[0]);
     int ownBody,nativeBody;Check(KernelRuntime.SurfMakeSheetBody(own,ownBox,&ownBody),"own Blend sheet");Check(PK_SURF_make_sheet_body(native,nativeBox,&nativeBody),"native Blend sheet");
+    if(periodic)
+    {
+        VerifyPeriodicSheet(ownBody,nativeBody,directory,$"periodic-input-{operation}");
+    }
     var uv=new M.PK_UV_s();uv.param[0]=(ownBox.param[0]+ownBox.param[2])*.5;uv.param[1]=.5;var point=new M.PK_VECTOR_s();
     Require(KernelRuntime.TryResolveBodySlot(ownBody,out var ownSlot),"own sheet slot");
     Check(KernelRuntime.SurfEval(KernelRuntime.Faces[KernelRuntime.Bodies[ownSlot].FirstFaceBody].SurfTag,uv,0,0,0,&point),"Blend cutter witness");
     var first=new PK_PLANE_sf_t();first.basis_set.location=*(PK_VECTOR_t*)&point;first.basis_set.axis=new(1,0,0);first.basis_set.ref_direction=new(0,1,0);
     var second=first;second.basis_set.axis=new(0,1,0);second.basis_set.ref_direction=new(1,0,0);
+    if(periodic&&lifecycle)
+    {
+        int ownCopy,nativeCopy;Check(KernelRuntime.EntityCopy(ownBody,&ownCopy),"copy periodic sheet");Check(PK_ENTITY_copy(nativeBody,&nativeCopy),"native copy periodic sheet");
+        Check(KernelRuntime.EntityDelete(1,&ownBody),"delete original periodic sheet");Check(PK_ENTITY_delete(1,&nativeBody),"delete native original periodic sheet");ownBody=ownCopy;nativeBody=nativeCopy;
+        TransformPeriodicSheet(true,ownBody,scale);TransformPeriodicSheet(false,nativeBody,scale);
+        MapPlane(ref first,scale);MapPlane(ref second,scale);
+        var ownBytes=Transmit(ownBody);var nativeBytes=TransmitReference(nativeBody);
+        File.WriteAllBytes(Path.Combine(directory,$"periodic-lifecycle-{operation}-before-reload-self.x_t"),ownBytes);File.WriteAllBytes(Path.Combine(directory,$"periodic-lifecycle-{operation}-before-reload-reference.x_t"),nativeBytes);
+        Check(KernelRuntime.EntityDelete(1,&ownBody),"delete transformed periodic sheet");Check(PK_ENTITY_delete(1,&nativeBody),"delete native transformed periodic sheet");
+        ownBody=ReceiveManaged(ownBytes);nativeBody=Receive(nativeBytes);VerifyPeriodicSheet(ownBody,nativeBody,directory,$"periodic-lifecycle-{operation}-reloaded");
+        Console.WriteLine($"PERIODIC_LIFECYCLE_PASS operation={operation} reverse_supports={reverse} mirror_scale={scale:R} copy_source_delete=True editable_GM_XT_reload=True");
+    }
     return (BlendOperations(true,ownBody,first,second,operation),BlendOperations(false,nativeBody,first,second,operation));
+}
+
+static unsafe void VerifyPeriodicSheet(int own,int native,string directory,string label)
+{
+    var bytes=Transmit(own);File.WriteAllBytes(Path.Combine(directory,label+"-self.x_t"),bytes);File.WriteAllBytes(Path.Combine(directory,label+"-reference.x_t"),TransmitReference(native));
+    var received=Receive(bytes);
+    try{CheckBody(native,label+" reference",Console.WriteLine);CheckBody(received,label+" received",Console.WriteLine);Compare(native,received,label,Console.WriteLine);}
+    finally{Check(PK_ENTITY_delete(1,&received),"delete periodic sheet verification");}
+}
+
+static unsafe void TransformPeriodicSheet(bool own,int body,double scale)
+{
+    M.PK_TRANSF_sf_s form=default;form.matrix[0]=-scale;form.matrix[5]=form.matrix[10]=scale;form.matrix[15]=1;form.matrix[3]=.25;form.matrix[7]=-.375;form.matrix[11]=.125;
+    int transform;Check(own?KernelRuntime.TransfCreate(&form,&transform):PK_TRANSF_create((PK_TRANSF_sf_t*)&form,&transform),"periodic mirror scale");
+    int n;int* replacements;PK_LOGICAL_t* exact;
+    Check(own?KernelRuntime.BodyTransform(body,transform,0,&n,&replacements,(byte**)&exact):PK_BODY_transform(body,transform,0,&n,&replacements,&exact),"transform periodic sheet");
+    if(replacements!=null)Check(own?KernelRuntime.MemoryFree(replacements):PK_MEMORY_free(replacements),"periodic transform replacements");
+    if(exact!=null)Check(own?KernelRuntime.MemoryFree(exact):PK_MEMORY_free(exact),"periodic transform exactness");
+    Check(own?KernelRuntime.EntityDelete(1,&transform):PK_ENTITY_delete(1,&transform),"delete periodic transform");
+}
+
+static unsafe void MapPlane(ref PK_PLANE_sf_t plane,double scale)
+{
+    plane.basis_set.location=new(.25-scale*plane.basis_set.location.coord[0],-.375+scale*plane.basis_set.location.coord[1],.125+scale*plane.basis_set.location.coord[2]);
+    plane.basis_set.axis.coord[0]=-plane.basis_set.axis.coord[0];plane.basis_set.ref_direction.coord[0]=-plane.basis_set.ref_direction.coord[0];
 }
 
 static unsafe int[] BlendOperations(bool self,int body,PK_PLANE_sf_t first,PK_PLANE_sf_t second,int operation)
@@ -423,13 +504,14 @@ static unsafe void CheckBody(int body, string name, Action<string> log)
         for (var i = 0; i < nr; i++) { var solid = PK_LOGICAL_false; Check(PK_REGION_is_solid(regions[i], &solid), "region material"); Require(solid == PK_LOGICAL_false, "sheet void region"); }
     }
     finally { if (regions != null) PK_MEMORY_free(regions); }
-    var options = new PK_BODY_check_o_t { max_faults = 100 }; int n = 0; PK_check_fault_t* faults = null;
+    var options = new PK_BODY_check_o_t { max_faults = 100,extra_faults=PK_check_extra_faults_latest_c }; int n = 0; PK_check_fault_t* faults = null;
     Check(PK_BODY_check(body, &options, &n, &faults), "BODY_check");
     try
     {
         for (var i = 0; i < n; i++)
         {
             log($"{name} fault={faults[i].state}, entity={faults[i].entity_1}/{faults[i].entity_2}");
+            int faultClass;var classError=PK_ENTITY_ask_class(faults[i].entity_1,&faultClass);log($"  class_error={classError} class={faultClass}");
             if(faults[i].state==PK_EDGE_state_bad_vertex_c)
             {
                 int curve=0,point=0;PK_POINT_sf_t position;double t=0;PK_VECTOR_t evaluated;PK_INTERVAL_t range;
@@ -453,27 +535,7 @@ static unsafe void Compare(int reference, int actual, string name, Action<string
         var expected = Count(reference, kind); var received = Count(actual, kind);
         log($"{name} topology={kind} reference={expected} self={received}"); Require(expected == received, "topology count " + kind);
     }
-    var options = new PK_DEBUG_BODY_compare_o_t { max_diffs = 64, all_tests = PK_LOGICAL_false, num_tests = PK_LOGICAL_true,
-        tol_dev_tests = PK_LOGICAL_true, tol_tests = PK_LOGICAL_true, class_tests = PK_LOGICAL_true, sense_tests = PK_LOGICAL_true,
-        missing_tests = PK_LOGICAL_true, acc_dev_tests = PK_LOGICAL_false, non_match_tests = PK_LOGICAL_true };
-    PK_DEBUG_BODY_compare_r_t result; Check(PK_DEBUG_BODY_compare(reference, actual, &options, &result), "compare");
-    try
-    {
-        log($"{name} global={result.global_result}, local={result.local_result}, diffs={result.n_global_diffs}, face_pairs={result.n_face_pairs}");
-        for (var i = 0; i < result.n_global_diffs; i++) log($"  global diff={result.global_diffs[i].diff} masters={result.global_diffs[i].n_masters} similars={result.global_diffs[i].n_similars}");
-        var structuralDiffs = 0;
-        for (var f = 0; f < result.n_face_pairs; f++) for (var i = 0; i < result.face_pairs[f].n_local_diffs; i++)
-        {
-            var d = result.face_pairs[f].local_diffs[i];
-            // Chart anchors define an internal parameterization, not model
-            // vertices. All actual topology counts remain hard gates above.
-            var chart = d.diff == PK_DEBUG_diff_n_cht_pts_c;
-            log($"  {(chart ? "PARAMETERIZATION" : "STRUCTURE")} face={f} diff={d.diff} entity={d.master_entity}/{d.similar_entity} class={d.master_class}/{d.similar_class} int={d.master_int}/{d.similar_int} value={d.master_double:R}/{d.similar_double:R}");
-            if (!chart) structuralDiffs++;
-        }
-        Require(result.global_result == PK_DEBUG_global_res_no_diffs_c && structuralDiffs == 0, "structural comparison");
-    }
-    finally { PK_DEBUG_BODY_compare_r_f(&result); }
+    ParasolidBodyCompare.AssertEquivalent(reference,actual,name);
 }
 static unsafe int Count(int body, int kind)
 {

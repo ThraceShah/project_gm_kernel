@@ -1,4 +1,5 @@
 using ProjectGmKernel.Native.Computation;
+using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Generated;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Geometry.Intersection;
@@ -59,7 +60,7 @@ internal static unsafe partial class KernelRuntime
         for(var i=0;i<count;i++)
         {
             ref readonly var branch=ref branches[i];
-            if(branch.Class is not (CurveClass.Line or CurveClass.Circle))return ParasolidConstants.PK_ERROR_not_implemented;
+            if(branch.Class is not (CurveClass.Line or CurveClass.Circle or CurveClass.Ellipse))return ParasolidConstants.PK_ERROR_not_implemented;
             var candidate=IntersectionBranchDistance(branch,aPoint)+IntersectionBranchDistance(branch,bPoint);
             if(options->have_help!=0)candidate+=IntersectionBranchDistance(branch,Vector(options->help.coord[0],options->help.coord[1],options->help.coord[2]));
             if(candidate<score){ambiguous=double.IsFinite(score)&&Math.Abs(candidate-score)<1e-10;score=candidate;chosen=i;}
@@ -67,6 +68,25 @@ internal static unsafe partial class KernelRuntime
         }
         if(chosen<0||ambiguous)return ParasolidConstants.PK_ERROR_cant_do_intersect;
         ref readonly var spine=ref branches[chosen];var radius=Math.Abs(firstRange);
+        if(spine.Class==CurveClass.Ellipse)
+        {
+            // The exact offset intersection is already the native spine.
+            // Its minimum curvature radius bounds the complete normal tube;
+            // do not publish a possibly singular tube from sampled witnesses.
+            if(!(spine.Minor>0&&spine.Radius>=spine.Minor))return ParasolidConstants.PK_ERROR_not_implemented;
+            var reach=new IntervalNumber(spine.Minor)*(new IntervalNumber(spine.Minor)/new IntervalNumber(spine.Radius));
+            if(!reach.Finite||!(radius<reach.Lower))return ParasolidConstants.PK_ERROR_not_implemented;
+            var station=OperationIntersection.ConicPoint(spine,0);
+            found=AnalyticImplicitEvaluation.Evaluate(offsetA,station,1,out var n0);if(found!=AlgorithmStatus.Success)return IntersectionError(found);
+            found=AnalyticImplicitEvaluation.Evaluate(offsetB,station,1,out var n1);if(found!=AlgorithmStatus.Success)return IntersectionError(found);
+            // Native sense follows the ordered contact radials, including
+            // the sign of each offset, rather than unsigned support normals.
+            var orientation=Dot(ProfileCross(spine.Axis,spine.Reference),ProfileCross(n0.Gradient,n1.Gradient))*Math.Sign(firstRange)*Math.Sign(secondRange);
+            if(!double.IsFinite(orientation)||orientation==0)return ParasolidConstants.PK_ERROR_at_singularity;
+            CurveTag curve=0;var error=CreateIntersectionBranch(spine,&curve);if(error!=0)return error;
+            Curves[GetCurveSlotByTag(curve)].Sense=orientation>0?ParasolidConstants.PK_TOPOL_sense_positive_c:ParasolidConstants.PK_TOPOL_sense_negative_c;
+            return CompileAndBindNestedBlend(first,second,curve,firstRange,secondRange,result);
+        }
         if(spine.Class==CurveClass.Line)
         {
             var center=Add(spine.Origin,Scale(spine.Axis,Dot(Sub(aPoint,spine.Origin),spine.Axis)));
