@@ -73,6 +73,10 @@ internal static unsafe partial class KernelRuntime
         if(workspace.IsEmpty) { if(ownsScratch)ReleaseCommandScratch(State.Session); return ParasolidConstants.PK_ERROR_memory_full; }
         try
         {
+            // World-space samples belong to the pre-modification geometry.
+            // No allocation is required by modify mode, so creation/deletion
+            // epochs cannot stand in for invalidating this mutation.
+            if(!entities.IsEmpty)GeometryEvaluationCache.BumpModelGeometryEpoch();
             var visited=new EntityCopyContext { Pairs=MemoryMarshal.Cast<double,EntityCopyPair>(workspace) };
             for(var i=0;i<entities.Length;i++)
             {
@@ -127,7 +131,7 @@ internal static unsafe partial class KernelRuntime
         if(depth>128) return 1;
         var slot=GetCurveSlotByTag(tag); if(slot<0) return 1;
         var curve=Curves[slot];
-        return curve.Class==CurveClass.Line?scale:curve.Class==CurveClass.TRCurve?CurveParameterScale(TrCurveDataPool[curve.DataIndex].BasisCurveTag,scale,depth+1):1;
+        return curve.Class is CurveClass.Line or CurveClass.ICurve?scale:curve.Class==CurveClass.TRCurve?CurveParameterScale(TrCurveDataPool[curve.DataIndex].BasisCurveTag,scale,depth+1):1;
     }
 
     private static int TransformEntity(EntityTag tag,in KernelAffineTransform m,double scale,double parity,ref EntityCopyContext visited,int depth)
@@ -351,7 +355,10 @@ internal static unsafe partial class KernelRuntime
                     if(!SnapshotPayload(d.ContactChartBlock,(nuint)((6*d.ChartCount-4)*8),curve.Header.Partition))return ParasolidConstants.PK_ERROR_memory_full;
                     var map=BlendContactMap(d);var scales=map.Slice(2*d.ChartCount,d.ChartCount-1);
                     var chords=MemoryMarshal.Cast<double,KernelVector3>(map[(3*d.ChartCount-1)..]);
-                    for(var i=0;i<scales.Length;i++){scales[i]/=scale;chords[i]=ProfileScale(m.TransformVector(chords[i]),1/scale);}
+                    var parent=BlendedEdgeDataPool[Surfaces[GetSurfaceSlotByTag(d.Surface1Tag)].DataIndex];
+                    var parentScale=CurveParameterScale(parent.SpineTag,scale);
+                    for(var i=0;i<d.ChartCount;i++){map[i]*=parentScale;map[d.ChartCount+i]*=scale;}
+                    for(var i=0;i<scales.Length;i++)chords[i]=ProfileScale(m.TransformVector(chords[i]),1/scale);
                     if(parity<0){d.BlendContactSide=1-d.BlendContactSide;d.BlendContactReversed=(byte)(1-d.BlendContactReversed);}
                 }
                 if(parity<0&&d.IsBlendContact==0)
@@ -369,8 +376,11 @@ internal static unsafe partial class KernelRuntime
                     (d.ParameterError,d.ParameterError1)=(d.ParameterError1,d.ParameterError);
                     (d.ParameterErrorProvided,d.ParameterError1Provided)=(d.ParameterError1Provided,d.ParameterErrorProvided);
                 }
-                d.BaseScale/=scale;d.ChordalError*=scale;
-                return double.IsFinite(d.BaseScale)&&d.BaseScale!=0&&double.IsFinite(d.ChordalError)?0:ParasolidConstants.PK_ERROR_failed_to_transform;
+                // Native intersection parameters have length units. Preserve
+                // base_scale and scale the complete parameter origin/range.
+                d.BaseParameter*=scale;curve.TMin*=scale;curve.TMax*=scale;d.ChordalError*=scale;
+                return double.IsFinite(d.BaseParameter)&&double.IsFinite(curve.TMin)&&double.IsFinite(curve.TMax)
+                    &&double.IsFinite(d.BaseScale)&&d.BaseScale!=0&&double.IsFinite(d.ChordalError)?0:ParasolidConstants.PK_ERROR_failed_to_transform;
             }
             default:return ParasolidConstants.PK_ERROR_not_implemented;
         }

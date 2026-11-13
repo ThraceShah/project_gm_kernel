@@ -524,6 +524,38 @@ public unsafe class IcurveRuntimeEvalTests : IDisposable
         }
     }
 
+    [Theory]
+    [InlineData(1,false,false)] [InlineData(1,false,true)] [InlineData(.125,true,false)] [InlineData(8,false,true)]
+    public void InPlaceGeometryTransformCannotReuseTheOldWorldSpaceCurveSample(double scale,bool mirror,bool rotate)
+    {
+        var plane=CreatePlaneZ0();var sphere=CreateUnitSphere();
+        double[] chart=[1,0,0,Math.Cos(.4),Math.Sin(.4),0,Math.Cos(.8),Math.Sin(.8),0];
+        var input=MinimalCircleInput(plane,sphere,chart);input.BaseParameter=-.25;input.Start.Type=input.End.Type=LimitType.Artificial;
+        Assert.Equal(AlgorithmStatus.Success,KernelRuntime.DecodeIcurve(input,out var data,out _,out _));
+        Assert.Equal(AlgorithmStatus.Success,KernelRuntime.TryBindICurveEntity(data,out var curve));
+        var transformForm=new PK_TRANSF_sf_s();var sign=mirror?-1:1;
+        transformForm.matrix[0]=rotate?0:scale*sign;transformForm.matrix[1]=rotate?-scale:0;
+        transformForm.matrix[4]=rotate?scale*sign:0;transformForm.matrix[5]=rotate?0:scale;
+        transformForm.matrix[10]=scale;transformForm.matrix[15]=1;
+        transformForm.matrix[3]=3;transformForm.matrix[7]=5;transformForm.matrix[11]=7;
+        int transform;Assert.Equal(0,KernelRuntime.TransfCreate(&transformForm,&transform));
+        var record=KernelRuntime.GetCurveByTag(curve);var parameter=record.TMin+(record.TMax-record.TMin)*.37;
+        PK_VECTOR_s* before=stackalloc PK_VECTOR_s[3];PK_VECTOR_s* after=stackalloc PK_VECTOR_s[3];
+        Assert.Equal(0,KernelRuntime.CurveEval(curve,parameter,2,before));
+        var identity=new GeometryIdentity(record.Header.Tag,record.Header.Generation);
+        Assert.True(GeometryEvaluationCache.TryGetExact(identity,parameter,ICurveQueryKind.RegularChartInterval,ChartSide.Right,2,1e-9,out _));
+        var options=new PK_GEOM_transform_o_s{o_t_version=1,modify=ParasolidConstants.PK_GEOM_transform_modify_c,want_out_geoms=1,want_exact=1};
+        int* inputs=stackalloc int[3]{curve,plane,sphere};int* outputs=stackalloc int[3];byte* exact=stackalloc byte[3];
+        Assert.Equal(0,KernelRuntime.GeomTransform2(3,inputs,transform,&options,outputs,exact));
+        Assert.Equal(0,KernelRuntime.CurveEval(curve,parameter*scale,2,after));
+        for(var order=0;order<=2;order++)for(var row=0;row<3;row++)
+        {
+            var expected=order==0?transformForm.matrix[4*row+3]:0;
+            for(var axis=0;axis<3;axis++)expected+=transformForm.matrix[4*row+axis]*before[order].coord[axis]/Math.Pow(scale,order);
+            Assert.Equal(expected,after[order].coord[row],10);
+        }
+    }
+
     private static int CreatePlaneZ0()
     {
         var sf = new PK_PLANE_sf_s();

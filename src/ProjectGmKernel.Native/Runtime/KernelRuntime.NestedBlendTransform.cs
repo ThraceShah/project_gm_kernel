@@ -43,11 +43,14 @@ internal static unsafe partial class KernelRuntime
                 ref var curve=ref spines[i].Curve;curve.Origin=matrix.TransformPoint(curve.Origin);
                 curve.First=matrix.TransformUnitDirection(curve.First,curve.Kind==CurveClass.Line?scale:1);
                 curve.Second=matrix.TransformVector(curve.Second);
-                if(curve.Kind==CurveClass.Line)
-                    for(var j=0;j<spines[i].ChartCount;j++)
-                    {
-                        ref var chart=ref charts[spines[i].ChartOffset+j];chart.Parameter*=scale;chart.Scale*=scale;
-                    }
+            }
+            for(var j=0;j<spines[i].ChartCount;j++)
+            {
+                ref var chart=ref charts[spines[i].ChartOffset+j];
+                if(spines[i].Curve.Kind is CurveClass.None or CurveClass.Line){chart.Parameter*=scale;chart.Scale*=scale;}
+                if(!TransformProgramUv(surfaces[spines[i].First],spines,scale,parity,ref chart.FirstU,ref chart.FirstV)
+                    ||!TransformProgramUv(surfaces[spines[i].Second],spines,scale,parity,ref chart.SecondU,ref chart.SecondV))
+                    return Generated.ParasolidConstants.PK_ERROR_failed_to_transform;
             }
             spines[i].ChordalError*=scale;if(parity<0)(spines[i].First,spines[i].Second)=(spines[i].Second,spines[i].First);
         }
@@ -58,5 +61,23 @@ internal static unsafe partial class KernelRuntime
             if(!FiniteVector(charts[i].Position)||!FiniteVector(charts[i].Chord)||!double.IsFinite(charts[i].Scale))return Generated.ParasolidConstants.PK_ERROR_failed_to_transform;
         }
         return 0;
+    }
+
+    private static bool TransformProgramUv(in BlendSurfaceInstruction surface,ReadOnlySpan<BlendSpineInstruction> spines,
+        double scale,double parity,ref double u,ref double v)
+    {
+        if(double.IsNaN(u)&&double.IsNaN(v))return true;
+        if(surface.IsBlend)
+        {if(spines[surface.Spine].Curve.Kind is CurveClass.None or CurveClass.Line)u*=scale;if(parity<0)v=1-v;}
+        else if(!surface.IsBSpline)
+        {
+            switch(surface.Analytic.Kind)
+            {
+                case SurfaceClass.Plane:u*=scale;v*=scale*parity;break;
+                case SurfaceClass.Cylinder:case SurfaceClass.Cone:u*=parity;v*=scale;break;
+                case SurfaceClass.Sphere:case SurfaceClass.Torus:u*=parity;break;
+            }
+        }
+        return double.IsFinite(u)&&double.IsFinite(v);
     }
 }

@@ -1529,3 +1529,55 @@ workspace/spine/CHART、父域包含和向外舍入收缩界<.9时消费父证�
 缓存开关。早期 `native-parent-tube-whole-v2` 7642.203 ms/raw2 用的是上述失败前
 46ece2源，不能签为最终正确实现的性能。当前继续统一固定源验证和整链研发，
 旧 b08包不覆盖，不把这次保存当作原总体目标完成。
+
+## 原生修改失效与长度参数贯穿有限消费者
+
+本次直接核对 FD24 的 modify/共享合同和 XT CHART 定义，并继续沿 MCP 静态链
+`MOD_transform_array_of_geom → transform_node → GTR_transform_curve → transform_intersection`
+检查到缓存删除、CHART/limit 及支撑参数处理点。Linux PK38.0.150 有界 GDB
+`native-icurve-transform-dynamic-v1` 在真实 GEOM transform_2 栈内实际命中上述链、
+`QCU_delete_cache` 和 `transform_limit`，inferior及debugger均raw0。
+本次没有命中 MOD_change_logger、MOD_unset_box、QSU_parameterise_svec 和
+QSU_intersection_derivatives；它们只是静态依赖，不能由此补签动态覆盖。
+
+GM 的 generation 是槽位复用身份，不是修改版本。原 modify 无须创建或删除几何，
+所以暖过的 L3 世界坐标样本仍可命中。`native-modification-cache-repro-v2` 原raw1
+实际返回变换前的位置；不是精度分歧。现在共同变换入口在首次写入前递增既有
+geometry epoch，回滚继续沿原 journal/epoch 处理，没有新增缓存或 tag generation。
+
+真实 PK 的同输入、同选项还否定了旧的 ICurve 参数不变假设：长度放大2时，
+区间 `[-.25,.544677323180245]` 变为 `[-.5,1.08935464636049]`；原生 XT
+CHART 的 base_parameter=-.5、base_scale=1。平移/旋转/反射区间保持不变。
+这是原生模型定义，不以几何采样拟合参数。实现因此保持 base_scale，缩放完整
+base_parameter/区间，并将同一长度规则传给 TRCurve、finite edge、Blend U、
+BLEND_BOUND 的父U/接触t表和已编译隐式spine CHART。解析圆/椭圆及 BCurve
+的原生参数不随长度变化；支撑UV按真实类别变换，反射保留原有角色/sense交换。
+
+开发失败和新结果分源保留在 `temp_docs/native-system-alignment/`：
+
+- `native-modification-cache-oracle-v2` 的4项922来自新fixture的term_use未设为
+  Unset；属于无效fixture，非生产writer错误。v3/v5及parameter-map-v1分别保留
+  原始D2差异和原参数假设失败；v4为命令未执行，未计建模失败。
+- `native-icurve-parameter-full-v1` 87/87、raw0：四种暖样本原位修改、完整
+  closure、稳定tag/exact、原生区间、fresh XT fullcheck/strict及有限wire双向
+  样本通过，原位移错误wire负例被拒绝。原83项构造/共享/删源控制也使用标准
+  comparator，恢复其原先被关闭的matching检查。
+- `native-icurve-parameter-rational-v1` 两族六组及`...-concave-v1`一族三组，
+  反向有理支撑、native U[-2,3]、镜像旋转尺度.125/1.7/8，复制删源及可编辑XT
+  回读后重新Boolean均几何拓扑通过，二者raw2，物性仍Unresolved。
+- `native-icurve-parameter-periodic-v1` 9/9、raw0，混合符号周期椭圆Blend、
+  镜像尺度8、复制删源和可编辑XT回读后各自操作通过；其角度U没有被长度缩放。
+- `native-icurve-parameter-nested-v1` 为脚本调用重载构建错误，raw1、不计建模；
+  v2 raw0，独立三层torus/NURBS Blend及各自镜像尺度2、fresh XT、完整检查和
+  标准strict通过。脚本现在要求新输出目录，原历史字节不覆盖。
+- `native-icurve-parameter-managed-v1/v2` 分别保留两项旧ICurve参数断言、两项旧
+  编译spine导数断言失败；按上述原生长度合同修正后v3为104/104、raw0。
+  `native-icurve-parameter-full-managed-v1` 完整2200/2200、raw0，allocation
+  guard3179 CLEAN。上述生产oracle的Native程序集SHA256为
+  43ae4d04bf4b32cb375c8a842c3b1b8e9cfe1029e0164be59d0789b687b31299。
+
+查询与变换验收分开：新共同输入的off-centre原始PK D2与GM差约.0924865，
+而PK D1的双步长Richardson差分与GM D2差约2.9e-11，与已有Case-F观察相同。
+原始D2差异仍标Different；D0/D1跨端对照、各端实际D2变换协变和有限几何分别验收，
+不把差分样本称为任意曲线等价证明。三层脚本原有高阶差值诊断也不补签全部查询。
+以上实现仍未取得独立接受或性能资格，完整原目标继续执行。

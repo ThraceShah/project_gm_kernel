@@ -216,14 +216,14 @@ public unsafe class GeometryTransformTests : IDisposable
 
     [Theory]
     [InlineData(false)] [InlineData(true)]
-    public void ICurveCopyAndSimilarity_PreserveOriginalChartParameterAndAllUvWitnesses(bool reflection)
+    public void ICurveCopyAndSimilarity_ScaleNativeLengthParameterAndPreserveAllUvWitnesses(bool reflection)
     {
         var source=CreateICurve();var t=.4;var before=stackalloc PK_VECTOR_s[3];Assert.Equal(0,KernelRuntime.CurveEval(source,t,2,before));
         var transform=CreateTransform(Similarity(reflection?-2:2,2,2,3,5,7));int copy;byte exact;
         Assert.Equal(0,KernelRuntime.GeomTransform(source,transform,0,&copy,&exact));
         var data=KernelRuntime.ICurveDataPool[KernelRuntime.GetCurveByTag(copy).DataIndex];
         var original=KernelRuntime.ICurveDataPool[KernelRuntime.GetCurveByTag(source).DataIndex];
-        Assert.Equal(original.BaseParameter,data.BaseParameter);Assert.Equal(original.BaseScale/2,data.BaseScale);
+        Assert.Equal(original.BaseParameter*2,data.BaseParameter);Assert.Equal(original.BaseScale,data.BaseScale);
         Assert.NotEqual(original.HvecBlock,data.HvecBlock);Assert.NotEqual(original.UvValueBlock,data.UvValueBlock);
         Assert.NotEqual(original.Surface0Tag,data.Surface0Tag);Assert.NotEqual(original.Surface1Tag,data.Surface1Tag);
         Assert.Equal(8,data.UvValueCount);
@@ -231,10 +231,10 @@ public unsafe class GeometryTransformTests : IDisposable
         var bsIndex=reflection?2:0;var planeIndex=reflection?0:2;
         Assert.Equal(0,uv[bsIndex]);Assert.Equal(.5,uv[bsIndex+1]);Assert.Equal(1,uv[bsIndex+4]);Assert.Equal(.5,uv[bsIndex+5]);
         Assert.Equal(2,uv[planeIndex+4]);Assert.Equal(reflection?2:-2,uv[planeIndex+5]);
-        var after=stackalloc PK_VECTOR_s[3];var error=KernelRuntime.CurveEval(copy,t,2,after);
+        var after=stackalloc PK_VECTOR_s[3];var error=KernelRuntime.CurveEval(copy,t*2,2,after);
         Assert.True(error==0,$"ICurve transform evaluation error={error}, chart={KernelRuntime.LastChartBuildFailure}, report={KernelRuntime.LastICurveEvalReport.Status}/{KernelRuntime.LastICurveEvalReport.Detail}");
-        for(var order=0;order<3;order++)Vector(after[order],(reflection?-2:2)*before[order].coord[0]+(order==0?3:0),2*before[order].coord[1]+(order==0?5:0),2*before[order].coord[2]+(order==0?7:0));
-        Assert.Equal(0,KernelRuntime.EntityDelete(1,&source));Assert.Equal(0,KernelRuntime.CurveEval(copy,t,2,after));
+        for(var order=0;order<3;order++){var factor=2/Math.Pow(2,order);Vector(after[order],(reflection?-factor:factor)*before[order].coord[0]+(order==0?3:0),factor*before[order].coord[1]+(order==0?5:0),factor*before[order].coord[2]+(order==0?7:0));}
+        Assert.Equal(0,KernelRuntime.EntityDelete(1,&source));Assert.Equal(0,KernelRuntime.CurveEval(copy,t*2,2,after));
         Assert.Equal(0,KernelRuntime.EntityDelete(1,&copy));Assert.False(KernelRuntime.IsValidTag(data.Surface0Tag));Assert.False(KernelRuntime.IsValidTag(data.Surface1Tag));
     }
 

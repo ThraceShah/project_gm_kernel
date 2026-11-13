@@ -52,7 +52,7 @@ internal struct CachedCurveSample
 /// Cross-call geometry evaluation cache (spec §13.3 layer L3, §13.8–§13.9,
 /// task T10): session-owned native arena outside the scratch and return
 /// allocators, hard capacity with CLOCK eviction, and a monotonic model
-/// geometry epoch — creation, deletion, rollback and session reset invalidate
+/// geometry epoch — creation, modification, deletion, rollback and session reset invalidate
 /// every entry; cache writes never move the epoch.
 /// Synchronization (§13.9, consolidated-review B1): every entry mutation —
 /// lookup-and-copy, CLOCK reference bits, slot claim/overwrite/upgrade and
@@ -74,7 +74,7 @@ internal static unsafe class GeometryEvaluationCache
 
     /// <summary>
     /// Monotonic model geometry epoch (§13.8): bumped by geometry creation,
-    /// deletion, rollback and session lifecycle; never by cache writes.
+    /// modification, deletion, rollback and session lifecycle; never by cache writes.
     /// </summary>
     internal static long ModelGeometryEpoch => System.Threading.Volatile.Read(ref modelGeometryEpoch);
 

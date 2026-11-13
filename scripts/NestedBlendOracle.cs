@@ -16,6 +16,12 @@ using ProjectGmKernel.Xt;
 using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
 using M=ProjectGmKernel.Native.Generated;
 
+var outputName=args.Single(x=>x.StartsWith("--output-name=",StringComparison.Ordinal))["--output-name=".Length..];
+if(outputName.Length==0||!outputName.All(c=>char.IsAsciiLetterOrDigit(c)||c is '-' or '_'))throw new ArgumentException("one new output directory name is required");
+var output=Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","nested-blend-native",outputName));
+if(Directory.Exists(output))throw new InvalidOperationException("Existing execution evidence is immutable");
+Directory.CreateDirectory(output);
+Console.WriteLine("GM_ASSEMBLY sha256="+Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(typeof(KernelRuntime).Assembly.Location))));
 if(!ParasolidScriptHost.TryStartSession("nested blend",out var session,out var message))throw new Exception(message);
 using(session)
 unsafe
@@ -44,7 +50,6 @@ unsafe
     Check(PK_SURF_ask_uvbox(blend,&box),"depth3 box");Console.WriteLine($"depth3 box={box.param[0]:R},{box.param[1]:R}..{box.param[2]:R},{box.param[3]:R}");
     var patch=box;patch.param[0]+=(box.param[2]-box.param[0])*.35;patch.param[2]-=(box.param[2]-box.param[0])*.35;patch.param[1]=.1;patch.param[3]=.9;
     int body;Check(PK_SURF_make_sheet_body(blend,patch,&body),"nested sheet");
-    var output=Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","nested-blend-native"));Directory.CreateDirectory(output);
     var tx=new PK_PART_transmit_o_t{transmit_format=PK_transmit_format_text_c,transmit_version=371};PK_MEMORY_block_t block;Check(PK_PART_transmit_b(1,&body,&tx,&block),"native transmit");
     try{using var stream=File.Create(Path.Combine(output,"depth3.x_t"));for(var part=&block;part!=null;part=part->next)stream.Write(new ReadOnlySpan<byte>(part->bytes,checked((int)part->n_bytes)));}finally{Check(PK_MEMORY_block_f(&block),"native transmit free");}
     for(var order=0;order<=2;order++)
@@ -57,10 +62,10 @@ unsafe
     var compiled=Compile(document);
     var program=new NestedBlendProgram(compiled.Surfaces,compiled.Spines,compiled.Charts);
     var ownOptions=new M.PK_SESSION_start_o_s{o_t_version=1};Check(KernelRuntime.SessionStart(&ownOptions),"self start");
-    CheckNativeImport(nurbs);
+    CheckNativeImport(nurbs,output);
     var selfSurface=Materialize(compiled);Console.WriteLine("self runtime root="+selfSurface);
-    IndependentConstruction(firstBlend,secondBlend,blend);
-    IndependentConstruction(nurbsFirst,nurbsSecond,nurbs,true);
+    IndependentConstruction(firstBlend,secondBlend,blend,output);
+    IndependentConstruction(nurbsFirst,nurbsSecond,nurbs,output,true);
     var nativeBytes=File.ReadAllBytes(Path.Combine(output,"depth3.x_t"));
     fixed(byte* bytes=nativeBytes)
     {
@@ -90,16 +95,7 @@ unsafe
             for(var i=0;i<nf;i++)Console.WriteLine($"  fault={faults[i].state} entity={faults[i].entity_1}/{faults[i].entity_2}");
             if(faults!=null)Check(PK_MEMORY_free(faults),"check free");
             if(nf!=0)throw new Exception("received BODY_check faults="+nf);
-            var compare=new PK_DEBUG_BODY_compare_o_t{max_diffs=64,all_tests=PK_LOGICAL_false,num_tests=PK_LOGICAL_true,tol_dev_tests=PK_LOGICAL_true,tol_tests=PK_LOGICAL_true,class_tests=PK_LOGICAL_true,sense_tests=PK_LOGICAL_true,missing_tests=PK_LOGICAL_true,acc_dev_tests=PK_LOGICAL_false,non_match_tests=PK_LOGICAL_false};PK_DEBUG_BODY_compare_r_t compared;
-            Check(PK_DEBUG_BODY_compare(body,parts[0],&compare,&compared),"independent body compare");
-            try
-            {
-                Console.WriteLine($"compare global={compared.global_result} local={compared.local_result} pairs={compared.n_face_pairs}");
-                for(var i=0;i<compared.n_global_diffs;i++)Console.WriteLine($"  global diff={compared.global_diffs[i].diff} counts={compared.global_diffs[i].n_masters}/{compared.global_diffs[i].n_similars}");
-                for(var f=0;f<compared.n_face_pairs;f++)for(var d=0;d<compared.face_pairs[f].n_local_diffs;d++){var diff=compared.face_pairs[f].local_diffs[d];Console.WriteLine($"  face={f} diff={diff.diff} entities={diff.master_entity}/{diff.similar_entity} values={diff.master_double:R}/{diff.similar_double:R}");}
-                if(compared.global_result!=PK_DEBUG_global_res_no_diffs_c||compared.local_result!=PK_DEBUG_local_res_no_diffs_c)throw new Exception("structural native body comparison failed");
-            }
-            finally{Check(PK_DEBUG_BODY_compare_r_f(&compared),"compare free");}
+            ParasolidBodyCompare.AssertEquivalent(body,parts[0],"native imported depth3");
         }
         if(parts!=null)Check(PK_MEMORY_free(parts),"parts free");
     }
@@ -171,13 +167,13 @@ static unsafe int ProbeClosedNurbs()
     var result=Blend(surface,plane,.05,new(.8,0,.4),new(.6,.4,.4));Console.WriteLine("closed NURBS native result="+result);if(result==0)throw new Exception("NURBS fixture");return result;
 }
 
-static unsafe void CheckNativeImport(int native)
+static unsafe void CheckNativeImport(int native,string output)
 {
     PK_UVBOX_t box;Check(PK_SURF_ask_uvbox(native,&box),"NURBS native box");var patch=box;var width=box.param[2]-box.param[0];patch.param[0]=box.param[0]+.1*width;patch.param[2]=box.param[0]+.3*width;patch.param[1]=.1;patch.param[3]=.9;
     int body;Check(PK_SURF_make_sheet_body(native,patch,&body),"NURBS sheet");
     var tx=new PK_PART_transmit_o_t{transmit_format=PK_transmit_format_text_c,transmit_version=371};PK_MEMORY_block_t block;Check(PK_PART_transmit_b(1,&body,&tx,&block),"NURBS transmit");byte[] bytes;
     try{using var stream=new MemoryStream();for(var part=&block;part!=null;part=part->next)stream.Write(new ReadOnlySpan<byte>(part->bytes,checked((int)part->n_bytes)));bytes=stream.ToArray();}finally{Check(PK_MEMORY_block_f(&block),"NURBS native free");}
-    File.WriteAllBytes(Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","nurbs-blend.x_t"),bytes);
+    File.WriteAllBytes(Path.Combine(output,"nurbs-blend.x_t"),bytes);
     fixed(byte* p=bytes)
     {
         var memory=new M.PK_MEMORY_block_s{n_bytes=(nuint)bytes.Length,bytes=p};var options=new M.PK_PART_receive_o_s{o_t_version=1,transmit_format=PK_transmit_format_text_c};int count;int* parts;
@@ -204,13 +200,13 @@ static unsafe void CheckNativeImport(int native)
                 if(Math.Abs(inverted.param[0]-u)>1e-8||Math.Abs(inverted.param[1]-v)>1e-8)throw new Exception("NURBS inverse mismatch");
             }
             Console.WriteLine("NURBS production receive + D0/D1 passed");
-            RoundTrip(parts[0],body,"nurbs-depth3");
+            RoundTrip(parts[0],body,"nurbs-depth3",output);
         }
         finally{Check(KernelRuntime.MemoryFree(parts),"NURBS own free");}
     }
 }
 
-static unsafe void IndependentConstruction(int nativeBlend,int nativeSecond,int nativeThird,bool nurbs=false)
+static unsafe void IndependentConstruction(int nativeBlend,int nativeSecond,int nativeThird,string output,bool nurbs=false)
 {
     int baseSurface=0,plane=0;var psf=new M.PK_PLANE_sf_s();psf.basis_set.ref_direction.coord[0]=1;
     var options=new M.PK_SURF_create_blend_o_s{o_t_version=1};var start=new M.PK_VECTOR_s();var end=new M.PK_VECTOR_s();var baseRadius=nurbs?.05:.1;
@@ -276,7 +272,7 @@ static unsafe void IndependentConstruction(int nativeBlend,int nativeSecond,int 
     }
     if(ownBox.param[0]>ownBox.param[2])throw new Exception("independent output interval crosses chart seam");ownBox.param[1]=.1;ownBox.param[3]=.9;
     int ownBody,nativeBody;Check(KernelRuntime.SurfMakeSheetBody(ownParent,ownBox,&ownBody),"independently constructed own sheet");Check(PK_SURF_make_sheet_body(nativeParent,nativeBox,&nativeBody),"independently constructed native sheet");
-    RoundTrip(ownBody,nativeBody,nurbs?"independent-nurbs-depth3":"independent-torus-depth3");
+    RoundTrip(ownBody,nativeBody,nurbs?"independent-nurbs-depth3":"independent-torus-depth3",output);
     var transformDefinition=new M.PK_TRANSF_sf_s();transformDefinition.matrix[0]=-2;transformDefinition.matrix[5]=transformDefinition.matrix[10]=2;
     transformDefinition.matrix[3]=3;transformDefinition.matrix[7]=5;transformDefinition.matrix[11]=7;transformDefinition.matrix[15]=1;
     int ownTransform,nativeTransform;Check(KernelRuntime.TransfCreate(&transformDefinition,&ownTransform),"own nested transform");Check(PK_TRANSF_create((PK_TRANSF_sf_t*)&transformDefinition,&nativeTransform),"native nested transform");
@@ -284,12 +280,11 @@ static unsafe void IndependentConstruction(int nativeBlend,int nativeSecond,int 
     if(replacement!=null)Check(KernelRuntime.MemoryFree(replacement),"own transform replacement free");if(exact!=null)Check(KernelRuntime.MemoryFree(exact),"own transform exact free");
     int* nativeReplacement;PK_LOGICAL_t* nativeExact;Check(PK_BODY_transform(nativeBody,nativeTransform,0,&changed,&nativeReplacement,&nativeExact),"native nested body transform");
     if(nativeReplacement!=null)Check(PK_MEMORY_free(nativeReplacement),"native replacement free");if(nativeExact!=null)Check(PK_MEMORY_free(nativeExact),"native exact free");
-    RoundTrip(ownBody,nativeBody,nurbs?"reflected-nurbs-depth3":"reflected-torus-depth3");
+    RoundTrip(ownBody,nativeBody,nurbs?"reflected-nurbs-depth3":"reflected-torus-depth3",output);
 }
 
-static unsafe void RoundTrip(int ownBody,int nativeBody,string name)
+static unsafe void RoundTrip(int ownBody,int nativeBody,string name,string output)
 {
-    var output=Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","nested-blend-native");Directory.CreateDirectory(output);
     var nativeOptions=new PK_PART_transmit_o_t{transmit_format=PK_transmit_format_text_c,transmit_version=371};PK_MEMORY_block_t nativeBlock;Check(PK_PART_transmit_b(1,&nativeBody,&nativeOptions,&nativeBlock),"native baseline transmit");
     try{using var stream=File.Create(Path.Combine(output,name+".native.x_t"));for(var p=&nativeBlock;p!=null;p=p->next)stream.Write(new ReadOnlySpan<byte>(p->bytes,checked((int)p->n_bytes)));}finally{Check(PK_MEMORY_block_f(&nativeBlock),"native baseline free");}
     var options=new M.PK_PART_transmit_o_s{o_t_version=4,transmit_format=PK_transmit_format_text_c,transmit_version=371,transmit_meshes=PK_transmit_meshes_separate_c};M.PK_MEMORY_block_s block;Check(KernelRuntime.PartTransmitB(1,&ownBody,&options,&block),"roundtrip own transmit");byte[] bytes;
@@ -312,16 +307,7 @@ static unsafe void RoundTrip(int ownBody,int nativeBody,string name)
         {
             if(count!=1)throw new Exception("roundtrip count");var checks=new PK_BODY_check_o_t{max_faults=100};int faults;PK_check_fault_t* list;Check(PK_BODY_check(parts[0],&checks,&faults,&list),"roundtrip body check");
             try{for(var i=0;i<faults;i++){int cls;Check(PK_ENTITY_ask_class(list[i].entity_1,&cls),"fault class");Console.WriteLine($"{name} fault={list[i].state} entities={list[i].entity_1}/{list[i].entity_2} class={cls}");}if(faults!=0)throw new Exception(name+" BODY_check faults="+faults);}finally{if(list!=null)Check(PK_MEMORY_free(list),"roundtrip fault free");}
-            var compare=new PK_DEBUG_BODY_compare_o_t{max_diffs=64,all_tests=PK_LOGICAL_false,num_tests=PK_LOGICAL_true,tol_dev_tests=PK_LOGICAL_true,tol_tests=PK_LOGICAL_true,class_tests=PK_LOGICAL_true,sense_tests=PK_LOGICAL_true,missing_tests=PK_LOGICAL_true,acc_dev_tests=PK_LOGICAL_false,non_match_tests=PK_LOGICAL_false};PK_DEBUG_BODY_compare_r_t result;
-            Check(PK_DEBUG_BODY_compare(nativeBody,parts[0],&compare,&result),"roundtrip native compare");
-            try
-            {
-                Console.WriteLine($"{name} BODY_check=0; compare global={result.global_result} local={result.local_result}");
-                for(var i=0;i<result.n_global_diffs;i++)Console.WriteLine($"global diff={result.global_diffs[i].diff} counts={result.global_diffs[i].n_masters}/{result.global_diffs[i].n_similars}");
-                for(var i=0;i<result.n_face_pairs;i++)for(var j=0;j<result.face_pairs[i].n_local_diffs;j++){var diff=result.face_pairs[i].local_diffs[j];Console.WriteLine($"face={i} diff={diff.diff} entities={diff.master_entity}/{diff.similar_entity} values={diff.master_double:R}/{diff.similar_double:R}");}
-                if(result.global_result!=PK_DEBUG_global_res_no_diffs_c||result.local_result!=PK_DEBUG_local_res_no_diffs_c)throw new Exception(name+" structural comparison failed");
-            }
-            finally{Check(PK_DEBUG_BODY_compare_r_f(&result),"roundtrip compare free");}
+            ParasolidBodyCompare.AssertEquivalent(nativeBody,parts[0],name);
         }
         finally{Check(PK_MEMORY_free(parts),"roundtrip received parts free");}
     }

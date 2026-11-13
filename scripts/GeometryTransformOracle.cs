@@ -9,12 +9,16 @@
 global using ManagedEntityTag=System.Int32;
 using System.Runtime.CompilerServices;
 using System.Text;
-using ProjectGmKernel.Native;
+using ProjectGmKernel.Native.Computation;
+using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Runtime;
 using M=ProjectGmKernel.Native.Generated;
 using static parasolid;
 
-var directory=Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","geometry-transform-oracle"));
+var outputName=args.Single(x=>x.StartsWith("--output-name=",StringComparison.Ordinal))["--output-name=".Length..];
+if(outputName.Length==0||!outputName.All(c=>char.IsAsciiLetterOrDigit(c)||c is '-' or '_'))throw new ArgumentException("One new output name");
+var directory=Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","geometry-transform-oracle",outputName));
+if(Directory.Exists(directory))throw new ArgumentException("Existing execution evidence is immutable");
 Directory.CreateDirectory(directory);
 var log=new StringBuilder();
 void Log(string message) {Console.WriteLine(message);log.AppendLine(message);}
@@ -25,7 +29,9 @@ try
     unsafe
     {
         var options=new M.PK_SESSION_start_o_s {o_t_version=1};Check(KernelRuntime.SessionStart(&options),"managed session start");
-        try {Run(directory,Log);}
+        Log("GM_ASSEMBLY sha256="+Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(typeof(KernelRuntime).Assembly.Location))));
+        PK_SESSION_kernel_version_t version;Check(PK_SESSION_ask_kernel_version(&version),"native kernel version");Log($"PK_VERSION {version.major_revision}.{version.minor_revision}.{version.build_number}");
+        try {Run(directory,Log,args.Contains("--warm-only",StringComparer.Ordinal));}
         finally {Check(KernelRuntime.SessionStop(),"managed session stop");}
     }
 }
@@ -38,12 +44,15 @@ static void Require(bool condition,string label) {if(!condition)throw new Except
 static void Equal(double actual,double expected,string label)
     =>Require(double.IsFinite(actual)&&double.IsFinite(expected)&&Math.Abs(actual-expected)<=2e-8*Math.Max(1,Math.Abs(expected)),$"{label}: actual={actual:R}, expected={expected:R}");
 
-static unsafe void Run(string directory,Action<string> log)
+static unsafe void Run(string directory,Action<string> log,bool warmOnly)
 {
     var failures=0;var passes=0;
     foreach(var operation in new[]{"translation","rotation","scale","reflection"})
     {
         var (managedTransform,nativeTransform)=CreateTransform(operation,log);
+        try {CompareWarmIcurveModify(managedTransform,nativeTransform,operation,directory,log);passes++;log("PASS "+operation+" cached native ICurve modification");}
+        catch(Exception ex) {failures++;log("FAIL "+operation+" cached native ICurve modification: "+ex.Message);}
+        if(warmOnly)continue;
         if(operation=="translation")
         {
             try {CompareModifyClosure(managedTransform,nativeTransform,log);passes++;log("PASS explicit modify dependency closure");}
@@ -91,11 +100,110 @@ static unsafe (int Managed,int Native) CreateTransform(string kind,Action<string
     return(managed,native);
 }
 
+static unsafe void CompareWarmIcurveModify(int transform,int pkTransform,string label,string directory,Action<string> log)
+{
+    // This native XT definition is the common input to the modification
+    // consumer. It is not an independent PK construction of the upstream curve.
+    var planeForm=new M.PK_PLANE_sf_s();planeForm.basis_set.axis.coord[2]=1;planeForm.basis_set.ref_direction.coord[0]=1;
+    var sphereForm=new M.PK_SPHERE_sf_s{radius=1};sphereForm.basis_set=planeForm.basis_set;
+    int plane,sphere;Check(KernelRuntime.PlaneCreate(&planeForm,&plane),"input plane");Check(KernelRuntime.SphereCreate(&sphereForm,&sphere),"input sphere");
+    double[] chart=[1,0,0,Math.Cos(.4),Math.Sin(.4),0,Math.Cos(.8),Math.Sin(.8),0];
+    var definition=new IcurveDecodeInput{Surface0Tag=plane,Surface1Tag=sphere,BaseParameter=-.25,BaseScale=1,ChartCount=3,ChartHvecs=chart,
+        Start=new IcurveLimitInput{Type=LimitType.Artificial,TermUse=LimitTermUse.Unset,Hvecs=chart.AsSpan(0,3).ToArray()},
+        End=new IcurveLimitInput{Type=LimitType.Artificial,TermUse=LimitTermUse.Unset,Hvecs=chart.AsSpan(6,3).ToArray()},
+        ChordalError=Math.BitIncrement(1-Math.Cos(.2)),AngularError=Math.BitIncrement(.4),UvType=IntersectionUvType.None};
+    Require(KernelRuntime.DecodeIcurve(definition,out var data,out _,out _)==AlgorithmStatus.Success,"input native ICurve decode");
+    Require(KernelRuntime.TryBindICurveEntity(data,out var inputCurve)==AlgorithmStatus.Success,"input native ICurve binding");
+    var sourceRecord=KernelRuntime.GetCurveByTag(inputCurve);var interval=new M.PK_INTERVAL_s();interval.value[0]=sourceRecord.TMin;interval.value[1]=sourceRecord.TMax;
+    int inputBody;Check(KernelRuntime.CurveMakeWireBody(inputCurve,interval,&inputBody),"input wire");
+    var inputBytes=Transmit(inputBody);File.WriteAllBytes(Path.Combine(directory,label+"-warm-icurve-input.x_t"),inputBytes);
+    var nativeInput=Receive(inputBytes);CheckBody(nativeInput,label+" common input",log);
+    int count;int* edges;Check(PK_BODY_ask_edges(nativeInput,&count,&edges),"input native edges");
+    int nativeCurve=0;
+    try{Require(count==1,"one input edge");int curve;Check(PK_EDGE_ask_curve(edges[0],&curve),"input native curve");Check(PK_ENTITY_copy(curve,&nativeCurve),"independent native free curve copy");}
+    finally{PK_MEMORY_free(edges);}
+    int own;Check(KernelRuntime.EntityCopy(inputCurve,&own),"managed free curve copy");
+    Check(KernelRuntime.EntityDelete(1,&inputBody),"delete managed input body");Check(PK_ENTITY_delete(1,&nativeInput),"delete native input body");
+    var record=KernelRuntime.GetCurveByTag(own);var ownData=KernelRuntime.ICurveDataPool[record.DataIndex];
+    int* roots=stackalloc int[3]{own,ownData.Surface0Tag,ownData.Surface1Tag};
+    int* pkRoots=stackalloc int[3];pkRoots[0]=nativeCurve;
+    int* dependencies;Check(PK_GEOM_ask_dependents(nativeCurve,&count,&dependencies),"native defining geometry");
+    try{Require(count==2,"two native ICurve supports");for(var i=0;i<count;i++)pkRoots[i+1]=dependencies[i];}
+    finally{PK_MEMORY_free(dependencies);}
+    var parameter=record.TMin+(record.TMax-record.TMin)*.37;
+    PK_INTERVAL_t nativeBeforeInterval;Check(PK_CURVE_ask_interval(nativeCurve,&nativeBeforeInterval),"native input interval");
+    var actual=stackalloc M.PK_VECTOR_s[3];var expected=stackalloc PK_VECTOR_t[3];
+    Check(KernelRuntime.CurveEval(own,parameter,2,actual),"warm native ICurve");Check(PK_CURVE_eval(nativeCurve,parameter,2,expected),"independent input ICurve");
+    for(var order=0;order<=1;order++)for(var axis=0;axis<3;axis++)Equal(actual[order].coord[axis],expected[order].coord[axis],label+$" common input D{order}");
+    // Off-centre raw PK ICurve D2 differs from d(D1)/dt on the established
+    // Case-F family. Transform covariance is checked for each actual backend
+    // output separately; retain that raw query difference as its own result.
+    var ownBefore=new double[9];var nativeBefore=new double[9];var rawD2=0.0;
+    for(var order=0;order<=2;order++)for(var axis=0;axis<3;axis++)
+    {ownBefore[3*order+axis]=actual[order].coord[axis];nativeBefore[3*order+axis]=expected[order].coord[axis];if(order==2)rawD2=Math.Max(rawD2,Math.Abs(actual[order].coord[axis]-expected[order].coord[axis]));}
+    log($"QUERY_D2_RAW stage=input operation={label} maximum_difference={rawD2:R} status={(rawD2<=2e-8?"Agree":"Different")} transform_acceptance_separate=True");
+    var finiteDifference=new double[6];var plus=stackalloc PK_VECTOR_t[2];var minus=stackalloc PK_VECTOR_t[2];
+    for(var level=0;level<2;level++)
+    {
+        var h=level==0?1e-5:5e-6;
+        Check(PK_CURVE_eval(nativeCurve,parameter+h,1,plus),"native D1 difference plus");Check(PK_CURVE_eval(nativeCurve,parameter-h,1,minus),"native D1 difference minus");
+        for(var axis=0;axis<3;axis++)finiteDifference[3*level+axis]=(plus[1].coord[axis]-minus[1].coord[axis])/(2*h);
+    }
+    var nativeFdGap=0.0;var reportedFdGap=0.0;
+    for(var axis=0;axis<3;axis++)
+    {
+        var derivative=(4*finiteDifference[3+axis]-finiteDifference[axis])/3;
+        nativeFdGap=Math.Max(nativeFdGap,Math.Abs(actual[2].coord[axis]-derivative));reportedFdGap=Math.Max(reportedFdGap,Math.Abs(expected[2].coord[axis]-derivative));
+        Equal(actual[2].coord[axis],derivative,label+" mathematical D2 against native D1 finite difference");
+    }
+    log($"QUERY_D2_FD operation={label} h=1e-5/5e-6 managed_vs_native_D1_difference={nativeFdGap:R} native_reported_vs_native_D1_difference={reportedFdGap:R} sampled_check=True");
+    var identity=new GeometryIdentity(record.Header.Tag,record.Header.Generation);
+    Require(GeometryEvaluationCache.TryGetExact(identity,parameter,ICurveQueryKind.RegularChartInterval,ChartSide.Right,2,1e-9,out _),"actual L3 sample before modification");
+    var options=new M.PK_GEOM_transform_o_s{o_t_version=1,modify=M.ParasolidConstants.PK_GEOM_transform_modify_c,want_out_geoms=1,want_exact=1};
+    var pkOptions=new PK_GEOM_transform_o_t{modify=PK_GEOM_transform_modify_c};
+    int* outputs=stackalloc int[3];int* pkOutputs=stackalloc int[3];byte* exact=stackalloc byte[3];PK_LOGICAL_t* pkExact=stackalloc PK_LOGICAL_t[3];
+    Check(PK_GEOM_transform_2(3,pkRoots,pkTransform,&pkOptions,pkOutputs,pkExact),"native in-place ICurve transform");
+    PK_INTERVAL_t nativeAfterInterval;Check(PK_CURVE_ask_interval(nativeCurve,&nativeAfterInterval),"native modified interval");
+    log($"NATIVE_PARAMETER_MAP operation={label} before={nativeBeforeInterval.value[0]:R}/{nativeBeforeInterval.value[1]:R} after={nativeAfterInterval.value[0]:R}/{nativeAfterInterval.value[1]:R}");
+    int referenceBody;Check(PK_CURVE_make_wire_body(nativeCurve,nativeAfterInterval,&referenceBody),"native modified definition wire");
+    File.WriteAllBytes(Path.Combine(directory,label+"-warm-icurve-reference.x_t"),TransmitReference(referenceBody));
+    Check(KernelRuntime.GeomTransform2(3,roots,transform,&options,outputs,exact),"managed in-place ICurve transform");
+    for(var i=0;i<3;i++)Require(outputs[i]==roots[i]&&pkOutputs[i]==pkRoots[i]&&exact[i]==1&&pkExact[i]==PK_LOGICAL_true,"stable modify handles and exact flags");
+    Check(KernelRuntime.CurveAskInterval(own,&interval),"managed modified native interval");
+    Equal(interval.value[0],nativeAfterInterval.value[0],label+" native interval start");Equal(interval.value[1],nativeAfterInterval.value[1],label+" native interval end");
+    var parameterScale=(nativeAfterInterval.value[1]-nativeAfterInterval.value[0])/(nativeBeforeInterval.value[1]-nativeBeforeInterval.value[0]);
+    var mappedParameter=nativeAfterInterval.value[0]+(parameter-nativeBeforeInterval.value[0])*parameterScale;
+    Check(KernelRuntime.CurveEval(own,mappedParameter,2,actual),"modified warm ICurve");Check(PK_CURVE_eval(nativeCurve,mappedParameter,2,expected),"independent modified ICurve");
+    var form=new M.PK_TRANSF_sf_s();Check(KernelRuntime.TransfAsk(transform,&form),"actual transform for derivative covariance");
+    for(var order=0;order<=2;order++)for(var row=0;row<3;row++)
+    {
+        var ownValue=order==0?form.matrix[4*row+3]/form.matrix[15]:0;var nativeValue=ownValue;
+        for(var axis=0;axis<3;axis++){var factor=form.matrix[4*row+axis]/form.matrix[15]/Math.Pow(parameterScale,order);ownValue+=factor*ownBefore[3*order+axis];nativeValue+=factor*nativeBefore[3*order+axis];}
+        Equal(actual[order].coord[row],ownValue,label+$" managed native D{order} covariance[{row}]");
+        Equal(expected[order].coord[row],nativeValue,label+$" PK native D{order} covariance[{row}]");
+        if(order<=1)Equal(actual[order].coord[row],expected[order].coord[row],label+$" modified native D{order}[{row}]");
+    }
+    rawD2=0;for(var axis=0;axis<3;axis++)rawD2=Math.Max(rawD2,Math.Abs(actual[2].coord[axis]-expected[2].coord[axis]));
+    log($"QUERY_D2_RAW stage=modified operation={label} maximum_difference={rawD2:R} status={(rawD2<=2e-8?"Agree":"Different")} transform_acceptance_separate=True");
+    Check(KernelRuntime.CurveAskInterval(own,&interval),"modified interval");
+    int outputBody;Check(KernelRuntime.CurveMakeWireBody(own,interval,&outputBody),"modified managed finite wire");
+    var bytes=Transmit(outputBody);File.WriteAllBytes(Path.Combine(directory,label+"-warm-icurve-output.x_t"),bytes);
+    File.WriteAllBytes(Path.Combine(directory,label+"-warm-icurve-reference.x_t"),TransmitReference(referenceBody));
+    var fresh=Receive(bytes);CheckBody(fresh,label+" fresh modified wire",log);CheckBody(referenceBody,label+" independent modified wire",log);
+    ParasolidBodyCompare.AssertEquivalent(referenceBody,fresh,label+" modified native wire");
+    var wrong=Receive(inputBytes);var rejected=false;
+    try{ParasolidBodyCompare.AssertWireGeometry(wrong,fresh,label+" original wire negative");}
+    catch(InvalidOperationException){rejected=true;}
+    Require(rejected,"untransformed same-topology wire must fail");
+    int* nativeBodies=stackalloc int[3]{fresh,referenceBody,wrong};Check(PK_ENTITY_delete(3,nativeBodies),"native wire cleanup");
+    Check(KernelRuntime.EntityDelete(1,&outputBody),"managed wire cleanup");
+    log(label+" native ICurve input, actual warm sample, in-place modify, D0/D1 and per-backend D2 covariance, full/strict finite wire and wrong-position control passed");
+}
+
 static unsafe void CompareGeometry(string kind,int transform,int pkTransform,string label,Action<string> log)
 {
     var pair=CreateGeometry(kind);int actual,native;byte exact;PK_LOGICAL_t pkExact;
-    delegate* unmanaged<int,int,double,int*,byte*,int> apply=&KernelExports.PK_GEOM_transform;
-    Check(apply(pair.Managed,transform,0,&actual,&exact),label+" managed GEOM_transform");
+    Check(KernelRuntime.GeomTransform(pair.Managed,transform,0,&actual,&exact),label+" managed GEOM_transform");
     Check(PK_GEOM_transform(pair.Native,pkTransform,0,&native,&pkExact),label+" PK GEOM_transform");
     Require(exact==1&&pkExact==PK_LOGICAL_true,label+" exact flags");
     PK_CLASS_t expectedClass;Check(PK_ENTITY_ask_class(native,&expectedClass),label+" PK output class");
@@ -445,18 +553,8 @@ static unsafe int Count(int body,int kind)
 }
 static unsafe void CompareBodies(int expected,int actual,string label,Action<string> log)
 {
-    var options=new PK_DEBUG_BODY_compare_o_t {max_diffs=64,all_tests=PK_LOGICAL_false,num_tests=PK_LOGICAL_true,tol_dev_tests=PK_LOGICAL_true,tol_tests=PK_LOGICAL_true,
-        class_tests=PK_LOGICAL_true,sense_tests=PK_LOGICAL_true,missing_tests=PK_LOGICAL_true,acc_dev_tests=PK_LOGICAL_false,non_match_tests=PK_LOGICAL_false};
-    var result=new PK_DEBUG_BODY_compare_r_t();Check(PK_DEBUG_BODY_compare(expected,actual,&options,&result),label+" body compare");
-    try
-    {
-        log($"{label}: global={result.global_result}, local={result.local_result}, face pairs={result.n_face_pairs}.");var local=0;
-        for(var i=0;i<result.n_global_diffs;i++)log($"  diff={result.global_diffs[i].diff}, expected count={result.global_diffs[i].n_masters}, actual count={result.global_diffs[i].n_similars}");
-        for(var i=0;i<result.n_face_pairs;i++)for(var j=0;j<result.face_pairs[i].n_local_diffs;j++)
-        {var diff=result.face_pairs[i].local_diffs[j];local++;log($"  face={result.face_pairs[i].master_face}/{result.face_pairs[i].similar_face}, diff={diff.diff}, entity={diff.master_entity}/{diff.similar_entity}, value={diff.master_double:R}/{diff.similar_double:R}");}
-        Require(result.global_result==PK_DEBUG_global_res_no_diffs_c&&result.local_result==PK_DEBUG_local_res_no_diffs_c&&local==0,label+" structure/sense/tolerance differs");
-    }
-    finally {Check(PK_DEBUG_BODY_compare_r_f(&result),"free body compare");}
+    ParasolidBodyCompare.AssertEquivalent(expected,actual,label);
+    log(label+" strict native comparison and finite wire checks passed");
 }
 static unsafe void CheckBody(int body,string label,Action<string> log)
 {

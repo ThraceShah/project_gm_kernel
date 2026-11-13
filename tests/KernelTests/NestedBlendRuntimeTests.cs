@@ -54,12 +54,12 @@ public unsafe class NestedBlendRuntimeTests:IDisposable
         int transform;Assert.Equal(0,KernelRuntime.TransfCreate(&sf,&transform));int mark;Assert.Equal(0,KernelRuntime.MarkCreate(&mark));
         var options=new PK_GEOM_transform_o_s{o_t_version=1,modify=ParasolidConstants.PK_GEOM_transform_modify_c,want_out_geoms=1,want_exact=1};
         int* inputs=stackalloc int[4]{surface,a,b,spine};int* outputs=stackalloc int[4];byte* exact=stackalloc byte[4];
-        Assert.Equal(0,KernelRuntime.GeomTransform2(4,inputs,transform,&options,outputs,exact));if(xScale<0)uv.param[1]=1-uv.param[1];Assert.Equal(0,KernelRuntime.SurfEval(surface,uv,2,2,0,after));
+        Assert.Equal(0,KernelRuntime.GeomTransform2(4,inputs,transform,&options,outputs,exact));uv.param[0]*=2;if(xScale<0)uv.param[1]=1-uv.param[1];Assert.Equal(0,KernelRuntime.SurfEval(surface,uv,2,2,0,after));
         for(var i=0;i<9;i++)for(var d=0;d<3;d++)
         {
-            var expected=before[i].coord[d]*(d==0?xScale:2)*(xScale<0&&i/3%2==1?-1:1)+(i==0?(d==0?3:d==1?5:7):0);Assert.InRange(Math.Abs(expected-after[i].coord[d]),0,1e-11);
+            var expected=before[i].coord[d]*(d==0?xScale:2)/Math.Pow(2,i%3)*(xScale<0&&i/3%2==1?-1:1)+(i==0?(d==0?3:d==1?5:7):0);Assert.InRange(Math.Abs(expected-after[i].coord[d]),0,1e-11);
         }
-        Assert.Equal(0,KernelRuntime.MarkGoto(mark));uv.param[1]=.23;Assert.Equal(0,KernelRuntime.SurfEval(surface,uv,2,2,0,after));
+        Assert.Equal(0,KernelRuntime.MarkGoto(mark));uv.param[0]=.37;uv.param[1]=.23;Assert.Equal(0,KernelRuntime.SurfEval(surface,uv,2,2,0,after));
         for(var i=0;i<9;i++)for(var d=0;d<3;d++)Assert.Equal(before[i].coord[d],after[i].coord[d]);
     }
 
