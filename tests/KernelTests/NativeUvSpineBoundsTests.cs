@@ -19,8 +19,13 @@ public class NativeUvSpineBoundsTests
         var cell=new SurfaceParameterBox(-.2,.2,0,0);
         Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSpine(program,0,cell,bound));
         Span<IntervalNumber> witness=stackalloc IntervalNumber[7],uv=stackalloc IntervalNumber[4];
-        Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSharedSpineWitness(program,0,cell,bound,capture:witness));
-        Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSharedSpineWitness(program,0,cell,bound,require:witness));
+        // An isolated source event is required inside the target branch's
+        // contraction box. Two outer bounds of an entire parameter family
+        // need not contain one another, even for the identical curve.
+        Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSharedSpineWitness(program,0,new(0,0,0,0),bound,capture:witness));
+        var eventDomain=new SurfaceParameterBox(-.002,.002,0,0);
+        Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSharedSpineWitness(program,0,eventDomain,bound,require:witness));
+        Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSpine(program,0,cell,bound));
         Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSpineSupportUv(program,0,cell.U0,cell.U1,0,uv));
         for(var i=0;i<=20;i++)
         {
@@ -37,9 +42,9 @@ public class NativeUvSpineBoundsTests
             Contains(bound,0,numeric[0]);Contains(bound,3,numeric[1]);
         }
         var position=witness[0];witness[0]+=scale;
-        Assert.NotEqual(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSharedSpineWitness(program,0,cell,bound,require:witness));
+        Assert.NotEqual(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSharedSpineWitness(program,0,eventDomain,bound,require:witness));
         witness[0]=position;witness[3]+=nativeLast-nativeFirst;
-        Assert.NotEqual(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSharedSpineWitness(program,0,cell,bound,require:witness));
+        Assert.NotEqual(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSharedSpineWitness(program,0,eventDomain,bound,require:witness));
     }
 
     [Fact]

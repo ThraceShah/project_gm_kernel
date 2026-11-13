@@ -14,9 +14,7 @@ internal static partial class JointNestedBlendEvaluation
     private static AlgorithmStatus BoundNativeUvSegment(in NestedBlendProgram program,BlendSurfaceIndex surface,BlendSpineIndex spine,
         in SurfaceParameterBox domain,Span<IntervalNumber> output,out bool handled,Span<BufferCount> reachBudget=default,
         Span<IntervalNumber> curvature=default,BufferOffset curvatureSide=0,Span<IntervalNumber> supportParameter=default,BufferOffset parameterSide=0,
-        Span<IntervalNumber> captureWitness=default,ReadOnlySpan<IntervalNumber> requireWitness=default,BufferOffset rootChart=-1,
-        Span<double> anchorContacts=default,Span<IntervalNumber> acceleration=default,KernelVector3 accelerationNormal=default,
-        Span<BufferOffset> captureCharts=default,ReadOnlySpan<BufferOffset> requireCharts=default)
+        Span<double> anchorContacts=default,Span<IntervalNumber> acceleration=default,KernelVector3 accelerationNormal=default)
     {
         handled=false;var definition=program.Spines[spine];if(SpineParameterMap.Explicit(definition))return AlgorithmStatus.Unsupported;
         var first=program.Surfaces[definition.First];var second=program.Surfaces[definition.Second];
@@ -25,18 +23,6 @@ internal static partial class JointNestedBlendEvaluation
         handled=true;const BufferCount n=4,fullCount=7;
         var charts=Chart(program,spine);var u=Math.Clamp(domain.U0+(domain.U1-domain.U0)*.5,charts[0].Parameter,charts[^1].Parameter);
         var chart=0;while(chart<charts.Length-2&&charts[chart+1].Parameter<=u)chart++;
-        if(rootChart>=0)
-        {
-            if(rootChart>=charts.Length-1)return AlgorithmStatus.InvalidInput;
-            chart=rootChart;u=Math.Clamp(u,charts[chart].Parameter,Math.BitDecrement(charts[chart+1].Parameter));
-        }
-        if(!captureCharts.IsEmpty)
-        {
-            if(captureCharts.Length!=2)return AlgorithmStatus.Unsupported;
-            captureCharts[0]=spine;captureCharts[1]=chart;
-        }
-        if(!requireCharts.IsEmpty&&requireCharts.Length!=2)return AlgorithmStatus.Unsupported;
-        if(!captureWitness.IsEmpty&&captureWitness.Length!=fullCount||!requireWitness.IsEmpty&&requireWitness.Length!=fullCount)return AlgorithmStatus.Unsupported;
         var lower=charts[chart];var upper=charts[chart+1];var fraction=(u-lower.Parameter)/(upper.Parameter-lower.Parameter);
         Span<double> state=stackalloc double[n],seed=stackalloc double[n],trial=stackalloc double[n],residual=stackalloc double[n],matrix=stackalloc double[n*n],inverse=stackalloc double[n*n],rhs=stackalloc double[n],velocity=stackalloc double[n];
         Span<BufferOffset> pivots=stackalloc BufferOffset[n];
@@ -127,16 +113,6 @@ internal static partial class JointNestedBlendEvaluation
             nextRadii.CopyTo(radii);
         }
         if(!certified)return AlgorithmStatus.NotConverged;
-        if(!requireWitness.IsEmpty)
-        {
-            for(var i=0;i<n;i++)
-                if(!requireWitness[i+3].Finite||requireWitness[i+3].Lower<boxes[i].Lower||requireWitness[i+3].Upper>boxes[i].Upper)return AlgorithmStatus.NotConverged;
-            for(var i=0;i<n;i++)variables[i]=boxes[i];
-            found=NativeUvOffset(program,first,variables[0],variables[1],3,cache,out var enclosingCenter);if(found!=AlgorithmStatus.Success)return found;
-            Span<IntervalNumber> centerBox=stackalloc IntervalNumber[3]{enclosingCenter.X.Value,enclosingCenter.Y.Value,enclosingCenter.Z.Value};
-            for(var i=0;i<3;i++)
-                if(!requireWitness[i].Finite||requireWitness[i].Lower<centerBox[i].Lower||requireWitness[i].Upper>centerBox[i].Upper)return AlgorithmStatus.NotConverged;
-        }
         for(var iteration=0;iteration<6;iteration++)
         {
             for(var i=0;i<n;i++)boxes[i]=new(Math.Max(boxes[i].Lower,image[i].Lower),Math.Min(boxes[i].Upper,image[i].Upper));
@@ -162,7 +138,6 @@ internal static partial class JointNestedBlendEvaluation
         Span<Occurrence> nodes=stackalloc Occurrence[1];nodes[0]=new(){Spine=spine,Offset=0,Parent=-1,FirstChild=-1,SecondChild=-1,FirstUv=3,SecondUv=5};
         Span<BufferOffset> chartIndices=stackalloc BufferOffset[1];chartIndices[0]=chart;
         found=CertifyNearestBoxes(program,nodes,fullBoxes,full,default,chartIndices,cache);if(found!=AlgorithmStatus.Success)return found;
-        if(!captureWitness.IsEmpty)fullBoxes.CopyTo(captureWitness);
         if(!reachBudget.IsEmpty)
         {
             var centers=new IntervalBox3(fullBoxes[0].Lower,fullBoxes[0].Upper,fullBoxes[1].Lower,fullBoxes[1].Upper,fullBoxes[2].Lower,fullBoxes[2].Upper);
@@ -182,7 +157,7 @@ internal static partial class JointNestedBlendEvaluation
         if(!curvature.IsEmpty||!acceleration.IsEmpty)
             return BoundSpineDifferential(program,spine,nodes,full,fullDerivative,chart,curvature,curvatureSide,acceleration,accelerationNormal,cache);
         if(!anchorContacts.IsEmpty)for(var i=0;i<n;i++)anchorContacts[i]=boxes[i].Midpoint;
-        if(reachBudget.IsEmpty&&captureWitness.IsEmpty&&requireWitness.IsEmpty&&rootChart<0&&anchorContacts.IsEmpty&&captureCharts.IsEmpty&&requireCharts.IsEmpty)
+        if(reachBudget.IsEmpty&&anchorContacts.IsEmpty)
             WriteTube(program,spine,domain,nodes,fullBoxes,fullDerivative);
         if(surface<0)
         {

@@ -168,10 +168,13 @@ internal static partial class JointNestedBlendEvaluation
         var plain=reachBudget.IsEmpty&&curvature.IsEmpty&&supportParameter.IsEmpty&&captureWitness.IsEmpty&&requireWitness.IsEmpty&&rootChart<0
             &&anchorContacts.IsEmpty&&acceleration.IsEmpty&&captureCharts.IsEmpty&&requireCharts.IsEmpty;
         if(plain&&output.Length>=9&&ReadTube(program,surface,spine,domain,output,out var reused))return reused;
-        if(!double.IsFinite(phaseReference))
+        // Shared witnesses require a Cartesian contraction box of the
+        // original full equation system. A lifted UV graph enclosure is
+        // sufficient for spatial/parameter bounds, but is not that box.
+        if(captureWitness.IsEmpty&&requireWitness.IsEmpty&&rootChart<0&&captureCharts.IsEmpty&&requireCharts.IsEmpty&&!double.IsFinite(phaseReference))
         {
             var native=BoundNativeUvSegment(program,surface,spine,domain,output,out var handled,reachBudget,curvature,curvatureSide,
-                supportParameter,parameterSide,captureWitness,requireWitness,rootChart,anchorContacts,acceleration,accelerationNormal,captureCharts,requireCharts);
+                supportParameter,parameterSide,anchorContacts,acceleration,accelerationNormal);
             if(handled)return native;
         }
         Span<TaylorJet> snapshot=stackalloc TaylorJet[MaxVariables];Span<Occurrence> occurrences=stackalloc Occurrence[MaxOccurrences];Span<BufferCount> counts=stackalloc BufferCount[2];
