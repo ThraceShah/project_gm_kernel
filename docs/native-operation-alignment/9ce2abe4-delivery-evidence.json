@@ -1,0 +1,34 @@
+{
+  "sourceCommit": "9ce2abe43ac0160ec716d83298575ff1cc50e500",
+  "branch": "feat/pk-native-system-alignment",
+  "package": "temp_docs/native-system-delivery/checkpoint-9ce2abe4.zip",
+  "packageBytes": 54748678,
+  "packageSha256": "35a85e1aa76eec3ba98b24b19e2a2a9f5bcc92fa56f9e36a325e7a3b8517b98f",
+  "artifacts": 815,
+  "nativeSha256": "242169e8b6ddadafdd4db55f313073450597820b8d29b12262dd623387674cb0",
+  "xtSha256": "daff7fd2bddd1b7f42ff950ccb85fae35b288301946219a3b78ff7c4db5d5fa5",
+  "sourcePdbVerifiedDocuments": { "native": 355, "xt": 13 },
+  "environment": "Linux x64 PK38.0.150 schema970 PKToy d820719b6d8510d623972ab9d8efc65edbc312f9 .NET10; TC1 PGO1 QuickJit1 QuickJitForLoops1 ReadyToRun0",
+  "fullManaged": "2219/2219 Release raw0, allocation IL guard3184 CLEAN; separate testhooks bytes",
+  "fixedProductionConsumers": [
+    "118/118 native geometry and body transform/private UV/warm mutation/strict finite wire controls, raw0",
+    "Three reversed rational native U[-2,3] families, nine scale/reflection/rotation copy-delete/editable-XT/re-Boolean lifecycles, geometry pass raw2 mass U",
+    "Self short-edge Fix and two downstream Boolean/lifecycle/finite-fin gates pass, raw2 with eight mass U",
+    "Five conic controls including scale8 reflected/rotated staged full-ring input and first-output XT lifecycle, both Booleans individually full/strict/mass Verified, raw0",
+    "Three same-area multi-tool consumers including order reversal and mapped frame, raw0",
+    "Five finite axial contact imprint consumers including native negative and orientation controls, raw0"
+  ],
+  "normalWindow": {
+    "result": "temp_docs/native-system-alignment/native-material-fixed-normal-abba-v1/comparison.json",
+    "kernelBaseline": "f74582c078c8beecea349e757082f0e1e2cf7c42",
+    "commonHarnessSource": "9ce2abe43ac0160ec716d83298575ff1cc50e500",
+    "protocol": "Serial ABBA per scenario, frozen bytes, profiling and boundary trace off, shared event-arrangement guard and complete contact/full/strict quality gates on; rep0 cold excluded",
+    "ordinaryWarmGmMs": { "baseline": 7075.593, "candidate": 6948.376, "ratio": 0.9820203055772145 },
+    "rationalLifecycleWarmGmMs": { "baseline": 10249.394, "candidate": 9805.661, "ratio": 0.9567064160085952 },
+    "limitation": "Owner observations only; ordinary baseline runs vary substantially. Fix algorithm unchanged in this increment, so its timing variation is not attributed to material propagation. GM remains about66x/263x same-window PK total API time; all child raw2 mass U retained."
+  },
+  "independentlyAccepted": false,
+  "performanceQualified": false,
+  "taskStatus": "active",
+  "remaining": "Nonanalytic periodic support, broader finite/contact/multiparticipant categories, FaceAttach and curved-tracking gaps require actual capability work or proof. Original510 self/import and native7/Capture8 executions remain distinct; general-surface mass U and PK performance gap are unresolved. This is a saved checkpoint, not overall completion."
+}

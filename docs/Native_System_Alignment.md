@@ -1785,3 +1785,27 @@ CLEAN。细节、数学条件与未覆盖范围见`docs/Native_Source_Ring_Windo
 这些是owner实现和实测，未签独立Native/math接受。性能继续以真实同平台完整操作
 验证；此次为接下来的固定窗口添加明确关闭边界trace的脚本选项，依赖trace的proof
 消费者禁止使用该选项。原带trace的两组ABBA保持原字节，不倒签为无trace测量。
+
+### 9ce2abe4 同一生产二进制与固定包
+
+固定源码`9ce2abe43ac0160ec716d83298575ff1cc50e500`实际生产Native为
+242169e8b6ddadafdd4db55f313073450597820b8d29b12262dd623387674cb0。
+关闭profiling及边界trace的串行ABBA使用同一9ce2 runner/helper，产品baseline为固定
+f745，candidate为9ce2。普通四族warm GM API合计7075.593→6948.376ms（.982020），
+反向有理native U[-2,3]及尺度1.7回读再建模三族为10249.394→9805.661ms（.956706）。
+Boolean分别3894.374→3643.412、9505.336→9056.236ms；本增量未改Fix算法，Fix耗时
+变化不作算法归因。普通baseline两次波动明显，总量约1.8%的改善证据有限；有理约4.3%。
+candidate对同窗PK完整API仍约66/263倍，不能签性能对标完成。八个子进程88组模型
+各步及fresh XT/full/strict/contact通过，原raw2/物性U均保留，driver0仅为采集完成。
+
+同一个上述DLL另实际完成`9ce2abe4-fixed-{transform,rational,short-edge,ring-lifecycle,`
+`coplanar,contact}-v1`：118变换、九组有理生命周期、自建短边与两个后继操作、周期
+源环的分步回读再切割、同域多刀具及有限接触。几何/拓扑、操作状态和物性分别保留。
+原失败、Debug中止、拒绝的后移窗候选及真实PK动态观察均另列，没有借checker0补签。
+
+包`temp_docs/native-system-delivery/checkpoint-9ce2abe4.zip`为54,748,678字节，
+SHA256 `35a85e1aa76eec3ba98b24b19e2a2a9f5bcc92fa56f9e36a325e7a3b8517b98f`，
+815项制品/24项执行。Native355与Xt13个编译文档均和固定源码/PDB校验，含同一生产
+字节、f745比较字节及其固定源码、原输入/输出XT、完整退出和失败。无厂商库/凭证。
+收据`docs/native-operation-alignment/9ce2abe4-delivery-evidence.json`明确独立接受false、
+performanceQualified=false和task active；原包保留，整体主线继续执行。
