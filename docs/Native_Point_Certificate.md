@@ -42,3 +42,24 @@ Krawczyk像与微分RHS使用不同存储；微分求解不能覆盖下一轮收
 的有限域、根/材料选择、实体precision、strict compare和物性门限没有放宽。
 是否在复杂有理/变换族中降低整链成本必须另用真实操作及固定二进制窗口验收；
 局部Jacobian减少或单次wall时间都不能替代该结论。
+
+## 固定源码整链观察
+
+`native-point-fixed-normal-abba-v1/comparison.json`（位于
+`temp_docs/native-system-alignment/`）保留98084d9d与f74582c0固定源码的串行ABBA。
+candidate Native SHA256为068f4930ce5f8a285e933e2699f29ac3a57996890ca4f51695afa70eaa2b3bcd；
+baseline为上一固定包中的c4a083d8b3b5a3f6d7336d261a703cc766090552c719bbf7f2261e1deeb7ef09。
+实际PK38、相同runner/helper和五项JIT策略均核验，关闭profiling；原event-arrangement
+边界trace在两端相同启用，计时包括其代价。每族rep0排除为cold。
+
+| 场景 | baseline warm GM API ms | candidate ms | 比值 |
+|---|---:|---:|---:|
+| 四个普通曲面族，每进程四次 | 8179.675 | 7306.641 | .893268 |
+| 三个反向有理族、native U[-2,3]、尺度1.7回读再建模，每进程两次 | 10513.971 | 10210.146 | .971103 |
+
+普通Fix为4032.648→3275.304ms，Boolean为4147.027→4031.337ms；有理Fix为
+940.710→738.449ms，Boolean为9573.261→9471.697ms。算法主要减少Fix成本，
+有理生命周期Boolean仍为主瓶颈；candidate同窗GM/PK API总量比仍约69.9与281.1。
+八个子进程共88组模型均完成各操作、fresh XT fullcheck/strict及contact控制。
+所有子进程raw2保留物性U，driver raw0仅证明采集完成。此为owner观察，
+独立接受和performanceQualified仍false；不是整体性能目标完成。

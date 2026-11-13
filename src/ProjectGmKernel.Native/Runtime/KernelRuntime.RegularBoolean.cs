@@ -197,12 +197,18 @@ internal static unsafe partial class KernelRuntime
             var originCount=ReadRegularBooleanOrigins(ref model,origins);
             if(coincident){error=UnifyRegularCoincidentEdges(ref model);if(error!=0)return error;}
             Span<byte> selected=stackalloc byte[model.NF],reversed=stackalloc byte[model.NF];selected.Clear();reversed.Clear();
+            var propagate=!coincident&&!finiteContact&&!haveAxialContact;
+            for(var i=0;i<familyCount;i++)propagate&=families[i].Relation is SurfacePairRelation.Empty or SurfacePairRelation.RegularCurves;
+            Span<BufferOffset> materialComponents=stackalloc BufferOffset[model.NF];
+            ReadRegularMaterialComponents(ref model,sources[..nf],owners[..nf],sourceEdges[..ne],materialComponents,propagate);
             Span<BufferOffset> bodyFaces=stackalloc BufferOffset[RegularInputFaces];Span<bool> minus=stackalloc bool[inputs.Length],plus=stackalloc bool[inputs.Length];
             SurfaceDerivativeLayout.TryCreate(1,1,out var layout);Span<KernelVector3> point=stackalloc KernelVector3[4];var hasClash=cutCount>0;var targetClash=false;
             for(var c=0;c<cutCount;c++)targetClash|=owners[cuts[c].First]==0||owners[cuts[c].Second]==0;
             for(var f=0;f<model.NF;f++)
             {
                 LastRegularBooleanFace=f;var sourceIndex=sources[..nf].IndexOf(model.Sources[f]);if(sourceIndex<0)return ParasolidConstants.PK_ERROR_bad_loop;
+                var representative=materialComponents[f];
+                if(representative!=f){selected[f]=selected[representative];reversed[f]=reversed[representative];continue;}
                 var owner=owners[sourceIndex];var uv=model.Witnesses[f];var surface=GetSurfaceSlotByTag(model.Faces[f].Surface);
                 var canonicalOwner=owner;
                 for(var attempt=0;attempt<2;attempt++)

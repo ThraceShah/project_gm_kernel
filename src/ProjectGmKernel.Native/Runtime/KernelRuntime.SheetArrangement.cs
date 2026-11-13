@@ -306,7 +306,7 @@ internal static unsafe partial class KernelRuntime
                 if(index>=0){LastSheetPartitionStage=SheetPartitionStage.BoundaryAssociation;return ParasolidConstants.PK_ERROR_cant_do_intersect;}
                 index=i;
             }
-            if(index>=0)return 0;
+            if(index>=0){if(cut)CutEdges[index]|=1;return 0;}
             return AppendEdge(curve,first,last,start,end,cut,out index);
         }
 
@@ -581,6 +581,7 @@ internal static unsafe partial class KernelRuntime
                 if(model.RequireBoundaryAssociations&&!closed&&!wrap&&cut.InheritedSourceEdge==0&&cut.KeepImprint==0
                     &&FindNativeFiniteLineFragment(cut.Curve,first,last,endpoints[i],endpoints[j],sources,model.Edges[..model.NE],out var nativeInherited))
                 {
+                    model.CutEdges[nativeInherited]|=1;
                     var present=false;for(var h=0;h<nh;h++)present|=halfedges[h].Edge==nativeInherited;
                     if(present)continue;
                     var added=AddSheetHalfedge(surface,ref model,nativeInherited,1,halfedges,ref nh,face,faceSense:sense);if(added!=0)return added;
@@ -599,6 +600,7 @@ internal static unsafe partial class KernelRuntime
                     // The cut has already been clipped on both faces. The
                     // source face has its original use; only the other
                     // face needs the two directions to form its cells.
+                    model.CutEdges[inherited]|=1;
                     var present=false;for(var h=0;h<nh;h++)present|=halfedges[h].Edge==inherited;
                     if(present)continue;
                     ref readonly var inheritedEdge=ref model.Edges[inherited];

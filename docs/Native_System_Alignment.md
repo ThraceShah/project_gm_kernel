@@ -1728,3 +1728,26 @@ raw2；Fix的Jacobian由4389/3075/3385/3245降为3094/2190/2285/2340，原单元
 串行profiling诊断的固定c4 baseline与此候选分别18268.000/17933.704ms，计数显示
 各Fix下降，复杂N4 Boolean基本不变。这些运行和原退出均保留，不能把总wall或
 计数诊断当独立性能接受；后继仍须固定二进制、无profiling的完整窗口。
+
+固定f74582c0对98084d9d的`native-point-fixed-normal-abba-v1`已完成：四个普通族
+warm GM完整API为8179.675→7306.641ms（.893268），三个反向有理native U[-2,3]
+尺度1.7回读再建模族为10513.971→10210.146ms（.971103）。八个串行进程88组
+各步及fresh XT fullcheck/strict/contact均通过；原raw2和物性U保留。关闭profiling，
+相同边界trace仍启用，计时包含其开销。candidate Native为068f4930ce5f8a285e933e2699f29ac3a57996890ca4f51695afa70eaa2b3bcd。
+Fix成本下降为主，复杂有理Boolean仍是主瓶颈；详情见点证书文档，本结果仍非独立接受。
+
+## 材料选择消费原生有限拓扑的连通性
+
+真实PK38在NURBS/NURBS fillet后subtract命中半边链、相邻面分类、面排序、in/out
+分类和分类表更新，非仅凭顶层符号猜算法。MCP静态依赖与动态已命中/未命中分别保留，
+不声称GM照搬了完整PK内部算法；依据见`docs/Native_Material_Components.md`。
+
+GM原分类逐face cell对每个其他body执行整实体winding。现从已完整arrange的原生
+输入边片段构造操作局部连通分量：只有未被cut占用、恰两次相反使用、同输入body、
+正有限区间才连接。任一contact/coincident/unresolved关系关闭本次传播，不能把
+该类输入强行套入regular规则。每分量种子仍完整分类，其余面片消费恒定的材料谓词。
+没有跨owner、跨新增交线、按坐标猜邻接或持久缓存；disconnected shell仍各有种子。
+
+复用原生有限直线/InheritedSourceEdge及AddEdge已有边时，现在同时保留cut占用位，
+即使已有半边使用也先标记；否则实际交线可能被当作普通源边。短边和事件身份不变。
+这是既有arrangement→材料选择之间的数据消费改变，不增加新模型或Engine。
