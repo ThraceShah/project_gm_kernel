@@ -87,7 +87,7 @@ internal static partial class JointNestedBlendEvaluation
             {
                 boxes[i]=new(Math.BitDecrement(state[i]-radii[i]),Math.BitIncrement(state[i]+radii[i]));
             }
-            found=NativeUvJacobian(program,first,second,definition,lower,boxes,t,jacobian,variables,equations,cache);
+            found=NativeUvJacobian(program,first,second,lower,boxes,jacobian,cache);
             if(found!=AlgorithmStatus.Success){for(var i=0;i<n;i++)radii[i]*=2;continue;}
             Precondition(inverse,jacobian,n,remainder);certified=true;
             radii.CopyTo(nextRadii);
@@ -120,7 +120,7 @@ internal static partial class JointNestedBlendEvaluation
         for(var iteration=0;iteration<6;iteration++)
         {
             for(var i=0;i<n;i++)boxes[i]=new(Math.Max(boxes[i].Lower,image[i].Lower),Math.Min(boxes[i].Upper,image[i].Upper));
-            found=NativeUvJacobian(program,first,second,definition,lower,boxes,t,jacobian,variables,equations,cache);if(found!=AlgorithmStatus.Success)return found;
+            found=NativeUvJacobian(program,first,second,lower,boxes,jacobian,cache);if(found!=AlgorithmStatus.Success)return found;
             Precondition(inverse,jacobian,n,remainder);
             for(var row=0;row<n;row++)
             {
@@ -247,10 +247,9 @@ internal static partial class JointNestedBlendEvaluation
     }
 
     private static AlgorithmStatus NativeUvJacobian(in NestedBlendProgram program,in BlendSurfaceInstruction first,in BlendSurfaceInstruction second,
-        in BlendSpineInstruction spine,in BlendChartInstruction chart,ReadOnlySpan<IntervalNumber> boxes,IntervalNumber parameter,
-        Span<IntervalNumber> matrix,Span<IntervalDual> variables,Span<IntervalDual> residual,Span<IntervalSplineContact> cache)
+        in BlendChartInstruction chart,ReadOnlySpan<IntervalNumber> boxes,Span<IntervalNumber> matrix,Span<IntervalSplineContact> cache)
     {
-        var n=boxes.Length;ModelingPerformance.Jacobian(n);for(var i=0;i<n;i++)variables[i]=boxes[i];
+        var n=boxes.Length;ModelingPerformance.Jacobian(n);
         AlgorithmStatus status;
         if(ReuseSplineContactBounds)
         {
@@ -258,13 +257,57 @@ internal static partial class JointNestedBlendEvaluation
             if(second.IsBSpline){status=CacheSplineContact(program,second,boxes[2],boxes[3],ref cache[5],second.Offset==0);if(status!=AlgorithmStatus.Success)return status;}
         }
         else cache.Clear();
-        for(var column=0;column<n;column++)
+        // Each native foot depends only on its own two UV coordinates.
+        // Differentiate that support, rather than evaluating both offset maps
+        // in every residual direction. The native gauge uses the first foot.
+        matrix.Clear();
+        Span<IntervalNumber> derivatives=stackalloc IntervalNumber[6];
+        for(var side=0;side<(n==4?2:1);side++)
         {
-            ModelingPerformance.ResidualDirection();
-            variables[column]=new(boxes[column],1);
-            status=NativeUvIntervalEquations(program,first,second,spine,chart,variables,parameter,residual,cache);if(status!=AlgorithmStatus.Success)return status;
-            for(var row=0;row<n;row++)matrix[row*n+column]=residual[row].Derivative;variables[column]=boxes[column];
+            var at=2*side;
+            status=NativeUvOffsetDerivatives(program,side==0?first:second,boxes[at],boxes[at+1],side==0?3:5,cache,derivatives);if(status!=AlgorithmStatus.Success)return status;
+            for(var axis=0;axis<2;axis++)
+            {
+                var column=at+axis;var d=derivatives.Slice(3*axis,3);ModelingPerformance.ResidualDirection();
+                if(second.IsBSpline)
+                {var sign=side==0?1:-1;for(var row=0;row<3;row++)matrix[row*n+column]=sign*d[row];}
+                else matrix[column]=d[0]*second.Analytic.Axis.X+d[1]*second.Analytic.Axis.Y+d[2]*second.Analytic.Axis.Z;
+                if(side==0)matrix[(n-1)*n+column]=d[0]*chart.Chord.X+d[1]*chart.Chord.Y+d[2]*chart.Chord.Z;
+            }
         }
+        foreach(var value in matrix)if(!value.Finite)return AlgorithmStatus.NotConverged;
         return AlgorithmStatus.Success;
     }
+
+    private static AlgorithmStatus NativeUvOffsetDerivatives(in NestedBlendProgram program,in BlendSurfaceInstruction source,
+        IntervalNumber u,IntervalNumber v,BufferOffset cacheIndex,ReadOnlySpan<IntervalSplineContact> cache,Span<IntervalNumber> derivatives)
+    {
+        Span<IntervalNumber> local=stackalloc IntervalNumber[18];scoped ReadOnlySpan<IntervalNumber> jet;
+        if(!cache.IsEmpty&&SplineContactMatches(cache[cacheIndex],source,u,v,source.Offset==0?1:2))jet=cache[cacheIndex].Values;
+        else{var status=IntervalSplineBounds(program,source,u,v,local[..(source.Offset==0?9:18)]);if(status!=AlgorithmStatus.Success)return status;jet=local;}
+        if(source.Offset==0){jet.Slice(3,6).CopyTo(derivatives);return AlgorithmStatus.Success;}
+        Span<IntervalNumber> cross=stackalloc IntervalNumber[3],normal=stackalloc IntervalNumber[3],change=stackalloc IntervalNumber[3];
+        for(var axis=0;axis<3;axis++)
+        {var a=(axis+1)%3;var b=(axis+2)%3;cross[axis]=jet[3+a]*jet[6+b]-jet[3+b]*jet[6+a];}
+        var length=IntervalDual.Sqrt(IntervalNumber.Square(cross[0])+IntervalNumber.Square(cross[1])+IntervalNumber.Square(cross[2])).Value;
+        if(!(length.Lower>0))return AlgorithmStatus.NotConverged;
+        for(var axis=0;axis<3;axis++)normal[axis]=cross[axis]/length;
+        for(var direction=0;direction<2;direction++)
+        {
+            for(var axis=0;axis<3;axis++)
+            {
+                var a=(axis+1)%3;var b=(axis+2)%3;var uu=direction==0?9:12;var uv=direction==0?12:15;
+                change[axis]=jet[uu+a]*jet[6+b]-jet[uu+b]*jet[6+a]+jet[3+a]*jet[uv+b]-jet[3+b]*jet[uv+a];
+            }
+            var projection=normal[0]*change[0]+normal[1]*change[1]+normal[2]*change[2];
+            for(var axis=0;axis<3;axis++)derivatives[3*direction+axis]=jet[3+3*direction+axis]+source.Offset*(change[axis]-normal[axis]*projection)/length;
+        }
+        foreach(var value in derivatives)if(!value.Finite)return AlgorithmStatus.NotConverged;return AlgorithmStatus.Success;
+    }
+
+#if KERNEL_TEST_HOOKS
+    internal static AlgorithmStatus TestNativeUvOffsetDerivatives(in NestedBlendProgram program,BlendSurfaceIndex surface,
+        in SurfaceParameterBox domain,Span<IntervalNumber> derivatives)
+        =>NativeUvOffsetDerivatives(program,program.Surfaces[surface],new(domain.U0,domain.U1),new(domain.V0,domain.V1),-1,default,derivatives);
+#endif
 }

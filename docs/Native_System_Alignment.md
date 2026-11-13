@@ -1425,3 +1425,46 @@ manifest登记703个实际产物文件，另附固定source archive和manifest�
 manifest明确 `independentlyAccepted=false`、`performanceQualified=false`；未派中间review
 worker，不把封包当worker完成或原目标完成。一般曲面物性、边界precision、尚未执行的
 provider/高价/complete-region tracking等范围按manifest继续登记，主任务保持实际执行。
+
+## 原生行进分支实查与支撑导数块
+
+继续使用 parasolid-research 和 parasolid-docs。官方 XT 第6章定义 CHART 为原生
+ICurve 参数化，chordal_error 是估计值，不能作为曲线包围证明。对同一 concave
+双 NURBS 输入的真实 PK38.0.150 Fix 作 bounded GDB，
+`temp_docs/native-system-alignment/native-march-chain-v2.log` 的五个实际断点均有
+fix_blends 调用祖先：CNS_blended_edge → ISS_intersect_at_pvec → phase3 →
+ISS3_forward_march → MAR_explore → MAR__step_from_hvec → REL_step_from_hvec /
+REL_to_two_surfaces，并命中 MAR__length_scale。MCP 静态下层另有原生边界、参数跳跃
+和间接调用；未命中的 pursuit/thin_out 分支仍未知，不称为本操作的实际路径。
+GDB/被调试进程各 raw0，只签原生分支观察，不签 GM 或性能。
+
+实际 XT 字段追链而非根据比较记录猜测：PK 的 BLENDED_EDGE.spine 指向
+INTERSECTION.chart 的5点 CHART，GM 对应主倒圆脊线为27点。
+`native-march-pk-nodes-v2.log`、`native-march-gm-nodes-v1.log` 保留实际字段。
+首次通用节点工具因进程未设 P_SCHEMA 在解析前 raw134，不能算建模失败。
+
+候选自适应步长仍保留原局部拒绝条件和整段有限分支证明，四族八组完整操作通过，
+但凹双曲面 Boolean 变慢，完整耗时7449.132 ms，raw2；减少 CHART 不是性能结论。
+随后区间均值/Gauss-Seidel 收缩试验也未形成整链改善，raw2、8046.947 ms。
+两项运行时代码均撤回，diff/日志独立保留于
+`temp_docs/native-system-alignment/native-adaptive-march-*` 和
+`temp_docs/native-system-alignment/native-uv-mean-value-*`，不混入固定 b08 包。
+
+保留的通用改动按实际 native foot 依赖组装2/4维 Jacobian：每侧两个原生 UV
+只影响该侧 offset support，CHART gauge 只依赖原第一 foot。原来每列完整重算两侧
+残差，现直接从已有 D1/D2 求每侧两条 offset 导数并填相应块，结构零项直接为零。
+法向导数使用已有 Contact 的投影公式；仍作正法向长度检查、原 rational jet、
+native tensor linear extension、严格包含/收缩、六轮 refinement、nearest 和有限域门。
+不增加缓存，不采用被拒的多项式权商旁路、点包围或重复 Jacobian 复用；shared
+witness 仍走原 Cartesian 包含系统。内部函数只用 stack/scratch，不变 C ABI。
+
+`native-uv-incidence-jet-whole-v1` 四族八组 Fix/Boolean 独立 fullcheck/strict/contact
+通过，raw2、7764.965 ms；冷启动和各族涨跌保留，不据此签整链加速。
+随后实际生产 Native a74e4c15169d44eb0bfe15c5adce355baa9acac452d6e19e6e590cc50d996b55
+执行 `native-uv-incidence-jet-rational-v1`，三族反向有理 native U[-2,3]、三尺度
+九项 copy/delete/reflection/reload/remodel 与各原操作 full/strict 通过，raw2；物性 U
+照存。`native-uv-incidence-jet-managed-v1` 31/31，包括新加六项正负/零 offset、
+有理/非有理、尺度及跨原生边界的 D1 包含检查；点检查不是任意曲线等价证明。
+私有签名简化后的 `native-uv-incidence-jet-managed-v2` 42/42 raw0，包含完整 tube
+身份/失败/原 witness 控制，IL guard3175 CLEAN；testhost自身退出。
+完整统一包和全回归仍以 b08 固定证据为准，本增量未独立接受，整体任务继续。

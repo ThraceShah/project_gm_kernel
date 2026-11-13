@@ -3,6 +3,7 @@ using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Geometry.Bounds;
 using ProjectGmKernel.Native.Geometry.Evaluation;
 using ProjectGmKernel.Native.Runtime;
+using static ProjectGmKernel.Native.Geometry.Evaluation.EvaluationMath;
 
 namespace KernelTests;
 
@@ -52,6 +53,47 @@ public class NativeUvSpineBoundsTests
     {
         var program=Program(true,false,1,true);Span<IntervalNumber> bound=stackalloc IntervalNumber[9];
         Assert.NotEqual(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSpine(program,0,new(-.2,.2,0,0),bound));
+    }
+
+    [Theory]
+    [InlineData(false,false,.125,-.1)] [InlineData(false,true,8,.13)]
+    [InlineData(true,false,8,-.1)] [InlineData(true,true,.125,.13)]
+    [InlineData(true,false,1,0)] [InlineData(true,true,1,0)]
+    public void OffsetFootDifferentialEnclosesBothNativeDirectionsIncludingLinearExtension(bool rational,bool outside,double scale,double offset)
+    {
+        var original=Program(true,false,scale,false,-2,3);var sources=original.Surfaces.ToArray();var scalars=original.Scalars.ToArray();
+        if(rational)
+        {
+            scalars=new double[68];
+            for(var side=0;side<2;side++)
+            {
+                var source=sources[side];var at=34*side;
+                for(var u=0;u<3;u++)for(var v=0;v<2;v++)
+                {
+                    var weight=.8+.2*u+.1*v;var pole=2*u+v;
+                    for(var axis=0;axis<3;axis++)scalars[at+4*pole+axis]=original.Scalars[source.ScalarOffset+3*pole+axis]*weight;
+                    scalars[at+4*pole+3]=weight;
+                }
+                original.Scalars.Slice(source.ScalarOffset+18,10).CopyTo(scalars.AsSpan(at+24));
+                source.ScalarOffset=at;source.Dimension=4;source.Rational=true;sources[side]=source;
+            }
+        }
+        for(var side=0;side<2;side++){var source=sources[side];source.Offset=offset*scale;sources[side]=source;}
+        var program=new NestedBlendProgram(sources,original.Spines,original.Charts,scalars,original.Workspace);
+        var domain=outside?new SurfaceParameterBox(2.96,3.04,-.17,.19):new SurfaceParameterBox(.08,.12,-.17,.19);
+        Span<IntervalNumber> bounds=stackalloc IntervalNumber[6];
+        for(var side=0;side<2;side++)
+        {
+            Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.TestNativeUvOffsetDerivatives(program,side,domain,bounds));
+            for(var i=0;i<=4;i++)for(var j=0;j<=4;j++)
+            {
+                var u=domain.U0+(domain.U1-domain.U0)*i/4;var v=domain.V0+(domain.V1-domain.V0)*j/4;
+                Assert.Equal(AlgorithmStatus.Success,NestedSplineEvaluation.Contact(program,sources[side],u,v,out var contact));
+                var du=Add(contact.Du,Scale(contact.NormalU,sources[side].Offset));
+                var dv=Add(contact.Dv,Scale(contact.NormalV,sources[side].Offset));
+                Contains(bounds,0,du);Contains(bounds,3,dv);
+            }
+        }
     }
 
     [Theory]
