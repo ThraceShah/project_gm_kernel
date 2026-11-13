@@ -14,7 +14,8 @@ internal static unsafe partial class KernelRuntime
     [ThreadStatic] internal static BufferOffset LastRegularBooleanOtherFace;
     private const BufferCount RegularInputFaces=128,RegularInputEdges=1024,RegularInputLoops=512,RegularInputCoedges=4096,RegularCurveLimit=1024,RegularCutLimit=2048;
 
-    private static int RegularCurvedBoolean(ReadOnlySpan<BodyTag> inputs,PK_BODY_boolean_o_s* options,PK_TOPOL_track_r_s* tracking,PK_boolean_r_s* result)
+    private static int RegularCurvedBoolean(ReadOnlySpan<BodyTag> inputs,PK_BODY_boolean_o_s* options,PK_TOPOL_track_r_s* tracking,PK_boolean_r_s* result,
+        scoped Span<BooleanTopologyOrigin> lineage=default)
     {
         LastRegularBooleanStage=RegularBooleanStage.Read;LastRegularBooleanFace=LastRegularBooleanOtherFace=-1;
         if(options->merge_imprinted!=0)return ParasolidConstants.PK_ERROR_not_implemented;
@@ -188,9 +189,10 @@ internal static unsafe partial class KernelRuntime
             LastRegularBooleanStage=RegularBooleanStage.Classify;ModelingPerformance.Stage(RegularBooleanStage.Classify);
             if(options->tracking!=0)
             {
-                trackingMemory=scratch.Take((model.NC*sizeof(RegularBooleanOrigin)+sizeof(double)-1)/sizeof(double));
+                var originCapacity=model.NC+2*model.NF;
+                trackingMemory=scratch.Take((originCapacity*sizeof(RegularBooleanOrigin)+sizeof(double)-1)/sizeof(double));
                 if(trackingMemory.IsEmpty)return ParasolidConstants.PK_ERROR_memory_full;
-                origins=MemoryMarshal.Cast<double,RegularBooleanOrigin>(trackingMemory)[..model.NC];
+                origins=MemoryMarshal.Cast<double,RegularBooleanOrigin>(trackingMemory)[..originCapacity];
             }
             var originCount=ReadRegularBooleanOrigins(ref model,origins);
             if(coincident){error=UnifyRegularCoincidentEdges(ref model);if(error!=0)return error;}
@@ -258,9 +260,9 @@ internal static unsafe partial class KernelRuntime
                 if(options->function==ParasolidConstants.PK_boolean_subtract_c)
                 {
                     error=ReduceProjectedRollingCells(TagRec(inputs[0]).Slot,input,sources[..nf],ref model,selected,reversed,owned,ref ownedCount,
-                        halfedges,cycleCoedges,cycles);if(error!=0)return error;
+                        halfedges,cycleCoedges,cycles,origins,ref originCount);if(error!=0)return error;
                 }
-                error=BuildRegularBooleanProducts(inputs,ref model,selected[..model.NF],reversed[..model.NF],sourceEdges[..ne],origins[..originCount],options,tracking,result);if(error!=0)return error;
+                error=BuildRegularBooleanProducts(inputs,ref model,selected[..model.NF],reversed[..model.NF],sourceEdges[..ne],origins[..originCount],options,tracking,result,lineage);if(error!=0)return error;
                 if(!targetClash)result->result=ParasolidConstants.PK_boolean_result_no_clash_c;
             }
             for(var i=0;i<ownedCount;i++){var curve=owned[i].Curve;error=EntityDelete(1,&curve);if(error!=0)return error;}

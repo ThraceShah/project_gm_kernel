@@ -119,7 +119,7 @@ internal static unsafe partial class KernelRuntime
     }
 
     private static int PreservePlanarFaceHandles(ReadOnlySpan<PlanarModelFace> sources, Span<FaceTag> products,
-        ReadOnlySpan<EntityTag> originalBodies, ReadOnlySpan<EntityTag> resultBodies)
+        ReadOnlySpan<EntityTag> originalBodies, ReadOnlySpan<EntityTag> resultBodies,scoped Span<BooleanTopologyOrigin> lineage=default)
     {
         Span<FaceSlot> originals = stackalloc FaceSlot[sources.Length];
         Span<FaceSlot> replacements = stackalloc FaceSlot[sources.Length];
@@ -138,6 +138,9 @@ internal static unsafe partial class KernelRuntime
                     originals[count] = sources[f].Source; replacements[count] = replacement; indices[count++] = f;
                 }
                 if (count == 0) continue;
+                foreach(ref var origin in lineage)if(origin.Class==ParasolidConstants.PK_CLASS_face)
+                    for(var i=0;i<count;i++)if(origin.Product==Faces[replacements[i]].Header.Tag)
+                    {origin.Product=Faces[originals[i]].Header.Tag;break;}
                 var error = PreserveModelingFaceHandles(sourceBody, targetBody, originals[..count], replacements[..count]);
                 if (error != 0) return error;
                 for (var i = 0; i < count; i++) products[indices[i]] = Faces[replacements[i]].Header.Tag;

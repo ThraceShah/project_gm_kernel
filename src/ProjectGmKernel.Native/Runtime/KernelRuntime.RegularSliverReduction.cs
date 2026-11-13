@@ -19,7 +19,8 @@ internal static unsafe partial class KernelRuntime
 
     private static int ReduceProjectedRollingCells(BodySlot target,in RegularBoundaryView input,ReadOnlySpan<FaceSlot> inputSources,
         ref SheetArrangement model,Span<byte> selected,ReadOnlySpan<byte> reversed,Span<SheetCutCurve> owned,ref BufferCount ownedCount,
-        Span<SheetHalfedge> halfedges,Span<ModelingCoedge> cycleCoedges,Span<SheetCycle> cycles)
+        Span<SheetHalfedge> halfedges,Span<ModelingCoedge> cycleCoedges,Span<SheetCycle> cycles,
+        scoped Span<RegularBooleanOrigin> origins,ref BufferCount originCount)
     {
         // Reserve the rest of the working resolution for the projected
         // boundary reattachment and the two adjacent face representations.
@@ -57,6 +58,15 @@ internal static unsafe partial class KernelRuntime
             if(curve<=0)return ParasolidConstants.PK_ERROR_memory_full;
             owned[ownedCount++]=new(){Curve=curve};
             error=model.AppendEdge(curve,0,length,cell.Original,endpoint,true,out var replacement);if(error!=0)return error;
+            if(!origins.IsEmpty)
+            {
+                // The continued boundary is created by these actual retained
+                // faces. Preserve that construction relation before either
+                // neighbor is replaced; it was absent in the pre-cleanup graph.
+                if(originCount>origins.Length-2)return ParasolidConstants.PK_ERROR_not_implemented;
+                origins[originCount++]=new(){Edge=replacement,Face=model.Sources[cell.PlaneFace]};
+                origins[originCount++]=new(){Edge=replacement,Face=model.Sources[cell.WallFace]};
+            }
             if(planeAtStart)newPlaneEdge.StartVertex=endpoint;else newPlaneEdge.EndVertex=endpoint;
             if(wallAtStart)newWallEdge.StartVertex=endpoint;else newWallEdge.EndVertex=endpoint;
             model.Edges[planeEdge]=newPlaneEdge;model.Edges[wallEdge]=newWallEdge;

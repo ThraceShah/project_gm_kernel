@@ -9,7 +9,7 @@ internal static unsafe partial class KernelRuntime
     private static int BuildPlanarComponents(ReadOnlySpan<KernelVector3> points, ReadOnlySpan<ModelingEdge> edges,
         ReadOnlySpan<ModelingCoedge> coedges, ReadOnlySpan<ModelingLoop> loops, ReadOnlySpan<ModelingFace> faces,
         ReadOnlySpan<PlanarModelFace> sources, ReadOnlySpan<int> sourceIndices, bool solid, double tolerance,
-        Span<EntityTag> results, out int resultCount, Span<FaceTag> sourceProducts)
+        Span<EntityTag> results, out int resultCount, Span<FaceTag> sourceProducts,scoped Span<BooleanTopologyOrigin> lineage=default)
     {
         resultCount = 0;
         var scratch = CommandScratch.Current;
@@ -134,6 +134,13 @@ internal static unsafe partial class KernelRuntime
                     newLoops[..nLoops], newFaces[..nFaces], solid, out var body, productFaces[..nFaces], cavities[..nFaces]);
                 if (build != 0) return build;
                 results[resultCount++] = body;
+                if(!lineage.IsEmpty)for(var f=0;f<nFaces;f++)
+                {
+                    var index=sourceFaces[f];if(index>=lineage.Length)return ParasolidConstants.PK_ERROR_not_implemented;
+                    var original=sources[sourceIndices[index]].Source;
+                    lineage[index]=new(){Product=Faces[productFaces[f]].Header.Tag,Original=Faces[original].Header.Tag,
+                        Class=ParasolidConstants.PK_CLASS_face,Owner=Bodies[TopologyBody(PoolKind.Face,original)].Header.Tag};
+                }
                 if (!sourceProducts.IsEmpty)
                     for (var f = 0; f < nFaces; f++)
                     {

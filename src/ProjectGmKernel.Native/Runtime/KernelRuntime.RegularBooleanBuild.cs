@@ -10,7 +10,7 @@ internal static unsafe partial class KernelRuntime
 {
     private static int BuildRegularBooleanProducts(ReadOnlySpan<BodyTag> inputs,ref SheetArrangement model,
         ReadOnlySpan<byte> selected,ReadOnlySpan<byte> reversed,ReadOnlySpan<SheetSourceEdge> sourceEdges,ReadOnlySpan<RegularBooleanOrigin> origins,
-        PK_BODY_boolean_o_s* options,PK_TOPOL_track_r_s* tracking,PK_boolean_r_s* result)
+        PK_BODY_boolean_o_s* options,PK_TOPOL_track_r_s* tracking,PK_boolean_r_s* result,scoped Span<BooleanTopologyOrigin> lineage=default)
     {
         Span<BufferOffset> sourceOwners=stackalloc BufferOffset[model.NF];sourceOwners.Fill(-1);
         for(var f=0;f<model.NF;f++)
@@ -160,6 +160,17 @@ internal static unsafe partial class KernelRuntime
         }
         var persistence=PreserveRegularBooleanBoundary(inputs,products[..productCount],ref model,sourceEdges,edgeProducts,vertexProducts,tracking);
         if(persistence!=0)return persistence;
+        if(!lineage.IsEmpty)
+        {
+            var count=0;
+            foreach(var source in sourceEdges)for(var k=source.First;k<source.First+source.Count;k++)
+            {
+                var product=edgeProducts[model.CanonicalEdge(k)];if(product<0)continue;
+                if(count==lineage.Length)return ParasolidConstants.PK_ERROR_not_implemented;
+                lineage[count++]=new(){Product=Edges[product].Header.Tag,Original=Edges[source.Source].Header.Tag,
+                    Class=ParasolidConstants.PK_CLASS_edge,Owner=Bodies[Edges[source.Source].Body].Header.Tag};
+            }
+        }
         var returned=AllocateReturnSlice(productCount);if(returned==null)return ParasolidConstants.PK_ERROR_memory_full;
         for(var p=0;p<productCount;p++)if(retained[p]!=0&&retained[p]!=products[p])
         {var replace=ReplaceProfileBody(TagRec(retained[p]).Slot,TagRec(products[p]).Slot);if(replace!=0)return replace;products[p]=retained[p];}

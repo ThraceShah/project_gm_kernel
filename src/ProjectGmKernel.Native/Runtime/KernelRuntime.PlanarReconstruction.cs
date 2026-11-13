@@ -25,7 +25,7 @@ internal static unsafe partial class KernelRuntime
     private static int ReconstructPlanarBodies(ReadOnlySpan<PlanarModelFace> sources,
         ReadOnlySpan<PlanarModelPolygon> polygons, ReadOnlySpan<KernelVector3> polygonPoints,
         double tolerance, bool solid, bool mergeCoplanar, Span<EntityTag> results,
-        out int resultCount, Span<FaceTag> sourceProducts = default)
+        out int resultCount, Span<FaceTag> sourceProducts = default,scoped Span<BooleanTopologyOrigin> lineage=default)
     {
         resultCount = 0;
         if (polygons.IsEmpty) return 0;
@@ -289,7 +289,7 @@ internal static unsafe partial class KernelRuntime
             }
             return BuildPlanarComponents(vertices[..vertexCount], modelEdges[..nEdges], modelCoedges[..nCoedges],
                 modelLoops[..nLoops], modelFaces[..nFaces], sources, modelSource[..nFaces], solid, tolerance,
-                results, out resultCount, sourceProducts);
+                results, out resultCount, sourceProducts,lineage);
         }
         finally { scratch.Return(memory); }
     }

@@ -865,3 +865,77 @@ ellipse/TRCurve/SPCurve/BSurface/swept/spun/offset 的 attach、GM transmit、
 `temp_docs/geometry-public-api/native-imprint-source-geometry-v1/` 和
 `temp_docs/xt-geometry-writer-oracle/native-imprint-source-geometry-v1/`。
 wire 比较器本身不证明有限曲线连续等价；此运行不继承为其他未测 attach 类别资格。
+
+### 9f2a93e 稳定检查点
+
+`9f2a93ebb381d6d85a59188df56fdc091cea7b8e` 已实际完成
+`9f2a93e-full-managed.log/.exit`：2141/2141 raw 0。该运行结束后原 testhost 已退出。
+q2 Release assembly 6323c0057baf606e9a2a4c8fb48fedd1b076f0c70b7ee67f7b3cf82e1695c0ba
+已冻结于 `temp_docs/native-system-alignment/9f2a93e-managed-production/`。
+同字节实际执行的 self/import 原510分别为 `9f2a93e-self-510` 与
+`9f2a93e-import-510`，均 raw 2：15/16 U、零新增差异、零原生基线变化；
+原生自回读七行及 Capture8 的分源边界保持原事实，没有四方强制相等。
+Mac 新固定树的 `9f2a93e-mac-native-parameter` raw 2，通过镜像 1.7、逆刀具顺序
+的独立 Fix/Boolean、fresh strict/full、有限域及投影材料检查，三项物性 U；
+真实 assembly 0c03200a01f368fd03ad250fe98a2f7e334a336995dae23830bff259da9692c9。
+第一次 Mac 环境准备因受限 PATH 找不到 sha256sum 而 raw 3，不是模型错误；
+同一已有工具补全进程 PATH 后 `9f2a93e-mac-environment-v2` 实际 ENV_READY、raw 0。
+上述稳定点不替其后新增 tracking 实现取得完整回归资格。
+
+## 内部刀具 union 的来源组合与新边追踪
+
+重新执行原计划的 tracking 缺口后，普通曲面 basic tracking 已有横向资格，但
+rolling 目标的多工具路径仍在 tracking=true 时跳过有限刀具 union。真实 PK 同参数
+返回 16 条记录，GM 的 `native-multitool-tracking-baseline-v2` 在第三面事件 raw 134、
+API 157。这个差异不能用普通 Roof 的 tracking 通过代替。
+
+现在内部 union 把实际 planar arrangement 构建的每个 face fragment 直接绑定到
+原 face；保留 face handle 的交换同步更新这些临时关系。union 边由实际 incident
+face 来源组合；同体两面之间只在原拓扑邻接、唯一原边及完整有限 Line 对应界同时
+通过时绑定原 edge。BCurve 等尚未具有这个完整原边证明的类别不冒充已支持。
+元数据仅在当前命令工作区，未写入几何定义或 XT。union 完成后只保留实际来源行，
+释放未使用容量，再运行原曲面求解器，不增加几何预算。
+
+最终发布沿原 finite fragment/canonical edge 到真实 built edge 的关系组合来源，
+保留内部 union 产生、随后仍存活或被分割的跨工具边。投影接续创建的新有限边在
+创建时登记实际两侧保留 face 的来源；不能从清理前图中猜到一条尚未存在的边。
+基础追踪只把跨原始输入 owner 的 derive 关系发布，原有限 edge 优先于同体面，
+原 class/tag 在删源前捕获。返回仍为单块原生返回内存，外层 command journal
+负责整个 union、裁剪、身份交换和发布的失败恢复。
+
+官方 FD 10.2.3/10.2.7 定义 tag persistence 与低层 split/merge/change 的来源语义；
+MCP 静态 `BOO_start_tracking → BOO_set_entitylnk_attr` 继续到实际临时属性写入。
+它支持“操作内来源关系”的解释，不证明 GM 使用 PK 相同的数据结构。此前有界
+GDB 的完整命中范围见第一项机制；这次新证据为同模型动态操作和真实返回记录，
+不是新的全链 GDB 证明。
+
+开发源 `9f2a93e` 加固定 diff，真实 assembly
+9c22da004b3ca0d910c3fc59494fccc98ba4d76802d34efd1341ea7b66c5f0f5，
+原字节、source head/diff 冻结于 `temp_docs/native-system-alignment/native-tool-union-origins-v1-*`。
+`native-tool-union-origins-managed-v1` 99/99 raw 0、allocation IL guard CLEAN；
+`native-tool-union-publish-rollback-v1` 四种真实失败注入 raw 0，覆盖追踪开/关、
+投影创建后及身份交换后预算 0/1，全部恢复原目标、两工具、generation、XT、池和返回内存。
+这不是四次完整回归，亦未单独观测其中哪一次恰好失败在组合返回块分配。
+
+`native-tool-union-finite-tracking-v2` 和 `native-tool-union-finite-tracking-mirror-v1`
+均 raw 2：默认及镜像 1.7/逆工具顺序，两种不同的正则三参与事件均完成独立
+PK/GM Fix 与同选项 Boolean、fresh fullcheck/strict、有限 ICurve/face/fin、材料探针。
+两种 Boolean 的记录数各为双方 17/16，来源 owner/class 多重集相等；各侧通过
+34/32 个实际来源关系的有限重叠采样及同 owner/class 错误来源负例。来源绑定来自
+每侧实际 transmit identifier/class 与同字节 PK 回读，不是固定 tag 或世界中点猜测。
+采样不作为连续等价证明；四项物性 U 单列。
+
+新来源检查曾额外要求“产品完全包含在旧有限来源面中”。默认投影边使 GM 最大
+采样距离约 8.2738718e-8，该新增假设 raw 134；对真实 PK 自己返回的记录应用
+同一要求也 raw 134、约 8.2738667e-8（`native-tool-union-tracking-native-containment-v1`）。
+FD 的 derive 不是旧 trim 的子集合同，故最终检查要求实际有限重叠 witness，
+并同时保留整个采样最大距离诊断。实体几何/拓扑 strict/full 门未变；这不是把旧
+几何失败改名通过。过大来源容量的候选、15/16 漏新边的候选及脚本启动 typo、
+缺 using 的构建退出也分别保留，不由后一次成功补签。
+
+同一开发程序集的 `native-tool-union-finite-tracking-small-v1` 又实际通过刚体变换、
+尺度 .125、反选边顺序的两种联合 Boolean，记录仍为双方 17/16、有限来源关系
+34/32，strict/full/有限域/材料均通过，raw 2、四项物性 U。它与默认及镜像 1.7
+分别保存，不把其中一个默认变体作为全部适用性的证明。后继固定提交的完整回归、
+统一制品与独立接受仍在执行；complete/region tracking、非 Line 原边证明、周期
+Blend phase 的真实 PK 消费者以及原总体未决类别未因此取得资格。

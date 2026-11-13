@@ -6,6 +6,8 @@
 #:property UseParasolidScriptHost=true
 #:property AllowUnsafeBlocks=true
 #:property UseWebProgressCapture=true
+global using TrackingBodyIndex=System.Int32;
+global using TrackingIdentifier=System.Int32;
 using static parasolid;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -161,6 +163,7 @@ Require(!(overlappingTools||singleToolJunction)||KernelRuntime.ForbidLegacyRegul
     &&floor==0&&phase==0&&!args.Any(x=>x is "--native-only" or "--import-only" or "--matrix" or "--record-fixtures"),
     "overlapping tools require the guarded independent construction of the original seed");
 Require(!args.Contains("--reverse-tools")||overlappingTools||singleToolJunction,"tool order reversal requires overlapping tools");
+Require(!args.Contains("--overlapping-tracking")||overlappingTools||singleToolJunction,"overlapping tracking requires the independent two-tool operation");
 Require(!selfSavedProbes||KernelRuntime.ForbidLegacyRegularBlendAssembly&&!savedProbes&&!args.Contains("--import-only")&&!args.Contains("--record-fixtures"),
     "self probe replay requires guarded independent construction and a separate run from imported probes");
 Require(!args.Contains("--native-only")||!args.Any(x=>x is "--import-only" or "--probes" or "--geometry" or "--lifecycle"),"managed checks require a managed-import mode");
@@ -318,8 +321,8 @@ using(host)unsafe
                     if(args.Contains("--geometry")){CheckSelfNativeTrims(own,"self-constructed-product",inputScale);SelfGeometry(own,reference);}
                     try{WebProgressCapture.BindQuality("self-constructed-product",own,reference,received,ownResult,result);Mass(reference,received,"self-constructed-product");}
                     catch(Exception ex){failures++;Console.WriteLine("FAIL self-constructed-product mass: "+ex.Message);}
-                    if(overlappingTools)failures+=OverlappingToolJunctions(own,reference,output,name+"-overlapping-tools",false,mappedInput?&inputTransform:null,inputScale,args.Contains("--reverse-tools"));
-                    if(singleToolJunction)failures+=OverlappingToolJunctions(own,reference,output,name+"-overlapping-tools-single",true,mappedInput?&inputTransform:null,inputScale,args.Contains("--reverse-tools"));
+                    if(overlappingTools)failures+=OverlappingToolJunctions(own,reference,output,name+"-overlapping-tools",false,mappedInput?&inputTransform:null,inputScale,args.Contains("--reverse-tools"),args.Contains("--overlapping-tracking"));
+                    if(singleToolJunction)failures+=OverlappingToolJunctions(own,reference,output,name+"-overlapping-tools-single",true,mappedInput?&inputTransform:null,inputScale,args.Contains("--reverse-tools"),args.Contains("--overlapping-tracking"));
                     if(args.Contains("--lifecycle"))failures+=Lifecycle(ref own,reference,output,name+"-self-constructed-product",mappedInput?&inputTransform:null,inputScale,localCut,transverseCut,transversePlaneDifference,materialOwnership,requireNativeCutWitness,reloadBeforeLocalCut,args.Contains("--geometry"),proofOnlyLifecycle,requireCutterChartWitness,requireNativeFinBoxes,requireNativeFaceDomains,blendOnlyLifecycle);
                     Check(PK_ENTITY_delete(1,&received),"delete managed roundtrip");
                 }
@@ -702,7 +705,113 @@ static unsafe int CompareFresh(int own,int reference,string directory,string nam
     finally{Check(PK_ENTITY_delete(1,&received),"delete lifecycle reload");Check(PK_ENTITY_delete(1,&referenceReload),"delete native lifecycle reload");}
 }
 
-static unsafe int OverlappingToolJunctions(int selfSource,int nativeSource,string directory,string name,bool projectedCell,M.PK_TRANSF_sf_s* input,double unitScale,bool reverseTools)
+static unsafe Dictionary<PK_ENTITY_t,(TrackingBodyIndex Owner,PK_CLASS_t Class)> SnapshotTrackingInputs(bool own,PK_BODY_t target,PK_BODY_t* tools)
+{
+    var origins=new Dictionary<PK_ENTITY_t,(TrackingBodyIndex,PK_CLASS_t)>();
+    for(var b=0;b<3;b++)foreach(var cls in new[]{PK_CLASS_face,PK_CLASS_edge,PK_CLASS_vertex})
+    {
+        var body=b==0?target:tools[b-1];int n;int* topology;
+        Check(own?(cls==PK_CLASS_face?KernelRuntime.BodyAskFaces(body,&n,&topology):cls==PK_CLASS_edge?KernelRuntime.BodyAskEdges(body,&n,&topology):KernelRuntime.BodyAskVertices(body,&n,&topology))
+            :(cls==PK_CLASS_face?PK_BODY_ask_faces(body,&n,&topology):cls==PK_CLASS_edge?PK_BODY_ask_edges(body,&n,&topology):PK_BODY_ask_vertices(body,&n,&topology)),"snapshot tracking input");
+        try{for(var t=0;t<n;t++)origins.Add(topology[t],(b,cls));}
+        finally{if(topology!=null)Check(own?KernelRuntime.MemoryFree(topology):PK_MEMORY_free(topology),"free tracking input list");}
+    }
+    return origins;
+}
+
+static unsafe List<string> TrackingRelations(bool own,PK_TOPOL_track_r_t* tracking,Dictionary<PK_ENTITY_t,(TrackingBodyIndex Owner,PK_CLASS_t Class)> origins)
+{
+    var relations=new List<string>();var products=new HashSet<PK_ENTITY_t>();
+    Require(tracking->n_track_records>0,"two-tool subtraction produces nonempty tracking");
+    for(var r=0;r<tracking->n_track_records;r++)
+    {
+        var row=tracking->track_records[r];var sources=new List<string>();
+        for(var i=0;i<row.n_original_topols;i++)
+        {
+            Require(origins.TryGetValue(row.original_topols[i],out var source)&&source.Class==row.original_classes[i],"tracked original belongs to actual input and class");
+            sources.Add(source.Owner+":"+source.Class);
+        }
+        Require(row.n_product_topols==1&&products.Add(row.product_topols[0]),"unique basic tracked product");
+        int cls;Check(own?KernelRuntime.EntityAskClass(row.product_topols[0],&cls):PK_ENTITY_ask_class(row.product_topols[0],&cls),"live tracked product");
+        Require(cls==PK_CLASS_edge,"basic tracked product is an edge");
+        var relation=row.track+"/"+string.Join(',',sources.Order())+"/"+cls;relations.Add(relation);
+        Console.WriteLine($"OVERLAPPING_TRACK side={(own?"gm":"pk")} relation={relation} originals={string.Join(',',new ReadOnlySpan<int>(row.original_topols,row.n_original_topols).ToArray())} product={row.product_topols[0]}");
+    }
+    Console.WriteLine($"OVERLAPPING_TRACK_SUMMARY side={(own?"gm":"pk")} records={relations.Count}");return relations;
+}
+
+static unsafe Dictionary<PK_ENTITY_t,PK_ENTITY_t> TrackingSnapshot(bool own,PK_BODY_t body,List<PK_BODY_t> snapshots,string directory,string label)
+{
+    byte[] bytes;var identifiers=new Dictionary<PK_ENTITY_t,(TrackingIdentifier Id,PK_CLASS_t Class)>();
+    if(own)
+    {
+        Check(XtWriter.CaptureDisplay(body,out var text,out var bindings,out _,out _),"actual source identifier bindings");bytes=System.Text.Encoding.UTF8.GetBytes(text);
+        foreach(var binding in bindings)if(binding.Class is PK_CLASS_face or PK_CLASS_edge or PK_CLASS_vertex)identifiers.Add(binding.Entity,(binding.Identifier,binding.Class));
+    }
+    else
+    {
+        bytes=Transmit(false,body);
+        foreach(var cls in new[]{PK_CLASS_face,PK_CLASS_edge,PK_CLASS_vertex})
+        {
+            int n;int* tags;Check(cls==PK_CLASS_face?PK_BODY_ask_faces(body,&n,&tags):cls==PK_CLASS_edge?PK_BODY_ask_edges(body,&n,&tags):PK_BODY_ask_vertices(body,&n,&tags),"actual source topology");
+            try{for(var i=0;i<n;i++){int id;Check(PK_ENTITY_ask_identifier(tags[i],&id),"actual source identifier");identifiers.Add(tags[i],(id,cls));}}
+            finally{if(tags!=null)PK_MEMORY_free(tags);}
+        }
+    }
+    var copy=Receive(false,bytes);snapshots.Add(copy);CheckBody(copy,label+" snapshot");var received=new Dictionary<TrackingIdentifier,(PK_ENTITY_t Tag,PK_CLASS_t Class)>();
+    foreach(var cls in new[]{PK_CLASS_face,PK_CLASS_edge,PK_CLASS_vertex})
+    {
+        int n;int* tags;Check(cls==PK_CLASS_face?PK_BODY_ask_faces(copy,&n,&tags):cls==PK_CLASS_edge?PK_BODY_ask_edges(copy,&n,&tags):PK_BODY_ask_vertices(copy,&n,&tags),"received source topology");
+        try{for(var i=0;i<n;i++){int id;Check(PK_ENTITY_ask_identifier(tags[i],&id),"received source identifier");received.Add(id,(tags[i],cls));}}
+        finally{if(tags!=null)PK_MEMORY_free(tags);}
+    }
+    var result=new Dictionary<PK_ENTITY_t,PK_ENTITY_t>();
+    foreach(var item in identifiers){Require(received.TryGetValue(item.Value.Id,out var mapped)&&mapped.Class==item.Value.Class,"same-byte identifier/class binding");result.Add(item.Key,mapped.Tag);}
+    File.WriteAllBytes(Path.Combine(directory,label+".x_t"),bytes);
+    File.WriteAllLines(Path.Combine(directory,label+"-binding.csv"),new[]{"original,identifier,class,received"}.Concat(identifiers.Select(p=>$"{p.Key},{p.Value.Id},{p.Value.Class},{result[p.Key]}")));
+    Console.WriteLine($"TRACK_SNAPSHOT label={label} sha256={Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(bytes))}");return result;
+}
+
+static unsafe void CheckTrackingFiniteSources(PK_TOPOL_track_r_t* tracking,
+    Dictionary<PK_ENTITY_t,(TrackingBodyIndex Owner,PK_CLASS_t Class)> owners,Dictionary<PK_ENTITY_t,PK_ENTITY_t> sources,
+    Dictionary<PK_ENTITY_t,PK_ENTITY_t> products,string label)
+{
+    double precision;Check(PK_SESSION_ask_precision(&precision),"native tracking precision");var relations=0;var negative=false;var maximum=0.0;var overlap=0.0;
+    for(var r=0;r<tracking->n_track_records;r++)
+    {
+        var row=tracking->track_records[r];var product=products[row.product_topols[0]];
+        for(var i=0;i<row.n_original_topols;i++)
+        {
+            var original=row.original_topols[i];var gap=FiniteGap(product,sources[original]);
+            // Derivation includes native trim extension/cleanup. It does
+            // not promise that the product is a subset of the old finite
+            // face; retain that maximum as a diagnostic and require an
+            // actual finite overlap witness, separately from body quality.
+            Require(gap.Minimum<=precision,$"{label} finite source original={original} product={row.product_topols[0]} minimum_sample_gap={gap.Minimum:R}");
+            relations++;overlap=Math.Max(overlap,gap.Minimum);maximum=Math.Max(maximum,gap.Maximum);
+            if(!negative)foreach(var wrong in owners)if(wrong.Key!=original&&wrong.Value==owners[original]&&FiniteGap(product,sources[wrong.Key]).Minimum>precision){negative=true;break;}
+        }
+    }
+    Require(relations>0&&negative,label+" wrong source of same owner/class must fail");
+    Console.WriteLine($"TRACK_FINITE_PASS side={label} relations={relations} maximum_overlap_witness_gap={overlap:R} maximum_sample_gap={maximum:R} wrong_source_rejected={negative} continuum_proof=False product_containment_required=False");
+
+    (double Minimum,double Maximum) FiniteGap(PK_EDGE_t edge,PK_ENTITY_t source)
+    {
+        int curve,cls;PK_INTERVAL_t range;PK_LOGICAL_t sense;PK_VECTOR_t* ends=stackalloc PK_VECTOR_t[2];
+        Check(PK_EDGE_ask_geometry(edge,PK_LOGICAL_true,&curve,&cls,ends,&range,&sense),"finite tracked product");
+        var options=new PK_TOPOL_range_vector_o_t{opt_level=PK_range_opt_accuracy_c};var minimum=double.PositiveInfinity;var maximum=0.0;
+        for(var s=0;s<7;s++)
+        {
+            PK_VECTOR_t point;Check(PK_CURVE_eval(curve,range.value[0]+(range.value[1]-range.value[0])*s/6,0,&point),"tracked native station");
+            PK_range_result_t found;PK_range_1_r_t nearest;
+            if(PK_TOPOL_range_vector(source,point,&options,&found,&nearest)!=0||found!=PK_range_result_found_c)return (double.PositiveInfinity,double.PositiveInfinity);
+            var gap=Distance(point,nearest.end.vector);minimum=Math.Min(minimum,gap);maximum=Math.Max(maximum,gap);
+        }
+        return (minimum,maximum);
+    }
+}
+
+static unsafe int OverlappingToolJunctions(int selfSource,int nativeSource,string directory,string name,bool projectedCell,M.PK_TRANSF_sf_s* input,double unitScale,bool reverseTools,bool trackingEnabled)
 {
     int own,native;Check(KernelRuntime.EntityCopy(selfSource,&own),"copy live self Fix for overlapping tools");
     Check(PK_ENTITY_copy(nativeSource,&native),"copy independent PK Fix for overlapping tools");
@@ -719,7 +828,11 @@ static unsafe int OverlappingToolJunctions(int selfSource,int nativeSource,strin
     var firstWalls=ToolPlanes(ownTools[0]);var secondWalls=ToolPlanes(ownTools[1]);
     if(reverseTools){(ownTools[0],ownTools[1])=(ownTools[1],ownTools[0]);(nativeTools[0],nativeTools[1])=(nativeTools[1],nativeTools[0]);}
     var options=new PK_BODY_boolean_o_t{function=PK_boolean_subtract_c};
+    options.tracking=trackingEnabled?PK_LOGICAL_true:PK_LOGICAL_false;
     options.default_tol*=unitScale;options.blend_radius*=unitScale;
+    var ownOrigins=trackingEnabled?SnapshotTrackingInputs(true,own,ownTools):null;
+    var nativeOrigins=trackingEnabled?SnapshotTrackingInputs(false,native,nativeTools):null;
+    var snapshots=new List<PK_BODY_t>();var ownSources=new Dictionary<PK_ENTITY_t,PK_ENTITY_t>();var nativeSources=new Dictionary<PK_ENTITY_t,PK_ENTITY_t>();
     Console.WriteLine($"OVERLAPPING INPUTS similarity={input!=null} unit_scale={unitScale:R} reverse_tools={reverseTools} native_default_tol={options.default_tol:R}");
     PK_TOPOL_track_r_t track=default;PK_boolean_r_t result=default;
     M.PK_TOPOL_track_r_s ownTrack=default;M.PK_boolean_r_s ownResult=default;
@@ -729,6 +842,11 @@ static unsafe int OverlappingToolJunctions(int selfSource,int nativeSource,strin
     var arranged=new List<KernelRuntime.BoundaryTrace>();var projected=new List<KernelRuntime.BoundaryTrace>();
     try
     {
+        if(trackingEnabled)for(var b=0;b<3;b++)
+        {
+            foreach(var p in TrackingSnapshot(true,b==0?own:ownTools[b-1],snapshots,directory,name+"-gm-original-"+b))ownSources.Add(p.Key,p.Value);
+            foreach(var p in TrackingSnapshot(false,b==0?native:nativeTools[b-1],snapshots,directory,name+"-pk-original-"+b))nativeSources.Add(p.Key,p.Value);
+        }
         File.WriteAllBytes(Path.Combine(directory,name+"-gm-target-input.x_t"),Transmit(true,own));
         File.WriteAllBytes(Path.Combine(directory,name+"-pk-target-input.x_t"),Transmit(false,native));
         for(var i=0;i<2;i++)
@@ -738,6 +856,7 @@ static unsafe int OverlappingToolJunctions(int selfSource,int nativeSource,strin
         }
         Check(PK_BODY_boolean_2(native,2,nativeTools,&options,&track,&result),"native overlapping subtraction");
         Require(result.n_bodies==1,"one independent two-tool product");native=result.bodies[0];
+        var nativeTracking=trackingEnabled?TrackingRelations(false,&track,nativeOrigins!):null;
         File.WriteAllBytes(Path.Combine(directory,name+"-independent-native-output.x_t"),Transmit(false,native));
         CheckBody(native,name+" independent Boolean output");
         KernelRuntime.ForbidSpatialBoundaryReuse=false;
@@ -780,6 +899,12 @@ static unsafe int OverlappingToolJunctions(int selfSource,int nativeSource,strin
         // Save and check the actual product before evaluating instrumentation
         // coverage, so a missing trace cannot hide its geometry/topology state.
         var checkedResult=CompareFresh(own,native,directory,name,unitScale,false,true,true,true,projectedCell&&projected.Count==1?projected[0]:null);
+        if(trackingEnabled)
+        {
+            Require(TrackingRelations(true,(PK_TOPOL_track_r_t*)&ownTrack,ownOrigins!).Order().SequenceEqual(nativeTracking!.Order()),"same basic tracking source owner/class relations");
+            CheckTrackingFiniteSources(&track,nativeOrigins!,nativeSources,TrackingSnapshot(false,native,snapshots,directory,name+"-pk-product"),"pk");
+            CheckTrackingFiniteSources((PK_TOPOL_track_r_t*)&ownTrack,ownOrigins!,ownSources,TrackingSnapshot(true,own,snapshots,directory,name+"-gm-product"),"gm");
+        }
         Require(rolling.Count==(projectedCell?1:2)&&rolling.All(e=>!stations.TryGetValue(e,out var n)||n==3),"each surviving rolling junction is shared by three finite occurrences");
         Require(projected.Count==(projectedCell?1:0),"only the certified projected cell is replaced");
         foreach(var change in projected)
@@ -796,6 +921,7 @@ static unsafe int OverlappingToolJunctions(int selfSource,int nativeSource,strin
         Check(PK_TOPOL_track_r_f(&track),"free native overlapping tracking");Check(PK_boolean_r_f(&result),"free native overlapping result");
         Check(KernelRuntime.TopolTrackResultFree(&ownTrack),"free self overlapping tracking");Check(KernelRuntime.BooleanResultFree(&ownResult),"free self overlapping result");
         Check(PK_ENTITY_delete(1,&native),"delete native overlapping copy");Check(KernelRuntime.EntityDelete(1,&own),"delete self overlapping copy");
+        foreach(var snapshot in snapshots){var tag=snapshot;Check(PK_ENTITY_delete(1,&tag),"release tracking snapshot");}
     }
 
     static SurfaceClass SurfaceKind(int surface)

@@ -95,7 +95,12 @@ internal static unsafe partial class KernelRuntime
 
     private static int BodyBooleanCore(EntityTag target, int toolCount, EntityTag* tools, PK_BODY_boolean_o_s* options,
         PK_TOPOL_track_r_s* tracking, PK_boolean_r_s* result)
+        =>BodyBooleanCore(target,toolCount,tools,options,tracking,result,default,out _);
+
+    private static int BodyBooleanCore(EntityTag target,int toolCount,EntityTag* tools,PK_BODY_boolean_o_s* options,
+        PK_TOPOL_track_r_s* tracking,PK_boolean_r_s* result,scoped Span<BooleanTopologyOrigin> lineage,out BufferCount lineageCount)
     {
+        lineageCount=0;
         if (tracking != null) *tracking = default;
         if (result != null) *result = new PK_boolean_r_s { result = ParasolidConstants.PK_boolean_result_failed_c };
         if (!IsSessionStarted) return ParasolidConstants.PK_ERROR_not_in_PK;
@@ -113,16 +118,22 @@ internal static unsafe partial class KernelRuntime
             for (var j = 0; j < i; j++) if (inputs[j] == inputs[i]) return ParasolidConstants.PK_ERROR_bad_parameter;
         }
         var analyticError = TryAnalyticBoolean(inputs, options, tracking, result, out var analyticHandled);
-        if (analyticHandled) return analyticError;
+        if (analyticHandled) return !lineage.IsEmpty?ParasolidConstants.PK_ERROR_not_implemented:analyticError;
         var rotationalError = TryRotationalBoolean(inputs, options, tracking, result, out var rotationalHandled);
-        if (rotationalHandled) return rotationalError;
+        if (rotationalHandled) return !lineage.IsEmpty?ParasolidConstants.PK_ERROR_not_implemented:rotationalError;
         // Native solids have finite material and an infinite void exterior.
         // A complete face enclosure proves no clash without reconstructing
         // unchanged topology, including closed faces with no edge loops.
         if(inputs.Length==2&&TryNativeSolidExtent(inputs[0],options->default_tol,out var firstExtent)
             &&TryNativeSolidExtent(inputs[1],options->default_tol,out var secondExtent)
             &&ThirdFaceBoxesDisjoint(firstExtent,secondExtent,0))
+        {
+            if(!lineage.IsEmpty)
+            {
+                var originError=ReadIdentityBooleanOrigins(inputs,lineage,out lineageCount);if(originError!=0)return originError;
+            }
             return CompleteSeparatedBoolean(inputs,options->function,result);
+        }
         var scratch = CommandScratch.Current;
         var memory = scratch.Take(120000);
         if (memory.IsEmpty) return ParasolidConstants.PK_ERROR_memory_full;
@@ -143,7 +154,7 @@ internal static unsafe partial class KernelRuntime
             {
                 if(error!=ParasolidConstants.PK_ERROR_not_implemented)return error;
                 scratch.Return(memory);memory=default;
-                if(options->function==ParasolidConstants.PK_boolean_subtract_c&&toolCount>1&&options->tracking==0
+                if(options->function==ParasolidConstants.PK_boolean_subtract_c&&toolCount>1
                     &&options->merge_imprinted==0&&HaveRollingBooleanBoundary(inputs[0])&&HavePlanarBooleanTools(inputs[1..]))
                     return RegularCurvedSubtractPlanarTools(inputs,options,tracking,result);
                 return RegularCurvedBoolean(inputs,options,tracking,result);
@@ -197,13 +208,22 @@ internal static unsafe partial class KernelRuntime
             // on union and the target on subtraction, as the SDK does.
             if (!hasClash && toolCount == 1)
             {
+                if(!lineage.IsEmpty)
+                {
+                    var originError=ReadIdentityBooleanOrigins(inputs,lineage,out lineageCount);if(originError!=0)return originError;
+                }
                 return CompleteSeparatedBoolean(inputs,options->function,result);
             }
             Span<EntityTag> products = stackalloc EntityTag[PlanarFaceCapacity];
             Span<FaceTag> faceProducts = stackalloc FaceTag[nf]; faceProducts.Clear();
             error = ReconstructPlanarBodies(faces, output[..outputCount], outputPoints[..outputPointCount], tolerance,
-                true, options->merge_imprinted != 0, products, out var productCount, faceProducts);
+                true, options->merge_imprinted != 0, products, out var productCount, faceProducts,lineage);
             if (error != 0) return error;
+            if(!lineage.IsEmpty)
+            {
+                while(lineageCount<lineage.Length&&lineage[lineageCount].Original!=0)lineageCount++;
+                error=ReadPlanarEdgeOrigins(products[..productCount],lineage,ref lineageCount);if(error!=0)return error;
+            }
             var returnedBodies = productCount == 0 ? null : AllocateReturnSlice(productCount);
             if (productCount > 0 && returnedBodies == null) return ParasolidConstants.PK_ERROR_memory_full;
             if (options->tracking != 0)
@@ -211,7 +231,7 @@ internal static unsafe partial class KernelRuntime
                 error = CreatePlanarBooleanTracking(faces, loops, points, inputs.Length, products[..productCount], tolerance, tracking);
                 if (error != 0) return error;
             }
-            error = PreservePlanarFaceHandles(faces, faceProducts, inputs, products[..productCount]);
+            error = PreservePlanarFaceHandles(faces, faceProducts, inputs, products[..productCount],lineage[..lineageCount]);
             if (error != 0) return error;
             if (productCount > 0)
             {
@@ -286,21 +306,45 @@ internal static unsafe partial class KernelRuntime
         PK_TOPOL_track_r_s* tracking,PK_boolean_r_s* result)
     {
         var unite=*options;unite.function=ParasolidConstants.PK_boolean_unite_c;
+        unite.tracking=0;
         PK_TOPOL_track_r_s temporaryTracking=default;PK_boolean_r_s toolUnion=default;
+        var scratch=CommandScratch.Current;Span<double> memory=default;
         try
         {
+            Span<BooleanTopologyOrigin> unionOrigins=default,finalOrigins=default;
+            if(options->tracking!=0)
+            {
+                var capacity=PlanarPolygonCapacity+2*PlanarPointCapacity;
+                memory=scratch.Take(capacity*sizeof(BooleanTopologyOrigin)/sizeof(double));
+                if(memory.IsEmpty)return ParasolidConstants.PK_ERROR_memory_full;
+                var rows=MemoryMarshal.Cast<double,BooleanTopologyOrigin>(memory);rows.Clear();
+                unionOrigins=rows;
+            }
             int error;
+            BufferCount originCount;
             fixed(BodyTag* remaining=inputs[2..])
-                error=BodyBooleanCore(inputs[1],inputs.Length-2,remaining,&unite,&temporaryTracking,&toolUnion);
+                error=BodyBooleanCore(inputs[1],inputs.Length-2,remaining,&unite,&temporaryTracking,&toolUnion,unionOrigins,out originCount);
             if(error!=0)return error;
             if(toolUnion.n_bodies<=0||toolUnion.n_bodies>=inputs.Length||toolUnion.bodies==null)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+            if(options->tracking!=0)
+            {
+                // The union no longer needs its construction capacity. Keep
+                // only the actual source links while the curved solver runs.
+                // Reacquiring this arena prefix preserves those rows in place.
+                scratch.Return(memory);memory=scratch.Take((originCount+SheetEdgeLimit)*sizeof(BooleanTopologyOrigin)/sizeof(double));
+                if(memory.IsEmpty)return ParasolidConstants.PK_ERROR_memory_full;
+                var rows=MemoryMarshal.Cast<double,BooleanTopologyOrigin>(memory);
+                unionOrigins=rows[..originCount];finalOrigins=rows[originCount..];finalOrigins.Clear();
+            }
             Span<BodyTag> united=stackalloc BodyTag[toolUnion.n_bodies+1];united[0]=inputs[0];
             new ReadOnlySpan<BodyTag>(toolUnion.bodies,toolUnion.n_bodies).CopyTo(united[1..]);
-            return RegularCurvedBoolean(united,options,tracking,result);
+            error=RegularCurvedBoolean(united,options,tracking,result,finalOrigins);if(error!=0)return error;
+            return options->tracking==0?0:ComposeBooleanOrigins(inputs[0],unionOrigins[..originCount],finalOrigins,tracking,result);
         }
         finally
         {
             TopolTrackResultFree(&temporaryTracking);BooleanResultFree(&toolUnion);
+            scratch.Return(memory);
         }
     }
 

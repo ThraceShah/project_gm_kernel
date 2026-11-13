@@ -160,8 +160,10 @@ public unsafe class RollingNetworkTests:IDisposable
         Assert.Equal(0,KernelRuntime.EntityDelete(1,&restored));Assert.Equal(0,KernelRuntime.Curves.AliveCount);Assert.Equal(0,KernelRuntime.Surfaces.AliveCount);
     }
 
-    [Fact]
-    public void ProjectedRollingCellFailureRestoresTargetAndBothToolsAfterUnion()
+    [Theory]
+    [InlineData(false,false,0)] [InlineData(true,false,0)]
+    [InlineData(true,true,0)] [InlineData(true,true,1)]
+    public void ProjectedRollingCellFailureRestoresTargetAndBothToolsAfterUnion(bool track,bool afterIdentity,int budget)
     {
         var target=Seed();Span<EdgeTag> selected=stackalloc EdgeTag[2];Selection(target,selected);Mark(selected);
         var fix=new PK_BODY_fix_blends_o_s{o_t_version=31,tolerance=1e-7};int count,fault,edgeFault,topolFault;
@@ -180,14 +182,15 @@ public unsafe class RollingNetworkTests:IDisposable
         var curves=KernelRuntime.Curves.AliveCount;var surfaces=KernelRuntime.Surfaces.AliveCount;
         var blocks=KernelRuntime.BlocksLiveBytes;var returns=KernelRuntime.ReturnOutstandingBlocks;
         var options=BooleanOperationTests.Options(ParasolidConstants.PK_boolean_subtract_c);
+        options.tracking=track?(byte)1:(byte)0;
         PK_TOPOL_track_r_s tracking=default;PK_boolean_r_s result=default;
         var old=KernelRuntime.ForbidSpatialBoundaryReuse;var entered=false;var consumed=false;
         KernelRuntime.ForbidSpatialBoundaryReuse=false;
         KernelRuntime.TraceFiniteBoundary=t=>
         {
-            if(t.Stage!=KernelRuntime.BoundaryTraceStage.ProjectedCellReplacement)return;
+            if(t.Stage!=(afterIdentity?KernelRuntime.BoundaryTraceStage.PreservedIdentity:KernelRuntime.BoundaryTraceStage.ProjectedCellReplacement))return;
             entered=true;consumed=!KernelRuntime.IsValidTag(secondTool);
-            KernelRuntime.InjectAllocationFailure(0);
+            KernelRuntime.InjectAllocationFailure(budget);
         };
         try
         {
