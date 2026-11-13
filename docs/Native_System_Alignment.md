@@ -1046,3 +1046,41 @@ Release 回归 2159/2159、raw 0，allocation guard CLEAN，所属 testhost 已�
 固定包和跨平台关键消费者仍需集中完成；上述 sheet 新能力不等于任意闭合 seam solid、任意高价事件、
 complete/region tracking 或 PK 性能目标全部完成。全部失败开发执行和脚本构建
 错误的 raw exit 独立保留，未被 checker 成功或后次通过覆盖。
+
+## 在研：原生双支撑 UV 消元（整体任务继续）
+
+两个不同的非周期 C1 BSurface offset 支撑，其 rolling 中心严格等于
+`S0(u0,v0)+h0*n0`。普通 D0/D1 包围现在直接解四个原生 UV 未知量：
+两 offset 点的三维相等，加原 CHART station 方程；不再把由第一个支撑
+完全定义的 XYZ 作为另外三个未知量。此机制不修改原生参数、持久 XT、
+半径/normal sense、CHART 定义或支持求值器，不包含已拒候选的 scalar
+rolling 公式、分支缓存或 jet 重写。Plane 混合、嵌套 Blend、显式 spine、
+需要共享 witness/曲率/reach/支撑 UV 的请求仍使用原有认证系统。
+
+四维系统使用原残差精度、Newton/线搜索上限和六次扩张/收缩；保留严格
+Krawczyk 包含、收缩率 <0.9 和原 nearest-foot Hessian 证明。通过后将
+原生 UV 及其导数严格提升回原七维状态，供既有 Frame/Tube 消费。
+CHART secant 的偏离仅用于初始盒宽提示，不能当曲线误差界；不能收缩
+时仍显式 NotConverged。相同几何但不同寻根状态不增加持久实体。
+
+实际执行保存在 `temp_docs/native-system-alignment/`：
+
+- `native-uv-elimination-math-v1.log/.exit` 原始 1：两个驻点曲率例未收缩；
+  修正初始盒提示后的 `native-uv-elimination-math-v2` 24/24、raw 0，含
+  镜像/尺度、支撑顺序、已知 D0/D1 包围及重复支撑不允许唯一管证书。
+- `native-uv-elimination-full-managed-v1` 全套 2164/2164、raw 0；分配
+  IL guard 3160 方法 CLEAN。此轮执行源尚未加入后续 plane residual 试验。
+- `native-uv-elimination-whole-v3` 生产 JIT 政策、四族各两次 fresh，真实
+  PK 各自独立 Fix 与 Boolean、GM fresh XT fullcheck/strict 均通过；raw 2
+  保留物性 U。八组 GM API 总和 12306.791 ms，固定 de9 对照 30180.353 ms；
+  仍远慢于 PK，不作性能达标声明。凹双曲面 warm Fix/Boolean 分别
+  959.266/1535.269 ms，根单元从 de9 的 1438/3282 降到 270/914，最终
+  根数保持 10/38。原 v1 Plane 降维较慢，已撤回该分支，v2/v3只处理双 BSurface。
+- 新增有理支撑、反向 U 和 `[-2,3]` 原生域的跨族消费者还在执行。
+  `native-uv-elimination-rational-gauge-v1` raw 134 保留：接触探针旧
+  `x=u` 假设已识别并修正，plane/nurbs 单独倒圆由后续
+  `native-uv-rational-contact-v2` 实际通过；变换/回读后下游 Boolean
+  仍有真实 SSI/有限面消费者缺口，不能因上游通过而反签该下游。
+
+这是算法结构与成本的实改，仍非 M0–M5、剩余分类或完整性能目标完成。
+没有新增独立 review worker；整体稳定交付再集中接受。

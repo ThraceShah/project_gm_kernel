@@ -168,6 +168,11 @@ internal static partial class JointNestedBlendEvaluation
         var plain=reachBudget.IsEmpty&&curvature.IsEmpty&&supportParameter.IsEmpty&&captureWitness.IsEmpty&&requireWitness.IsEmpty&&rootChart<0
             &&anchorContacts.IsEmpty&&acceleration.IsEmpty&&captureCharts.IsEmpty&&requireCharts.IsEmpty;
         if(plain&&output.Length>=9&&ReadTube(program,surface,spine,domain,output,out var reused))return reused;
+        if(plain)
+        {
+            var native=BoundNativeUvSegment(program,surface,spine,domain,output,out var handled);
+            if(handled)return native;
+        }
         Span<TaylorJet> snapshot=stackalloc TaylorJet[MaxVariables];Span<Occurrence> occurrences=stackalloc Occurrence[MaxOccurrences];Span<BufferCount> counts=stackalloc BufferCount[2];
         Span<KernelVector3> point=stackalloc KernelVector3[2];SurfaceDerivativeLayout.TryCreate(1,0,out var layout);var chartRange=Chart(program,spine);var u=Math.Clamp(domain.U0+(domain.U1-domain.U0)*.5,chartRange[0].Parameter,chartRange[^1].Parameter);
         // A fixed root chart sets the interval gauge. When the domain meets
