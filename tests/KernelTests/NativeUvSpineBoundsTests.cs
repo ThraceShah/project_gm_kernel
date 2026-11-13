@@ -91,6 +91,28 @@ public class NativeUvSpineBoundsTests
     [Theory]
     [InlineData(false,false,.125)] [InlineData(false,true,8)]
     [InlineData(true,false,.125)] [InlineData(true,true,8)]
+    public void CompletePointCertificateEnclosesNativeJetsAndCannotQualifyAsAParentInterval(bool mixed,bool reverse,double scale)
+    {
+        var original=mixed?MixedProgram(reverse,scale,-2,3,false):Program(true,reverse,scale,false,-2,3);
+        var work=new JointTubeEntry[128];var program=new NestedBlendProgram(original.Surfaces,original.Spines,original.Charts,original.Scalars,original.Workspace,new(101,1,1,1,7),work);
+        Span<IntervalNumber> bounds=stackalloc IntervalNumber[9],uv=stackalloc IntervalNumber[4];var side=mixed&&reverse?1:0;
+        foreach(var t in new[]{-.49,0,.37})
+        {
+            Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSpine(program,0,new(t,t,0,0),bounds));
+            Contains(bounds,0,Map(t,mixed?0:.2*t*t,.3*t*t,scale));Contains(bounds,3,MapDirection(1,mixed?0:.4*t,.6*t,scale));
+            // A fresh native-UV demand has no cached root to supply its
+            // differential. It must complete that point's own certificate.
+            Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSpineSupportUv(original,0,t,t,side,uv));
+            Assert.InRange(-2+2.5*(t+1),uv[0].Lower,uv[0].Upper);Assert.InRange(2.5,uv[1].Lower,uv[1].Upper);
+            var source=side==0?original.Spines[0].First:original.Spines[0].Second;var coefficient=source==0?.2:.3;
+            Assert.InRange(mixed?0:coefficient*t*t,uv[2].Lower,uv[2].Upper);Assert.InRange(mixed?0:2*coefficient*t,uv[3].Lower,uv[3].Upper);
+        }
+        Assert.DoesNotContain(work,e=>e.NativeDimension>0);
+    }
+
+    [Theory]
+    [InlineData(false,false,.125)] [InlineData(false,true,8)]
+    [InlineData(true,false,.125)] [InlineData(true,true,8)]
     public void CompleteParentTubeCertifiesSmallerNativeIntervalsWithoutTreatingThePointSolveAsProof(bool curved,bool reverse,double scale)
     {
         var original=Program(curved,reverse,scale,false,-2,3);var work=new JointTubeEntry[128];

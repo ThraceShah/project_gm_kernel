@@ -114,6 +114,11 @@ internal static partial class JointNestedBlendEvaluation
                 contractionBound=Math.Max(contractionBound,sum.Upper);
             }
         }
+        Span<IntervalNumber> fullBoxes=stackalloc IntervalNumber[fullCount],fullDerivative=stackalloc IntervalNumber[fullCount];
+        Span<IntervalDual> full=stackalloc IntervalDual[fullCount];
+        Span<Occurrence> nodes=stackalloc Occurrence[1];nodes[0]=new(){Spine=spine,Offset=0,Parent=-1,FirstChild=-1,SecondChild=-1,
+            FirstUv=swapped?-1:3,SecondUv=n==4?5:swapped?3:-1};
+        var pointCertificate=domain.U0==domain.U1&&reachBudget.IsEmpty&&curvature.IsEmpty&&anchorContacts.IsEmpty&&acceleration.IsEmpty;
         for(var iteration=0;iteration<6;iteration++)
         {
             for(var i=0;i<n;i++)boxes[i]=new(Math.Max(boxes[i].Lower,image[i].Lower),Math.Min(boxes[i].Upper,image[i].Upper));
@@ -124,22 +129,17 @@ internal static partial class JointNestedBlendEvaluation
                 IntervalNumber value=state[row];for(var k=0;k<n;k++)value-=inverse[row*n+k]*centerF[k];
                 for(var k=0;k<n;k++)value+=remainder[row*n+k]*(boxes[k]-state[k]);image[row]=value;
             }
+            if(!pointCertificate&&iteration<5)continue;
+            found=CompleteNativeUvRoot(program,spine,chart,t,boxes,jacobian,cache,full,fullBoxes,fullDerivative,nodes);
+            // A zero-width request still needs the original derivative,
+            // nearest and final frame certificates. Failure keeps tightening
+            // the root box, up to the same six-step limit. A point is never
+            // promoted to the nonzero parent-interval certificate above.
+            if(found==AlgorithmStatus.Success&&pointCertificate&&supportParameter.IsEmpty)
+                found=TubeFrame(program,surface,domain,nodes,fullBoxes,fullDerivative,output,cache);
+            if(found==AlgorithmStatus.Success)break;
+            if(iteration==5)return found;
         }
-        for(var i=0;i<n;i++)variables[i]=boxes[i];
-        found=NativeUvIntervalEquations(program,first,second,definition,lower,variables,new(t,1),equations,cache);if(found!=AlgorithmStatus.Success)return found;
-        for(var i=0;i<n;i++)image[i]=-equations[i].Derivative;
-        found=SolveIntervals(jacobian,image,n);if(found!=AlgorithmStatus.Success)return found;
-        for(var i=0;i<n;i++)variables[i]=new(boxes[i],image[i]);
-        found=NativeUvOffset(program,first,variables[0],variables[1],3,cache,out var position);if(found!=AlgorithmStatus.Success)return found;
-        Span<IntervalNumber> fullBoxes=stackalloc IntervalNumber[fullCount],fullDerivative=stackalloc IntervalNumber[fullCount];
-        Span<IntervalDual> full=stackalloc IntervalDual[fullCount];
-        full[0]=position.X;full[1]=position.Y;full[2]=position.Z;
-        for(var i=0;i<n;i++)full[i+3]=variables[i];
-        for(var i=0;i<fullCount;i++){fullBoxes[i]=full[i].Value;fullDerivative[i]=full[i].Derivative;}
-        Span<Occurrence> nodes=stackalloc Occurrence[1];nodes[0]=new(){Spine=spine,Offset=0,Parent=-1,FirstChild=-1,SecondChild=-1,
-            FirstUv=swapped?-1:3,SecondUv=n==4?5:swapped?3:-1};
-        Span<BufferOffset> chartIndices=stackalloc BufferOffset[1];chartIndices[0]=chart;
-        found=CertifyNearestBoxes(program,nodes,fullBoxes,full,default,chartIndices,cache);if(found!=AlgorithmStatus.Success)return found;
         if(!reachBudget.IsEmpty)
         {
             var centers=new IntervalBox3(fullBoxes[0].Lower,fullBoxes[0].Upper,fullBoxes[1].Lower,fullBoxes[1].Upper,fullBoxes[2].Lower,fullBoxes[2].Upper);
@@ -169,8 +169,8 @@ internal static partial class JointNestedBlendEvaluation
         {
             var at=(parameterSide==0?nodes[0].FirstUv:nodes[0].SecondUv)-3;
             if(at<0)return AlgorithmStatus.Unsupported;
-            supportParameter[0]=boxes[at];supportParameter[1]=image[at];
-            if(supportParameter.Length==4){supportParameter[2]=boxes[at+1];supportParameter[3]=image[at+1];}
+            supportParameter[0]=fullBoxes[at+3];supportParameter[1]=fullDerivative[at+3];
+            if(supportParameter.Length==4){supportParameter[2]=fullBoxes[at+4];supportParameter[3]=fullDerivative[at+4];}
             return AlgorithmStatus.Success;
         }
         if(!curvature.IsEmpty||!acceleration.IsEmpty)
@@ -181,16 +181,27 @@ internal static partial class JointNestedBlendEvaluation
             for(var side=0;side<2;side++)
             {found=SpineSupportParameters(program,nodes,anchor,side,u,out anchorContacts[2*side],out anchorContacts[2*side+1]);if(found!=AlgorithmStatus.Success)return found;}
         }
-        if(surface<0)
-        {
-            for(var i=0;i<3;i++){output[i]=fullBoxes[i];output[i+3]=fullDerivative[i];output[i+6]=0;}return AlgorithmStatus.Success;
-        }
-        found=IntervalFrame(program,surface,nodes,full,new IntervalNumber(domain.V0,domain.V1),out var frame,cache);if(found!=AlgorithmStatus.Success)return found;
-        output[0]=frame.X.Value;output[1]=frame.Y.Value;output[2]=frame.Z.Value;
-        output[3]=frame.X.Derivative;output[4]=frame.Y.Derivative;output[5]=frame.Z.Derivative;
-        for(var i=0;i<fullCount;i++)full[i]=full[i].Value;
-        found=IntervalFrame(program,surface,nodes,full,new(new(domain.V0,domain.V1),1),out frame,cache);if(found!=AlgorithmStatus.Success)return found;
-        output[6]=frame.X.Derivative;output[7]=frame.Y.Derivative;output[8]=frame.Z.Derivative;return AlgorithmStatus.Success;
+        return pointCertificate?AlgorithmStatus.Success:TubeFrame(program,surface,domain,nodes,fullBoxes,fullDerivative,output,cache);
+    }
+
+    private static AlgorithmStatus CompleteNativeUvRoot(in NestedBlendProgram program,BlendSpineIndex spine,BufferOffset chart,IntervalNumber parameter,
+        ReadOnlySpan<IntervalNumber> boxes,Span<IntervalNumber> jacobian,ReadOnlySpan<IntervalSplineContact> cache,
+        Span<IntervalDual> full,Span<IntervalNumber> fullBoxes,Span<IntervalNumber> fullDerivative,ReadOnlySpan<Occurrence> nodes)
+    {
+        var n=boxes.Length;var definition=program.Spines[spine];var first=program.Surfaces[definition.First];var second=program.Surfaces[definition.Second];
+        if(!first.IsBSpline)(first,second)=(second,first);
+        Span<IntervalDual> variables=stackalloc IntervalDual[n],equations=stackalloc IntervalDual[n];Span<IntervalNumber> velocity=stackalloc IntervalNumber[n];
+        for(var i=0;i<n;i++)variables[i]=boxes[i];
+        var status=NativeUvIntervalEquations(program,first,second,definition,Chart(program,spine)[chart],variables,new(parameter,1),equations,cache);if(status!=AlgorithmStatus.Success)return status;
+        for(var i=0;i<n;i++)velocity[i]=-equations[i].Derivative;
+        status=SolveIntervals(jacobian,velocity,n);if(status!=AlgorithmStatus.Success)return status;
+        for(var i=0;i<n;i++)variables[i]=new(boxes[i],velocity[i]);
+        status=NativeUvOffset(program,first,variables[0],variables[1],3,cache,out var position);if(status!=AlgorithmStatus.Success)return status;
+        full[0]=position.X;full[1]=position.Y;full[2]=position.Z;
+        for(var i=0;i<n;i++)full[i+3]=variables[i];
+        for(var i=0;i<full.Length;i++){fullBoxes[i]=full[i].Value;fullDerivative[i]=full[i].Derivative;}
+        Span<BufferOffset> chartIndices=stackalloc BufferOffset[1]{chart};
+        return CertifyNearestBoxes(program,nodes,fullBoxes,full,default,chartIndices,cache);
     }
 
     private static bool NativeUvRegularSheet(in NestedBlendProgram program,in BlendSurfaceInstruction source)

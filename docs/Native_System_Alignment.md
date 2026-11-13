@@ -1705,3 +1705,26 @@ SHA256 `08c3adf231466f2a13c306f97bc6bd9f21025c34c4b3a03fc67c28afb3ed51a8`，
 418项制品。生产Native/Xt的354/13个编译文档与固定源码校验通过，含原输入/输出XT、
 原失败/退出、ABBA两端实际字节与baseline源码；没有厂商运行库。旧包不覆盖，
 manifest仍为独立接受false、performanceQualified=false；整体任务继续执行。
+
+## 零宽脊线请求在完整点证书成立后结束收紧
+
+本次GM算法把点请求的结束条件由固定做满六轮，改为原完整证书已经成立。初始严格
+包含/收缩、原nearest、区间微分解及最终TubeFrame全部保留；终验不成立继续收紧，
+最多仍六轮，但现在可能逐轮尝试终验，不能笼统声称全部内部工作上限未变。
+非零U区间、父区间证书和reach/curvature/anchor/acceleration仍按原六轮流程，
+点也不能取得父资格。原Newton候选及20次上限没有修改，不缓存新的Jacobian盒；
+这是完整根证书的结束条件，非被拒point proposal/carry或重复Jacobian缓存的改名。
+数学前提、微分RHS与Krawczyk像分离及精度边界见`docs/Native_Point_Certificate.md`。
+
+开发生产Native为78e9c1c23bef023e763324388afba933d523dda050455006c7f1f815ab723c1a。
+`native-point-certificate-whole-v1`四族×2 Fix/Boolean及contact控制几何拓扑通过，
+raw2；Fix的Jacobian由4389/3075/3385/3245降为3094/2190/2285/2340，原单元预算
+未提高。`native-point-certificate-rational-v1`反向有理native U[-2,3]三族九组
+反射尺度生命周期/回读再Boolean几何拓扑通过，raw2，物性仍单列U。
+`native-point-certificate-managed-v1`64/64、raw0；完整
+`native-point-certificate-full-managed-v1`2211/2211、raw0、guard3180 CLEAN。
+
+首次有理生命周期wall总20691.703ms，高于98084的17900.791ms，因此未据此签提速；
+串行profiling诊断的固定c4 baseline与此候选分别18268.000/17933.704ms，计数显示
+各Fix下降，复杂N4 Boolean基本不变。这些运行和原退出均保留，不能把总wall或
+计数诊断当独立性能接受；后继仍须固定二进制、无profiling的完整窗口。
