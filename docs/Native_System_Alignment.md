@@ -1681,3 +1681,27 @@ workspace条件及shared witness/reach/curvature/phase排除保持原合同；�
 `native-foot-owner-consumption-full-managed-v1`已实际完成2207/2207、raw0，
 allocation guard3179 CLEAN。固定f2只读对照树已通过独立ENV_READY，接着进行
 同平台、固定二进制、无profiling的ABBA整链窗口；开发whole时间不补签该窗口。
+
+### 98084d9d 固定整链窗口与交付
+
+`native-foot-normal-abba-v1`实际使用固定f2 baseline与98084d9d candidate，四个
+串行进程按ABBA执行，每个进程四族×4次；关闭profiling，rep0为cold，其余warm。
+64个完整模型均分别完成GM/PK Fix和Boolean、contact控制及fresh XT fullcheck/
+strict，四个子进程原raw2保留物性U，driver0仅表示采集完成。baseline Native
+af1d83ffecac25942d2571375edb2e10fde2a84a6fb62536562a18d3b6535984与candidate
+c4a083d8b3b5a3f6d7336d261a703cc766090552c719bbf7f2261e1deeb7ef09均在窗口
+内保持原字节，没有中途构建。相同case/helper源码、运行时/JIT策略及真实PK38已核。
+
+warm GM完整API合计由8707.133降为7956.745ms，candidate/baseline=.913819，
+即本窗口约8.62%下降；其中Boolean为4619.002→3949.550ms，Fix为4088.131→4007.195ms。
+Fix计数不变，其少量时间变化不能归因于本次算法。candidate同窗口真实PK warm
+API合计109.408ms，GM仍约72.7倍；既不声称性能对标完成，也不签Mac或独立接受。
+
+固定source `98084d9d4738a0fe3fb176116d3423a2b108bc0c` 的同一candidate DLL另完成
+`98084d9d-fixed-transform-v1`118/118、raw0，以及`...-fixed-rational-v1`三族九组
+生命周期/再Boolean几何拓扑通过、raw2。完整2207托管结果继续按testhooks独立列。
+包 `temp_docs/native-system-delivery/checkpoint-98084d9d.zip` 为53,950,433字节，
+SHA256 `08c3adf231466f2a13c306f97bc6bd9f21025c34c4b3a03fc67c28afb3ed51a8`，
+418项制品。生产Native/Xt的354/13个编译文档与固定源码校验通过，含原输入/输出XT、
+原失败/退出、ABBA两端实际字节与baseline源码；没有厂商运行库。旧包不覆盖，
+manifest仍为独立接受false、performanceQualified=false；整体任务继续执行。
