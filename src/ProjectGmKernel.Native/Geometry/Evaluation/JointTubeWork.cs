@@ -55,13 +55,22 @@ internal static partial class JointNestedBlendEvaluation
         &&entry.Surfaces==program.Surfaces.Length&&entry.Spines==program.Spines.Length&&entry.Charts==program.Charts.Length&&entry.Scalars==program.Scalars.Length&&entry.Workspace==program.Workspace.Length;
 
     private static bool ReadTube(in NestedBlendProgram program,BlendSurfaceIndex surface,BlendSpineIndex spine,in SurfaceParameterBox domain,
-        Span<IntervalNumber> output,out AlgorithmStatus status)
+        Span<IntervalNumber> output,out AlgorithmStatus status,Span<IntervalNumber> supportParameter=default,BufferOffset parameterSide=0)
     {
         status=AlgorithmStatus.NotRun;if(program.TubeSource.Tag<=0||program.TubeWork.IsEmpty)return false;
         var at=TubeIndex(program,spine,domain);
         for(var probe=0;probe<Math.Min(8,program.TubeWork.Length);probe++)
         {
             ref var entry=ref program.TubeWork[(at+probe)%program.TubeWork.Length];if(entry.Source.Tag==0)return false;if(!SameTube(entry,program,spine,domain))continue;
+            if(!supportParameter.IsEmpty)
+            {
+                var definition=program.Spines[spine];var support=program.Surfaces[parameterSide==0?definition.First:definition.Second];
+                var uv=parameterSide==0?entry.Occurrences[0].FirstUv:entry.Occurrences[0].SecondUv;
+                if(!support.IsBSpline||uv<0||uv+1>=entry.N)return false;
+                supportParameter[0]=entry.Boxes[uv];supportParameter[1]=entry.Derivative[uv];
+                if(supportParameter.Length==4){supportParameter[2]=entry.Boxes[uv+1];supportParameter[3]=entry.Derivative[uv+1];}
+                status=AlgorithmStatus.Success;return true;
+            }
             status=TubeFrame(program,surface,domain,((ReadOnlySpan<Occurrence>)entry.Occurrences)[..entry.Nodes],((ReadOnlySpan<IntervalNumber>)entry.Boxes)[..entry.N],((ReadOnlySpan<IntervalNumber>)entry.Derivative)[..entry.N],output);return true;
         }
         return false;

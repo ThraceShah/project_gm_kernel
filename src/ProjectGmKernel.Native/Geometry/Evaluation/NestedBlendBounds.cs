@@ -167,7 +167,9 @@ internal static partial class JointNestedBlendEvaluation
     {
         var plain=reachBudget.IsEmpty&&curvature.IsEmpty&&supportParameter.IsEmpty&&captureWitness.IsEmpty&&requireWitness.IsEmpty&&rootChart<0
             &&anchorContacts.IsEmpty&&acceleration.IsEmpty&&captureCharts.IsEmpty&&requireCharts.IsEmpty;
-        if(plain&&output.Length>=9&&ReadTube(program,surface,spine,domain,output,out var reused))return reused;
+        var rootBoundsOnly=reachBudget.IsEmpty&&curvature.IsEmpty&&captureWitness.IsEmpty&&requireWitness.IsEmpty&&rootChart<0
+            &&anchorContacts.IsEmpty&&acceleration.IsEmpty&&captureCharts.IsEmpty&&requireCharts.IsEmpty&&!double.IsFinite(phaseReference);
+        if(rootBoundsOnly&&output.Length>=9&&ReadTube(program,surface,spine,domain,output,out var reused,supportParameter,parameterSide))return reused;
         // Shared witnesses require a Cartesian contraction box of the
         // original full equation system. A lifted UV graph enclosure is
         // sufficient for spatial/parameter bounds, but is not that box.

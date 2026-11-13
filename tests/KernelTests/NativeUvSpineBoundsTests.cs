@@ -56,6 +56,39 @@ public class NativeUvSpineBoundsTests
     }
 
     [Theory]
+    [InlineData(false,false,.125,false)] [InlineData(false,true,8,true)]
+    [InlineData(true,false,.125,true)] [InlineData(true,true,8,false)]
+    public void CertifiedRootTubeSuppliesBothSpatialAndOriginalNativeFootDemands(bool mixed,bool reverse,double scale,bool seedUv)
+    {
+        var original=mixed?MixedProgram(reverse,scale,-2,3,false):Program(true,reverse,scale,false,-2,3);
+        var work=new JointTubeEntry[128];var program=new NestedBlendProgram(original.Surfaces,original.Spines,original.Charts,original.Scalars,original.Workspace,new(101,1,1,1,7),work);
+        var side=mixed&&reverse?1:0;Span<IntervalNumber> position=stackalloc IntervalNumber[9],uv=stackalloc IntervalNumber[4];
+        if(seedUv)Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSpineSupportUv(program,0,-.2,.2,side,uv));
+        else Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSpine(program,0,new(-.2,.2,0,0),position));
+        Assert.Contains(work,e=>e.NativeDimension==(mixed?2:4));var hits=JointNestedBlendEvaluation.TestParentTubeHits;
+        foreach(var domain in new[]{new SurfaceParameterBox(-.12,-.1,0,0),new(0,0,0,0),new(.1,.13,0,0),new(-.2,.2,0,0)})
+        {
+            for(var support=0;support<(mixed?1:2);support++)
+            {
+                var selected=mixed?side:support;
+                Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSpineSupportUv(program,0,domain.U0,domain.U1,selected,uv));
+                var source=selected==0?program.Spines[0].First:program.Spines[0].Second;var coefficient=source==0?.2:.3;
+                for(var i=0;i<=8;i++)
+                {
+                    var t=domain.U0+(domain.U1-domain.U0)*i/8;
+                    Assert.InRange(-2+2.5*(t+1),uv[0].Lower,uv[0].Upper);Assert.InRange(2.5,uv[1].Lower,uv[1].Upper);
+                    Assert.InRange(mixed?0:coefficient*t*t,uv[2].Lower,uv[2].Upper);Assert.InRange(mixed?0:2*coefficient*t,uv[3].Lower,uv[3].Upper);
+                }
+            }
+            Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSpine(program,0,domain,position));
+            var mid=domain.U0+(domain.U1-domain.U0)*.5;Contains(position,0,Map(mid,mixed?0:.2*mid*mid,.3*mid*mid,scale));
+        }
+        Assert.True(JointNestedBlendEvaluation.TestParentTubeHits>hits);
+        var before=GC.GetAllocatedBytesForCurrentThread();var status=JointNestedBlendEvaluation.BoundSpineSupportUv(program,0,.1,.13,side,uv);
+        Assert.Equal(0,GC.GetAllocatedBytesForCurrentThread()-before);Assert.Equal(AlgorithmStatus.Success,status);
+    }
+
+    [Theory]
     [InlineData(false,false,.125)] [InlineData(false,true,8)]
     [InlineData(true,false,.125)] [InlineData(true,true,8)]
     public void CompleteParentTubeCertifiesSmallerNativeIntervalsWithoutTreatingThePointSolveAsProof(bool curved,bool reverse,double scale)

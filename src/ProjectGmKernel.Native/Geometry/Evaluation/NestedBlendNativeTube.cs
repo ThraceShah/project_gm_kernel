@@ -18,7 +18,7 @@ internal static partial class JointNestedBlendEvaluation
     // position alone supplies any of these certificates.
     private static bool ReadParentTube(in NestedBlendProgram program,BlendSurfaceIndex surface,BlendSpineIndex spine,
         in SurfaceParameterBox domain,ReadOnlySpan<double> state,ReadOnlySpan<double> pointInverse,double parameter,BufferOffset requestedChart,
-        Span<IntervalNumber> output,out AlgorithmStatus status)
+        Span<IntervalNumber> output,out AlgorithmStatus status,Span<IntervalNumber> supportParameter=default,BufferOffset parameterSide=0)
     {
         status=AlgorithmStatus.NotRun;if(program.TubeSource.Tag<=0||program.TubeWork.IsEmpty)return false;
         BufferOffset selected=-1;var width=double.PositiveInfinity;
@@ -116,7 +116,16 @@ internal static partial class JointNestedBlendEvaluation
             derivative[axis]=new(Math.Max(derivative[axis].Lower,local.Derivative.Lower),Math.Min(derivative[axis].Upper,local.Derivative.Upper));
             if(!boxes[axis].Finite||!derivative[axis].Finite)return false;
         }
-        status=TubeFrame(program,surface,domain,((ReadOnlySpan<Occurrence>)entry.Occurrences)[..entry.Nodes],boxes,derivative,output,cache);
+        if(!supportParameter.IsEmpty)
+        {
+            var source=program.Surfaces[parameterSide==0?definition.First:definition.Second];
+            var uv=parameterSide==0?entry.Occurrences[0].FirstUv:entry.Occurrences[0].SecondUv;
+            if(!source.IsBSpline||uv<0||uv+1>=boxes.Length)return false;
+            supportParameter[0]=boxes[uv];supportParameter[1]=derivative[uv];
+            if(supportParameter.Length==4){supportParameter[2]=boxes[uv+1];supportParameter[3]=derivative[uv+1];}
+            status=AlgorithmStatus.Success;
+        }
+        else status=TubeFrame(program,surface,domain,((ReadOnlySpan<Occurrence>)entry.Occurrences)[..entry.Nodes],boxes,derivative,output,cache);
         if(status==AlgorithmStatus.Success)ModelingPerformance.ParentTube();
 #if KERNEL_TEST_HOOKS
         if(status==AlgorithmStatus.Success)TestParentTubeHits++;

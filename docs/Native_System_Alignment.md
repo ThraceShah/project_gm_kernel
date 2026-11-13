@@ -1655,3 +1655,29 @@ PK随后分别消费两个实际曲线，建`.17..83`有限wire并比较；保�
 `native-uv-definition-copy-dynamic-v1`十项真实执行及inferior/debugger均raw0，
 新设复制断点仅命中GDS_plagiarize，未命中另两个duplicate断点，保留静态/动态区别。
 原9e固定包不覆盖，本轮增量继续向统一交付推进。
+
+## 原生 UV 分类直接消费同一个已证明根
+
+XYZ求界和原生支撑UV分类实际求同一offset-foot/CHART根，但UV射线入口先前只传
+程序数据，丢掉真实Blend owner身份；完整UV请求也在保存根证明前返回。首个仅扩展
+tube读取的候选`native-foot-tube-consumption-whole-v1`虽八组几何通过、raw2，
+所有Jacobian计数与固定f2基线完全相同，不能据7914.462ms称取得算法改善。
+
+现在该视图传递真实owner。完整UV请求同样在原存在/唯一性、六轮refinement、导数
+及nearest完成后保存根；相同区间直接消费原生UV分量，子区间使用同一已有残差/
+局部像和新导数证书，再选择支撑UV。没有缓存新的多项式表达式或区间Jacobian，
+没有将点Newton成功当区间证明。只读范围、source/generation/sense/block/CHART/
+workspace条件及shared witness/reach/curvature/phase排除保持原合同；证明详见
+`docs/Native_Interval_Tube_Consumption.md`。
+
+`native-foot-owner-consumption-whole-v1`四族×2完整Fix、Boolean及contact控制几何
+通过、raw2。warm Boolean Jacobian由固定f2的2835/4372/3046/3601降为
+2420/3712/2704/2962；Fix计数不变。probe whole总7657.376ms仅属开发观察，
+不能代替固定源码、同平台串行normal窗口或独立性能接受。
+`native-foot-owner-consumption-rational-v1`三族九组反向有理支撑、native U[-2,3]、
+反射旋转尺度.125/1.7/8的复制删源、可编辑XT回读再Boolean均几何拓扑通过，raw2，
+物性仍独立U。`native-foot-owner-consumption-managed-v1`60/60、raw0，覆盖两参/
+四参、支撑顺序、XYZ/UV任一先请求、驻点两侧导数及零托管分配；完整稳定点另验。
+`native-foot-owner-consumption-full-managed-v1`已实际完成2207/2207、raw0，
+allocation guard3179 CLEAN。固定f2只读对照树已通过独立ENV_READY，接着进行
+同平台、固定二进制、无profiling的ABBA整链窗口；开发whole时间不补签该窗口。

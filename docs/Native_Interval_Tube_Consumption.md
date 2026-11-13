@@ -15,6 +15,14 @@ Newton 结果本身不能替代这些证明。单纯减少 CHART 反而可能扩
 spine、shared Cartesian witness、reach/curvature 请求不借此取得新资格。
 没有新增模型、XT 字段或持久缓存。
 
+同一个已证明根向量同时含XYZ、第一/第二支撑的原生UV及对原CHART参数的导数。
+UV分类请求可直接选择其中对应的分量，不须再构造一条空间曲线或重做同一根证明。
+完全相同区间读取已保存的原生分量；子区间仍执行下文同一残差/局部像/新导数步骤，
+再输出原生分量。phase、shared witness、reach、curvature和anchor请求不走这条消费。
+UV请求首次完整成功也可保存根证明，仍须完整nearest检查及原六轮refinement。
+Runtime将真实Blend owner/generation/sense/block传给原生参数射线视图；只有既有
+immutable scope才给该视图Tube工作区，未扩大修改范围或缓存生存期。
+
 ## 可以消费的父证明
 
 父区间 P 上，既有完整求解已证明原方程 F(x,t)=0 的唯一连续根族，完成原六轮

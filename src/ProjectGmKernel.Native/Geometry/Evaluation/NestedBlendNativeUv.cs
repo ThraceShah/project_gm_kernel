@@ -44,8 +44,8 @@ internal static partial class JointNestedBlendEvaluation
         }
         // The original point solve and its unchanged budget supply a proposal
         // to either certificate. A rejected parent does not repeat that solve.
-        if(reachBudget.IsEmpty&&curvature.IsEmpty&&supportParameter.IsEmpty&&anchorContacts.IsEmpty&&acceleration.IsEmpty
-            &&ReadParentTube(program,surface,spine,domain,state,inverse,u,chart,output,out var parentStatus))return parentStatus;
+        if(reachBudget.IsEmpty&&curvature.IsEmpty&&anchorContacts.IsEmpty&&acceleration.IsEmpty
+            &&ReadParentTube(program,surface,spine,domain,state,inverse,u,chart,output,out var parentStatus,supportParameter,parameterSide))return parentStatus;
         Span<IntervalNumber> boxes=stackalloc IntervalNumber[n],image=stackalloc IntervalNumber[n],centerF=stackalloc IntervalNumber[n],jacobian=stackalloc IntervalNumber[n*n],remainder=stackalloc IntervalNumber[n*n];
         Span<IntervalDual> variables=stackalloc IntervalDual[n],equations=stackalloc IntervalDual[n];
         Span<IntervalSplineContact> cache=stackalloc IntervalSplineContact[7];cache.Clear();
@@ -156,6 +156,15 @@ internal static partial class JointNestedBlendEvaluation
                 if(found!=AlgorithmStatus.Success)return found;
             }
         }
+        if(reachBudget.IsEmpty&&anchorContacts.IsEmpty&&curvature.IsEmpty&&acceleration.IsEmpty)
+        {
+            var saved=WriteTube(program,spine,domain,nodes,fullBoxes,fullDerivative);
+            if(saved>=0&&domain.U0<domain.U1&&contractionBound<.9)
+            {
+                ref var entry=ref program.TubeWork[saved];entry.NativeDimension=n;entry.NativeChart=chart;entry.NativeContraction=contractionBound;
+                inverse.CopyTo(entry.NativeInverse);radii.CopyTo(entry.NativeWeights);certificateBox.CopyTo(entry.NativeBox);
+            }
+        }
         if(!supportParameter.IsEmpty)
         {
             var at=(parameterSide==0?nodes[0].FirstUv:nodes[0].SecondUv)-3;
@@ -171,15 +180,6 @@ internal static partial class JointNestedBlendEvaluation
             Span<TaylorJet> anchor=stackalloc TaylorJet[fullCount];for(var i=0;i<fullCount;i++)anchor[i]=new(fullBoxes[i].Midpoint,0);
             for(var side=0;side<2;side++)
             {found=SpineSupportParameters(program,nodes,anchor,side,u,out anchorContacts[2*side],out anchorContacts[2*side+1]);if(found!=AlgorithmStatus.Success)return found;}
-        }
-        if(reachBudget.IsEmpty&&anchorContacts.IsEmpty)
-        {
-            var saved=WriteTube(program,spine,domain,nodes,fullBoxes,fullDerivative);
-            if(saved>=0&&domain.U0<domain.U1&&contractionBound<.9)
-            {
-                ref var entry=ref program.TubeWork[saved];entry.NativeDimension=n;entry.NativeChart=chart;entry.NativeContraction=contractionBound;
-                inverse.CopyTo(entry.NativeInverse);radii.CopyTo(entry.NativeWeights);certificateBox.CopyTo(entry.NativeBox);
-            }
         }
         if(surface<0)
         {
