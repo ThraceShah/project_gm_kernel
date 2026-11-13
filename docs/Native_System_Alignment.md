@@ -939,3 +939,47 @@ FD 的 derive 不是旧 trim 的子集合同，故最终检查要求实际有限
 分别保存，不把其中一个默认变体作为全部适用性的证明。后继固定提交的完整回归、
 统一制品与独立接受仍在执行；complete/region tracking、非 Line 原边证明、周期
 Blend phase 的真实 PK 消费者以及原总体未决类别未因此取得资格。
+
+## 原生主 fin 的内存发布合同
+
+固定 `553253c6` 的 Release 全量为 2144/2144、raw 0；其原生 SP 生命周期
+24 族、三尺度、参数/导数/有限 wire 对照 raw 0。Mac 同固定源的镜像 1.7、
+逆工具顺序及两种 tracking Boolean 也完成 strict/full、有限来源重叠负例，
+raw 2、四项物性 U。四族、各两个新模型的生产 whole-operation 实测共 32 条
+API 行，八组独立 Fix/Boolean 几何拓扑通过、raw 2；非解析重叠求解的秒级
+成本仍远高于 PK 毫秒级，不能称已达性能目标。这些结果只绑定固定 553 源。
+
+同源扩大到直接构造的 local-operation 生命周期后，17 项中有一项四条平行
+边倒圆返回 5295。新执行先运行独立 PK，同参数实际返回四个 Blend，随后 GM
+失败于材料选择；原脚本先 GM 后 PK 的失败行没有执行 PK，不补签该旧行。
+相同 GM 输入经自身 XT 回读后却通过。自然 Line 的 TMin/TMax 差异曾作为
+候选根因，实际改成相同自然域仍失败，已撤回该候选；逆选边顺序也未修复。
+
+决定性区别是直接构造第一条边的 `FirstFinEdge` 为负向，回读后为正向。
+官方 FD 34 checking 的 `PK_EDGE_state_fin_not_pos_c` 明确要求第一 fin 正向；
+XT EDGE.halfedge 保存此主 fin。既有 writer 在导出时主动选正向 fin，因而
+掩盖了内存构造违反同一原生合同的问题。这不是坐标或输入 family 的定义。
+
+新实现只在尚未分配 tag 的新边发布前，沿既有环找到正向 fin，将首尾指针
+旋转到该处；不改环次序、sense、曲线参数或已发布实体，也不分配托管对象。
+没有正向使用的单用 sheet/dummy-fin 表示不借此次修复宣称闭环。
+新增 direct/reload 与正反选择顺序四种网络测试，同时检查倒圆后与 copy/delete
+的正向主 fin 及池回收；受影响托管集 86/86、raw 0，allocation guard CLEAN。
+
+`native-primary-fin-publication-v1` raw 0 实际通过原失败四边倒圆、fresh XT
+strict/full、copy/delete、镜像尺度、GM XT 回读及下游 Boolean。
+`native-primary-fin-local-lifecycle-v1` raw 2：17/17 独立原生操作与生命周期、
+再 Boolean 几何拓扑通过，四项物性 U 分列。原 553 的失败 raw 1、两个未生效
+假设及新结果分别保留，不用新通过覆盖旧退出码。
+
+`native-primary-fin-full-managed-v1` 完整 Release 回归 2148/2148、raw 0，
+allocation guard 3154 方法 CLEAN，所属 testhost 已退出。
+`native-primary-fin-multitool-v1` raw 2 再通过镜像 1.7、逆工具顺序的两种
+多工具 Boolean、有限 face/fin/ICurve、材料及来源错误负例，各侧记录 17/16、
+来源关系 34/32；四项物性 U 保持原分类。此生产 Native assembly 为
+985da52a6294bc76d5a0e5718036421dc611072a2ab94e12960a797d319d0dd8。
+
+闭合显式 Blend 的实际新探针 `native-periodic-blend-applicability-v4` raw 1
+还揭示另一个独立能力缺口：同圆柱/斜平面、同范围与两点，PK 返回 BLENDSF，
+原生脊线 Ellipse、自然范围 0..2π，GM 返回 5000/未实现。此探针没有建有限
+sheet 或进行 body compare，不能给既有 periodic phase 数学测试补消费者资格。

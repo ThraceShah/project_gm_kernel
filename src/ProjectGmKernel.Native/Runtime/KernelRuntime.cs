@@ -4014,7 +4014,17 @@ internal static unsafe partial class KernelRuntime
         for (var i = 0; i < body.EdgeCountBody; i++, edgeSlot = Edges[edgeSlot].NextInBody)
         {
             if (Edges[edgeSlot].Header.Tag == 0)
+            {
+                // Native edge rings start at a positive fin (FD 34 edge
+                // checks, XT EDGE.halfedge). Construction may have added
+                // the negative use first. Rotate the existing ring before
+                // publishing this new edge; do not change its cyclic order.
+                var fin=Edges[edgeSlot].FirstFinEdge;
+                for(var f=0;f<Edges[edgeSlot].FinCount;f++,fin=Fins[fin].NextOfEdge)
+                    if(Fins[fin].Sense=='+')
+                    {Edges[edgeSlot].FirstFinEdge=fin;Edges[edgeSlot].LastFinEdge=Fins[fin].PrevOfEdge;break;}
                 Edges[edgeSlot].Header.Tag = AllocateTag(EntityClass.Edge, PoolKind.Edge, edgeSlot, Edges[edgeSlot].Header.Generation);
+            }
             if (Edges[edgeSlot].Header.Tag <= 0) return false;
         }
 

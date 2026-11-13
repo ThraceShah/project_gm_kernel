@@ -25,11 +25,13 @@ ParasolidMassProperties.BeginEvidence(directory);
 var axialArrangement=args.Contains("--axial-arrangement",StringComparer.Ordinal);
 var blendArrangement=args.Contains("--blend-arrangement",StringComparer.Ordinal);
 var thenBoolean=args.Contains("--then-boolean",StringComparer.Ordinal);
+var caseFilter=args.SingleOrDefault(x=>x.StartsWith("--case-filter=",StringComparison.Ordinal))?["--case-filter=".Length..];
 var booleanInject=args.Contains("--boolean-inject",StringComparer.Ordinal);
 if(thenBoolean&&(!blendArrangement||!args.Contains("--lifecycle",StringComparer.Ordinal))||booleanInject&&!thenBoolean)
     throw new ArgumentException("post-Blend Boolean requires --blend-arrangement --lifecycle; injection requires --then-boolean");
 var trace=axialArrangement||blendArrangement?new List<KernelRuntime.BoundaryTrace>():null;
-if(trace!=null){KernelRuntime.ForbidLegacyRegularBlendAssembly=true;KernelRuntime.TraceFiniteBoundary=trace.Add;}
+var network=trace==null?null:new List<KernelRuntime.RollingNetworkTrace>();
+if(trace!=null){KernelRuntime.ForbidLegacyRegularBlendAssembly=true;KernelRuntime.TraceFiniteBoundary=trace.Add;KernelRuntime.TraceRollingNetwork=network!.Add;}
 void Log(string message){Console.WriteLine(message);report.AppendLine(message);}
 try
 {
@@ -69,6 +71,7 @@ try
             var failures=0;var executed=0;
             foreach(var c in cases)
             {
+                if(caseFilter!=null&&!c.Name.Contains(caseFilter,StringComparison.Ordinal))continue;
                 if(faceQueryControls)continue;
                 if(!WebProgressCapture.Select(c.Name))continue;
                 if(trace!=null&&(c.Operation is not ("fillet" or "chamfer" or "unequal-chamfer")||axialArrangement&&c.Shape!="cylinder"))continue;
@@ -100,6 +103,9 @@ try
                         managed=ReceiveManaged(input);reference=Receive(input);
                     }
                     trace?.Clear();
+                    network?.Clear();
+                    var b=Apply(false,reference,c.Shape,c.Operation,c.Amount,c.Selection,c.Oriented);
+                    Log("OPERATION_PASS side=pk case="+c.Name+" "+b);
                     var a=Apply(true,managed,c.Shape,c.Operation,c.Amount,c.Selection,c.Oriented);
                     if(trace!=null)
                     {
@@ -110,7 +116,6 @@ try
                             &&t.First==p.First&&t.Last==p.Last),"blend product boundary provenance");
                         Log($"{c.Name} common arrangement provenance uses={products.Length}");
                     }
-                    var b=Apply(false,reference,c.Shape,c.Operation,c.Amount,c.Selection,c.Oriented);
                     Require(a==b,c.Name+" returned topology/tracking contract differs: "+a+" / "+b);
                     var bytes=TransmitManaged(managed);File.WriteAllBytes(Path.Combine(directory,c.Name+"-managed.x_t"),bytes);
                     var referenceBytes=TransmitReference(reference);File.WriteAllBytes(Path.Combine(directory,c.Name+"-reference.x_t"),referenceBytes);
@@ -136,7 +141,8 @@ try
                     failures++;Log("FAIL "+c.Name+": "+ex.Message);
                     if(trace!=null)
                     {
-                        Log($"  arrangement stage={KernelRuntime.LastSheetPartitionStage} curve={KernelRuntime.LastSheetCurve} t={KernelRuntime.LastSheetParameter:R} uv=({KernelRuntime.LastSheetRayU:R},{KernelRuntime.LastSheetRayV:R})");
+                        Log($"  modeling stage={KernelRuntime.LastRegularBlendStage}/{KernelRuntime.LastRollingNetworkStage} cell={KernelRuntime.LastRollingFirstFace} arrangement={KernelRuntime.LastSheetPartitionStage} algorithm={KernelRuntime.LastSheetAlgorithmStatus} curve={KernelRuntime.LastSheetCurve} t={KernelRuntime.LastSheetParameter:R} uv=({KernelRuntime.LastSheetRayU:R},{KernelRuntime.LastSheetRayV:R})");
+                        foreach(var row in network!)Log($"  network {row.Stage} cell={row.Cell} source={row.Source} origin={row.CellSource} surface={row.Surface} material={row.Material}");
                         foreach(var use in trace)Log($"  boundary {use.Stage} face={use.Source} surface={use.Surface} edge={use.Edge}/{use.Curve} forward={use.Forward} t=[{use.First:R},{use.Last:R}]");
                     }
                 }
@@ -145,7 +151,7 @@ try
             else Log($"{(booleanInject?"Post-Blend rollback controls":"Local operation geometry")}: {executed-failures} passed, {failures} failed, mass_unresolved={ParasolidMassProperties.UnresolvedCount}.");Require(failures==0,"Local operation oracle failed.");
             if(ParasolidMassProperties.UnresolvedCount!=0)Environment.ExitCode=2;
         }
-        finally{Check(KernelRuntime.SessionStop(),"managed session stop");}
+        finally{KernelRuntime.TraceRollingNetwork=null;Check(KernelRuntime.SessionStop(),"managed session stop");}
     }
 }
 catch(Exception ex){Log("FAIL: "+ex.Message);Environment.ExitCode=1;}

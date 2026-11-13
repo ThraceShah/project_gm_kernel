@@ -14,6 +14,32 @@ public unsafe class LocalOperationTests:IDisposable
     public void Dispose(){KernelRuntime.InjectAllocationFailure(-1);KernelRuntime.SessionStop();}
 
     [Theory]
+    [InlineData(false,false)] [InlineData(false,true)]
+    [InlineData(true,false)] [InlineData(true,true)]
+    public void DirectAndReloadedNativePrimaryFinsDriveTheSameParallelRollingNetwork(bool reload,bool reverse)
+    {
+        var before=Counts();var body=Block();Check(body);
+        if(reload)
+        {
+            Assert.Equal(0,XtBrepImportTests.Receive(Transmit(body),out var restored));
+            Assert.Equal(0,KernelRuntime.EntityDelete(1,&body));body=restored;Check(body);
+        }
+        var selected=Tags(body,1).Where(tag=>
+        {
+            var edge=KernelRuntime.Edges[KernelRuntime.ResolveTagRecord(tag).Slot];
+            var curve=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(edge.CurveTag)];
+            return Math.Abs(KernelRuntime.LineDataPool[curve.DataIndex].AxisZ)>.99;
+        }).ToArray();
+        Assert.Equal(4,selected.Length);if(reverse)Array.Reverse(selected);
+        var guard=KernelRuntime.ForbidLegacyRegularBlendAssembly;KernelRuntime.ForbidLegacyRegularBlendAssembly=true;
+        try{SetBlend(selected,false,.4);Assert.Equal(4,Fix(body));}
+        finally{KernelRuntime.ForbidLegacyRegularBlendAssembly=guard;}
+        BooleanOperationTests.Counts(body,10,24,16);Check(body);
+        int copy;Assert.Equal(0,KernelRuntime.EntityCopy(body,&copy));Assert.Equal(0,KernelRuntime.EntityDelete(1,&body));Check(copy);
+        Assert.Equal(0,KernelRuntime.EntityDelete(1,&copy));Assert.Equal(before,Counts());
+    }
+
+    [Theory]
     [InlineData(false,false,true)] [InlineData(false,true,false)]
     [InlineData(true,false,false)] [InlineData(true,true,true)]
     public void OrientedSurfaceQueryComposesXtFaceAndSurfaceSensesWithoutMutation(bool negativeFace,bool negativeSurface,bool expected)
@@ -345,7 +371,7 @@ public unsafe class LocalOperationTests:IDisposable
         var record=Record(body);var edge=record.FirstEdgeBody;
         for(var i=0;i<record.EdgeCountBody;i++,edge=KernelRuntime.GetEdgeRecord(edge).NextInBody)
         {
-            var e=KernelRuntime.GetEdgeRecord(edge);Assert.Equal(2,e.FinCount);Assert.NotEqual(KernelRuntime.GetFinRecord(e.FirstFinEdge).Sense,KernelRuntime.GetFinRecord(e.LastFinEdge).Sense);
+            var e=KernelRuntime.GetEdgeRecord(edge);Assert.Equal(2,e.FinCount);Assert.Equal('+',KernelRuntime.GetFinRecord(e.FirstFinEdge).Sense);Assert.NotEqual(KernelRuntime.GetFinRecord(e.FirstFinEdge).Sense,KernelRuntime.GetFinRecord(e.LastFinEdge).Sense);
         }
         var options=new PK_BODY_check_o_s{o_t_version=6,max_faults=32,geom=ParasolidConstants.PK_check_geom_no_c,bgeom=ParasolidConstants.PK_check_bgeom_no_c,
             mesh=ParasolidConstants.PK_check_mesh_no_c,top_geo=ParasolidConstants.PK_check_top_geo_no_c,size_box=ParasolidConstants.PK_check_size_box_no_c,
