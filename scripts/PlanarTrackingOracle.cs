@@ -13,7 +13,12 @@ using ProjectGmKernel.Native.Runtime;
 using M=ProjectGmKernel.Native.Generated;
 using static parasolid;
 
-var directory=Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","planar-tracking-oracle"));
+var outputName=args.Single(x=>x.StartsWith("--output-name=",StringComparison.Ordinal))["--output-name=".Length..];
+if(outputName.Length==0||!outputName.All(c=>char.IsAsciiLetterOrDigit(c)||c is '-' or '_'))throw new ArgumentException("One new output name");
+var nativeContract=args.Contains("--native-basic-complete",StringComparer.Ordinal);
+var trackingType=args.Contains("--complete",StringComparer.Ordinal)||nativeContract?PK_boolean_track_type_comp_c:PK_boolean_track_type_basic_c;
+var directory=Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ScriptPath())!,"..","temp_docs","planar-tracking-oracle",outputName));
+if(Directory.Exists(directory))throw new ArgumentException("Existing execution evidence is immutable");
 Directory.CreateDirectory(directory);var report=new StringBuilder();
 void Log(string value){Console.WriteLine(value);report.AppendLine(value);}
 try
@@ -24,31 +29,34 @@ try
         var start=new M.PK_SESSION_start_o_s{o_t_version=1};Check(KernelRuntime.SessionStart(&start),"managed start");
         try
         {
+            Log("GM_ASSEMBLY sha256="+Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(typeof(KernelRuntime).Assembly.Location))));
+            PK_SESSION_kernel_version_t version;Check(PK_SESSION_ask_kernel_version(&version),"native kernel version");Log($"PK_VERSION {version.major_revision}.{version.minor_revision}.{version.build_number}");
+            Log($"MODE managed={!nativeContract} actual_tracking={trackingType} reference_tracking={(nativeContract?PK_boolean_track_type_basic_c:trackingType)}");
             var fixtures=new List<(string Name,int Operation)>();
             foreach(var operation in new[]{PK_boolean_unite_c,PK_boolean_intersect_c,PK_boolean_subtract_c})
             foreach(var name in new[]{"coincident","overlap","aligned","touching","disjoint","rotated","cavity","through-hole","two-tools"})fixtures.Add((name,operation));
-            foreach(var name in new[]{"imprint-solid","imprint-oblique","imprint-sheet","imprint-miss","imprint-existing-edge"})fixtures.Add((name,0));
+            if(!nativeContract)foreach(var name in new[]{"imprint-solid","imprint-oblique","imprint-sheet","imprint-miss","imprint-existing-edge"})fixtures.Add((name,0));
             var failures=0;
             foreach(var fixture in fixtures)
             {
                 var name=fixture.Name+"-"+fixture.Operation;
                 try
                 {
-                    var actual=Produce(true,fixture.Name,fixture.Operation,out var ownRecords,out var ownStatus);
-                    var expected=Produce(false,fixture.Name,fixture.Operation,out var pkRecords,out var pkStatus);
+                    var actual=Produce(!nativeContract,fixture.Name,fixture.Operation,trackingType,out var ownRecords,out var ownStatus);
+                    var expected=Produce(false,fixture.Name,fixture.Operation,nativeContract?PK_boolean_track_type_basic_c:trackingType,out var pkRecords,out var pkStatus);
                     Require(ownStatus==pkStatus,$"status {ownStatus}/{pkStatus}");Require(actual.Length==expected.Length,$"body count {actual.Length}/{expected.Length}");
-                    Log(name+$" tracking own={ownRecords.Length}, PK={pkRecords.Length}");
+                    Log(name+$" tracking {(nativeContract?"native_complete":"gm")}={ownRecords.Length}, {(nativeContract?"native_basic":"pk")}={pkRecords.Length}");
                     if(!ownRecords.SequenceEqual(pkRecords))
                     {
-                        foreach(var record in ownRecords.Except(pkRecords))Log("  own-only "+record);
-                        foreach(var record in pkRecords.Except(ownRecords))Log("  PK-only "+record);
+                        foreach(var record in ownRecords.Except(pkRecords))Log((nativeContract?"  native-complete-only ":"  gm-only ")+record);
+                        foreach(var record in pkRecords.Except(ownRecords))Log((nativeContract?"  native-basic-only ":"  pk-only ")+record);
                         throw new InvalidOperationException("tracking record types, original classes/geometric sources, or geometric products differ");
                     }
                     var originals=expected.OrderBy(b=>BodyKey(false,b),StringComparer.Ordinal).ToArray();
                     var received=new List<int>();
                     foreach(var body in actual)
                     {
-                        var bytes=Transmit(true,body);File.WriteAllBytes(Path.Combine(directory,name+"-"+received.Count+"-managed.x_t"),bytes);
+                        var bytes=Transmit(!nativeContract,body);File.WriteAllBytes(Path.Combine(directory,name+"-"+received.Count+(nativeContract?"-native-complete.x_t":"-managed.x_t")),bytes);
                         received.Add(Receive(bytes));
                     }
                     received.Sort((a,b)=>StringComparer.Ordinal.Compare(BodyKey(false,a),BodyKey(false,b)));
@@ -62,9 +70,9 @@ try
                 }
                 catch(Exception error){failures++;Log("FAIL "+name+": "+error.Message);}
             }
-            try{CheckImportedNegativeLineTrim(directory,Log);Log("PASS imported-negative-line-use-trim");}
+            try{if(!nativeContract){CheckImportedNegativeLineTrim(directory,Log);Log("PASS imported-negative-line-use-trim");}}
             catch(Exception error){failures++;Log("FAIL imported-negative-line-use-trim: "+error.Message);}
-            Log($"Planar tracking oracle: {fixtures.Count+1-failures} passed, {failures} failed.");Require(failures==0,"tracking oracle failed");
+            Log($"Planar tracking oracle: {fixtures.Count+(nativeContract?0:1)-failures} passed, {failures} failed.");Require(failures==0,"tracking oracle failed");
         }
         finally{Check(KernelRuntime.SessionStop(),"managed stop");}
     }
@@ -72,7 +80,7 @@ try
 catch(Exception error){Log("FAIL: "+error.Message);Environment.ExitCode=1;}
 finally{File.WriteAllText(Path.Combine(directory,"report.txt"),report.ToString());}
 
-static unsafe int[] Produce(bool managed,string fixture,int operation,out string[] signature,out int status)
+static unsafe int[] Produce(bool managed,string fixture,int operation,int trackingType,out string[] signature,out int status)
 {
     var isImprint=operation==0;var sheet=fixture=="imprint-sheet";
     var target=sheet?Sheet(managed):Block(managed,0,0,0,fixture is "cavity" or "through-hole"?4:fixture=="two-tools"?10:2,0);
@@ -106,7 +114,7 @@ static unsafe int[] Produce(bool managed,string fixture,int operation,out string
         }
         return [target];
     }
-    var boolean=new PK_BODY_boolean_o_t{function=operation,tracking=PK_LOGICAL_true};
+    var boolean=new PK_BODY_boolean_o_t{function=operation,tracking=PK_LOGICAL_true,tracking_type=trackingType};
     if(managed)
     {
         var track=new M.PK_TOPOL_track_r_s();var result=new M.PK_boolean_r_s();

@@ -1468,3 +1468,39 @@ witness 仍走原 Cartesian 包含系统。内部函数只用 stack/scratch，�
 私有签名简化后的 `native-uv-incidence-jet-managed-v2` 42/42 raw0，包含完整 tube
 身份/失败/原 witness 控制，IL guard3175 CLEAN；testhost自身退出。
 完整统一包和全回归仍以 b08 固定证据为准，本增量未独立接受，整体任务继续。
+
+## 完整追踪请求在现有限定 Boolean 中贯通
+
+官方 FD55.4.15 的 complete 额外关联 imprint completion 的原刀具拓扑；
+FD55.4.16 的 region tracking 另要求 general topology。两者不是“全部修改历史”。
+现有 Boolean 已从实际 arrangement occurrence/finite input edge 传播全部参与来源，
+但选项检查无条件拒绝 comp。真实 PK 的 `native-basic-complete-contract-v1`
+27项（unite/intersect/subtract × coincident/overlap/aligned/touching/disjoint/
+rotated/cavity/through-hole/two-tools）在相同输入且 completion=no 时，basic 与
+complete 的实际记录类型、原owner/class/有限来源、产品及操作状态一致，raw0。
+此执行两侧都是 PK，MODE managed=False，不冒称 GM 建模通过。
+
+静态调研深入到 BOO_set_entitylnk_attr、BOO_remove_entitylnk_attr 和
+PKU_process_boolean_tracking 的临时关联、返回分配/填充依赖。随后
+`native-tracking-dynamic-v1` 在实际同平台完整追踪 Boolean 内命中六个有限断点：
+start_tracking/set_entitylnk_attr、process_boolean_tracking/fill_TOPOL_track_r、
+end_tracking/remove_entitylnk_attr。日志实际先处理返回、后清理临时属性；首表早期
+静态箭头不是调用顺序证明，以此次动态观察纠正该顺序。调试器/被调试进程各raw0，
+未命中的 read_lnk 或 embed-face 分支仍未知。
+
+实现允许当前 basic/comp 两种请求沿同一真实来源链执行，不新增第二种来源模型。
+仍拒绝未实现的 imprint completion 和 general-region 请求；不是忽略这些选项。
+`native-complete-tracking-planar-v1` 真正 GM 对独立 PK 的27项 Boolean、5项现有
+imprint及原负trim控制合计33/33 raw0，fresh XT/full/strict、追踪来源签名均通过。
+`native-complete-tracking-multipart-v1` 在真实 self Fix 产品上执行两个不同的
+双刀具junction，mirror1.7、反工具顺序、complete=23541，分别34/32条有限来源关系
+每侧及错误来源控制通过，各操作full/strict/live-material通过，raw2、物性4U；
+原1.4065585450520072e-7 / 1.406557235691462e-7 sample gap仍保留，不能签整条曲边
+连续包含。实际生产 Native b375f1df9901429fb258e0ec7437d2c256f88d365aa6998aef2f838ecfde0a60。
+`native-complete-tracking-managed-v1` 64/64 raw0，包括 completion/region 明确拒绝后
+两个原输入XT逐字节不变、空返回的负例。
+
+当前 `scripts/PlanarTrackingOracle.cs` 要求新的 `--output-name=...`，拒绝覆盖旧产物；
+`--complete` 验证 GM/PK complete，`--native-basic-complete` 只作 PK 合同对照。
+没有为旧输出目录增加兼容路径。上述关闭有限请求缺口，不授予 completion、region、
+任意多参与者或未执行 attachment 类别资格；整体计算与性能主线继续。

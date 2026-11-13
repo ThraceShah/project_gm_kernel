@@ -83,6 +83,24 @@ public unsafe class BooleanOperationTests : IDisposable
         int code = 0; Assert.Equal(0, KernelRuntime.EntityAskClass(b, &code));
     }
 
+    [Theory]
+    [InlineData(0)] [InlineData(1)] [InlineData(2)]
+    public void CompleteTrackingDoesNotEnableUnsupportedCompletionOrGeneralRegionRequests(int request)
+    {
+        var target=Block(0,0,0,2,2,2);var tool=Block(.5,.5,0,2,2,2);
+        var targetBytes=XtBrepImportTests.Transmit(target);var toolBytes=XtBrepImportTests.Transmit(tool);
+        var options=Options(ParasolidConstants.PK_boolean_subtract_c);options.tracking=1;
+        options.tracking_type=ParasolidConstants.PK_boolean_track_type_comp_c;
+        if(request==0)options.imprint_complete_targ=ParasolidConstants.PK_imprint_complete_edge_c;
+        else if(request==1)options.imprint_complete_tool=ParasolidConstants.PK_imprint_complete_edge_c;
+        else options.track_regions=ParasolidConstants.PK_track_regions_basic_c;
+        PK_TOPOL_track_r_s tracking=default;PK_boolean_r_s result=default;
+        Assert.Equal(ParasolidConstants.PK_ERROR_not_implemented,KernelRuntime.BodyBoolean2(target,1,&tool,&options,&tracking,&result));
+        Assert.Equal(0,tracking.n_track_records);Assert.True(tracking.track_records==null);
+        Assert.Equal(0,result.n_bodies);Assert.True(result.bodies==null);
+        Assert.Equal(targetBytes,XtBrepImportTests.Transmit(target));Assert.Equal(toolBytes,XtBrepImportTests.Transmit(tool));
+    }
+
     internal static PK_BODY_boolean_o_s Options(int operation) => new()
     {
         o_t_version = 19, function = operation, default_tol = 1e-5,

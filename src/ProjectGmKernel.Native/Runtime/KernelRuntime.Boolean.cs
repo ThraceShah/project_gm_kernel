@@ -88,7 +88,8 @@ internal static unsafe partial class KernelRuntime
             || options->imprint_overlapping != 0 || options->update != ParasolidConstants.PK_boolean_update_default_c || options->merge_in_solid != 0
             || options->merge_in_face != 0 || options->merge_in_edge != 0 || options->impose_bodies != ParasolidConstants.PK_boolean_impose_no_c
             || options->merge_tools != ParasolidConstants.PK_merge_tools_no_c
-            || options->tracking!=0&&options->tracking_type!=ParasolidConstants.PK_boolean_track_type_basic_c)
+            || options->tracking!=0&&options->tracking_type!=ParasolidConstants.PK_boolean_track_type_basic_c
+                &&options->tracking_type!=ParasolidConstants.PK_boolean_track_type_comp_c)
             return ParasolidConstants.PK_ERROR_not_implemented;
         return 0;
     }
