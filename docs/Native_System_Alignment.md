@@ -1333,3 +1333,25 @@ nearest、曲率等仍要求完整二阶证明。原生矩形外的 tensor-produ
 
 平面两参数减少方向数，但部分族 whole-operation 耗时没有改善，不能只凭矩阵
 变小宣称性能目标已完成。继续沿实际导数及候选链处理，而非放宽几何或根验收。
+
+二阶请求另一个实际差异是：内部六项 D0/Du/Dv/Duu/Duv/Dvv 也一直计算整个
+`0<=i,j<=2` 矩形网格，其中含总阶三、四阶的混合项。现在内部原生 span 用
+总阶 `i+j<=2`；只有线性延拓仍走原完整矩形公式。原有理齐次导数与 quotient
+递推照旧，所需六项没有改算式、误差界或 refinement 次数。普通/有理、点域、
+非单位原生域和跨域 Bezier 控制逐项对原完整矩形独立参考保留 bitwise 比较，
+`native-total-order-jet-managed-v1` 31/31 raw0。
+
+`native-total-order-jet-whole-v1` 同四族八组完整操作 raw2，全部独立建模、
+fresh XT receive/fullcheck/strict、材料和接触检查通过；16 GM API 合计
+4825.479 ms、16 PK API34.800 ms，整体7582.363 ms。实际生产 Native 为
+7f77e67b54f061a9bba4d680b99c11d8fc0e11dd6f7e6fe87ea46443157ba184。
+warm凹双NURBS Fix220.939 ms、Boolean276.858 ms，仍约百倍差距。
+`native-total-order-integrated-full-managed-v1` 2180/2180 raw0；
+`native-total-order-local-lifecycle-v1` raw2：17/17 独立 Blend/Chamfer 及生命周期、
+各自后续 Boolean、GM live/reload 与有限材料检查通过，四次物性U保留。
+该生命周期与完整托管运行重叠，其耗时只作诊断。没有用上游通过补签下游，
+也没有用此局部改进宣称 PK 性能目标或原计划全部闭环。
+
+本次再核官方 XT chapter6：ICurve 的 CHART 定义原生参数，内点由两支撑与
+CHART 平面选取局部交点；chordal_error 是估计值且可以为空。因此不能把 CHART
+折线或未认证估计当作精确持久几何、用它替代原支撑约束或严谨包围以提速。

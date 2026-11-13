@@ -159,10 +159,12 @@ internal static partial class JointNestedBlendEvaluation
             if(lo>hi||low>high)continue;
             var status=BezierSurfaceBounds.Extract(source,i,j,poles);if(status!=AlgorithmStatus.Success)return status;
             var patch=new BezierSurfacePatch(poles[..(4*(source.UDegree+1)*(source.VDegree+1))],source.UDegree,source.VDegree,new(a,b,c,d));
-            if(hull.Length==9&&ue==0&&ve==0)
+            if(ue==0&&ve==0)
             {
-                status=BezierSurfaceBounds.Bound(patch,new(lo,hi,low,high),local[..9]);if(status!=AlgorithmStatus.Success)return status;
-                for(var k=0;k<9;k++)hull[k]=found?IntervalNumber.Hull(hull[k],local[k]):local[k];found=true;continue;
+                var length=hull.Length==9?9:18;
+                status=length==9?BezierSurfaceBounds.Bound(patch,new(lo,hi,low,high),local[..9])
+                    :BezierSurfaceBounds.BoundSecond(patch,new(lo,hi,low,high),local[..18]);if(status!=AlgorithmStatus.Success)return status;
+                for(var k=0;k<length;k++)hull[k]=found?IntervalNumber.Hull(hull[k],local[k]):local[k];found=true;continue;
             }
             status=BezierSurfaceBounds.BoundRectangularSecond(patch,new(lo,hi,low,high),local);if(status!=AlgorithmStatus.Success)return status;
             // Exactly the same tensor-product linear extension as the public

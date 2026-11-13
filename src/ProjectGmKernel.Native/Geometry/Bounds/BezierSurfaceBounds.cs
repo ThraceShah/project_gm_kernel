@@ -304,7 +304,7 @@ internal static class BezierSurfaceBounds
     internal static AlgorithmStatus BoundSecond(in BezierSurfacePatch patch,in SurfaceParameterBox box,Span<IntervalNumber> output)
     {
         if(output.Length<18)return AlgorithmStatus.WorkspaceTooSmall;
-        Span<IntervalNumber> jets=stackalloc IntervalNumber[27];var status=BoundRectangularSecond(patch,box,jets);if(status!=AlgorithmStatus.Success)return status;
+        Span<IntervalNumber> jets=stackalloc IntervalNumber[27];var status=BoundSecondJet(patch,box,jets,false);if(status!=AlgorithmStatus.Success)return status;
         jets[..3].CopyTo(output);jets.Slice(9,3).CopyTo(output[3..]);jets.Slice(3,3).CopyTo(output[6..]);jets.Slice(18,3).CopyTo(output[9..]);jets.Slice(12,3).CopyTo(output[12..]);jets.Slice(6,3).CopyTo(output[15..]);
         return AlgorithmStatus.Success;
     }
@@ -312,14 +312,18 @@ internal static class BezierSurfaceBounds
     // Rectangular jets (i,j), 0<=i,j<=2, u-major. Mixed order three
     // is needed to bound the exact linear extension of a rational surface.
     internal static AlgorithmStatus BoundRectangularSecond(in BezierSurfacePatch patch,in SurfaceParameterBox box,Span<IntervalNumber> output)
+        =>BoundSecondJet(patch,box,output,true);
+
+    private static AlgorithmStatus BoundSecondJet(in BezierSurfacePatch patch,in SurfaceParameterBox box,Span<IntervalNumber> output,bool rectangular)
     {
         if(output.Length<27)return AlgorithmStatus.WorkspaceTooSmall;
         Span<IntervalNumber> first=stackalloc IntervalNumber[9],homogeneous=stackalloc IntervalNumber[36];var status=Bound(patch,box,first,homogeneous);if(status!=AlgorithmStatus.Success)return status;
         for(var i=0;i<=2;i++)for(var j=0;j<=2;j++)
-        {if(i+j<=1)continue;HomogeneousJetHull(patch,box,i,j,homogeneous.Slice(4*(3*i+j),4));}
+        {if(i+j<=1||!rectangular&&i+j>2)continue;HomogeneousJetHull(patch,box,i,j,homogeneous.Slice(4*(3*i+j),4));}
         var weight=homogeneous[3];if(weight.Lower<=0)return AlgorithmStatus.NumericalFailure;
         for(var i=0;i<=2;i++)for(var j=0;j<=2;j++)for(var d=0;d<3;d++)
         {
+            if(!rectangular&&i+j>2)continue;
             var at=3*(3*i+j)+d;
             if(i==0&&j==0){output[at]=first[d];continue;}
             if(i==1&&j==0){output[at]=first[3+d];continue;}

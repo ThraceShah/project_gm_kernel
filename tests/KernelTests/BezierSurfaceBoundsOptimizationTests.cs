@@ -91,6 +91,14 @@ public class BezierSurfaceBoundsOptimizationTests
             Span<IntervalNumber> actual=stackalloc IntervalNumber[27],reference=stackalloc IntervalNumber[27];
             Assert.Equal(AlgorithmStatus.Success,BezierSurfaceBounds.BoundRectangularSecond(patch,box,actual));RepeatedRectangular(patch,box,reference);
             for(var i=0;i<27;i++){Assert.Equal(reference[i].Lower,actual[i].Lower);Assert.Equal(reference[i].Upper,actual[i].Upper);}
+            Span<IntervalNumber> second=stackalloc IntervalNumber[18];
+            Assert.Equal(AlgorithmStatus.Success,BezierSurfaceBounds.BoundSecond(patch,box,second));
+            for(var jet=0;jet<6;jet++)for(var axis=0;axis<3;axis++)
+            {
+                var at=jet==0?0:jet==1?9:jet==2?3:jet==3?18:jet==4?12:6;
+                Assert.Equal(reference[at+axis].Lower,second[3*jet+axis].Lower);
+                Assert.Equal(reference[at+axis].Upper,second[3*jet+axis].Upper);
+            }
         }
     }
 
