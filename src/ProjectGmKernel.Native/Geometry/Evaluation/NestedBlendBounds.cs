@@ -168,9 +168,10 @@ internal static partial class JointNestedBlendEvaluation
         var plain=reachBudget.IsEmpty&&curvature.IsEmpty&&supportParameter.IsEmpty&&captureWitness.IsEmpty&&requireWitness.IsEmpty&&rootChart<0
             &&anchorContacts.IsEmpty&&acceleration.IsEmpty&&captureCharts.IsEmpty&&requireCharts.IsEmpty;
         if(plain&&output.Length>=9&&ReadTube(program,surface,spine,domain,output,out var reused))return reused;
-        if(plain)
+        if(!double.IsFinite(phaseReference))
         {
-            var native=BoundNativeUvSegment(program,surface,spine,domain,output,out var handled);
+            var native=BoundNativeUvSegment(program,surface,spine,domain,output,out var handled,reachBudget,curvature,curvatureSide,
+                supportParameter,parameterSide,captureWitness,requireWitness,rootChart,anchorContacts,acceleration,accelerationNormal,captureCharts,requireCharts);
             if(handled)return native;
         }
         Span<TaylorJet> snapshot=stackalloc TaylorJet[MaxVariables];Span<Occurrence> occurrences=stackalloc Occurrence[MaxOccurrences];Span<BufferCount> counts=stackalloc BufferCount[2];
@@ -371,35 +372,7 @@ internal static partial class JointNestedBlendEvaluation
         if(!curvature.IsEmpty||!acceleration.IsEmpty)
         {
             for(var i=0;i<n;i++)variables[i]=new(boxes[i],image[i]);
-            var root=program.Spines[spine];var first=curvatureSide==0?root.First:root.Second;var second=curvatureSide==0?root.Second:root.First;
-            status=IntervalNormal(program,first,nodes,0,variables[..n],out _,out var firstNormal,splineCache);if(status!=AlgorithmStatus.Success)return status;
-            status=IntervalNormal(program,second,nodes,0,variables[..n],out _,out var secondNormal,splineCache);if(status!=AlgorithmStatus.Success)return status;
-            var a=new IntervalVector(firstNormal.X.Value,firstNormal.Y.Value,firstNormal.Z.Value);
-            var b=new IntervalVector(secondNormal.X.Value,secondNormal.Y.Value,secondNormal.Z.Value);
-            var da=new IntervalVector(firstNormal.X.Derivative,firstNormal.Y.Derivative,firstNormal.Z.Derivative);
-            var db=new IntervalVector(secondNormal.X.Derivative,secondNormal.Y.Derivative,secondNormal.Z.Derivative);
-            var velocity=new IntervalVector(image[0],image[1],image[2]);
-            if(!acceleration.IsEmpty)
-            {
-                // The two surface constraints give n·p'' = -n'·p'.
-                // On this native CHART cell the gauge is affine in XYZ,
-                // so its chord supplies the third row with zero RHS.
-                var chord=new IntervalVector(chartRange[fixedCharts[0]].Chord);
-                var bc=IntervalVector.Cross(b,chord);var ca=IntervalVector.Cross(chord,a);
-                var determinant=IntervalVector.Dot(a,bc).Value;
-                if(!determinant.Finite||determinant.ContainsZero)return AlgorithmStatus.NotConverged;
-                var secondDerivative=(bc*(-IntervalVector.Dot(da,velocity).Value)+ca*(-IntervalVector.Dot(db,velocity).Value))/determinant;
-                acceleration[0]=IntervalVector.Dot(secondDerivative,new IntervalVector(accelerationNormal)).Value;
-                return acceleration[0].Finite?AlgorithmStatus.Success:AlgorithmStatus.NotConverged;
-            }
-            var speed=velocity.Norm().Value;
-            if(speed.Lower<=0)return AlgorithmStatus.NotConverged;var tangent=velocity/speed;
-            var ha=-IntervalVector.Dot(da,velocity).Value/(speed*speed);var hb=-IntervalVector.Dot(db,velocity).Value/(speed*speed);
-            var aa=IntervalVector.Dot(a,a).Value;var denominator=IntervalVector.Dot(b,IntervalVector.Cross(a,tangent)).Value;
-            if(aa.Lower<=0||denominator.ContainsZero)return AlgorithmStatus.NotConverged;
-            var alpha=ha/aa;
-            curvature[0]=(hb-alpha*IntervalVector.Dot(b,a).Value)/denominator*a.Norm().Value;
-            return curvature[0].Finite?AlgorithmStatus.Success:AlgorithmStatus.NotConverged;
+            return BoundSpineDifferential(program,spine,nodes,variables[..n],image[..n],fixedCharts[0],curvature,curvatureSide,acceleration,accelerationNormal,splineCache);
         }
         if(surface<0)
         {
@@ -421,6 +394,40 @@ internal static partial class JointNestedBlendEvaluation
         for(var i=0;i<n;i++)variables[i]=new(boxes[i],0);
         status=IntervalFrame(program,surface,nodes,variables[..n],new(v,1),out frame,splineCache);if(status!=AlgorithmStatus.Success)return status;
         output[6]=frame.X.Derivative;output[7]=frame.Y.Derivative;output[8]=frame.Z.Derivative;return AlgorithmStatus.Success;
+    }
+
+    private static AlgorithmStatus BoundSpineDifferential(in NestedBlendProgram program,BlendSpineIndex spine,ReadOnlySpan<Occurrence> nodes,
+        ReadOnlySpan<IntervalDual> variables,ReadOnlySpan<IntervalNumber> derivative,BufferOffset chart,Span<IntervalNumber> curvature,BufferOffset curvatureSide,
+        Span<IntervalNumber> acceleration,in KernelVector3 accelerationNormal,ReadOnlySpan<IntervalSplineContact> cache)
+    {
+        var root=program.Spines[spine];var first=curvatureSide==0?root.First:root.Second;var second=curvatureSide==0?root.Second:root.First;
+        var status=IntervalNormal(program,first,nodes,0,variables,out _,out var firstNormal,cache);if(status!=AlgorithmStatus.Success)return status;
+        status=IntervalNormal(program,second,nodes,0,variables,out _,out var secondNormal,cache);if(status!=AlgorithmStatus.Success)return status;
+        var a=new IntervalVector(firstNormal.X.Value,firstNormal.Y.Value,firstNormal.Z.Value);
+        var b=new IntervalVector(secondNormal.X.Value,secondNormal.Y.Value,secondNormal.Z.Value);
+        var da=new IntervalVector(firstNormal.X.Derivative,firstNormal.Y.Derivative,firstNormal.Z.Derivative);
+        var db=new IntervalVector(secondNormal.X.Derivative,secondNormal.Y.Derivative,secondNormal.Z.Derivative);
+        var velocity=new IntervalVector(derivative[0],derivative[1],derivative[2]);
+        if(!acceleration.IsEmpty)
+        {
+            // n·p'' = -n'·p' for both supports. The native CHART gauge
+            // is affine in XYZ and supplies the third row with zero RHS.
+            var chord=new IntervalVector(Chart(program,spine)[chart].Chord);
+            var bc=IntervalVector.Cross(b,chord);var ca=IntervalVector.Cross(chord,a);
+            var determinant=IntervalVector.Dot(a,bc).Value;
+            if(!determinant.Finite||determinant.ContainsZero)return AlgorithmStatus.NotConverged;
+            var secondDerivative=(bc*(-IntervalVector.Dot(da,velocity).Value)+ca*(-IntervalVector.Dot(db,velocity).Value))/determinant;
+            acceleration[0]=IntervalVector.Dot(secondDerivative,new IntervalVector(accelerationNormal)).Value;
+            return acceleration[0].Finite?AlgorithmStatus.Success:AlgorithmStatus.NotConverged;
+        }
+        var speed=velocity.Norm().Value;
+        if(speed.Lower<=0)return AlgorithmStatus.NotConverged;var tangent=velocity/speed;
+        var ha=-IntervalVector.Dot(da,velocity).Value/(speed*speed);var hb=-IntervalVector.Dot(db,velocity).Value/(speed*speed);
+        var aa=IntervalVector.Dot(a,a).Value;var denominator=IntervalVector.Dot(b,IntervalVector.Cross(a,tangent)).Value;
+        if(aa.Lower<=0||denominator.ContainsZero)return AlgorithmStatus.NotConverged;
+        var alpha=ha/aa;
+        curvature[0]=(hb-alpha*IntervalVector.Dot(b,a).Value)/denominator*a.Norm().Value;
+        return curvature[0].Finite?AlgorithmStatus.Success:AlgorithmStatus.NotConverged;
     }
 
     private static AlgorithmStatus CertifyNearestBoxes(in NestedBlendProgram program,ReadOnlySpan<Occurrence> nodes,ReadOnlySpan<IntervalNumber> boxes,

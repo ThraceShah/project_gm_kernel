@@ -18,16 +18,28 @@ public class NativeUvSpineBoundsTests
         var program=Program(curved,reverse,scale,false,nativeFirst,nativeLast);Span<IntervalNumber> bound=stackalloc IntervalNumber[9];
         var cell=new SurfaceParameterBox(-.2,.2,0,0);
         Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSpine(program,0,cell,bound));
+        Span<IntervalNumber> witness=stackalloc IntervalNumber[7],uv=stackalloc IntervalNumber[4];
+        Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSharedSpineWitness(program,0,cell,bound,capture:witness));
+        Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSharedSpineWitness(program,0,cell,bound,require:witness));
+        Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSpineSupportUv(program,0,cell.U0,cell.U1,0,uv));
         for(var i=0;i<=20;i++)
         {
             var t=cell.U0+(cell.U1-cell.U0)*i/20;
             var point=Map(t,curved?.2*t*t:-.2,curved?.3*t*t:.2,scale);
             var derivative=MapDirection(1,curved?.4*t:0,curved?.6*t:0,scale);
             Contains(bound,0,point);Contains(bound,3,derivative);
+            var nativeU=nativeFirst+(nativeLast-nativeFirst)*(t+1)*.5;
+            Assert.InRange(nativeU,uv[0].Lower,uv[0].Upper);
+            Assert.InRange((nativeLast-nativeFirst)*.5,uv[1].Lower,uv[1].Upper);
+            Assert.InRange(reverse?(curved?.3*t*t:.2):(curved?.2*t*t:-.2),uv[2].Lower,uv[2].Upper);
             Span<KernelVector3> numeric=stackalloc KernelVector3[2];
             Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.EvaluateSpine(program,0,t,1,numeric));
             Contains(bound,0,numeric[0]);Contains(bound,3,numeric[1]);
         }
+        var position=witness[0];witness[0]+=scale;
+        Assert.NotEqual(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSharedSpineWitness(program,0,cell,bound,require:witness));
+        witness[0]=position;witness[3]+=nativeLast-nativeFirst;
+        Assert.NotEqual(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSharedSpineWitness(program,0,cell,bound,require:witness));
     }
 
     [Fact]

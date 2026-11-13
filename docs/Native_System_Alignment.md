@@ -1221,3 +1221,59 @@ bspline_2d_rayfire → tight_svec_from_parms → REL_to_three_surfaces`。
 改进，仍约218倍于本次PK，不能声称对标性能目标已经实现。warm凹双NURBS
 Fix/Boolean的根单元110/514，对比de9的1438/3282；最终根仍为10/38。
 profile中累积 bound-ms 不被当作排他CPU或可删除步骤。
+
+## 四参数原生支撑贯通同源见证与有限消费者（整体继续）
+
+实际固定 `20cdb35e` 的干净源码新执行也单独保存：
+`20cdb35e-q2-inverse-v1` raw 0、16 项真实 PK coincidence 状态一致；
+`20cdb35e-q2-whole-v1` raw 2、八组独立 Fix/Boolean fullcheck/strict 通过，
+16 GM API 合计7312.210 ms、16 PK API 合计38.973 ms；
+`20cdb35e-q2-rational-v1` raw 2、三族九个有理反向 U 生命周期及回读再建模通过。
+实际 Native 为4480eed0e4e74ac89f5232ae8f6a21e4da0cc576dd18c54fb66a735f3cf3bf44；
+其四个程序集/PDB 冻结于 `temp_docs/native-system-alignment/20cdb35e-fixed-managed-production/`。
+它与前一节提交前产生的6cc23a字节分别绑定，不互相反签。
+Mac 同固定干净源的正向有理 U、域 `[-.125,.375]`、切割 `.43`、镜像旋转尺度1.7
+两族完整消费者通过，raw 2，实际 Native 为
+e2db9167fdd77f5cafbca9270c488fb53e7a4f543afb5d548f2d86262c0f5382；
+白名单证据归档于 `temp_docs/native-system-evidence-20cdb35e/mac/`。
+旧 de9 包仍原字节，以上不是新的整体交付接受。
+
+随后线性方向两参数消元试验只对人工仿射方向支撑准入：实际 Roof 的 bump 同时
+依赖两个 native 参数，因此完整操作没有实际减算。试验差异与日志另存
+`native-linear-pair-trial-v1.diff/.cs.txt`、`native-linear-pair-{managed,whole}-v*`；
+生产和测试代码全部撤回，没有为默认 case 加特殊入口，也没有以测试通过取得资格。
+
+新一次诊断发现真正的共同断点：普通 Bound 已用四个原生 UV，曲率、reach、
+有限支撑 UV、anchor 和共享根 witness 请求却仍进入七变量求解，并反复分割。
+现在这些非周期 C1 双 BSurface 消费者使用同一四参数系统；不是另造事件求解器。
+原 CHART 单元、完整七分量 witness 与 nearest-Hessian 仍保留；要求 witness 时
+必须把全部 UV 放进认证的收缩盒，全部 XYZ 放进该盒原生 offset 映射的包围。
+认证后才能发布 witness；不同位置或不同 UV 的来源不因 XYZ 接近而合并。
+reach 继续用原 RollingBallReach 与原预算；曲率/加速度消费同一状态和原法向导数
+公式，不新增门限、预算或数学定义。显式、周期及嵌套 Blend 等原适用系统不变。
+仅普通请求写入原 tube 工作区，操作证据请求不会扩大缓存的证明资格。
+
+新执行均在 `temp_docs/native-system-alignment/`：
+
+- `native-uv-consumer-managed-v1/v2` 9/9 raw 0；v2 将 affine native 域、
+  支撑顺序、反射尺度的已知曲线同时送入共享 witness 和有限支撑 UV 消费者，
+  保留错误 UV 的拒绝；后续增加错误 XYZ 负例。v3 因环境变量拼写造成 shell
+  raw127，未执行构建或建模，原日志不覆盖。
+- `native-uv-consumer-full-managed-v1` 2176/2176 raw 0，IL guard3170 CLEAN。
+- `native-uv-consumer-whole-v1` 缺少必需 output-name，脚本在建立 session 前
+  raw134，未建模；修正命令的 v2 八组独立 Fix/Boolean fullcheck/strict 和接触
+  查询通过，raw2 保留 mass U。生产 Native 为
+  f427ee857b1a0952cfbc81fbac184e0ab4b7df90357d0c735ceec14c8b661238。
+  同一四族各两次 fresh，16 GM API 合计4599.574 ms、16 PK API35.195 ms，
+  整体7304.302 ms。warm凹双NURBS Fix 从706.477降至249.507 ms，
+  Jacobian7696→3319、方向45880→13276；Boolean774.114→306.869 ms。
+  根数仍10/38、根单元仍110/514，未删根证明。整体仍约131倍于本次PK。
+- `native-uv-consumer-rational-v1` 的 lifecycle-only 命令漏 remodel 选项，
+  只执行一个 plane/nurbs 生命周期和另两族 Fix，不签九项生命周期通过。
+  v2 正确执行三族原操作与九个 copy/delete、三尺度、反射旋转、editable XT
+  reload 后重新 Boolean，全部独立 PK fullcheck/strict 通过，raw2 保留物性U。
+  它与托管回归有重叠，耗时仅作诊断，不是隔离性能资格。
+
+Linux perf 因系统既有权限拒绝，未改 sysctl 或任何全局配置。上述性能为完整 API
+窗口及工作计数，非排他CPU采样；PK是否使用同一种四参数消元仍未知。官方原生
+定义与此前同平台动态 PK 调用链继续作为各自证据，不把 GM 数学构造冒称厂商实现。
