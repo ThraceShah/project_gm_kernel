@@ -1,11 +1,70 @@
 using ProjectGmKernel.Native.Computation.Numerics;
 using ProjectGmKernel.Native.Generated;
+using ProjectGmKernel.Native.Geometry.Evaluation;
 
 namespace ProjectGmKernel.Native.Runtime;
 
 internal static unsafe partial class KernelRuntime
 {
     private static readonly IntervalNumber UncertifiedStation=new(double.NaN,double.NaN);
+
+    internal static void PrepareRegularSourceRingWindows(Span<ModelingEdge> edges,in RegularBoundaryView input)
+    {
+        var haveRing=false;
+        foreach(ref readonly var edge in edges)haveRing|=edge.StartVertex<0&&edge.EndVertex<0&&edge.End-edge.Start==Math.Tau
+            &&Curves[GetCurveSlotByTag(edge.Curve)].Class is CurveClass.Circle or CurveClass.Ellipse;
+        if(!haveRing)return;
+        var faces=input.Faces;
+        Span<AnalyticSurface> planes=stackalloc AnalyticSurface[faces.Length];var planeCount=0;
+        Span<BufferOffset> planeFaces=stackalloc BufferOffset[faces.Length];
+        for(var f=0;f<faces.Length;f++)
+            if(TryBoundaryPlane(GetSurfaceSlotByTag(faces[f].Surface),out var plane)){planeFaces[planeCount]=f;planes[planeCount++]=plane;}
+        Span<IntervalNumber> coefficients=stackalloc IntervalNumber[3*planeCount];
+        for(var e=0;e<edges.Length;e++)
+        {
+            ref var edge=ref edges[e];
+            var curve=Curves[GetCurveSlotByTag(edge.Curve)];
+            if(edge.StartVertex>=0||edge.EndVertex>=0||edge.End-edge.Start!=Math.Tau
+                ||curve.Class is not (CurveClass.Circle or CurveClass.Ellipse)||!TryReadExplicitSpineCurve(curve,out var conic))continue;
+            var equations=0;
+            for(var p=0;p<planeCount;p++)
+            {
+                var face=faces[planeFaces[p]];var incident=false;
+                for(var l=0;l<face.LoopCount;l++)
+                {
+                    var loop=input.Loops[face.FirstLoop+l];
+                    foreach(ref readonly var use in input.Coedges.Slice(loop.FirstCoedge,loop.CoedgeCount))incident|=use.Edge==e;
+                }
+                // Native incidence already defines the edge on this support;
+                // it is not a crossing equation to solve again. This matters
+                // after a rigid transform, where coefficient roundoff alone
+                // need not prove an identically zero level expression.
+                if(incident)continue;
+                ConicPlaneCoefficients(conic,planes[p],out var x,out var y,out var h);
+                if(x.Magnitude==0&&y.Magnitude==0&&h.Magnitude==0)continue;
+                coefficients[3*equations]=x;coefficients[3*equations+1]=y;coefficients[3*equations+2]=h;equations++;
+            }
+            if(equations==0)continue;
+            // Each noncoincident plane has at most two phases on one turn.
+            // A finite grid supplies candidates only; interval level bounds
+            // must prove the chosen seam free of every such equation.
+            for(var trial=0;trial<=2*equations;trial++)
+            {
+                var first=edge.Start+Math.Tau*(trial/(2.0*equations+1));var last=first+Math.Tau;var clear=true;
+                var seam=new IntervalNumber(first)+new IntervalNumber(Math.Tau,Math.BitIncrement(Math.Tau));
+                seam=new(Math.Min(seam.Lower,last),Math.Max(seam.Upper,last));
+                IntervalDual.SinCos(new(first,0),out var sin,out var cos);
+                IntervalDual.SinCos(new(seam,0),out var endSin,out var endCos);
+                for(var p=0;p<equations;p++)
+                {
+                    var x=coefficients[3*p];var y=coefficients[3*p+1];var h=coefficients[3*p+2];
+                    if((x*cos.Value+y*sin.Value-h).ContainsZero||(x*endCos.Value+y*endSin.Value-h).ContainsZero){clear=false;break;}
+                }
+                if(!clear)continue;
+                edge.Start=first;edge.End=last;break;
+            }
+        }
+    }
 
     private static bool HasBoundedStation(in BoundaryParameter anchor)
         =>anchor.Surface!=0||anchor.SourceOccurrence>=0||anchor.Lower!=anchor.Upper;

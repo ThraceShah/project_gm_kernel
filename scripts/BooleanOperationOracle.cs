@@ -8,11 +8,16 @@
 #:project ../src/ProjectGmKernel.Native/ProjectGmKernel.Native.csproj
 
 global using ManagedBodyTag=System.Int32;
+global using OracleBodyTag=System.Int32;
+global using RingTransformTag=System.Int32;
+global using RingInputOrdinal=System.Int32;
 using System.Runtime.CompilerServices;
 using System.Text;
 using ProjectGmKernel.Native.Runtime;
 using M=ProjectGmKernel.Native.Generated;
 using static parasolid;
+
+Console.WriteLine("GM_ASSEMBLY sha256="+Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(typeof(KernelRuntime).Assembly.Location))));
 
 var thirdFaceHole=args.Contains("--three-plane-hole");
 var thirdFaceCylinder=args.Contains("--three-face-cylinder");
@@ -23,6 +28,9 @@ var coplanarToolsOnly=args.Contains("--coplanar-tools");
 var axialContactOnly=args.Contains("--finite-axial-contact");
 var axialImprintOnly=args.Contains("--axial-contact-imprint");
 var specialized=threePlaneOnly||conicCutOnly||conicCornerOnly||coplanarToolsOnly||axialContactOnly||axialImprintOnly;
+var ringScaleOption=args.SingleOrDefault(x=>x.StartsWith("--ring-input-scale=",StringComparison.Ordinal));
+var ringScale=ringScaleOption==null?0:double.Parse(ringScaleOption["--ring-input-scale=".Length..],System.Globalization.CultureInfo.InvariantCulture);
+Require(ringScaleOption==null||conicCutOnly&&double.IsFinite(ringScale)&&ringScale>0,"ring input lifecycle mapping requires conic cuts and a positive finite scale");
 var benchRepeat=1;var benchOption=args.SingleOrDefault(x=>x.StartsWith("--bench-repeat=",StringComparison.Ordinal));
 if(benchOption!=null)benchRepeat=int.Parse(benchOption["--bench-repeat=".Length..],System.Globalization.CultureInfo.InvariantCulture);
 Require(benchRepeat>=1&&benchRepeat<=64,"bench repeat must be in 1..64");
@@ -31,6 +39,7 @@ var output=Path.GetFullPath(Path.Combine(Path.GetDirectoryName(ScriptPath())!,".
 var outputName=args.Single(x=>x.StartsWith("--output-name=",StringComparison.Ordinal))["--output-name=".Length..];
 Require(outputName.Length>0&&outputName.All(c=>char.IsAsciiLetterOrDigit(c)||c is '-' or '_'),"one new output directory name");
 output=Path.Combine(output,outputName);Require(!Directory.Exists(output),"Existing execution evidence is immutable");Directory.CreateDirectory(output);
+RingInputMap.Directory=output;
 ParasolidMassProperties.BeginEvidence(output);
 var log=new StringBuilder();
 void Log(string s){Console.WriteLine(s);log.AppendLine(s);}
@@ -39,9 +48,19 @@ try
     if(!ParasolidScriptHost.TryStartSession("Independent Boolean modeling oracle",out var host,out var message))throw new Exception(message);
     using(host) unsafe
     {
+        PK_SESSION_kernel_version_t nativeVersion;Check(PK_SESSION_ask_kernel_version(&nativeVersion),"actual native version");
+        Console.WriteLine($"PK_VERSION {nativeVersion.major_revision}.{nativeVersion.minor_revision}.{nativeVersion.build_number}");
         var start=new M.PK_SESSION_start_o_s{o_t_version=1};Check(KernelRuntime.SessionStart(&start),"own start");
         try
         {
+            if(ringScaleOption!=null)
+            {
+                var form=new PK_TRANSF_sf_t();var matrix=&form.matrixI0J0;var c=Math.Cos(.37)*ringScale;var s=Math.Sin(.37)*ringScale;
+                matrix[0]=-s;matrix[2]=-c;matrix[3]=2;matrix[4]=c;matrix[6]=-s;matrix[7]=-3;matrix[9]=ringScale;matrix[11]=5;matrix[15]=1;
+                RingTransformTag native,managed;Check(PK_TRANSF_create(&form,&native),"native ring input frame");Check(KernelRuntime.TransfCreate((M.PK_TRANSF_sf_s*)&form,&managed),"managed ring input frame");
+                RingInputMap.Native=native;RingInputMap.Managed=managed;RingInputMap.Directory=output;
+                Console.WriteLine($"RING_INPUT_MAP scale={ringScale:R} reflected_rotation=True source_copy_delete_xt_reload=True");
+            }
             var failures=0;var count=0;
             foreach(var mode in specialized?[PK_boolean_subtract_c]:new[]{PK_boolean_unite_c,PK_boolean_intersect_c,PK_boolean_subtract_c})
             foreach(var fixture in axialImprintOnly?["guarded-axial-imprint","guarded-axial-imprint-negative","guarded-axial-imprint-yside","guarded-axial-imprint-mapped","guarded-axial-imprint-axis-reversed"]:axialContactOnly?["guarded-axial-contact-outside","guarded-axial-contact-mapped"]:coplanarToolsOnly?["guarded-coplanar-tools","guarded-coplanar-tools-reversed","guarded-coplanar-tools-mapped"]:conicCornerOnly?["guarded-conic-corner"]:conicCutOnly?["guarded-plane-conic-cut","guarded-trimmed-conic-cut","guarded-oblique-conic-cut","guarded-tilted-conic-cut","guarded-periodic-seam-cut"]:threePlaneOnly?(thirdFaceHole?["guarded-three-plane-hole"]:thirdFaceCylinder?["cylindrical-third-face","guarded-cylindrical-third-face"]
@@ -53,12 +72,20 @@ try
                 var benchStart=System.Diagnostics.Stopwatch.GetTimestamp();
                 try
                 {
-                    var gmProduceStart=System.Diagnostics.Stopwatch.GetTimestamp();
-                    var own=Produce(true,fixture,mode,out var ownStatus);
-                    var gmProduceMs=System.Diagnostics.Stopwatch.GetElapsedTime(gmProduceStart).TotalMilliseconds;
                     var pkProduceStart=System.Diagnostics.Stopwatch.GetTimestamp();
                     var reference=Produce(false,fixture,mode,out var pkStatus);
                     var pkProduceMs=System.Diagnostics.Stopwatch.GetElapsedTime(pkProduceStart).TotalMilliseconds;
+                    Array.Sort(reference,(a,b)=>Center(a).CompareTo(Center(b)));
+                    var referenceBytes=new byte[reference.Length][];
+                    for(var b=0;b<reference.Length;b++)
+                    {
+                        CheckReferenceBody(reference[b],label+" baseline",Log);
+                        referenceBytes[b]=TransmitReference(reference[b]);File.WriteAllBytes(Path.Combine(output,$"{label}-{b}-reference.x_t"),referenceBytes[b]);
+                    }
+                    Console.WriteLine($"REFERENCE_OPERATION case={label} status={pkStatus} bodies={reference.Length}");
+                    var gmProduceStart=System.Diagnostics.Stopwatch.GetTimestamp();
+                    var own=Produce(true,fixture,mode,out var ownStatus);
+                    var gmProduceMs=System.Diagnostics.Stopwatch.GetElapsedTime(gmProduceStart).TotalMilliseconds;
                     Require(ownStatus==pkStatus,$"status own={ownStatus} PK={pkStatus}");
                     Require(own.Length==reference.Length,$"body count own={own.Length} PK={reference.Length}");
                     var received=new List<int>();
@@ -68,13 +95,11 @@ try
                         var bytes=TransmitManaged(body);File.WriteAllBytes(Path.Combine(output,$"{label}-{received.Count}-managed.x_t"),bytes);
                         var result=ReceiveOracle(bytes);CheckReferenceBody(result,label+" received",Log);received.Add(result);receivedSources.Add(result,(body,bytes));
                     }
-                    received.Sort((a,b)=>Center(a).CompareTo(Center(b)));Array.Sort(reference,(a,b)=>Center(a).CompareTo(Center(b)));
+                    received.Sort((a,b)=>Center(a).CompareTo(Center(b)));
                     for(var b=0;b<reference.Length;b++)
                     {
-                        CheckReferenceBody(reference[b],label+" baseline",Log);
-                        var referenceBytes=TransmitReference(reference[b]);File.WriteAllBytes(Path.Combine(output,$"{label}-{b}-reference.x_t"),referenceBytes);
                         var actualSource=receivedSources[received[b]];
-                        WebProgressCapture.BindQuality(label,actualSource.Body,reference[b],received[b],actualSource.Bytes,referenceBytes);
+                        WebProgressCapture.BindQuality(label,actualSource.Body,reference[b],received[b],actualSource.Bytes,referenceBytes[b]);
                         Require(ParasolidMassProperties.Compare(reference[b],received[b],label)!=MassAgreement.Different,label+" mass bounds prove a difference");
                         for(var k=0;k<5;k++)Require(OracleCount(reference[b],k)==OracleCount(received[b],k),$"kind{k}: expected{OracleCount(reference[b],k)} received{OracleCount(received[b],k)}");
                         if(specialized)ParasolidBodyCompare.AssertEquivalent(reference[b],received[b],label);
@@ -177,9 +202,10 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
     {
         // The first cut crosses the cylinder meridian at its arbitrary
         // angle zero. The second cut consumes that new finite trim.
+        target=MapRingInput(own,target,"target");var firstTool=MapRingInput(own,Block(own,0,3,-1,12,6,6,0),"first-tool");
         var previous=KernelRuntime.ForbidSpatialBoundaryReuse;
         KernelRuntime.ForbidSpatialBoundaryReuse=own;
-        try{target=SubtractSeedTool(own,target,Block(own,0,3,-1,12,6,6,0));}
+        try{target=CheckRingSeedProduct(own,SubtractSeedTool(own,target,firstTool));}
         finally{KernelRuntime.ForbidSpatialBoundaryReuse=previous;}
     }
     var nt=fixture=="two-tools"||threePlane||coplanarTools?2:1;var tools=stackalloc int[nt];
@@ -229,7 +255,7 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
         var basis=new PK_AXIS2_sf_t(new(3.5+tilt,0,-1+3.5*tilt),new(-tilt,0,1),new(1,0,tilt));
         tools[0]=BlockWithBasis(own,basis,4,12,6);
     }
-    else if(seamCut)tools[0]=Block(own,3.5,0,2,3,4,3,0);
+    else if(seamCut)tools[0]=MapRingInput(own,Block(own,3.5,0,2,3,4,3,0),"second-tool");
     else if(conicCut)
     {
         var angle=obliqueConic?.37:0;
@@ -457,6 +483,57 @@ static unsafe int BlockWithBasis(bool own,PK_AXIS2_sf_t axis,double dx,double dy
     if(own){var a=Unsafe.BitCast<PK_AXIS2_sf_t,M.PK_AXIS2_sf_s>(axis);Check(KernelRuntime.BodyCreateSolidBlock(dx,dy,dz,&a,&body),"own block");}
     else Check(PK_BODY_create_solid_block(dx,dy,dz,&axis,&body),"PK block");return body;
 }
+static unsafe OracleBodyTag MapRingInput(bool own,OracleBodyTag source,string component)
+{
+    if(RingInputMap.Native==0)return source;
+    var ordinal=own?RingInputMap.ManagedCount++:RingInputMap.NativeCount++;
+    OracleBodyTag copy;Check(own?KernelRuntime.EntityCopy(source,&copy):PK_ENTITY_copy(source,&copy),"ring input copy");
+    Check(own?KernelRuntime.EntityDelete(1,&source):PK_ENTITY_delete(1,&source),"ring input delete source");
+    RingInputOrdinal changed;PK_GEOM_t* replaced;
+    if(own)
+    {
+        byte* exact;Check(KernelRuntime.BodyTransform(copy,RingInputMap.Managed,0,&changed,&replaced,&exact),"managed ring input mapped copy");
+        if(replaced!=null)Check(KernelRuntime.MemoryFree(replaced),"ring managed replaced free");if(exact!=null)Check(KernelRuntime.MemoryFree(exact),"ring managed exact free");
+    }
+    else
+    {
+        PK_LOGICAL_t* exact;Check(PK_BODY_transform(copy,RingInputMap.Native,0,&changed,&replaced,&exact),"native ring input mapped copy");
+        if(replaced!=null)Check(PK_MEMORY_free(replaced),"ring native replaced free");if(exact!=null)Check(PK_MEMORY_free(exact),"ring native exact free");
+    }
+    var bytes=own?TransmitManaged(copy):TransmitReference(copy);var label=$"ring-input-{ordinal}-{component}";
+    File.WriteAllBytes(Path.Combine(RingInputMap.Directory,label+(own?"-managed.x_t":"-native.x_t")),bytes);
+    var loaded=own?ReceiveEditableTool(bytes):ReceiveOracle(bytes);
+    Check(own?KernelRuntime.EntityDelete(1,&copy):PK_ENTITY_delete(1,&copy),"ring input delete transmitted copy");
+    if(own)
+    {
+        var actual=ReceiveOracle(bytes);var reference=ReceiveOracle(File.ReadAllBytes(Path.Combine(RingInputMap.Directory,label+"-native.x_t")));
+        CheckReferenceBody(actual,label+" actual fresh",Console.WriteLine);CheckReferenceBody(reference,label+" independent native",Console.WriteLine);
+        ParasolidBodyCompare.AssertEquivalent(reference,actual,label+" independent input");
+        var release=stackalloc OracleBodyTag[2]{actual,reference};Check(PK_ENTITY_delete(2,release),"ring input quality cleanup");
+    }
+    Console.WriteLine($"RING_INPUT_LIFECYCLE component={component} system={(own?"GM":"PK")} ordinal={ordinal} copy_delete_transform_xt_editable_pass=True");
+    return loaded;
+}
+static unsafe OracleBodyTag CheckRingSeedProduct(bool own,OracleBodyTag body)
+{
+    var ordinal=own?RingInputMap.ManagedSeedCount++:RingInputMap.NativeSeedCount++;var label=$"ring-seed-{ordinal}";
+    var bytes=own?TransmitManaged(body):TransmitReference(body);
+    File.WriteAllBytes(Path.Combine(RingInputMap.Directory,label+(own?"-managed.x_t":"-native.x_t")),bytes);
+    if(own)
+    {
+        var actual=ReceiveOracle(bytes);var reference=ReceiveOracle(File.ReadAllBytes(Path.Combine(RingInputMap.Directory,label+"-native.x_t")));
+        CheckReferenceBody(actual,label+" first Boolean actual fresh",Console.WriteLine);CheckReferenceBody(reference,label+" first Boolean independent native",Console.WriteLine);
+        ParasolidBodyCompare.AssertEquivalent(reference,actual,label+" first Boolean");
+        Require(ParasolidMassProperties.Compare(reference,actual,label+" first Boolean")!=MassAgreement.Different,"ring first Boolean mass disagreement");
+        var release=stackalloc OracleBodyTag[2]{actual,reference};Check(PK_ENTITY_delete(2,release),"ring seed quality cleanup");
+    }
+    else CheckReferenceBody(body,label+" first Boolean native",Console.WriteLine);
+    Console.WriteLine($"RING_SEED_OPERATION_PASS system={(own?"GM":"PK")} ordinal={ordinal} first_boolean_independently_checked=True");
+    if(RingInputMap.Native==0)return body;
+    var loaded=own?ReceiveEditableTool(bytes):ReceiveOracle(bytes);
+    Check(own?KernelRuntime.EntityDelete(1,&body):PK_ENTITY_delete(1,&body),"ring delete first Boolean source after XT reload");
+    return loaded;
+}
 static unsafe int[] ProduceEdit(bool own,string fixture,out string contract)
 {
     var trim=fixture.StartsWith("trim");var body=trim?Sheet(own):Block(own,0,0,0,2,2,2,0);
@@ -604,4 +681,11 @@ static unsafe int OracleCount(PK_BODY_t body, int kind)
     Check(error, "PK topology count " + kind);
     try { return count; }
     finally { if (entities != null) Check(PK_MEMORY_free(entities), "free PK topology list"); }
+}
+
+static class RingInputMap
+{
+    internal static RingTransformTag Managed,Native;
+    internal static RingInputOrdinal ManagedCount,NativeCount,ManagedSeedCount,NativeSeedCount;
+    internal static string Directory="";
 }

@@ -57,6 +57,7 @@ internal static unsafe partial class KernelRuntime
                 out model.NP,out var ne,out var nc,out var nl,out var nf,model.VertexPrecisions);if(error!=0)return error;
             model.VertexMergeCandidates[..model.NP].Clear();model.InputEdges=inputEdges[..ne];
             var input=new RegularBoundaryView(inputEdges[..ne],inputCoedges[..nc],inputLoops[..nl],inputFaces[..nf]);
+            PrepareRegularSourceRingWindows(inputEdges[..ne],input);
             error=ReadRegularBoundaryAssociations(input,ref model);if(error!=0)return error;
             Span<SheetCutCurve> supportCuts=stackalloc SheetCutCurve[GeneralIntersectionBranchLimit];var familyCount=0;var cutCount=0;
             RegularAxialContact axialContact=default;var haveAxialContact=false;

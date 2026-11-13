@@ -1761,3 +1761,27 @@ raw0。四项非周期圆锥曲线裁剪通过；周期接缝种子仍157，固�
 `native-material-finite-integrated-full-release-v1`完整2216/2216、raw0、guard3183 CLEAN。
 首次误用Debug的完整运行由owner在1895项通过后主动终止自有PID，原raw1和未完成
 事实保留；未借此签整体完成，详见材料分量文档。材料/有限关联实现保存后继续本任务。
+
+## 原生整圆源环在求交前准备有限窗口
+
+官方XT4.3.10的ring edge没有端点，其参数零点不是实际拓扑端点。此次补齐的是
+M3/M5有限源准备、完整根见证与arrangement之间的一类缺口，不按周期测试名分派。
+后移窗口的候选只越过第一次边界错误，仍有不具相同见证的重复事件，已撤回；
+原raw1/临时诊断patch保全。正式路径在所有有限关联/求交之前，依据实际coedge归属
+排除源边本来所在的支持面，再用完整原生conic/plane方程证明操作内接缝无根。
+原完整求根预算、根盒、curve自然域、方向、持久XT及实际vertex均不改变。
+
+`native-prepared-ring-window-conic-v2`五项原生平面/圆锥曲线场景full/strict/物性
+Verified、raw0，包含此前两步切割失败。`native-prepared-ring-staged-lifecycle-`
+`{small,unit,large}-v1`三个实际周期输入分别采用.125/1/8的反射旋转平移；target及
+两个tool各自copy/delete-source、transform、XT可编辑回读，输入fresh XT对独立PK
+严格比较。第一Boolean的实际双侧输出另存/独立full、strict、物性验收，删源并由
+实际XT回读后再做第二Boolean；各步均通过、原raw0。每次另有四个未变换控制，
+不把它们计为已变换的五项。新runner还先完成并保存独立PK参考，故GM负例不会
+让native参考默默未执行；同runner加载固定f745仍实际重现第一步157/raw1。
+
+`native-prepared-material-integrated-full-release-v1`完整2219/2219、raw0、IL guard3184
+CLEAN。细节、数学条件与未覆盖范围见`docs/Native_Source_Ring_Windows.md`。
+这些是owner实现和实测，未签独立Native/math接受。性能继续以真实同平台完整操作
+验证；此次为接下来的固定窗口添加明确关闭边界trace的脚本选项，依赖trace的proof
+消费者禁止使用该选项。原带trace的两组ABBA保持原字节，不倒签为无trace测量。

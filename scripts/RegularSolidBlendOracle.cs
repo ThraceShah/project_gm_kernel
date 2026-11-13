@@ -37,6 +37,8 @@ Require(cutX>0&&cutX<1,"the cut station must be inside the seed's X range");
 var requireCutSection=args.Contains("--require-cut-section",StringComparer.Ordinal);
 var remoteCapBore=args.Contains("--remote-cap-bore",StringComparer.Ordinal);
 var coincidentCylinderWell=args.Contains("--coincident-cylinder-well",StringComparer.Ordinal);
+var noBoundaryTrace=args.Contains("--no-boundary-trace",StringComparer.Ordinal);
+Require(!noBoundaryTrace||!requireCutSection&&!coincidentCylinderWell,"boundary-trace proof consumers require their actual trace");
 Require(!remoteCapBore||args.Contains("plane-nurbs",StringComparer.Ordinal)&&!args.Contains("--remote-bore",StringComparer.Ordinal),
     "cap bore uses the plane/NURBS seed and is separate from the side bore");
 Require(!coincidentCylinderWell||KernelRuntime.ForbidLegacyRegularBlendAssembly&&args.Contains("affine-plane-nurbs",StringComparer.Ordinal),
@@ -47,7 +49,7 @@ var sectionWitnesses=0;var traceCutSection=false;
 var wellTrace=coincidentCylinderWell?new List<KernelRuntime.BoundaryTrace>():null;
 var cutCharts=new HashSet<(int Curve,int Generation)>();var cutCrossings=new HashSet<(int Curve,int Generation)>();
 var cutProducts=new HashSet<(int Curve,int Generation)>();var cutEnds=new HashSet<(int Curve,int Event)>();
-if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
+if(KernelRuntime.ForbidLegacyRegularBlendAssembly&&!noBoundaryTrace)
     KernelRuntime.TraceFiniteBoundary=trace=>
     {
         if(trace.Stage==KernelRuntime.BoundaryTraceStage.AnalyticSectionEnds)sectionWitnesses++;
