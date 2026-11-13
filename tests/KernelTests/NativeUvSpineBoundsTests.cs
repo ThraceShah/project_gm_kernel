@@ -54,6 +54,42 @@ public class NativeUvSpineBoundsTests
         Assert.NotEqual(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSpine(program,0,new(-.2,.2,0,0),bound));
     }
 
+    [Theory]
+    [InlineData(false,.125,-.125,.375)] [InlineData(true,8,-2,3)]
+    public void AnalyticPlaneEliminationPreservesNativeSplineParameters(bool reverse,double scale,double nativeFirst,double nativeLast)
+    {
+        var program=MixedProgram(reverse,scale,nativeFirst,nativeLast,false);
+        Span<IntervalNumber> bound=stackalloc IntervalNumber[9],uv=stackalloc IntervalNumber[4];var cell=new SurfaceParameterBox(-.2,.2,0,0);
+        Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSpine(program,0,cell,bound));
+        Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSpineSupportUv(program,0,cell.U0,cell.U1,reverse?1:0,uv));
+        for(var i=0;i<=20;i++)
+        {
+            var t=cell.U0+(cell.U1-cell.U0)*i/20;
+            Contains(bound,0,Map(t,0,.3*t*t,scale));Contains(bound,3,MapDirection(1,0,.6*t,scale));
+            var u=nativeFirst+(nativeLast-nativeFirst)*(t+1)*.5;
+            Assert.InRange(u,uv[0].Lower,uv[0].Upper);Assert.InRange(0,uv[2].Lower,uv[2].Upper);
+        }
+        // A tangent plane gives no regular two-dimensional implicit root;
+        // keeping the same topology or seed cannot manufacture a tube.
+        var tangent=MixedProgram(reverse,scale,nativeFirst,nativeLast,true);
+        Assert.NotEqual(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSpine(tangent,0,cell,bound));
+    }
+
+    private static NestedBlendProgram MixedProgram(bool reverse,double scale,double nativeFirst,double nativeLast,bool tangent)
+    {
+        var basis=Program(true,false,scale,false,nativeFirst,nativeLast);var surfaces=basis.Surfaces.ToArray();
+        surfaces[1]=new(){Analytic=new(SurfaceClass.Plane,Map(0,0,0,scale),MapDirection(0,tangent?0:1,tangent?1:0,1),MapDirection(1,0,0,1)),NormalSense=1};
+        var charts=basis.Charts.ToArray();
+        for(var i=0;i<charts.Length;i++)
+        {
+            var t=charts[i].Parameter;var u=nativeFirst+(nativeLast-nativeFirst)*(t+1)*.5;
+            charts[i].Position=Map(t,0,.3*t*t,scale);
+            charts[i].FirstU=reverse?0:u;charts[i].FirstV=0;charts[i].SecondU=reverse?u:0;charts[i].SecondV=0;
+        }
+        BlendSpineInstruction[] spines=[new(){First=reverse?1:0,Second=reverse?0:1,ChartCount=2,StartType=LimitType.Artificial,EndType=LimitType.Artificial}];
+        return new(surfaces,spines,charts,basis.Scalars,basis.Workspace);
+    }
+
     private static NestedBlendProgram Program(bool curved,bool reverse,double scale,bool same,double nativeFirst=-1,double nativeLast=1)
     {
         const int stride=28;var scalars=new double[2*stride];var sources=new BlendSurfaceInstruction[2];

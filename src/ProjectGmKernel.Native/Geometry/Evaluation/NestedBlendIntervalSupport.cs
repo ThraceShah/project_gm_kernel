@@ -16,12 +16,13 @@ internal static partial class JointNestedBlendEvaluation
         internal SplineDegree UDegree,VDegree;
         internal BufferCount UCount,VCount,Dimension;
         internal bool Rational,UPeriodic,VPeriodic;
+        internal DerivativeOrder Order;
         internal IntervalNumber U,V;
         internal IntervalSplineValues Values;
     }
 
-    private static bool SplineContactMatches(in IntervalSplineContact contact,in BlendSurfaceInstruction source,IntervalNumber u,IntervalNumber v)
-        =>contact.Ready&&BitConverter.DoubleToInt64Bits(contact.U.Lower)==BitConverter.DoubleToInt64Bits(u.Lower)
+    private static bool SplineContactMatches(in IntervalSplineContact contact,in BlendSurfaceInstruction source,IntervalNumber u,IntervalNumber v,DerivativeOrder order=2)
+        =>contact.Ready&&contact.Order>=order&&BitConverter.DoubleToInt64Bits(contact.U.Lower)==BitConverter.DoubleToInt64Bits(u.Lower)
             &&BitConverter.DoubleToInt64Bits(contact.U.Upper)==BitConverter.DoubleToInt64Bits(u.Upper)
             &&BitConverter.DoubleToInt64Bits(contact.V.Lower)==BitConverter.DoubleToInt64Bits(v.Lower)
             &&BitConverter.DoubleToInt64Bits(contact.V.Upper)==BitConverter.DoubleToInt64Bits(v.Upper)
@@ -29,12 +30,16 @@ internal static partial class JointNestedBlendEvaluation
             &&contact.UCount==source.UCount&&contact.VCount==source.VCount&&contact.Dimension==source.Dimension
             &&contact.Rational==source.Rational&&contact.UPeriodic==source.UPeriodic&&contact.VPeriodic==source.VPeriodic;
 
-    private static AlgorithmStatus CacheSplineContact(in NestedBlendProgram program,in BlendSurfaceInstruction source,IntervalNumber u,IntervalNumber v,ref IntervalSplineContact contact)
+    private static AlgorithmStatus CacheSplineContact(in NestedBlendProgram program,in BlendSurfaceInstruction source,IntervalNumber u,IntervalNumber v,ref IntervalSplineContact contact,bool firstOrderOnly=false)
     {
-        contact.Ready=false;var status=IntervalSplineBounds(program,source,u,v,contact.Values);if(status!=AlgorithmStatus.Success)return status;
+        contact.Ready=false;var spline=program.Spline(source);
+        // Outside the native rectangle the public tensor-product linear
+        // extension can require mixed higher jets even for first derivatives.
+        var first=firstOrderOnly&&u.Lower>spline.UStart&&u.Upper<spline.UEnd&&v.Lower>spline.VStart&&v.Upper<spline.VEnd;
+        var status=IntervalSplineBounds(program,source,u,v,((Span<IntervalNumber>)contact.Values)[..(first?9:18)]);if(status!=AlgorithmStatus.Success)return status;
         contact.U=u;contact.V=v;contact.ScalarOffset=source.ScalarOffset;contact.UDegree=source.UDegree;contact.VDegree=source.VDegree;
         contact.UCount=source.UCount;contact.VCount=source.VCount;contact.Dimension=source.Dimension;contact.Rational=source.Rational;
-        contact.UPeriodic=source.UPeriodic;contact.VPeriodic=source.VPeriodic;contact.Ready=true;return AlgorithmStatus.Success;
+        contact.UPeriodic=source.UPeriodic;contact.VPeriodic=source.VPeriodic;contact.Order=first?1:2;contact.Ready=true;return AlgorithmStatus.Success;
     }
 
     private static AlgorithmStatus IntervalNormal(in NestedBlendProgram program,BlendSurfaceIndex surface,ReadOnlySpan<Occurrence> nodes,
@@ -87,14 +92,37 @@ internal static partial class JointNestedBlendEvaluation
         out IntervalVector point,out IntervalVector du,out IntervalVector dv,ReadOnlySpan<IntervalSplineContact> cache=default,BufferOffset cacheIndex=-1)
     {
         point=du=dv=default;Span<IntervalNumber> local=stackalloc IntervalNumber[18];scoped ReadOnlySpan<IntervalNumber> hull;
-        if(cacheIndex>=0&&!cache.IsEmpty&&SplineContactMatches(cache[cacheIndex],node,u.Value,v.Value))hull=cache[cacheIndex].Values;
+        if(cacheIndex>=0&&!cache.IsEmpty&&SplineContactMatches(cache[cacheIndex],node,u.Value,v.Value))
+        {
+            hull=cache[cacheIndex].Values;
+#if KERNEL_TEST_HOOKS
+            TestLocalSplineJetHits++;
+#endif
+        }
         else{var status=IntervalSplineBounds(program,node,u.Value,v.Value,local);if(status!=AlgorithmStatus.Success)return status;hull=local;}
         point=IntervalSplineVector(hull,0,3,6,u,v);du=IntervalSplineVector(hull,3,9,12,u,v);dv=IntervalSplineVector(hull,6,12,15,u,v);
         return point.Finite&&du.Finite&&dv.Finite?AlgorithmStatus.Success:AlgorithmStatus.NotConverged;
     }
 
+    private static AlgorithmStatus IntervalSplinePoint(in NestedBlendProgram program,in BlendSurfaceInstruction node,IntervalDual u,IntervalDual v,
+        out IntervalVector point,ReadOnlySpan<IntervalSplineContact> cache,BufferOffset cacheIndex)
+    {
+        point=default;Span<IntervalNumber> local=stackalloc IntervalNumber[9];scoped ReadOnlySpan<IntervalNumber> hull;
+        if(!cache.IsEmpty&&SplineContactMatches(cache[cacheIndex],node,u.Value,v.Value,1))hull=cache[cacheIndex].Values;
+        else{var status=IntervalSplineBounds(program,node,u.Value,v.Value,local);if(status!=AlgorithmStatus.Success)return status;hull=local;}
+        point=IntervalSplineVector(hull,0,3,6,u,v);return point.Finite?AlgorithmStatus.Success:AlgorithmStatus.NotConverged;
+    }
+
 #if KERNEL_TEST_HOOKS
     [ThreadStatic] internal static long TestLocalSplineJetHits;
+    internal static AlgorithmStatus TestFirstOrderSplineContact(in NestedBlendProgram program,in BlendSurfaceInstruction source,IntervalNumber u,IntervalNumber v,
+        out bool pointHit,out bool derivativeHit,out IntervalVector point,out IntervalVector du,out IntervalVector dv)
+    {
+        Span<IntervalSplineContact> cache=stackalloc IntervalSplineContact[1];cache.Clear();point=du=dv=default;pointHit=derivativeHit=false;
+        var status=CacheSplineContact(program,source,u,v,ref cache[0],true);if(status!=AlgorithmStatus.Success)return status;
+        pointHit=SplineContactMatches(cache[0],source,u,v,1);derivativeHit=SplineContactMatches(cache[0],source,u,v);
+        return IntervalSpline(program,source,new(u,.2),new(v,.7),out point,out du,out dv,cache,0);
+    }
     internal static AlgorithmStatus TestFailedSplineContactRefresh(in NestedBlendProgram program,in BlendSurfaceInstruction source,
         IntervalNumber u,IntervalNumber v,IntervalNumber failedU,IntervalNumber failedV,out bool staleHit)
     {
@@ -113,6 +141,8 @@ internal static partial class JointNestedBlendEvaluation
     }
 #endif
 
+    // Nine values request D0/Du/Dv; eighteen additionally request the three
+    // second derivatives. Native boundary extension retains its full mixed jet.
     internal static AlgorithmStatus IntervalSplineBounds(in NestedBlendProgram program,in BlendSurfaceInstruction node,IntervalNumber u,IntervalNumber v,Span<IntervalNumber> hull)
     {
         var source=program.Spline(node);Span<IntervalNumber> poles=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars],local=stackalloc IntervalNumber[27];var found=false;
@@ -128,12 +158,18 @@ internal static partial class JointNestedBlendEvaluation
             var lo=Math.Max(a,up.Lower);var hi=Math.Min(b,up.Upper);var low=Math.Max(c,vp.Lower);var high=Math.Min(d,vp.Upper);
             if(lo>hi||low>high)continue;
             var status=BezierSurfaceBounds.Extract(source,i,j,poles);if(status!=AlgorithmStatus.Success)return status;
-            status=BezierSurfaceBounds.BoundRectangularSecond(new(poles[..(4*(source.UDegree+1)*(source.VDegree+1))],source.UDegree,source.VDegree,new(a,b,c,d)),new(lo,hi,low,high),local);if(status!=AlgorithmStatus.Success)return status;
+            var patch=new BezierSurfacePatch(poles[..(4*(source.UDegree+1)*(source.VDegree+1))],source.UDegree,source.VDegree,new(a,b,c,d));
+            if(hull.Length==9&&ue==0&&ve==0)
+            {
+                status=BezierSurfaceBounds.Bound(patch,new(lo,hi,low,high),local[..9]);if(status!=AlgorithmStatus.Success)return status;
+                for(var k=0;k<9;k++)hull[k]=found?IntervalNumber.Hull(hull[k],local[k]):local[k];found=true;continue;
+            }
+            status=BezierSurfaceBounds.BoundRectangularSecond(patch,new(lo,hi,low,high),local);if(status!=AlgorithmStatus.Success)return status;
             // Exactly the same tensor-product linear extension as the public
             // B-surface evaluator; polynomial extrapolation would be wrong.
             if(ue!=0)for(var k=0;k<=2;k++)for(var axis=0;axis<3;axis++){local[3*k+axis]+=dx*local[9+3*k+axis];local[18+3*k+axis]=0;}
             if(ve!=0)for(var k=0;k<=2;k++)for(var axis=0;axis<3;axis++){local[9*k+axis]+=dy*local[9*k+3+axis];local[9*k+6+axis]=0;}
-            for(var k=0;k<6;k++)
+            for(var k=0;k<(hull.Length==9?3:6);k++)
             {
                 var at=k==0?0:k==1?9:k==2?3:k==3?18:k==4?12:6;
                 for(var axis=0;axis<3;axis++)hull[3*k+axis]=found?IntervalNumber.Hull(hull[3*k+axis],local[at+axis]):local[at+axis];

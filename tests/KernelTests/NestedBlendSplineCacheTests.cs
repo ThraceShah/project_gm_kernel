@@ -41,6 +41,21 @@ public class NestedBlendSplineCacheTests
 
     [Theory]
     [InlineData(false)] [InlineData(true)]
+    public void FirstJetCannotServeASecondDerivativeRequestAndNativeExtensionRetainsMixedJets(bool rational)
+    {
+        var program=Program(rational,out var source,out _);var u=new IntervalNumber(.2,.3);
+        foreach(var extension in new[]{false,true})
+        {
+            var v=extension?new IntervalNumber(.97,1.03):new IntervalNumber(.6,.7);
+            Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.TestFirstOrderSplineContact(program,source,u,v,out var pointHit,out var derivativeHit,out var p,out var du,out var dv));
+            Assert.True(pointHit);Assert.Equal(extension,derivativeHit);
+            Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.TestSplineContactReuse(program,source,source,u,v,new(u,.2),new(v,.7),false,out var expected,out var eu,out var ev,out _));
+            Equal(expected,p);Equal(eu,du);Equal(ev,dv);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
     public void UnseededCartesianJetsCanBeRecombinedWithDifferentDualSeedsAndSupportSenses(bool rational)
     {
         var program=Program(rational,out var source,out _);var u=new IntervalNumber(-.03,.04);var v=new IntervalNumber(.97,1.03);

@@ -8,9 +8,9 @@ namespace ProjectGmKernel.Native.Geometry.Evaluation;
 
 internal static partial class JointNestedBlendEvaluation
 {
-    // Two regular offset feet define XYZ instead of three more unknowns:
-    // C=S(U,V)+h*n(U,V). Keep their three equality equations and the
-    // original native CHART station equation. No fitted or sampled geometry.
+    // A regular offset foot defines XYZ: C=S(U,V)+h*n(U,V).
+    // Two spline feet leave four UV unknowns; a spline foot and an analytic
+    // plane leave two. Keep the original native CHART station equation.
     private static AlgorithmStatus BoundNativeUvSegment(in NestedBlendProgram program,BlendSurfaceIndex surface,BlendSpineIndex spine,
         in SurfaceParameterBox domain,Span<IntervalNumber> output,out bool handled,Span<BufferCount> reachBudget=default,
         Span<IntervalNumber> curvature=default,BufferOffset curvatureSide=0,Span<IntervalNumber> supportParameter=default,BufferOffset parameterSide=0,
@@ -18,16 +18,20 @@ internal static partial class JointNestedBlendEvaluation
     {
         handled=false;var definition=program.Spines[spine];if(SpineParameterMap.Explicit(definition))return AlgorithmStatus.Unsupported;
         var first=program.Surfaces[definition.First];var second=program.Surfaces[definition.Second];
-        if(!first.IsBSpline||!second.IsBSpline||second.SplineBasis==first.SplineBasis)return AlgorithmStatus.Unsupported;
-        if(!NativeUvRegularSheet(program,first)||!NativeUvRegularSheet(program,second))return AlgorithmStatus.Unsupported;
-        handled=true;const BufferCount n=4,fullCount=7;
+        var swapped=!first.IsBSpline;if(swapped)(first,second)=(second,first);
+        if(!first.IsBSpline||!NativeUvRegularSheet(program,first))return AlgorithmStatus.Unsupported;
+        if(second.IsBSpline)
+        {if(second.SplineBasis==first.SplineBasis||!NativeUvRegularSheet(program,second))return AlgorithmStatus.Unsupported;}
+        else if(second.IsBlend||second.Analytic.Kind!=SurfaceClass.Plane||second.NormalSense==0)return AlgorithmStatus.Unsupported;
+        handled=true;BufferCount n=second.IsBSpline?4:2,fullCount=n+3;
         var charts=Chart(program,spine);var u=Math.Clamp(domain.U0+(domain.U1-domain.U0)*.5,charts[0].Parameter,charts[^1].Parameter);
         var chart=0;while(chart<charts.Length-2&&charts[chart+1].Parameter<=u)chart++;
         var lower=charts[chart];var upper=charts[chart+1];var fraction=(u-lower.Parameter)/(upper.Parameter-lower.Parameter);
         Span<double> state=stackalloc double[n],seed=stackalloc double[n],trial=stackalloc double[n],residual=stackalloc double[n],matrix=stackalloc double[n*n],inverse=stackalloc double[n*n],rhs=stackalloc double[n],velocity=stackalloc double[n];
         Span<BufferOffset> pivots=stackalloc BufferOffset[n];
-        state[0]=lower.FirstU+fraction*(upper.FirstU-lower.FirstU);state[1]=lower.FirstV+fraction*(upper.FirstV-lower.FirstV);
-        state[2]=lower.SecondU+fraction*(upper.SecondU-lower.SecondU);state[3]=lower.SecondV+fraction*(upper.SecondV-lower.SecondV);
+        state[0]=swapped?lower.SecondU+fraction*(upper.SecondU-lower.SecondU):lower.FirstU+fraction*(upper.FirstU-lower.FirstU);
+        state[1]=swapped?lower.SecondV+fraction*(upper.SecondV-lower.SecondV):lower.FirstV+fraction*(upper.FirstV-lower.FirstV);
+        if(n==4){state[2]=lower.SecondU+fraction*(upper.SecondU-lower.SecondU);state[3]=lower.SecondV+fraction*(upper.SecondV-lower.SecondV);}
         state.CopyTo(seed);
         var converged=false;
         for(var iteration=0;iteration<20;iteration++)
@@ -135,7 +139,8 @@ internal static partial class JointNestedBlendEvaluation
         full[0]=position.X;full[1]=position.Y;full[2]=position.Z;
         for(var i=0;i<n;i++)full[i+3]=variables[i];
         for(var i=0;i<fullCount;i++){fullBoxes[i]=full[i].Value;fullDerivative[i]=full[i].Derivative;}
-        Span<Occurrence> nodes=stackalloc Occurrence[1];nodes[0]=new(){Spine=spine,Offset=0,Parent=-1,FirstChild=-1,SecondChild=-1,FirstUv=3,SecondUv=5};
+        Span<Occurrence> nodes=stackalloc Occurrence[1];nodes[0]=new(){Spine=spine,Offset=0,Parent=-1,FirstChild=-1,SecondChild=-1,
+            FirstUv=swapped?-1:3,SecondUv=n==4?5:swapped?3:-1};
         Span<BufferOffset> chartIndices=stackalloc BufferOffset[1];chartIndices[0]=chart;
         found=CertifyNearestBoxes(program,nodes,fullBoxes,full,default,chartIndices,cache);if(found!=AlgorithmStatus.Success)return found;
         if(!reachBudget.IsEmpty)
@@ -143,20 +148,33 @@ internal static partial class JointNestedBlendEvaluation
             var centers=new IntervalBox3(fullBoxes[0].Lower,fullBoxes[0].Upper,fullBoxes[1].Lower,fullBoxes[1].Upper,fullBoxes[2].Lower,fullBoxes[2].Upper);
             for(var side=0;side<2;side++)
             {
-                var source=side==0?first:second;var at=2*side;
-                var feet=new SurfaceParameterBox(boxes[at].Lower,boxes[at].Upper,boxes[at+1].Lower,boxes[at+1].Upper);
-                found=RollingBallReach.CertifySpline(program.Spline(source),centers,feet,ref reachBudget[0],reachBudget[1],out _);if(found!=AlgorithmStatus.Success)return found;
+                var source=program.Surfaces[side==0?definition.First:definition.Second];
+                if(source.IsBSpline)
+                {
+                    var at=(side==0?nodes[0].FirstUv:nodes[0].SecondUv)-3;
+                    var feet=new SurfaceParameterBox(boxes[at].Lower,boxes[at].Upper,boxes[at+1].Lower,boxes[at+1].Upper);
+                    found=RollingBallReach.CertifySpline(program.Spline(source),centers,feet,ref reachBudget[0],reachBudget[1],out _);
+                }
+                else found=RollingBallReach.CertifyPlane(source.Analytic,out _);
+                if(found!=AlgorithmStatus.Success)return found;
             }
         }
         if(!supportParameter.IsEmpty)
         {
-            var at=2*parameterSide;supportParameter[0]=boxes[at];supportParameter[1]=image[at];
+            var at=(parameterSide==0?nodes[0].FirstUv:nodes[0].SecondUv)-3;
+            if(at<0)return AlgorithmStatus.Unsupported;
+            supportParameter[0]=boxes[at];supportParameter[1]=image[at];
             if(supportParameter.Length==4){supportParameter[2]=boxes[at+1];supportParameter[3]=image[at+1];}
             return AlgorithmStatus.Success;
         }
         if(!curvature.IsEmpty||!acceleration.IsEmpty)
             return BoundSpineDifferential(program,spine,nodes,full,fullDerivative,chart,curvature,curvatureSide,acceleration,accelerationNormal,cache);
-        if(!anchorContacts.IsEmpty)for(var i=0;i<n;i++)anchorContacts[i]=boxes[i].Midpoint;
+        if(!anchorContacts.IsEmpty)
+        {
+            Span<TaylorJet> anchor=stackalloc TaylorJet[fullCount];for(var i=0;i<fullCount;i++)anchor[i]=new(fullBoxes[i].Midpoint,0);
+            for(var side=0;side<2;side++)
+            {found=SpineSupportParameters(program,nodes,anchor,side,u,out anchorContacts[2*side],out anchorContacts[2*side+1]);if(found!=AlgorithmStatus.Success)return found;}
+        }
         if(reachBudget.IsEmpty&&anchorContacts.IsEmpty)
             WriteTube(program,spine,domain,nodes,fullBoxes,fullDerivative);
         if(surface<0)
@@ -185,12 +203,20 @@ internal static partial class JointNestedBlendEvaluation
         center=default;var n=uv.Length;matrix.Clear();
         var status=NestedSplineEvaluation.Contact(program,first,uv[0],uv[1],out var a);if(status!=AlgorithmStatus.Success)return status;
         center=Add(a.Point,Scale(a.Normal,first.Offset));var au=Add(a.Du,Scale(a.NormalU,first.Offset));var av=Add(a.Dv,Scale(a.NormalV,first.Offset));
-        status=NestedSplineEvaluation.Contact(program,second,uv[2],uv[3],out var b);if(status!=AlgorithmStatus.Success)return status;
-        var delta=Sub(center,Add(b.Point,Scale(b.Normal,second.Offset)));residual[0]=delta.X;residual[1]=delta.Y;residual[2]=delta.Z;
-        if(!matrix.IsEmpty)
+        if(second.IsBSpline)
         {
-            var bu=Scale(Add(b.Du,Scale(b.NormalU,second.Offset)),-1);var bv=Scale(Add(b.Dv,Scale(b.NormalV,second.Offset)),-1);
-            matrix[0]=au.X;matrix[1]=av.X;matrix[2]=bu.X;matrix[3]=bv.X;matrix[4]=au.Y;matrix[5]=av.Y;matrix[6]=bu.Y;matrix[7]=bv.Y;matrix[8]=au.Z;matrix[9]=av.Z;matrix[10]=bu.Z;matrix[11]=bv.Z;
+            status=NestedSplineEvaluation.Contact(program,second,uv[2],uv[3],out var b);if(status!=AlgorithmStatus.Success)return status;
+            var delta=Sub(center,Add(b.Point,Scale(b.Normal,second.Offset)));residual[0]=delta.X;residual[1]=delta.Y;residual[2]=delta.Z;
+            if(!matrix.IsEmpty)
+            {
+                var bu=Scale(Add(b.Du,Scale(b.NormalU,second.Offset)),-1);var bv=Scale(Add(b.Dv,Scale(b.NormalV,second.Offset)),-1);
+                matrix[0]=au.X;matrix[1]=av.X;matrix[2]=bu.X;matrix[3]=bv.X;matrix[4]=au.Y;matrix[5]=av.Y;matrix[6]=bu.Y;matrix[7]=bv.Y;matrix[8]=au.Z;matrix[9]=av.Z;matrix[10]=bu.Z;matrix[11]=bv.Z;
+            }
+        }
+        else
+        {
+            residual[0]=Dot(Sub(center,second.Analytic.Origin),second.Analytic.Axis);
+            if(!matrix.IsEmpty){matrix[0]=Dot(au,second.Analytic.Axis);matrix[1]=Dot(av,second.Analytic.Axis);}
         }
         status=SpineParameterMap.Scalar(spine,chart,parameter,center,out residual[n-1],out var gradient,out _);if(status!=AlgorithmStatus.Success)return status;
         if(!matrix.IsEmpty){matrix[(n-1)*n]=Dot(gradient,au);matrix[(n-1)*n+1]=Dot(gradient,av);}
@@ -200,6 +226,7 @@ internal static partial class JointNestedBlendEvaluation
     private static AlgorithmStatus NativeUvOffset(in NestedBlendProgram program,in BlendSurfaceInstruction source,IntervalDual u,IntervalDual v,
         BufferOffset cacheIndex,ReadOnlySpan<IntervalSplineContact> cache,out IntervalVector position)
     {
+        if(source.Offset==0)return IntervalSplinePoint(program,source,u,v,out position,cache,cacheIndex);
         position=default;var status=IntervalSpline(program,source,u,v,out var point,out var su,out var sv,cache,cacheIndex);if(status!=AlgorithmStatus.Success)return status;
         var cross=IntervalVector.Cross(su,sv);var length=cross.Norm();if(!(length.Value.Lower>0))return AlgorithmStatus.NotConverged;
         position=point+cross/length*source.Offset;return position.Finite?AlgorithmStatus.Success:AlgorithmStatus.NotConverged;
@@ -209,8 +236,12 @@ internal static partial class JointNestedBlendEvaluation
         in BlendSpineInstruction spine,in BlendChartInstruction chart,ReadOnlySpan<IntervalDual> uv,IntervalDual parameter,Span<IntervalDual> residual,ReadOnlySpan<IntervalSplineContact> cache)
     {
         var status=NativeUvOffset(program,first,uv[0],uv[1],3,cache,out var point);if(status!=AlgorithmStatus.Success)return status;
-        status=NativeUvOffset(program,second,uv[2],uv[3],5,cache,out var other);if(status!=AlgorithmStatus.Success)return status;
-        var delta=point-other;residual[0]=delta.X;residual[1]=delta.Y;residual[2]=delta.Z;
+        if(second.IsBSpline)
+        {
+            status=NativeUvOffset(program,second,uv[2],uv[3],5,cache,out var other);if(status!=AlgorithmStatus.Success)return status;
+            var delta=point-other;residual[0]=delta.X;residual[1]=delta.Y;residual[2]=delta.Z;
+        }
+        else residual[0]=IntervalVector.Dot(point-new IntervalVector(second.Analytic.Origin),new IntervalVector(second.Analytic.Axis));
         status=SpineParameterMap.Interval(spine,chart,parameter,point,out residual[uv.Length-1]);if(status!=AlgorithmStatus.Success)return status;
         foreach(var value in residual)if(!value.Finite)return AlgorithmStatus.NotConverged;return AlgorithmStatus.Success;
     }
@@ -223,8 +254,8 @@ internal static partial class JointNestedBlendEvaluation
         AlgorithmStatus status;
         if(ReuseSplineContactBounds)
         {
-            status=CacheSplineContact(program,first,boxes[0],boxes[1],ref cache[3]);if(status!=AlgorithmStatus.Success)return status;
-            status=CacheSplineContact(program,second,boxes[2],boxes[3],ref cache[5]);if(status!=AlgorithmStatus.Success)return status;
+            status=CacheSplineContact(program,first,boxes[0],boxes[1],ref cache[3],first.Offset==0);if(status!=AlgorithmStatus.Success)return status;
+            if(second.IsBSpline){status=CacheSplineContact(program,second,boxes[2],boxes[3],ref cache[5],second.Offset==0);if(status!=AlgorithmStatus.Success)return status;}
         }
         else cache.Clear();
         for(var column=0;column<n;column++)

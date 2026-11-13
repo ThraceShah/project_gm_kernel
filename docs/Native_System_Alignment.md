@@ -1300,3 +1300,36 @@ reach、曲率、有限支撑 UV 和 anchor 的四参数消费保留。生产中
 warm凹双NURBS Fix243.759 ms、Boolean311.170 ms，根单元仍110/514。
 这次结果只资格化保留的有限消费者，不用前一候选性能反签；完整最终回归和
 统一固定交付仍将绑定后续稳定源码集中执行。
+
+## 解析平面消元与实际导数请求
+
+同一消元现在覆盖非周期 C1 的 plane/BSurface 及逆支撑顺序：由原 offset
+BSurface 的两个 UV 定义中心，保留真实解析平面方程和原 CHART 方程，两未知量
+代替 XYZ+UV 五未知量。双 BSurface 仍为四未知量。lift 回原状态后继续原 nearest
+Hessian、reach、frame、原生支撑参数和 anchor 合同；共享根 witness 仍走其完整
+Cartesian contraction 请求。原生域、sense、有限终止及 XT 数据定义均未变。
+
+不带 offset 的交线只需 D0/D1，不应为点映射重复求法向的二阶导数。现在请求
+自身明确所需阶数；私有 contact 条目记录实际阶数，低阶数据不可服务高阶请求。
+nearest、曲率等仍要求完整二阶证明。原生矩形外的 tensor-product linear extension
+需要 mixed higher jets，仍执行原完整矩形 jet；没有用多项式外推替代。没有实现
+被拒的1762多项式权重商捷径；有理权重的原 quotient 公式与验收均保留。
+
+- `native-uv-plane-elimination-managed-v1` 11/11 raw0，新增逆支撑、两组 native
+  knot/反射尺度、已知 D0/D1/UV 与切向平面不能产生规则管的负例。
+- `native-uv-plane-elimination-whole-v1` 六族各两次 fresh，共十二组独立
+  Fix/Boolean fullcheck/strict 通过，raw2；该六族顺序不同，不同原四族总耗时比较。
+- `native-uv-plane-elimination-full-managed-v1` raw1，2177/2178：新入口绕过了
+  只在旧五变量 Jacobian 内累加的测试 hit 计数，因而 hit>0 断言失败。
+  现于实际 IntervalSpline 命中处计数，没有改数学通过条件或删该断言。
+- `native-uv-jet-contract-managed-v1` 19/19 raw0；v2 21/21 raw0，新增有理及普通
+  支撑的低阶条目不得冒充二阶、跨原生边界必须完整 mixed jet 的实际负例。
+  `native-uv-order-integrated-full-managed-v1` 2180/2180 raw0。
+- `native-uv-first-jet-whole-v1` 四族八组独立 Fix/Boolean 全部 fullcheck/strict，
+  raw2、整体7926.217 ms；`native-uv-order-rational-v1` 三族原操作及九项反向
+  有理、非单位原生 U、三尺度、复制删源/反射旋转/reload再建模同样通过，raw2。
+  实际生产 Native 为97b63640fa1b5b795fa0d18b4f1d57f42ab1180374e67a0b89bcd4b71ca3ecb8。
+  最后生命周期与全回归重叠，耗时不签隔离性能；物性 U 继续单列。
+
+平面两参数减少方向数，但部分族 whole-operation 耗时没有改善，不能只凭矩阵
+变小宣称性能目标已完成。继续沿实际导数及候选链处理，而非放宽几何或根验收。
