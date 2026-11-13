@@ -1504,3 +1504,28 @@ imprint及原负trim控制合计33/33 raw0，fresh XT/full/strict、追踪来源
 `--complete` 验证 GM/PK complete，`--native-basic-complete` 只作 PK 合同对照。
 没有为旧输出目录增加兼容路径。上述关闭有限请求缺口，不授予 completion、region、
 任意多参与者或未执行 attachment 类别资格；整体计算与性能主线继续。
+
+## 已证明 tube 的子区间消费，而非点位置复用
+
+本次扩展既有 immutable 工作区，父请求仍完整执行原 native UV 存在/唯一性、六轮
+refinement、导数和 nearest 证明。子请求只在同一 owner/generation/sense/program/
+workspace/spine/CHART、父域包含和向外舍入收缩界<.9时消费父证明。它用原同一次
+数值点、真正的区间残差和加权收缩误差界取得锚点，再用均值定理覆盖子区间，
+重新求子 Jacobian、局部像和导数，按请求 V 重算 frame。没有将数值点、CHART
+估计或某个成功 Jacobian 盒冒充新证明；shared Cartesian witness/reach/curvature
+仍走原完整系统。详细前提、推导和生命周期见 `docs/Native_Interval_Tube_Consumption.md`。
+
+早期候选虽通过局部和四族 whole，完整横向仍暴露真实缺口：驻点两侧导数过宽的
+控制2/4失败；有理 lifecycle 两个下游 Boolean 157/raw134；完整托管2192/2196。
+修正后子区间本身重新求导并作一次局部像，Jacobian 覆盖真实根盒与候选的凸包，
+没有放宽原深度40、精度或预算。`native-parent-tube-rational-v2` 三族九项完整
+反向有理生命周期及各原操作真实 PK 对照通过、raw2，生产 Native
+4ac5cdd105bef3c175923b16c12ccc7ca2511b7de479b816c2e6895f4e0621f6；
+`native-parent-tube-full-managed-v2` 2196/2196 raw0、guard3178 CLEAN。
+失败生产/test字节、原退出与新结果均分源保留。
+
+另一次 whole-ball clearance 候选八组通过但没有实质整链收益，7736.739 ms/raw2，
+运行时代码撤回；新的纯SSI scope也未改善父 tube 命中/工作量，已撤回，不保留额外
+缓存开关。早期 `native-parent-tube-whole-v2` 7642.203 ms/raw2 用的是上述失败前
+46ece2源，不能签为最终正确实现的性能。当前继续统一固定源验证和整链研发，
+旧 b08包不覆盖，不把这次保存当作原总体目标完成。

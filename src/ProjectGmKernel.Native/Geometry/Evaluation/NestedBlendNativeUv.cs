@@ -27,32 +27,14 @@ internal static partial class JointNestedBlendEvaluation
         var charts=Chart(program,spine);var u=Math.Clamp(domain.U0+(domain.U1-domain.U0)*.5,charts[0].Parameter,charts[^1].Parameter);
         var chart=0;while(chart<charts.Length-2&&charts[chart+1].Parameter<=u)chart++;
         var lower=charts[chart];var upper=charts[chart+1];var fraction=(u-lower.Parameter)/(upper.Parameter-lower.Parameter);
-        Span<double> state=stackalloc double[n],seed=stackalloc double[n],trial=stackalloc double[n],residual=stackalloc double[n],matrix=stackalloc double[n*n],inverse=stackalloc double[n*n],rhs=stackalloc double[n],velocity=stackalloc double[n];
+        Span<double> state=stackalloc double[n],seed=stackalloc double[n],matrix=stackalloc double[n*n],inverse=stackalloc double[n*n],rhs=stackalloc double[n],velocity=stackalloc double[n];
         Span<BufferOffset> pivots=stackalloc BufferOffset[n];
         state[0]=swapped?lower.SecondU+fraction*(upper.SecondU-lower.SecondU):lower.FirstU+fraction*(upper.FirstU-lower.FirstU);
         state[1]=swapped?lower.SecondV+fraction*(upper.SecondV-lower.SecondV):lower.FirstV+fraction*(upper.FirstV-lower.FirstV);
         if(n==4){state[2]=lower.SecondU+fraction*(upper.SecondU-lower.SecondU);state[3]=lower.SecondV+fraction*(upper.SecondV-lower.SecondV);}
         state.CopyTo(seed);
-        var converged=false;
-        for(var iteration=0;iteration<20;iteration++)
-        {
-            var status=NativeUvPointEquations(program,first,second,definition,lower,state,u,residual,matrix,out var center);if(status!=AlgorithmStatus.Success)return AlgorithmStatus.NotConverged;
-            var error=Maximum(residual);var tolerance=ResidualAccuracy(program,spine,center);
-            status=SmallLinearSolve.LuFactorize(matrix,n,pivots);if(status!=AlgorithmStatus.Success)return AlgorithmStatus.NotConverged;
-            if(error<tolerance){converged=true;break;}
-            for(var i=0;i<n;i++)rhs[i]=-residual[i];
-            status=SmallLinearSolve.LuSolveInPlace(matrix,n,pivots,rhs);if(status!=AlgorithmStatus.Success)return status;
-            var accepted=false;
-            for(var attempt=0;attempt<10;attempt++)
-            {
-                var factor=Math.ScaleB(1,-attempt);for(var i=0;i<n;i++)trial[i]=state[i]+factor*rhs[i];
-                status=NativeUvPointEquations(program,first,second,definition,lower,trial,u,residual,default,out _);
-                if(status!=AlgorithmStatus.Success||!(Maximum(residual)<error))continue;
-                trial.CopyTo(state);accepted=true;break;
-            }
-            if(!accepted)return AlgorithmStatus.NotConverged;
-        }
-        if(!converged)return AlgorithmStatus.NotConverged;
+        var pointStatus=RefineNativeUvPoint(program,first,second,spine,lower,state,u,matrix,pivots);
+        if(pointStatus!=AlgorithmStatus.Success)return pointStatus;
         rhs.Clear();rhs[^1]=1/lower.Scale;
         var found=SmallLinearSolve.LuSolveInPlace(matrix,n,pivots,rhs);if(found!=AlgorithmStatus.Success)return found;rhs.CopyTo(velocity);
         for(var column=0;column<n;column++)
@@ -60,6 +42,10 @@ internal static partial class JointNestedBlendEvaluation
             rhs.Clear();rhs[column]=1;found=SmallLinearSolve.LuSolveInPlace(matrix,n,pivots,rhs);if(found!=AlgorithmStatus.Success)return found;
             for(var row=0;row<n;row++)inverse[row*n+column]=rhs[row];
         }
+        // The original point solve and its unchanged budget supply a proposal
+        // to either certificate. A rejected parent does not repeat that solve.
+        if(reachBudget.IsEmpty&&curvature.IsEmpty&&supportParameter.IsEmpty&&anchorContacts.IsEmpty&&acceleration.IsEmpty
+            &&ReadParentTube(program,surface,spine,domain,state,inverse,u,chart,output,out var parentStatus))return parentStatus;
         Span<IntervalNumber> boxes=stackalloc IntervalNumber[n],image=stackalloc IntervalNumber[n],centerF=stackalloc IntervalNumber[n],jacobian=stackalloc IntervalNumber[n*n],remainder=stackalloc IntervalNumber[n*n];
         Span<IntervalDual> variables=stackalloc IntervalDual[n],equations=stackalloc IntervalDual[n];
         Span<IntervalSplineContact> cache=stackalloc IntervalSplineContact[7];cache.Clear();
@@ -117,6 +103,17 @@ internal static partial class JointNestedBlendEvaluation
             nextRadii.CopyTo(radii);
         }
         if(!certified)return AlgorithmStatus.NotConverged;
+        Span<IntervalNumber> certificateBox=stackalloc IntervalNumber[n];boxes.CopyTo(certificateBox);
+        var contractionBound=double.PositiveInfinity;
+        if(program.TubeSource.Tag>0&&!program.TubeWork.IsEmpty&&domain.U0<domain.U1)
+        {
+            contractionBound=0;
+            for(var row=0;row<n;row++)
+            {
+                IntervalNumber sum=0;for(var k=0;k<n;k++)sum+=new IntervalNumber(remainder[row*n+k].Magnitude)*radii[k]/radii[row];
+                contractionBound=Math.Max(contractionBound,sum.Upper);
+            }
+        }
         for(var iteration=0;iteration<6;iteration++)
         {
             for(var i=0;i<n;i++)boxes[i]=new(Math.Max(boxes[i].Lower,image[i].Lower),Math.Min(boxes[i].Upper,image[i].Upper));
@@ -176,7 +173,14 @@ internal static partial class JointNestedBlendEvaluation
             {found=SpineSupportParameters(program,nodes,anchor,side,u,out anchorContacts[2*side],out anchorContacts[2*side+1]);if(found!=AlgorithmStatus.Success)return found;}
         }
         if(reachBudget.IsEmpty&&anchorContacts.IsEmpty)
-            WriteTube(program,spine,domain,nodes,fullBoxes,fullDerivative);
+        {
+            var saved=WriteTube(program,spine,domain,nodes,fullBoxes,fullDerivative);
+            if(saved>=0&&domain.U0<domain.U1&&contractionBound<.9)
+            {
+                ref var entry=ref program.TubeWork[saved];entry.NativeDimension=n;entry.NativeChart=chart;entry.NativeContraction=contractionBound;
+                inverse.CopyTo(entry.NativeInverse);radii.CopyTo(entry.NativeWeights);certificateBox.CopyTo(entry.NativeBox);
+            }
+        }
         if(surface<0)
         {
             for(var i=0;i<3;i++){output[i]=fullBoxes[i];output[i+3]=fullDerivative[i];output[i+6]=0;}return AlgorithmStatus.Success;
@@ -195,6 +199,31 @@ internal static partial class JointNestedBlendEvaluation
         var spline=program.Spline(source);
         return !spline.UPeriodic&&!spline.VPeriodic&&CartesianSplineSmoothKnots(spline.UKnots,spline.UDegree,spline.UVertexCount)
             &&CartesianSplineSmoothKnots(spline.VKnots,spline.VDegree,spline.VVertexCount);
+    }
+
+    private static AlgorithmStatus RefineNativeUvPoint(in NestedBlendProgram program,in BlendSurfaceInstruction first,in BlendSurfaceInstruction second,
+        BlendSpineIndex spine,in BlendChartInstruction chart,Span<double> state,double parameter,Span<double> matrix,Span<BufferOffset> pivots)
+    {
+        var n=state.Length;Span<double> residual=stackalloc double[n],rhs=stackalloc double[n],trial=stackalloc double[n];
+        for(var iteration=0;iteration<20;iteration++)
+        {
+            var status=NativeUvPointEquations(program,first,second,program.Spines[spine],chart,state,parameter,residual,matrix,out var center);if(status!=AlgorithmStatus.Success)return AlgorithmStatus.NotConverged;
+            var error=Maximum(residual);var tolerance=ResidualAccuracy(program,spine,center);
+            status=SmallLinearSolve.LuFactorize(matrix,n,pivots);if(status!=AlgorithmStatus.Success)return AlgorithmStatus.NotConverged;
+            if(error<tolerance)return AlgorithmStatus.Success;
+            for(var i=0;i<n;i++)rhs[i]=-residual[i];
+            status=SmallLinearSolve.LuSolveInPlace(matrix,n,pivots,rhs);if(status!=AlgorithmStatus.Success)return status;
+            var accepted=false;
+            for(var attempt=0;attempt<10;attempt++)
+            {
+                var factor=Math.ScaleB(1,-attempt);for(var i=0;i<n;i++)trial[i]=state[i]+factor*rhs[i];
+                status=NativeUvPointEquations(program,first,second,program.Spines[spine],chart,trial,parameter,residual,default,out _);
+                if(status!=AlgorithmStatus.Success||!(Maximum(residual)<error))continue;
+                trial.CopyTo(state);accepted=true;break;
+            }
+            if(!accepted)return AlgorithmStatus.NotConverged;
+        }
+        return AlgorithmStatus.NotConverged;
     }
 
     private static AlgorithmStatus NativeUvPointEquations(in NestedBlendProgram program,in BlendSurfaceInstruction first,in BlendSurfaceInstruction second,

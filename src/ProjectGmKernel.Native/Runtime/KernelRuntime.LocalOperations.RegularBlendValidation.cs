@@ -34,10 +34,11 @@ internal static unsafe partial class KernelRuntime
         if(slot<0||Surfaces[slot].Class!=SurfaceClass.BlendSurface)return ParasolidConstants.PK_ERROR_not_implemented;
         var record=Surfaces[slot];
         if(first<record.UMin||last>record.UMax)return ParasolidConstants.PK_ERROR_not_implemented;
-        var data=BlendedEdgeDataPool[record.DataIndex];var program=GetNestedBlendProgram(data);
+        var data=BlendedEdgeDataPool[record.DataIndex];
         // Construction has finished; all support/program data is immutable
         // until this proof returns. The scope ends before B-rep publication.
         ModelingPerformance.Context profile=default;using var evidence=new ModelingPerformance.Scope(&profile,immutableGeometry:true);
+        var program=GetNestedBlendProgram(data,record);
         var bandPatch=new Geometry.Intersection.SurfaceIntersectionPatch(program,data.ProgramRoot,new(first,last,0,1));
         bandPatch=new(bandPatch,record.Header.Tag,record.Header.Generation,record.Sense);
         var spine=program.Spines[program.Surfaces[data.ProgramRoot].Spine];

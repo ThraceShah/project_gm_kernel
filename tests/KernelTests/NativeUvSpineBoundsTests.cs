@@ -56,6 +56,43 @@ public class NativeUvSpineBoundsTests
     }
 
     [Theory]
+    [InlineData(false,false,.125)] [InlineData(false,true,8)]
+    [InlineData(true,false,.125)] [InlineData(true,true,8)]
+    public void CompleteParentTubeCertifiesSmallerNativeIntervalsWithoutTreatingThePointSolveAsProof(bool curved,bool reverse,double scale)
+    {
+        var original=Program(curved,reverse,scale,false,-2,3);var work=new JointTubeEntry[128];
+        var program=new NestedBlendProgram(original.Surfaces,original.Spines,original.Charts,original.Scalars,original.Workspace,new(101,1,1,1,7),work);
+        Span<IntervalNumber> bounds=stackalloc IntervalNumber[9];
+        Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSpine(program,0,new(-.2,.2,0,0),bounds));
+        Assert.Contains(work,e=>e.NativeDimension==4);
+        var hits=JointNestedBlendEvaluation.TestParentTubeHits;
+        foreach(var domain in new[]{new SurfaceParameterBox(-.12,-.1,0,0),new(0,0,0,0),new(.1,.13,0,0)})
+        {
+            Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSpine(program,0,domain,bounds));
+            for(var i=0;i<=8;i++)
+            {
+                var t=domain.U0+(domain.U1-domain.U0)*i/8;
+                Contains(bounds,0,Map(t,curved?.2*t*t:-.2,curved?.3*t*t:.2,scale));
+                Contains(bounds,3,MapDirection(1,curved?.4*t:0,curved?.6*t:0,scale));
+            }
+        }
+        Assert.True(JointNestedBlendEvaluation.TestParentTubeHits>hits);
+        if(curved)
+        {
+            var ordinate=.6*bounds[3]+.8*bounds[4];
+            Assert.True(ordinate.Lower>0,"A subinterval away from the stationary point needs its own finite derivative enclosure");
+        }
+        var before=GC.GetAllocatedBytesForCurrentThread();
+        var result=JointNestedBlendEvaluation.BoundSpine(program,0,new(.1,.13,0,0),bounds);
+        Assert.Equal(0,GC.GetAllocatedBytesForCurrentThread()-before);Assert.Equal(AlgorithmStatus.Success,result);
+        // An invalid uniform contraction cannot authorize subinterval reuse.
+        foreach(ref var entry in work.AsSpan())entry.NativeContraction=1;
+        hits=JointNestedBlendEvaluation.TestParentTubeHits;
+        Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSpine(program,0,new(.14,.15,0,0),bounds));
+        Assert.Equal(hits,JointNestedBlendEvaluation.TestParentTubeHits);
+    }
+
+    [Theory]
     [InlineData(false,false,.125,-.1)] [InlineData(false,true,8,.13)]
     [InlineData(true,false,8,-.1)] [InlineData(true,true,.125,.13)]
     [InlineData(true,false,1,0)] [InlineData(true,true,1,0)]
@@ -94,6 +131,23 @@ public class NativeUvSpineBoundsTests
                 Contains(bounds,0,du);Contains(bounds,3,dv);
             }
         }
+    }
+
+    [Fact]
+    public void ParentTubeCannotReplaceTheNativeGaugeSelectedAtAChartJunction()
+    {
+        var original=Program(true,false,1,false,-2,3);var middle=original.Charts[0];
+        middle.Parameter=0;middle.Position=Map(0,0,0,1);middle.Chord=MapDirection(.8,.6,0,1);
+        middle.FirstU=middle.SecondU=.5;middle.FirstV=middle.SecondV=0;
+        BlendChartInstruction[] charts=[original.Charts[0],middle,original.Charts[1]];
+        var spine=original.Spines[0];spine.ChartCount=3;BlendSpineInstruction[] spines=[spine];
+        var program=new NestedBlendProgram(original.Surfaces,spines,charts,original.Scalars,original.Workspace,new(101,1,1,1,7),new JointTubeEntry[128]);
+        Span<IntervalNumber> bounds=stackalloc IntervalNumber[9];
+        Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSpine(program,0,new(-.2,0,0,0),bounds));
+        var hits=JointNestedBlendEvaluation.TestParentTubeHits;
+        Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSpine(program,0,new(0,0,0,0),bounds));
+        Assert.Equal(hits,JointNestedBlendEvaluation.TestParentTubeHits);
+        Contains(bounds,3,MapDirection(1.25,0,0,1));
     }
 
     [Theory]

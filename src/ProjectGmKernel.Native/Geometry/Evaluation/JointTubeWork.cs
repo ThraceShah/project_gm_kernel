@@ -19,6 +19,9 @@ internal readonly struct JointTubeSource(GeomTag tag,EntityGeneration generation
 }
 [InlineArray(63)] internal struct JointTubeValues{private IntervalNumber value;}
 [InlineArray(16)] internal struct JointTubeNodes{private JointNestedBlendEvaluation.Occurrence value;}
+[InlineArray(16)] internal struct JointUvInverse{private double value;}
+[InlineArray(4)] internal struct JointUvWeights{private double value;}
+[InlineArray(4)] internal struct JointUvBox{private IntervalNumber value;}
 internal struct JointTubeEntry
 {
     internal JointTubeSource Source;
@@ -27,6 +30,12 @@ internal struct JointTubeEntry
     internal long First,Last;
     internal JointTubeNodes Occurrences;
     internal JointTubeValues Boxes,Derivative;
+    internal BufferCount NativeDimension;
+    internal BufferOffset NativeChart;
+    internal double NativeContraction;
+    internal JointUvInverse NativeInverse;
+    internal JointUvWeights NativeWeights;
+    internal JointUvBox NativeBox;
 }
 
 internal static partial class JointNestedBlendEvaluation
@@ -57,25 +66,26 @@ internal static partial class JointNestedBlendEvaluation
         }
         return false;
     }
-    private static void WriteTube(in NestedBlendProgram program,BlendSpineIndex spine,in SurfaceParameterBox domain,ReadOnlySpan<Occurrence> nodes,
+    private static BufferOffset WriteTube(in NestedBlendProgram program,BlendSpineIndex spine,in SurfaceParameterBox domain,ReadOnlySpan<Occurrence> nodes,
         ReadOnlySpan<IntervalNumber> boxes,ReadOnlySpan<IntervalNumber> derivative)
     {
-        if(program.TubeSource.Tag<=0||program.TubeWork.IsEmpty)return;var at=TubeIndex(program,spine,domain);var selected=at;
+        if(program.TubeSource.Tag<=0||program.TubeWork.IsEmpty)return -1;var at=TubeIndex(program,spine,domain);var selected=at;
         for(var probe=0;probe<Math.Min(8,program.TubeWork.Length);probe++){var index=(at+probe)%program.TubeWork.Length;if(program.TubeWork[index].Source.Tag==0||SameTube(program.TubeWork[index],program,spine,domain)){selected=index;break;}}
         ref var entry=ref program.TubeWork[selected];
         entry.Source=program.TubeSource;entry.Spine=spine;entry.First=BitConverter.DoubleToInt64Bits(domain.U0);entry.Last=BitConverter.DoubleToInt64Bits(domain.U1);
         entry.Surfaces=program.Surfaces.Length;entry.Spines=program.Spines.Length;entry.Charts=program.Charts.Length;entry.Scalars=program.Scalars.Length;entry.Workspace=program.Workspace.Length;entry.N=boxes.Length;entry.Nodes=nodes.Length;
         nodes.CopyTo(entry.Occurrences);boxes.CopyTo(entry.Boxes);derivative.CopyTo(entry.Derivative);
+        entry.NativeDimension=0;return selected;
     }
     private static AlgorithmStatus TubeFrame(in NestedBlendProgram program,BlendSurfaceIndex surface,in SurfaceParameterBox domain,ReadOnlySpan<Occurrence> nodes,
-        ReadOnlySpan<IntervalNumber> boxes,ReadOnlySpan<IntervalNumber> derivative,Span<IntervalNumber> output)
+        ReadOnlySpan<IntervalNumber> boxes,ReadOnlySpan<IntervalNumber> derivative,Span<IntervalNumber> output,ReadOnlySpan<IntervalSplineContact> cache=default)
     {
         if(surface<0){for(var i=0;i<3;i++){output[i]=boxes[i];output[3+i]=derivative[i];output[6+i]=0;}return AlgorithmStatus.Success;}
         Span<IntervalDual> variables=stackalloc IntervalDual[boxes.Length];for(var i=0;i<variables.Length;i++)variables[i]=new(boxes[i],derivative[i]);var v=new IntervalNumber(domain.V0,domain.V1);
-        var status=IntervalFrame(program,surface,nodes,variables,v,out var frame);if(status!=AlgorithmStatus.Success)return status;
+        var status=IntervalFrame(program,surface,nodes,variables,v,out var frame,cache);if(status!=AlgorithmStatus.Success)return status;
         output[0]=frame.X.Value;output[1]=frame.Y.Value;output[2]=frame.Z.Value;output[3]=frame.X.Derivative;output[4]=frame.Y.Derivative;output[5]=frame.Z.Derivative;
         for(var i=0;i<variables.Length;i++)variables[i]=new(boxes[i],0);
-        status=IntervalFrame(program,surface,nodes,variables,new(v,1),out frame);if(status!=AlgorithmStatus.Success)return status;
+        status=IntervalFrame(program,surface,nodes,variables,new(v,1),out frame,cache);if(status!=AlgorithmStatus.Success)return status;
         output[6]=frame.X.Derivative;output[7]=frame.Y.Derivative;output[8]=frame.Z.Derivative;return AlgorithmStatus.Success;
     }
 }

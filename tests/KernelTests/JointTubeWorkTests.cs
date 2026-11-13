@@ -31,6 +31,19 @@ public class JointTubeWorkTests
         }
     }
     [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public void ParentTubeRetainsOffsetFootAndNativeStationUnitsInBothSupportOrders(bool reversed)
+    {
+        var p=Planar(.17,reversed);var cached=With(p,new JointTubeEntry[128]);Span<IntervalNumber> bounds=stackalloc IntervalNumber[9];
+        Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSpine(cached,0,new(.2,.6,0,0),bounds));
+        var hits=JointNestedBlendEvaluation.TestParentTubeHits;
+        Assert.Equal(AlgorithmStatus.Success,JointNestedBlendEvaluation.BoundSpine(cached,0,new(.3,.4,0,0),bounds));
+        Assert.True(JointNestedBlendEvaluation.TestParentTubeHits>hits);
+        Assert.InRange(.3/2.7,bounds[0].Lower,bounds[0].Upper);Assert.InRange(.4/2.7,bounds[0].Lower,bounds[0].Upper);
+        Assert.InRange(.3,bounds[1].Lower,bounds[1].Upper);Assert.InRange(.17,bounds[2].Lower,bounds[2].Upper);
+        Assert.InRange(1/2.7,bounds[3].Lower,bounds[3].Upper);
+    }
+    [Theory]
     [InlineData(1)] [InlineData(2)] [InlineData(3)] [InlineData(4)] [InlineData(5)]
     public void SourceTagGenerationSensePreparationKindAndBlockAreSeparateIdentities(int change)
     {
