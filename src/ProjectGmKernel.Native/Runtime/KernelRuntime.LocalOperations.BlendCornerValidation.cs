@@ -275,7 +275,7 @@ internal static unsafe partial class KernelRuntime
     private static AlgorithmStatus CornerBandBounds(SurfTag band,CurveTag section,in SurfaceParameterBox box,Span<IntervalNumber> output)
     {
         var record=Surfaces[GetSurfaceSlotByTag(band)];if(record.Class==SurfaceClass.Cylinder)return CornerCylinderBounds(band,section,box,output);
-        var data=BlendedEdgeDataPool[record.DataIndex];return JointNestedBlendEvaluation.Bound(GetNestedBlendProgram(data),data.ProgramRoot,box,output);
+        var data=BlendedEdgeDataPool[record.DataIndex];return JointNestedBlendEvaluation.Bound(GetNestedBlendProgram(data,record),data.ProgramRoot,box,output);
     }
     private static IntervalNumber CornerCylinderPlaneBound(SurfTag band,CurveTag section,in SurfaceParameterBox box,in KernelVector3 normal,in KernelVector3 origin)
     {

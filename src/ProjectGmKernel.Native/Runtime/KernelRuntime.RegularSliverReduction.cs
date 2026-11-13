@@ -159,7 +159,7 @@ internal static unsafe partial class KernelRuntime
     {
         footprint=default;domain=default;var face=model.Faces[candidate.Cell];var support=Surfaces[GetSurfaceSlotByTag(face.Surface)];
         var retained=model.Faces[candidate.PlaneFace];var flat=Surfaces[GetSurfaceSlotByTag(retained.Surface)];
-        var data=BlendedEdgeDataPool[support.DataIndex];var program=GetNestedBlendProgram(data);
+        var data=BlendedEdgeDataPool[support.DataIndex];var program=GetNestedBlendProgram(data,support);
         Span<IntervalNumber> bounds=stackalloc IntervalNumber[9];
         var u=new IntervalNumber(double.PositiveInfinity,double.NegativeInfinity);var v=u;
         var loop=model.Loops[face.FirstLoop];

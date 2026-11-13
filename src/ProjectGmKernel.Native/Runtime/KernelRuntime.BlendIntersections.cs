@@ -23,7 +23,7 @@ internal static unsafe partial class KernelRuntime
             var memory=CommandScratch.Current.Take(150000);if(memory.IsEmpty)return AlgorithmStatus.WorkspaceTooSmall;
             var bytes=MemoryMarshal.AsBytes(memory);var cursor=0;var localNodes=ModelSpan<SurfaceIntersectionNode>(bytes,ref cursor,GeneralIntersectionNodeLimit);
             var localEdges=ModelSpan<SurfaceIntersectionSegment>(bytes,ref cursor,GeneralIntersectionNodeLimit);var map=ModelSpan<BufferOffset>(bytes,ref cursor,GeneralIntersectionNodeLimit);
-            var data=BlendedEdgeDataPool[a.DataIndex];var program=GetNestedBlendProgram(data);var definition=program.Spines[program.Surfaces[data.ProgramRoot].Spine];var charts=program.Charts.Slice(definition.ChartOffset,definition.ChartCount);
+            var data=BlendedEdgeDataPool[a.DataIndex];var program=GetNestedBlendProgram(data,a);var definition=program.Spines[program.Surfaces[data.ProgramRoot].Spine];var charts=program.Charts.Slice(definition.ChartOffset,definition.ChartCount);
             var status=AlgorithmStatus.Success;IntervalBox3 extent=default;
             var analytic=TryPrepareSurface(b,out var support);var otherBlend=b.Class==SurfaceClass.BlendSurface;
             var implicitAnalytic=analytic&&AnalyticLevelSet.Supported(support);
@@ -33,7 +33,7 @@ internal static unsafe partial class KernelRuntime
             if(analytic&&options!=null&&(reverse?options->have_uvbox_1:options->have_uvbox_2)!=0)return AlgorithmStatus.Unsupported;
             var bv=b.Class==SurfaceClass.BSurface?GetBSurfaceView(BSurfaceDataStore[b.DataIndex]):default;
             if(b.Class==SurfaceClass.BSurface&&(!GeneralSurfaceContinuity(bv)||bv.UDegree>16||bv.VDegree>16))return AlgorithmStatus.Unsupported;
-            var otherData=otherBlend?BlendedEdgeDataPool[b.DataIndex]:default;var otherProgram=otherBlend?GetNestedBlendProgram(otherData):default;
+            var otherData=otherBlend?BlendedEdgeDataPool[b.DataIndex]:default;var otherProgram=otherBlend?GetNestedBlendProgram(otherData,b):default;
             var otherCharts=otherBlend?otherProgram.Charts.Slice(otherProgram.Spines[otherProgram.Surfaces[otherData.ProgramRoot].Spine].ChartOffset,otherProgram.Spines[otherProgram.Surfaces[otherData.ProgramRoot].Spine].ChartCount):default;
             var count=implicitAnalytic?1:analytic?AnalyticBezierPatches.Count(support):otherBlend?otherCharts.Length-1:(bv.UVertexCount-bv.UDegree)*(bv.VVertexCount-bv.VDegree);
             BufferCount remaining=ParametricSurfaceIntersection.MaxCells;

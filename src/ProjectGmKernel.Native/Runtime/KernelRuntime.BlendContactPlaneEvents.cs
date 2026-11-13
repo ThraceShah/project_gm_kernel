@@ -22,7 +22,7 @@ internal static unsafe partial class KernelRuntime
         var positions=MemoryMarshal.Cast<double,KernelVector3>(HvecSpan(data).Slice(3*data.StartLimit.HvecCount,3*n));
         var support=Surfaces[GetSurfaceSlotByTag(data.Surface1Tag)];
         var blend=BlendedEdgeDataPool[support.DataIndex];
-        var program=GetNestedBlendProgram(blend);var v=BlendContactV(data);
+        var program=GetNestedBlendProgram(blend,support);var v=BlendContactV(data);
         var lower=Math.Min(station[0],station[^1]);var upper=Math.Max(station[0],station[^1]);
         if(!(upper>lower))return false;
         var patch=new SurfaceIntersectionPatch(program,blend.ProgramRoot,new(lower,upper,v,v));

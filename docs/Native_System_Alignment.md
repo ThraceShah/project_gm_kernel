@@ -1355,3 +1355,27 @@ warm凹双NURBS Fix220.939 ms、Boolean276.858 ms，仍约百倍差距。
 本次再核官方 XT chapter6：ICurve 的 CHART 定义原生参数，内点由两支撑与
 CHART 平面选取局部交点；chordal_error 是估计值且可以为空。因此不能把 CHART
 折线或未认证估计当作精确持久几何、用它替代原支撑约束或严谨包围以提速。
+
+## 原生 owner 随准备视图贯通操作工作区
+
+实际接触根、Blend SSI、平面裁剪及端点/planar sliver/corner 消费者此前已有
+SurfaceRecord，却只取得匿名 program。现将实际 owner 交给既有准备视图，复用
+已有的完整 tube 工作区，不创建新缓存、参数模型或推测性的跨操作状态。
+该工作区仅在明确 immutableGeometry 的操作阶段开放，来源包含实体tag、generation、
+sense、准备类别、program block 与完整 program/workspace 尺寸；参数域必须完全相同。
+不同截弧 V 仍重新求 frame，不把九个输出直接当另一个 surface query 的结果。
+失败不写 tube，witness 请求仍运行原包含证明，scope结束统一释放；copy、删除、
+变换及下一操作不继承前一工作区。这不是被拒的 point-bound Newton 复用或重名搬回。
+
+`native-prepared-owner-whole-v1` 四族八组独立完整操作通过，raw2；它尚未包含
+随后最后一处 sliver owner 传递。`native-prepared-owner-consumers-v1` 包含全部
+八处传递，32/32 raw0，覆盖完整 tube 身份、无 heap、错误来源、失败不发布和
+regular modeling 消费者。`native-prepared-owner-rational-v1` raw2，三族九项
+反向有理、native U `[-2,3]`、三尺度完整生命周期及回读再建模通过；
+`native-prepared-owner-positive-gauge-v1` raw2，三族正向有理、U `[-.125,.375]`、
+切割 `.43`、镜像旋转尺度1.7原操作与生命周期再建模通过。两次实际生产 Native 均为
+1f867f9c918b47307a810691b1d6a82a39f5d91f30e3d7f1b09278f32b8d7fc5。
+物性 U 保留；反向生命周期与托管复验有并行，耗时不签性能资格。
+
+完整源、统一程序集、重大横向消费者和固定交付包继续在本任务集中完成；本次保存
+可复核增量不代表原 M0–M5 未决类别或整体 PK 性能目标完成。

@@ -74,7 +74,7 @@ internal static unsafe partial class KernelRuntime
     private static AlgorithmStatus SolveMonotoneBlendPlaneContact(in SurfaceRecord surface,in AnalyticSurface plane,double v,
         Span<OperationIntersectionPoint> output,out BufferCount count)
     {
-        count=0;var data=BlendedEdgeDataPool[surface.DataIndex];var program=GetNestedBlendProgram(data);
+        count=0;var data=BlendedEdgeDataPool[surface.DataIndex];var program=GetNestedBlendProgram(data,surface);
         Span<IntervalNumber> bounds=stackalloc IntervalNumber[9];
         var status=JointNestedBlendEvaluation.Bound(program,data.ProgramRoot,new(surface.UMin,surface.UMin,v,v),bounds);if(status!=AlgorithmStatus.Success)return status;
         var left=(bounds[0]-plane.Origin.X)*plane.Axis.X+(bounds[1]-plane.Origin.Y)*plane.Axis.Y+(bounds[2]-plane.Origin.Z)*plane.Axis.Z;
@@ -108,7 +108,7 @@ internal static unsafe partial class KernelRuntime
     private static AlgorithmStatus CertifyBlendPlaneRange(in SurfaceRecord surface,in AnalyticSurface plane,bool derivative,
         out bool positive,out bool negative)
     {
-        positive=negative=true;var data=BlendedEdgeDataPool[surface.DataIndex];var program=GetNestedBlendProgram(data);
+        positive=negative=true;var data=BlendedEdgeDataPool[surface.DataIndex];var program=GetNestedBlendProgram(data,surface);
         var spine=program.Spines[program.Surfaces[data.ProgramRoot].Spine];var charts=program.Charts.Slice(spine.ChartOffset,spine.ChartCount);
         Span<SurfaceParameterBox> cells=stackalloc SurfaceParameterBox[128];Span<BufferCount> depths=stackalloc BufferCount[128];
         Span<IntervalNumber> bounds=stackalloc IntervalNumber[9];var visited=0;

@@ -41,7 +41,7 @@ internal static unsafe partial class KernelRuntime
             // the end is a finite representative, not an exact plane root.
             var strip=IntervalNumber.Hull(native.Root,new(u));
             if(section!=v||strip.Lower<native.MonotoneDomain.Lower||strip.Upper>native.MonotoneDomain.Upper)continue;
-            if(JointNestedBlendEvaluation.Bound(GetNestedBlendProgram(blend),blend.ProgramRoot,
+            if(JointNestedBlendEvaluation.Bound(GetNestedBlendProgram(blend,support),blend.ProgramRoot,
                 new(strip.Lower,strip.Upper,v,v),contact)!=AlgorithmStatus.Success)continue;
             if(JointNestedBlendEvaluation.BoundSpine(program,to.ProgramSpine,new(t,t,0,0),bound)!=AlgorithmStatus.Success)continue;
             var error=new IntervalNumber(-root.Root.SpatialError,root.Root.SpatialError);
