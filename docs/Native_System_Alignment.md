@@ -177,14 +177,18 @@ pool 和返回内存均恢复。没有用坐标排序选择身份。
 以上是 owner 自测、当前分支增量；尚未独立接受，未与 Mac 性能固定源合成统一交付。
 原 M0–M5 未决类别、588 项物性 U、510 边界分类及未执行 FaceAttach 等不会因此消失。
 
-## 固定数值优化合成
+## 固定数值优化合成（历史检查点）
 
-以已接受固定 `3aff4e2b0247bd4f21e74e71d437a33dff1a3e24` 相对 `ab597e8a` 的
+当时以固定 `3aff4e2b0247bd4f21e74e71d437a33dff1a3e24` 相对 `ab597e8a` 的
 八个 Geometry 文件算法差异合成本分支：conditioned homogeneous restriction、
 position-only bounds、一次 immutable proof 内的 successful spline jet reuse、
 完整 parent-cell proof 的 section bounds、局部完整 section root reuse 和 projection
 candidate seed 减算。相关七个测试文件随合同导入，包括 private Jacobian delegate
 新增 localSplineScope 的签名；没有保留旧签名兼容层。
+
+本段曾将3aff称为“已接受固定”，此接受状态不准确：该累积组合当时未独立接受。
+本段记录历史合成来源，不替任一历史或当前组合授予资格；后文固定 patch 核查、
+真实组合执行及交付 manifest 的 source/byte/接受状态分别为准。
 
 没有取回两个 Runtime 文件：它们来自较早功能基线，整文件替换会丢失当前 cone/torus
 分类及有限 contact distance 修复。Mac 尚在研发的 UV 和 ray extent 补丁不在组合内。
@@ -1379,3 +1383,45 @@ regular modeling 消费者。`native-prepared-owner-rational-v1` raw2，三族�
 
 完整源、统一程序集、重大横向消费者和固定交付包继续在本任务集中完成；本次保存
 可复核增量不代表原 M0–M5 未决类别或整体 PK 性能目标完成。
+
+## b08bed35 统一固定实现与交付字节（任务继续执行）
+
+固定源码 `b08bed35a3789b66abc6b8c14515fa8b1e6d96bb` 在干净 q2 工作树实际
+执行2180/2180完整托管回归，IL guard3173 CLEAN，testhost自身退出。生产 Native 为
+1925fc3027a9671351de2cb29614680d0f368adf5ce315d704d32015e581fee5，
+四个程序集/PDB封存于 `temp_docs/native-system-alignment/b08bed35-fixed-managed-production/`。
+相同字节实际执行的重大消费者及范围见
+`docs/native-operation-alignment/b08bed35-delivery-evidence.json`：
+
+- 正常生产入口四族各两次 fresh，Fix 与后续 Boolean 独立 fullcheck/strict/contact
+  通过，raw2；16 GM API4513.148 ms、16 PK API34.256 ms，整体7197.484 ms。
+  相对de9的30180.353 ms约6.69倍改进，仍约132倍于本次PK，目标没有完成。
+  v1启动时托管testhost仍在运行，不签隔离耗时；v2含guard/trace，仅作诊断；
+  v3去掉guard/trace、采用原正常入口与相同API参数，作为此次生产API测量。
+- 三族反向有理 native U[-2,3]、三尺度九项生命周期与reload再建模通过，raw2；
+  17/17 Blend/Chamfer及生命周期/下游Boolean通过，raw2、物性4U；
+  88/88曲面裁剪通过，raw0、真实periodic winding87。
+- 原M4的self Fix及分别记录的import消费者、横向两次Boolean、复制删源、反射尺度1.7
+  与editable XT回读再建模通过，raw2、物性8U。v1误用未识别的fin检查选项，
+  未签fin资格；v2采用实际 `--require-native-fin-uvbox`，完整执行mandatory native
+  finite face domains和fin UV boxes、双侧cut/cutter chart witness及映射D0/D1/D2。
+- self/import两个固定510执行保持各自原始坐标：different=0、U15/U16、native changed=0，
+  两次均raw2。当前PK自回读七行实际列表仍保留；Capture8没有重跑，也不补历史self495列。
+  两者物性分别2U/1U，import命令没有执行GM Fix。
+- 多工具mirror1.7/逆工具顺序两种junction独立通过，分别34/32条实际有限来源关系，
+  原始sample gap和错误来源负例均保留；不是完整原边连续包含证明或任意多参与者资格。
+  v1里误写的第二variant选项未执行它，v2单独用实际 `--overlapping-tools-single` 执行。
+- 固定源Mac arm64、SDK10.0.400/.NET10.0.11/PK38.0.150，三族正向有理U[-.125,.375]、
+  切割.43、反射旋转尺度1.7、删除源/回读再建模通过，raw2；实际Mac Native为
+  62982a0c90a121f84dbcc94638e47e8627ac810f683c4494f1cacc6d58c2a509。
+  环境实际ENV_READY；可选CheckParasolid派生corpus缺失且本次未使用，不冒称其已就绪。
+- 独立PK公共BSurface coincidence合同16项状态和原面D0通过，raw0；这是query验证，
+  不替未执行的Brep/attachment/SP类别授予资格。
+
+统一包 `temp_docs/native-system-delivery/checkpoint-b08bed35.zip`，36,333,614字节，
+SHA256 `f40e544b1c9de9dc1c24a84f2f65958f432e590ce84075900015729a39cba771`。
+manifest登记703个实际产物文件，另附固定source archive和manifest，包含生产四文件、PDB逐编译源码绑定、
+原始退出码、上述实际模型、Mac白名单自有产物及关键失败开发日志。旧de9包保持原字节。
+manifest明确 `independentlyAccepted=false`、`performanceQualified=false`；未派中间review
+worker，不把封包当worker完成或原目标完成。一般曲面物性、边界precision、尚未执行的
+provider/高价/complete-region tracking等范围按manifest继续登记，主任务保持实际执行。
