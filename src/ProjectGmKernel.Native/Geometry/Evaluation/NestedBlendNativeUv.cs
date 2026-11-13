@@ -61,29 +61,54 @@ internal static partial class JointNestedBlendEvaluation
         var t=new IntervalNumber(domain.U0,domain.U1);
         found=NativeUvIntervalEquations(program,first,second,definition,lower,variables,t,equations,cache);if(found!=AlgorithmStatus.Success)return found;
         for(var i=0;i<n;i++)centerF[i]=equations[i].Value;
-        var certified=false;var derivativeScale=0.0;foreach(var value in velocity)derivativeScale=Math.Max(derivativeScale,Math.Abs(value));
+        var certified=false;
+        Span<double> radii=stackalloc double[n],nextRadii=stackalloc double[n];
         // A stationary native coordinate can have zero midpoint velocity.
         // Its deviation from the native CHART secant supplies an anisotropic
         // box hint, never a curve bound. Uniform strict inclusion below must
         // still certify every box independently of that hint.
         var stationSpan=(u-lower.Parameter)*(upper.Parameter-u);var half=Math.Max(Math.Abs(domain.U1-u),Math.Abs(domain.U0-u));
+        for(var i=0;i<n;i++)
+        {
+            var bend=stationSpan>0?8*Math.Abs(state[i]-seed[i])*half*half/stationSpan:0;
+            IntervalNumber forcing=0;for(var k=0;k<n;k++)forcing+=inverse[i*n+k]*centerF[k];
+            var rounding=64*Math.Max(Math.BitIncrement(state[i])-state[i],state[i]-Math.BitDecrement(state[i]));
+            radii[i]=Math.Max(2*Math.Abs(velocity[i])*half+bend,2*forcing.Magnitude)+rounding;
+        }
         for(var expansion=0;expansion<6&&!certified;expansion++)
         {
             for(var i=0;i<n;i++)
             {
-                var bend=stationSpan>0?8*Math.Abs(state[i]-seed[i])*half*half/stationSpan:0;
-                var radius=Math.ScaleB(1,expansion)*(2*Math.Max(Math.Abs(velocity[i]),.1*derivativeScale)*half+bend+1e-10*(1+Math.Abs(state[i])));
-                boxes[i]=new(Math.BitDecrement(state[i]-radius),Math.BitIncrement(state[i]+radius));
+                boxes[i]=new(Math.BitDecrement(state[i]-radii[i]),Math.BitIncrement(state[i]+radii[i]));
             }
-            found=NativeUvJacobian(program,first,second,definition,lower,boxes,t,jacobian,variables,equations,cache);if(found!=AlgorithmStatus.Success)continue;
+            found=NativeUvJacobian(program,first,second,definition,lower,boxes,t,jacobian,variables,equations,cache);
+            if(found!=AlgorithmStatus.Success){for(var i=0;i<n;i++)radii[i]*=2;continue;}
             Precondition(inverse,jacobian,n,remainder);certified=true;
+            radii.CopyTo(nextRadii);
             for(var row=0;row<n;row++)
             {
                 IntervalNumber value=state[row];for(var k=0;k<n;k++)value-=inverse[row*n+k]*centerF[k];
-                var contraction=0.0;
-                for(var k=0;k<n;k++){value+=remainder[row*n+k]*(boxes[k]-state[k]);contraction+=remainder[row*n+k].Magnitude*(boxes[k].Upper-boxes[k].Lower)/Math.Max(boxes[row].Upper-boxes[row].Lower,1e-300);}
-                image[row]=value;certified&=value.Lower>boxes[row].Lower&&value.Upper<boxes[row].Upper&&contraction<.9;
+                var contraction=0.0;var offDiagonal=0.0;
+                for(var k=0;k<n;k++)
+                {
+                    value+=remainder[row*n+k]*(boxes[k]-state[k]);
+                    contraction+=remainder[row*n+k].Magnitude*(boxes[k].Upper-boxes[k].Lower)/(boxes[row].Upper-boxes[row].Lower);
+                    if(k!=row)offDiagonal+=remainder[row*n+k].Magnitude*radii[k];
+                }
+                image[row]=value;var accepted=value.Lower>boxes[row].Lower&&value.Upper<boxes[row].Upper&&contraction<.9;certified&=accepted;
+                if(!accepted)
+                {
+                    // Balance this coordinate using the actual comparison
+                    // row. Uniform expansion mixes unrelated native UV units
+                    // and cannot repair a stationary coordinate's thin box.
+                    // This is only the next candidate; strict inclusion and
+                    // the unchanged <.9 contraction still prove acceptance.
+                    var required=1.25*(value-state[row]).Magnitude;var self=remainder[row*n+row].Magnitude;
+                    if(self<.8)required=Math.Max(required,1.05*offDiagonal/(.8-self));
+                    nextRadii[row]=Math.Max(radii[row],required);
+                }
             }
+            nextRadii.CopyTo(radii);
         }
         if(!certified)return AlgorithmStatus.NotConverged;
         for(var iteration=0;iteration<6;iteration++)

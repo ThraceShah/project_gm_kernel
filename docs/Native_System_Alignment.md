@@ -1132,7 +1132,8 @@ editable XT 回读后的 Boolean 连起来；不是仅在新四维系统内自�
   receive/fullcheck/strict、材料及上下游操作分别通过，raw 2 保留物性 U。
 - `native-uv-contact-final-sheet-v1` 全部 88/88 raw 0，实际 periodic winding
   87；不是给尚未执行的曲面或事件类别授予资格。
-- 原 `native-uv-rational-*` 定位执行中的 raw 134/157/5018/5295 保留。中间
+- 原 `native-uv-rational-*` 定位执行的进程 raw 134 与操作错误
+  157/5018/5295 分别保留。中间
   spurs 集成只通过五个 lifecycle，两个后续失败不被删除；保留原生 U
   根证据后凸双 NURBS 的第六项通过；用完整 native 条带精度证明后凹支撑
   三尺度也通过。最后以统一 v2 执行重新确认九项，而非拼接中间绿灯。
@@ -1142,3 +1143,81 @@ editable XT 回读后的 Boolean 连起来；不是仅在新四维系统内自�
   继续由本 owner 处理，不把前述九项通过当通用能力或整体目标完成。
 
 新的 whole-operation 性能与固定包尚待当前主线稳定集成；旧 de9 包保持原字节。
+
+## 原生参数协变候选盒及 coincidence 查询（整体主线继续）
+
+上节正向 U / `[-.125,.375]` 的两个失败已由控制实验定位为新四维认证的回归，
+不是旧能力本来缺失。`native-uv-seven-state-control-v1` 仅临时绕过新的四维
+入口，保留当前仍供 witness 等请求使用的七维认证；同输入两族 Fix、Boolean、
+尺度1.7的完整生命周期全部通过，raw 2。控制差异与 source HEAD 单独保存，
+没有持久保留开关或 fallback。尝试通过三个原方程收紧提升 XYZ 未解决该失败，
+`native-uv-center-reconstruction-v1` 日志/差异保留，该试验已撤回。
+
+实际失败阶段在四维管初始 Krawczyk 认证。候选盒曾把不同 native UV 坐标的
+导数最大值混作各分量下限，然后一起倍增；重新参数化后，近驻点坐标与其他
+坐标的盒宽失衡，整体倍增不能修复该加权收缩问题。现在每个分量的起始盒由
+其自身隐式速度、CHART secant 提示、实际预条件残差及该数的 ULP 组成；
+下一盒用本行实际 comparison matrix 的非对角项调整该分量。最终仍须逐盒
+严格包含与实际宽度归一的收缩率 `<.9`；没有 `1e-300` 分母地板替代证明。
+Newton20、线搜索10、盒尝试6、认证后收缩6以及外部 root budgets 全部不变。
+`.8`/1.25等只生成下一候选盒，不是新的验收门限。初始线性强迫项与分量
+自适应保留 native 坐标的量纲，不修改曲线或 XT 定义。
+
+`native-uv-balanced-box-managed-v1/v2` 均 18/18 raw 0，包括新增 native knot
+仿射变换的已知 D0/D1；`native-uv-balanced-box-native-v1/v2` 均在原来失败的
+正向有理支撑、域 `[-.125,.375]`、`x=.43` 切割、镜像旋转尺度1.7完整流程通过。
+`native-uv-balanced-integrated-full-managed-v1` 2176/2176 raw 0；
+`native-uv-balanced-integrated-rational-v1` 三族九个反向有理生命周期全部通过，
+raw 2 保留物性 U。临时诊断字段已经移除。
+
+随后完整四族基准的八组建模操作本身与 fresh XT fullcheck/strict 均成功，但
+`native-uv-balanced-whole-operation-v1` 仍 raw 134：depressed-roof 的接触
+探针尝试错误支撑候选，公共曲面反求返回157。没有用 checker 成功抹掉该失败。
+同定义独立 PK 的 `native-inverse-contract-probe-v2` 发现，两类 quartic
+B-surface 的远离输入均真实返回915；GM原先两行返回157，原因是公共
+parameterise 请求被送去关闭完整全局最近距离 gap，而不是仅证明 coincidence。
+该早期 probe 只记录返回值、没有给全部负例签署通过；v1 为 friend assembly
+缺失的编译失败，不计建模失败。
+
+公共 BSurface 反求现在复用原正权 Bezier 搜索，但使用明确的 coincidence
+目标：点包围距离 `<=1e-8` 证明一个正例；完整参数域均由保守 hull/support-plane
+下界排除才证明负例。预算耗尽继续未解析。全局 `Closest` 的 distance-gap
+目标与所有下界证明保留，两个目标是不同数学请求，不是版本兼容或备用模型。
+保留18次Newton改进和200000单元上限；原公共线性精度1e-8没有变化。
+不向内部需要不同来源证明的消费者擅自扩展这项资格。
+
+`native-inverse-coincidence-oracle-v1` 两类曲面的16项同输入真实 PK/GM 状态
+一致：真正在面上、正反远离、位于控制 hull 内的离面点、约1e-9邻域和1e-7
+离面点。返回参数再各自由原曲面 D0 核对；1e-9请求的真实残差保留，没有
+把该输入报告为精确零点。`BSplineProjectionTests` 还保留原最近距离全局证书，
+新增 hull 内正反负例和实际公共调用零分配检查。
+`native-uv-coincidence-integrated-full-managed-v1` 2176/2176 raw 0，IL guard
+3169 CLEAN；`native-uv-coincidence-whole-operation-v1` 八组独立建模与探针
+全部通过，raw 2，但与 inverse probe 有并行，耗时仅诊断，不能作隔离性能资格。
+
+PK处理链证据层级也由实际分支修正：官方 FD18 定义 eval/parameterise 为
+映射与逆映射。静态入口能见 COI/QSU，但 Linux PK38.0.150 有界 GDB 的
+`native-inverse-bspline-gdb-v2` 实际命中：
+`PK_SURF_parameterise_vector → QSU__parameterise_b_surface →
+QSU_sederberg_parm_svec → QSU_rayfire → QSU__rayfire_b_surface →
+bspline_2d_rayfire → tight_svec_from_parms → REL_to_three_surfaces`。
+另一次 `native-inverse-contract-gdb-v1` 的 QSU_distance 命中在该局部细化链内；
+准备的 COI/通用 parametric-distance 断点未命中，不据静态列表冒称它们是本次
+主路。debugger退出0、inferior正常退出。没有由名称推导完整 Sederberg 公式，
+也不把 GM 的阈值 branch-and-bound 声称为 PK 内部实现。
+
+此外已逐文件核查，固定接受的 ab0177、cccaa5e、a9085ed 生产改动已经由
+较早的 `0fe797e0` 集成在当前源码中；没有再次套用或互拉 moving Mac 源。
+目前的改动和性能测试以这个实际统一基线为准。原 de9 固定包仍保持原字节，
+此阶段还未宣称整体建模或 PK 性能目标完成。
+
+隔离后的 `native-uv-coincidence-whole-operation-v2` 在本机没有其他建模/testhost
+作业时启动，采用相同四族、各两次 fresh、相同生产 JIT 政策和完整 API 窗口。
+实际生产 Native SHA256 为
+`6cc23a49111ec200530c1e472bd5fd859012d3687dc2989f345ab8b8af3b3d86`；
+16次GM API合计 **7688.272 ms**，16次独立PK API合计 **35.270 ms**，整体测量
+10389.349 ms，raw 2。八组 Fix 与后续 Boolean 各自 fullcheck/strict、接触
+几何均通过；物性 U 不变。相对于固定 de9 同族 API 合计30180.353 ms约3.93倍
+改进，仍约218倍于本次PK，不能声称对标性能目标已经实现。warm凹双NURBS
+Fix/Boolean的根单元110/514，对比de9的1438/3282；最终根仍为10/38。
+profile中累积 bound-ms 不被当作排他CPU或可删除步骤。

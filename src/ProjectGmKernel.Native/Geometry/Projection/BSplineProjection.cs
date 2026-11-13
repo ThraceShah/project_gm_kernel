@@ -24,7 +24,19 @@ internal static class BSplineProjection
 #endif
     internal static AlgorithmStatus Closest(in BezierSurfacePatch patch, in KernelVector3 target,
         double tolerance, ref ProjectionPoint best)
+        =>Search(patch,target,tolerance,ref best,false,out _);
+
+    // Coincidence asks whether any native parameter is within precision.
+    // A point enclosure proves a positive; every domain must be excluded to
+    // prove a negative. It does not request a global minimum-distance gap.
+    internal static AlgorithmStatus Locate(in BezierSurfacePatch patch,in KernelVector3 target,
+        double precision,ref ProjectionPoint best,out bool found)
+        =>Search(patch,target,precision,ref best,true,out found);
+
+    private static AlgorithmStatus Search(in BezierSurfacePatch patch,in KernelVector3 target,
+        double tolerance,ref ProjectionPoint best,bool coincidence,out bool found)
     {
+        found=false;
         if (!(tolerance > 0) || !double.IsFinite(tolerance) || !IsFinite(target)) return AlgorithmStatus.InvalidInput;
         Span<SurfaceParameterBox> pending = stackalloc SurfaceParameterBox[128];
         pending[0] = patch.Domain; var count = 1; var visited = 0;
@@ -35,9 +47,13 @@ internal static class BSplineProjection
             var box = pending[--count];
             var status = BezierSurfaceBounds.BoundPosition(patch, box, bounds[..3], poles); if (status != AlgorithmStatus.Success) return status;
             var lower = BoxDistance(bounds, target);
-            if (lower >= best.DistanceUpper - tolerance) continue;
+            if (coincidence?lower>tolerance:lower>=best.DistanceUpper-tolerance) continue;
             Improve(patch, box, target, ref best);
-            if (best.DistanceUpper <= tolerance) continue;
+            if (best.DistanceUpper <= tolerance)
+            {
+                if(coincidence){found=true;return AlgorithmStatus.Success;}
+                continue;
+            }
             // The position bound prepared this exact box's restricted net;
             // Improve only writes best and uses its own point workspace.
             var direction = Sub(target, best.Point); var length = OperationNorm(direction);
@@ -59,7 +75,7 @@ internal static class BSplineProjection
                 }
                 lower = Math.Max(lower, -projection.Upper);
             }
-            if (lower >= best.DistanceUpper - tolerance) continue;
+            if (coincidence?lower>tolerance:lower>=best.DistanceUpper-tolerance) continue;
             var uWidth = patch.UDegree == 0 ? 0 : (box.U1 - box.U0) / (patch.Domain.U1 - patch.Domain.U0);
             var vWidth = patch.VDegree == 0 ? 0 : (box.V1 - box.V0) / (patch.Domain.V1 - patch.Domain.V0);
             if (Math.Max(uWidth, vWidth) < 1e-13 || count + 2 > pending.Length) return AlgorithmStatus.NumericalFailure;

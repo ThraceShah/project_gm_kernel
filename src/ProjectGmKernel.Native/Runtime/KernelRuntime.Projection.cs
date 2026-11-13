@@ -52,9 +52,9 @@ internal static unsafe partial class KernelRuntime
             *uv = value; return 0;
         }
         var projection = new ProjectionPoint { DistanceUpper = double.PositiveInfinity };
-        var result = ClosestBSurface(GetBSurfaceView(BSurfaceDataStore[Surfaces[slot].DataIndex]), point, 1e-10, ref projection);
+        var result = LocateBSurface(GetBSurfaceView(BSurfaceDataStore[Surfaces[slot].DataIndex]), point, 1e-8, ref projection,out var found);
         if (result != AlgorithmStatus.Success) return IntersectionError(result);
-        if (projection.DistanceUpper > 1e-8) return ParasolidConstants.PK_ERROR_not_on_surface;
+        if (!found) return ParasolidConstants.PK_ERROR_not_on_surface;
         uv->param[0] = projection.U; uv->param[1] = projection.V; return 0;
     }
 
@@ -71,6 +71,21 @@ internal static unsafe partial class KernelRuntime
             status = BSplineProjection.Closest(patch, point, tolerance, ref best); if (status != AlgorithmStatus.Success) return status;
         }
         return double.IsFinite(best.DistanceUpper) ? AlgorithmStatus.Success : AlgorithmStatus.NumericalFailure;
+    }
+
+    private static AlgorithmStatus LocateBSurface(in BSurfaceView surface,in KernelVector3 point,double precision,ref ProjectionPoint best,out bool found)
+    {
+        found=false;Span<IntervalNumber> poles=stackalloc IntervalNumber[BezierSurfaceBounds.MaxScalars];
+        for(var u=surface.UDegree;u<surface.UVertexCount;u++)for(var v=surface.VDegree;v<surface.VVertexCount;v++)
+        {
+            if(!(surface.UKnots[u+1]>surface.UKnots[u])||!(surface.VKnots[v+1]>surface.VKnots[v]))continue;
+            var status=BezierSurfaceBounds.Extract(surface,u,v,poles);if(status!=AlgorithmStatus.Success)return status;
+            var patch=new BezierSurfacePatch(poles[..(4*(surface.UDegree+1)*(surface.VDegree+1))],surface.UDegree,surface.VDegree,
+                new(surface.UKnots[u],surface.UKnots[u+1],surface.VKnots[v],surface.VKnots[v+1]));
+            status=BSplineProjection.Locate(patch,point,precision,ref best,out found);
+            if(status!=AlgorithmStatus.Success||found)return status;
+        }
+        return AlgorithmStatus.Success;
     }
 
     private static int CurveParameteriseVectorCore(CurveTag curve, PK_VECTOR_s vector, double* parameter)

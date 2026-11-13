@@ -20,6 +20,16 @@ public unsafe class BSplineProjectionTests : IDisposable
         var recovered = new PK_UV_s(); Assert.Equal(0, KernelRuntime.SurfParameteriseVector(surface, point, &recovered));
         Assert.InRange(Math.Abs(recovered.param[0] - original.param[0]), 0, 1e-8);
         Assert.InRange(Math.Abs(recovered.param[1] - original.param[1]), 0, 1e-8);
+        var on=point;
+        foreach(var shift in new[]{-.01,.01})
+        {
+            point=on;point.coord[2]+=shift;
+            Assert.Equal(ParasolidConstants.PK_ERROR_not_on_surface,KernelRuntime.SurfParameteriseVector(surface,point,&recovered));
+        }
+        point=on;point.coord[2]+=.01;
+        var before=GC.GetAllocatedBytesForCurrentThread();var status=KernelRuntime.SurfParameteriseVector(surface,point,&recovered);
+        var allocated=GC.GetAllocatedBytesForCurrentThread()-before;
+        Assert.Equal(ParasolidConstants.PK_ERROR_not_on_surface,status);Assert.Equal(0,allocated);
         point.coord[2] = -2;
         Assert.Equal(ParasolidConstants.PK_ERROR_not_on_surface, KernelRuntime.SurfParameteriseVector(surface, point, &recovered));
     }
