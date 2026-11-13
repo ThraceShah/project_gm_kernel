@@ -226,6 +226,12 @@ internal static unsafe partial class KernelRuntime
         var px=new IntervalNumber(point.X)+new IntervalNumber(-tolerance,tolerance);
         var py=new IntervalNumber(point.Y)+new IntervalNumber(-tolerance,tolerance);
         var pz=new IntervalNumber(point.Z)+new IntervalNumber(-tolerance,tolerance);
+        // Shared infinite supports do not imply membership in this finite
+        // occurrence. Exclude only when the complete event enclosure has a
+        // strict native-parameter gap; an out-of-range point inverse alone
+        // does not settle a tolerance-boundary event.
+        if(TryExactNativeAffineCurve(record,out var affine)
+            &&FiniteAffineBoundaryEventOutside(affine,new(px,py,pz),first,last))return 0;
         var parameter=0.0;Span<KernelVector3> value=stackalloc KernelVector3[1];
         if(record.Class==CurveClass.ICurve)
         {
@@ -276,11 +282,21 @@ internal static unsafe partial class KernelRuntime
                 if(!residual.X.Value.ContainsZero||!residual.Y.Value.ContainsZero||!residual.Z.Value.ContainsZero)return 0;
             }
             var vector=new PK_VECTOR_s();WriteVector(&vector,point);var error=CurveParameteriseVectorCore(curve,vector,&parameter);if(error!=0)return error;
-            LiftPeriodicEdgeParameter(curve,first,last,ref parameter);if(parameter<first||parameter>last)return ParasolidConstants.PK_ERROR_cant_do_intersect;
+            LiftPeriodicEdgeParameter(curve,first,last,ref parameter);
+            if(parameter<first||parameter>last)
+                return UnresolvedBoundaryStation(curve,endpoint,parameter,new(parameter),first,new(first,last));
             var status=EvaluateCurveCore(in record,parameter,0,false,value,out _);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
             if(OperationIntersection.Norm(Sub(point,value[0]))>tolerance)return ParasolidConstants.PK_ERROR_cant_do_intersect;
         }
         var added=model.AssociateParameter(endpoint,curve,parameter);if(added!=0)return added;associated=true;return 0;
+    }
+
+    internal static bool FiniteAffineBoundaryEventOutside(in ParametricSpineCurve line,in IntervalVector enclosure,double first,double last)
+    {
+        var direction=new IntervalVector(line.First);var squared=IntervalVector.Dot(direction,direction).Value;
+        if(!(squared.Lower>0))return false;
+        var station=IntervalVector.Dot(enclosure-new IntervalVector(line.Origin),direction).Value/squared;
+        return station.Finite&&(station.Upper<first||station.Lower>last);
     }
 
     private static int AssociateExactAffineBoundaryEvent(ref SheetArrangement model,BoundaryEventId endpoint,CurveTag target,

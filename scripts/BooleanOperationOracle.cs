@@ -297,6 +297,7 @@ static unsafe int[] Produce(bool own,string fixture,int function,out int status)
                 var error=KernelRuntime.BodyBoolean2(target,nt,tools,&options,&tracking,&result);
                 var webMs=System.Diagnostics.Stopwatch.GetElapsedTime(webStarted).TotalMilliseconds;
                 WebProgressCapture.BooleanAfter(true,error==0?new ReadOnlySpan<int>(result.bodies,result.n_bodies).ToArray():[],webMs,error,result.result,(PK_TOPOL_track_r_t*)&tracking);
+                if(error!=0)PrintBoundaryConflict();
                 Check(error,$"{fixture} Boolean at {KernelRuntime.LastRegularBooleanStage}/{KernelRuntime.LastSheetPartitionStage}, curve {KernelRuntime.LastSheetCurve}, t={KernelRuntime.LastSheetParameter:R}");
                 if(ModelingPerformance.Enabled)PrintProfile($"Boolean {fixture}-{function}",webMs);
                 var joined=certified.Where(published.Contains).GroupBy(x=>x.Event).Count(x=>x.Count()==3);
@@ -428,7 +429,9 @@ static unsafe int SubtractSeedTool(bool own,int body,int tool)
     {
         var options=Unsafe.BitCast<PK_BODY_boolean_o_t,M.PK_BODY_boolean_o_s>(o);
         M.PK_TOPOL_track_r_s tracking=default;M.PK_boolean_r_s result=default;
-        Check(KernelRuntime.BodyBoolean2(body,1,&tool,&options,&tracking,&result),$"own seed subtraction at {KernelRuntime.LastRegularBooleanStage}/{KernelRuntime.LastSheetPartitionStage}");
+        var error=KernelRuntime.BodyBoolean2(body,1,&tool,&options,&tracking,&result);
+        if(error!=0)PrintBoundaryConflict();
+        Check(error,$"own seed subtraction at {KernelRuntime.LastRegularBooleanStage}/{KernelRuntime.LastSheetPartitionStage}");
         try{Require(result.n_bodies==1,"own seed subtraction body");return result.bodies[0];}
         finally{Check(KernelRuntime.TopolTrackResultFree(&tracking),"own seed tracking");Check(KernelRuntime.BooleanResultFree(&result),"own seed result");}
     }
@@ -439,6 +442,11 @@ static unsafe int SubtractSeedTool(bool own,int body,int tool)
         try{Require(result.n_bodies==1,"PK seed subtraction body");return result.bodies[0];}
         finally{Check(PK_TOPOL_track_r_f(&tracking),"PK seed tracking");Check(PK_boolean_r_f(&result),"PK seed result");}
     }
+}
+static void PrintBoundaryConflict()
+{
+    var conflict=KernelRuntime.LastBoundaryParameterConflict;
+    Console.WriteLine($"BOUNDARY_CONFLICT event={conflict.Event} carrier={conflict.Carrier} incoming={conflict.Incoming:R} bounds=[{conflict.Lower:R},{conflict.Upper:R}] previous={conflict.Previous:R} previous_bounds=[{conflict.PreviousLower:R},{conflict.PreviousUpper:R}]");
 }
 static unsafe int Block(bool own,double x,double y,double z,double dx,double dy,double dz,double angle)
     =>BlockWithBasis(own,new PK_AXIS2_sf_t(new(x,y,z),new(0,0,1),new(Math.Cos(angle),Math.Sin(angle),0)),dx,dy,dz);

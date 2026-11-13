@@ -70,3 +70,22 @@ hasClash/targetClash由种子更新；不能将几何求值失败转成空集或
   材料传播，仍是当前真实缺口，不能引用旧acceptance历史通过覆盖。本任务继续排查。
 - `native-material-propagation-allocation-guard-v1`实际生产Release IL检查3122方法，
   raw0/CLEAN；未运行C ABI/AOT。当前完整托管回归仍在运行，不提前签发完成。
+
+后继有限关联修复：三项coplanar失败均由不属于当前有限片段的事件触发，例如已知
+共同无限支持线上的参数3对应有限[0,2]，逆序为-3对应[-2,0]。现在对真实实体precision
+包围E和精确仿射原生曲线L(t)=o+dt计算区间
+`dot(E-o,d)/dot(d,d)`；其整体严格在[first,last]外才返回“本片段无该事件”。
+这是有限域排除，不给点逆解以根证明资格，不放宽端点边界。跨端点的完整区间仍未决。
+该规则支持原生Line和已有逐系数证明的仿射BCurve视图，不重定义持久曲线。
+
+`native-finite-affine-association-coplanar-v1`实际三项全部full/strict/物性Verified、raw0；
+`native-material-finite-contact-v1`五个轴向有限接触imprint同样raw0。
+`native-material-finite-conic-v1`四个平面/圆锥曲线有限裁剪通过；第五个周期接缝场景
+在种子第一次Boolean的Split/BoundaryAssociation返回157，raw1，固定f745复现相同失败
+（`native-material-conic-fixed-f745-repro-v1`）。不将其下游尚未执行阶段写成通过。
+
+`native-material-finite-integrated-full-release-v1`完整2216/2216、raw0、IL guard3183
+CLEAN，覆盖本轮材料传播和有限仿射排除源码。首次完整回归误用Debug，owner在
+1895项通过、10m18s时主动终止已核自有testhost PID3325193，原raw1/host aborted
+保留为未完成执行，不能说整suite通过或新建模失败。一次有界stack定位于
+ContactBooleanConsumerTests的winding/Bezier求交，只证明当时调用链，不作排他成本归因。

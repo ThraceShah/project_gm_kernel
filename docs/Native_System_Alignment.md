@@ -1751,3 +1751,13 @@ GM原分类逐face cell对每个其他body执行整实体winding。现从已完�
 复用原生有限直线/InheritedSourceEdge及AddEdge已有边时，现在同时保留cut占用位，
 即使已有半边使用也先标记；否则实际交线可能被当作普通源边。短边和事件身份不变。
 这是既有arrangement→材料选择之间的数据消费改变，不增加新模型或Engine。
+
+守卫曲面同域多刀具实际揭示此前f745也存在的有限关联缺口：共同无限支持线上的事件
+被要求属于每个有限片段，参数3对[0,2]或-3对[-2,0]直接报157。现由原实体precision
+包围投影到精确仿射原生参数，只有整个区间严格在片段外才排除，跨端点仍未决。
+三项独立coplanar建模已full/strict/物性Verified、raw0；五项有限轴向接触imprint
+raw0。四项非周期圆锥曲线裁剪通过；周期接缝种子仍157，固定f745同样失败，继续排查。
+
+`native-material-finite-integrated-full-release-v1`完整2216/2216、raw0、guard3183 CLEAN。
+首次误用Debug的完整运行由owner在1895项通过后主动终止自有PID，原raw1和未完成
+事实保留；未借此签整体完成，详见材料分量文档。材料/有限关联实现保存后继续本任务。
