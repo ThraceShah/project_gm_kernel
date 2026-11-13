@@ -78,6 +78,28 @@ public unsafe class NestedBlendRuntimeTests:IDisposable
         Assert.True(failed&&passed);
     }
 
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public void RationalParameterCurveTransformsItsHomogeneousUvPoles(bool reverseDefinitions)
+    {
+        var surface=Create(out var a,out var b,out var spine);
+        double* poles=stackalloc double[9]{.1*2,.2*2,2, .5*.7,.5*.7,.7, .9*4,.7*4,4};
+        double* knots=stackalloc double[2]{0,1};int* multiplicities=stackalloc int[2]{3,3};
+        var form=new PK_BCURVE_sf_s{degree=2,n_vertices=3,vertex_dim=3,is_rational=1,vertex=poles,n_knots=2,knot=knots,knot_mult=multiplicities,
+            form=ParasolidConstants.PK_BCURVE_form_arbitrary_c,knot_type=ParasolidConstants.PK_knot_bezier_ends_c,self_intersecting=ParasolidConstants.PK_self_intersect_false_c};
+        int parameterCurve;Assert.Equal(0,KernelRuntime.BCurveCreate(&form,&parameterCurve));
+        var spatialForm=new PK_SPCURVE_sf_s{surf=surface,curve=parameterCurve};int spatialCurve;Assert.Equal(0,KernelRuntime.SpCurveCreate(&spatialForm,&spatialCurve));
+        PK_VECTOR_s* before=stackalloc PK_VECTOR_s[3];PK_VECTOR_s* after=stackalloc PK_VECTOR_s[3];Assert.Equal(0,KernelRuntime.CurveEval(spatialCurve,.37,2,before));
+        var transformForm=new PK_TRANSF_sf_s();transformForm.matrix[0]=-2;transformForm.matrix[5]=transformForm.matrix[10]=2;transformForm.matrix[3]=3;transformForm.matrix[7]=5;transformForm.matrix[11]=7;transformForm.matrix[15]=1;
+        int transform;Assert.Equal(0,KernelRuntime.TransfCreate(&transformForm,&transform));
+        var options=new PK_GEOM_transform_o_s{o_t_version=1,modify=ParasolidConstants.PK_GEOM_transform_modify_c,want_out_geoms=1,want_exact=1};
+        int* inputs=stackalloc int[5]{spatialCurve,surface,a,b,spine};if(reverseDefinitions)(inputs[0],inputs[4])=(inputs[4],inputs[0]);
+        int* outputs=stackalloc int[5];byte* exact=stackalloc byte[5];Assert.Equal(0,KernelRuntime.GeomTransform2(5,inputs,transform,&options,outputs,exact));
+        Assert.Equal(0,KernelRuntime.CurveEval(spatialCurve,.37,2,after));
+        for(var order=0;order<3;order++)for(var axis=0;axis<3;axis++)
+            Assert.InRange(Math.Abs(after[order].coord[axis]-(before[order].coord[axis]*(axis==0?-2:2)+(order==0?(axis==0?3:axis==1?5:7):0))),0,1e-10);
+    }
+
     [Fact]
     public void GeneralConstructionRollsBackIntermediateOffsetsAndDeletesOwnedDefinitionsOnSuccess()
     {

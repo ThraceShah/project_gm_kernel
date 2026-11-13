@@ -31,7 +31,7 @@ try
         var options=new M.PK_SESSION_start_o_s {o_t_version=1};Check(KernelRuntime.SessionStart(&options),"managed session start");
         Log("GM_ASSEMBLY sha256="+Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(typeof(KernelRuntime).Assembly.Location))));
         PK_SESSION_kernel_version_t version;Check(PK_SESSION_ask_kernel_version(&version),"native kernel version");Log($"PK_VERSION {version.major_revision}.{version.minor_revision}.{version.build_number}");
-        try {Run(directory,Log,args.Contains("--warm-only",StringComparer.Ordinal));}
+        try {Run(directory,Log,args.Contains("--warm-only",StringComparer.Ordinal),args.Contains("--rational-uv-only",StringComparer.Ordinal));}
         finally {Check(KernelRuntime.SessionStop(),"managed session stop");}
     }
 }
@@ -44,12 +44,19 @@ static void Require(bool condition,string label) {if(!condition)throw new Except
 static void Equal(double actual,double expected,string label)
     =>Require(double.IsFinite(actual)&&double.IsFinite(expected)&&Math.Abs(actual-expected)<=2e-8*Math.Max(1,Math.Abs(expected)),$"{label}: actual={actual:R}, expected={expected:R}");
 
-static unsafe void Run(string directory,Action<string> log,bool warmOnly)
+static unsafe void Run(string directory,Action<string> log,bool warmOnly,bool rationalUvOnly)
 {
     var failures=0;var passes=0;
-    foreach(var operation in new[]{"translation","rotation","scale","reflection"})
+    foreach(var operation in new[]{"translation","rotation","tilt","scale","reflection"})
     {
         var (managedTransform,nativeTransform)=CreateTransform(operation,log);
+        if(!warmOnly)foreach(var parameterFirst in new[]{false,true})
+        {
+            var label=operation+" rational UV modify parameter_first="+parameterFirst;
+            try{CompareRationalSpCurveModify(managedTransform,nativeTransform,operation,parameterFirst,directory);passes++;log("PASS "+label);}
+            catch(Exception ex){failures++;log("FAIL "+label+": "+ex.Message);}
+        }
+        if(rationalUvOnly)continue;
         try {CompareWarmIcurveModify(managedTransform,nativeTransform,operation,directory,log);passes++;log("PASS "+operation+" cached native ICurve modification");}
         catch(Exception ex) {failures++;log("FAIL "+operation+" cached native ICurve modification: "+ex.Message);}
         if(warmOnly)continue;
@@ -88,6 +95,7 @@ static unsafe (int Managed,int Native) CreateTransform(string kind,Action<string
     {
         "translation"=>PK_TRANSF_create_translation(new PK_VECTOR_t(2,-3,5),&native),
         "rotation"=>PK_TRANSF_create_rotation(new PK_VECTOR_t(1,2,3),new PK_VECTOR1_t(0,0,1),.7,&native),
+        "tilt"=>PK_TRANSF_create_rotation(new PK_VECTOR_t(1,2,3),new PK_VECTOR1_t(1,0,0),.43,&native),
         "scale"=>PK_TRANSF_create_equal_scale(2,new PK_VECTOR_t(1,2,3),&native),
         _=>PK_TRANSF_create_reflection(new PK_VECTOR_t(1,0,0),new PK_VECTOR1_t(1,0,0),&native),
     };
@@ -198,6 +206,150 @@ static unsafe void CompareWarmIcurveModify(int transform,int pkTransform,string 
     int* nativeBodies=stackalloc int[3]{fresh,referenceBody,wrong};Check(PK_ENTITY_delete(3,nativeBodies),"native wire cleanup");
     Check(KernelRuntime.EntityDelete(1,&outputBody),"managed wire cleanup");
     log(label+" native ICurve input, actual warm sample, in-place modify, D0/D1 and per-backend D2 covariance, full/strict finite wire and wrong-position control passed");
+}
+
+static unsafe void CompareRationalSpCurveModify(int transform,int pkTransform,string operation,bool parameterFirst,string directory)
+{
+    var x=new KernelVector3{X=1};var y=new KernelVector3{Y=1};var z=new KernelVector3{Z=1};
+    var a=new M.PK_PLANE_sf_s();a.basis_set.location.coord[0]=-.2;a.basis_set.axis.coord[0]=1;a.basis_set.ref_direction.coord[1]=1;
+    var b=new M.PK_PLANE_sf_s();b.basis_set.location.coord[2]=-.2;b.basis_set.axis.coord[2]=1;b.basis_set.ref_direction.coord[0]=1;
+    int first,second;Check(KernelRuntime.PlaneCreate(&a,&first),"UV first support");Check(KernelRuntime.PlaneCreate(&b,&second),"UV second support");
+    var line=new M.PK_LINE_sf_s();line.basis_set.axis.coord[1]=1;int spine;Check(KernelRuntime.LineCreate(&line,&spine),"UV native spine");
+    var originalSpine=spine;
+    var range=new M.PK_INTERVAL_s();range.value[1]=1;int body;Check(KernelRuntime.CurveMakeWireBody(spine,range,&body),"UV native spine wire");
+    int edgeCount;int* sourceEdges;Check(KernelRuntime.BodyAskEdges(body,&edgeCount,&sourceEdges),"UV actual spine edge");
+    try{Require(edgeCount==1,"UV one spine edge");Check(KernelRuntime.EdgeAskCurve(sourceEdges[0],&spine),"UV attached native spine");}finally{KernelRuntime.MemoryFree(sourceEdges);}
+    if(originalSpine!=spine)Check(KernelRuntime.EntityDelete(1,&originalSpine),"UV delete original free spine");
+    BlendSurfaceInstruction[] surfaces=[new(){Analytic=new(SurfaceClass.Plane,default,x,y),NormalSense=1},new(){Analytic=new(SurfaceClass.Plane,default,z,x),NormalSense=1},
+        new(){Analytic=new(SurfaceClass.Plane,new(){X=-.2},x,y),NormalSense=1},new(){Analytic=new(SurfaceClass.Plane,new(){Z=-.2},z,x),NormalSense=1},
+        new(){IsBlend=true,First=2,Second=3,Spine=0,Range0=.2,Range1=.2,NormalSense=1}];
+    BlendSpineInstruction[] spines=[new(){First=0,Second=1,ChartOffset=0,ChartCount=2}];
+    BlendChartInstruction[] charts=[new(){Position=default,Chord=y,Scale=1},new(){Position=y,Parameter=1,Scale=1}];
+    var program=new NestedBlendProgram(surfaces,spines,charts);int surface;Check(KernelRuntime.BindNestedBlend(first,second,spine,program,4,&surface),"UV input native Blend");
+    double* poles=stackalloc double[9]{.1*2,.2*2,2, .5*.7,.5*.7,.7, .9*4,.7*4,4};
+    double* knots=stackalloc double[2]{0,1};int* multiplicities=stackalloc int[2]{3,3};
+    var curveForm=new M.PK_BCURVE_sf_s{degree=2,n_vertices=3,vertex_dim=3,is_rational=1,vertex=poles,n_knots=2,knot=knots,knot_mult=multiplicities,
+        form=PK_BCURVE_form_arbitrary_c,knot_type=PK_knot_bezier_ends_c,self_intersecting=PK_self_intersect_false_c};
+    int parameterCurve;Check(KernelRuntime.BCurveCreate(&curveForm,&parameterCurve),"UV rational definition");
+    var spForm=new M.PK_SPCURVE_sf_s{surf=surface,curve=parameterCurve};int inputCurve;Check(KernelRuntime.SpCurveCreate(&spForm,&inputCurve),"UV spatial curve");
+    var label=operation+"-rational-uv-"+(parameterFirst?"child-first":"parent-first");
+    var bytes=Transmit(body);File.WriteAllBytes(Path.Combine(directory,label+"-input.x_t"),bytes);
+    var nativeBody=Receive(bytes);CheckBody(nativeBody,label+" common native input",Console.WriteLine);
+    int nativeCurve;var nativeSourceCurve=NativeSpatialMember(nativeBody);Check(PK_ENTITY_copy(nativeSourceCurve,&nativeCurve),"UV native free copy");
+    int own;Check(KernelRuntime.EntityCopy(inputCurve,&own),"UV managed free copy");
+    var spatial=KernelRuntime.SpCurveDataPool[KernelRuntime.GetCurveByTag(own).DataIndex];var blend=KernelRuntime.BlendedEdgeDataPool[KernelRuntime.GetSurfaceByTag(spatial.SurfTag).DataIndex];
+    int* roots=stackalloc int[6]{own,spatial.SurfTag,blend.Surface0Tag,blend.Surface1Tag,blend.SpineTag,spatial.BCurveTag};
+    var nativeRoots=new List<int>();Collect(nativeCurve,nativeRoots);Console.WriteLine("NATIVE_RATIONAL_UV_CLOSURE count="+nativeRoots.Count);Require(nativeRoots.Count>0,"UV native complete closure");
+    var nativeSpatialDefinition=new PK_SPCURVE_sf_t();Check(PK_SPCURVE_ask(nativeCurve,&nativeSpatialDefinition),"UV native defining roles");var nativeBlendDefinition=new PK_BLENDSF_sf_t();Check(PK_BLENDSF_ask(nativeSpatialDefinition.surf,&nativeBlendDefinition),"UV native Blend roles");
+    Console.WriteLine($"NATIVE_RATIONAL_UV_ROLES uv_dependency={nativeRoots.Contains(nativeSpatialDefinition.curve)} surface_dependency={nativeRoots.Contains(nativeSpatialDefinition.surf)} spine_dependency={nativeRoots.Contains(nativeBlendDefinition.spine)} first_support_dependency={nativeRoots.Contains(nativeBlendDefinition.geom_1)} second_support_dependency={nativeRoots.Contains(nativeBlendDefinition.geom_2)}");
+    if(parameterFirst)
+    {
+        var probeBody=Receive(bytes);int probeCurve;Check(PK_ENTITY_copy(NativeSpatialMember(probeBody),&probeCurve),"UV extra-definition control copy");
+        var probeInputs=new List<int>();Collect(probeCurve,probeInputs);var probeForm=new PK_SPCURVE_sf_t();Check(PK_SPCURVE_ask(probeCurve,&probeForm),"UV extra-definition control form");
+        Require(!probeInputs.Contains(probeForm.curve),"UV definition is not an external geometric dependent");probeInputs.Insert(0,probeForm.curve);
+        var probeOptions=new PK_GEOM_transform_o_t{modify=PK_GEOM_transform_modify_c};int* probeOutputs=stackalloc int[probeInputs.Count];PK_LOGICAL_t* probeExact=stackalloc PK_LOGICAL_t[probeInputs.Count];int probeError;
+        probeOptions.modify=PK_GEOM_transform_new_c;
+        fixed(int* input=probeInputs.ToArray())probeError=PK_GEOM_transform_2(probeInputs.Count,input,pkTransform,&probeOptions,probeOutputs,probeExact);
+        Console.WriteLine($"NATIVE_RATIONAL_UV_EXPLICIT_DEFINITION_NEW operation={operation} count={probeInputs.Count} raw_error={probeError}");
+        Require(probeError==0,"native new mode accepts an explicit copy of the parameter definition");
+        if(probeError==0)
+        {
+            var copiedForm=new PK_SPCURVE_sf_t();Check(PK_SPCURVE_ask(probeOutputs[probeInputs.IndexOf(probeCurve)],&copiedForm),"UV new copied spatial form");
+            var copiedUv=new PK_BCURVE_sf_t();Check(PK_BCURVE_ask(probeOutputs[0],&copiedUv),"UV explicitly copied definition");
+            try{Console.WriteLine($"NATIVE_RATIONAL_UV_NEW_SHARING operation={operation} selected_uv_equals_private_uv={probeOutputs[0]==copiedForm.curve} selected_uv_dimension={copiedUv.vertex_dim} selected_uv_rational={(int)copiedUv.is_rational} first_pole={copiedUv.vertex[0]:R}/{copiedUv.vertex[1]:R}/{copiedUv.vertex[2]:R}");}
+            finally{PK_MEMORY_free(copiedUv.vertex);PK_MEMORY_free(copiedUv.knot);PK_MEMORY_free(copiedUv.knot_mult);}
+            int* newInputs=stackalloc int[6]{spatial.BCurveTag,own,spatial.SurfTag,blend.Surface0Tag,blend.Surface1Tag,blend.SpineTag};int* newOutputs=stackalloc int[6];byte* newExact=stackalloc byte[6];
+            var newOptions=new M.PK_GEOM_transform_o_s{o_t_version=1,modify=M.ParasolidConstants.PK_GEOM_transform_new_c,want_out_geoms=1,want_exact=1};
+            var originalJet=stackalloc M.PK_VECTOR_s[3];var afterNew=stackalloc M.PK_VECTOR_s[3];var newJet=stackalloc M.PK_VECTOR_s[3];var nativeNewJet=stackalloc PK_VECTOR_t[3];
+            Check(KernelRuntime.CurveEval(own,.37,2,originalJet),"UV new source before");
+            Check(KernelRuntime.GeomTransform2(6,newInputs,transform,&newOptions,newOutputs,newExact),"UV managed new closure with explicit parameter copy");
+            Require(newExact[0]==(probeExact[0]==PK_LOGICAL_true?1:0)&&newExact[1]==(probeExact[probeInputs.IndexOf(probeCurve)]==PK_LOGICAL_true?1:0),"UV independent native new exact flags");
+            var ownNewDefinition=new M.PK_SPCURVE_sf_s();Check(KernelRuntime.SpCurveAsk(newOutputs[1],&ownNewDefinition),"UV managed new private definition");
+            Require(newOutputs[0]!=ownNewDefinition.curve&&probeOutputs[0]!=copiedForm.curve,"explicit parameter copy is separate from the private SP definition");
+            CompareParameterDefinition(newOutputs[0],probeOutputs[0]);CompareParameterDefinition(ownNewDefinition.curve,copiedForm.curve);
+            Check(KernelRuntime.CurveEval(own,.37,2,afterNew),"UV new source after");Check(KernelRuntime.CurveEval(newOutputs[1],.37,2,newJet),"UV managed new spatial jet");
+            Check(PK_CURVE_eval(probeOutputs[probeInputs.IndexOf(probeCurve)],.37,2,nativeNewJet),"UV native new spatial jet");
+            for(var order=0;order<3;order++)for(var axis=0;axis<3;axis++){Equal(afterNew[order].coord[axis],originalJet[order].coord[axis],"UV new source unchanged");Equal(newJet[order].coord[axis],nativeNewJet[order].coord[axis],"UV new independent native D"+order);}
+            Console.WriteLine($"RATIONAL_UV_NEW_PASS operation={operation} explicit_and_private_definitions_independent=True native_poles_and_D0_D2=True source_unchanged=True");
+        }
+        probeOptions.modify=PK_GEOM_transform_modify_c;
+        fixed(int* input=probeInputs.ToArray())probeError=PK_GEOM_transform_2(probeInputs.Count,input,pkTransform,&probeOptions,probeOutputs,probeExact);
+        Console.WriteLine($"NATIVE_RATIONAL_UV_EXPLICIT_DEFINITION operation={operation} count={probeInputs.Count} raw_error={probeError}");
+        Require(probeError==PK_ERROR_is_attached,"native rejects the attached parameter definition as an external root");
+        Check(PK_ENTITY_delete(1,&probeBody),"UV extra-definition control cleanup");
+    }
+    if(parameterFirst){(roots[0],roots[4])=(roots[4],roots[0]);nativeRoots.Reverse();}
+    var actual=stackalloc M.PK_VECTOR_s[3];var expected=stackalloc PK_VECTOR_t[3];
+    Check(KernelRuntime.CurveEval(own,.37,2,actual),"UV input managed jet");Check(PK_CURVE_eval(nativeCurve,.37,2,expected),"UV native input jet");
+    for(var order=0;order<3;order++)for(var axis=0;axis<3;axis++)Equal(actual[order].coord[axis],expected[order].coord[axis],label+$" common D{order}");
+    var options=new M.PK_GEOM_transform_o_s{o_t_version=1,modify=M.ParasolidConstants.PK_GEOM_transform_modify_c,want_out_geoms=1,want_exact=1};
+    var nativeOptions=new PK_GEOM_transform_o_t{modify=PK_GEOM_transform_modify_c};
+    int* results=stackalloc int[6];byte* exact=stackalloc byte[6];int* nativeResults=stackalloc int[nativeRoots.Count];PK_LOGICAL_t* nativeExact=stackalloc PK_LOGICAL_t[nativeRoots.Count];
+    fixed(int* input=nativeRoots.ToArray())Check(PK_GEOM_transform_2(nativeRoots.Count,input,pkTransform,&nativeOptions,nativeResults,nativeExact),"UV native complete modify");
+    Console.WriteLine($"NATIVE_RATIONAL_UV_MODIFY operation={operation} parameter_first={parameterFirst} result=0");
+    Check(KernelRuntime.GeomTransform2(5,roots,transform,&options,results,exact),"UV managed complete modify");
+    for(var i=0;i<5;i++)Require(results[i]==roots[i]&&exact[i]==1,"UV managed stable exact modify handles");
+    for(var i=0;i<nativeRoots.Count;i++)Require(nativeResults[i]==nativeRoots[i]&&nativeExact[i]==PK_LOGICAL_true,"UV native stable exact modify handles");
+    Check(KernelRuntime.CurveEval(own,.37,2,actual),"UV managed modified jet");Check(PK_CURVE_eval(nativeCurve,.37,2,expected),"UV native modified jet");
+    for(var order=0;order<3;order++)for(var axis=0;axis<3;axis++)Equal(actual[order].coord[axis],expected[order].coord[axis],label+$" modified D{order}");
+    // The existing public wire builder rejects SPCurve (5000). Keep that
+    // separate capability gap visible: this body carries the real SPCurve
+    // as construction geometry defined from its attached native spine.
+    Check(KernelRuntime.EntityDelete(1,&body),"UV delete managed source");Check(PK_ENTITY_delete(1,&nativeBody),"UV delete native source");
+    // A copied native construction member can itself remain a member of the
+    // source part. Start the body consumer from the saved input bytes instead
+    // of assuming that the preceding geometry copy left the part unchanged.
+    var inputBytes=File.ReadAllBytes(Path.Combine(directory,label+"-input.x_t"));
+    var reference=Receive(inputBytes);int ownBody;
+    fixed(byte* input=inputBytes)
+    {
+        var memory=new M.PK_MEMORY_block_s{n_bytes=(nuint)inputBytes.Length,bytes=input};var receive=new M.PK_PART_receive_o_s{o_t_version=1,transmit_format=PK_transmit_format_text_c};int count;int* parts;
+        Check(KernelRuntime.PartReceiveB(memory,&receive,&count,&parts),"UV editable own XT receive");
+        try{Require(count==1&&KernelRuntime.TryResolveBodySlot(parts[0],out var slot)&&!KernelRuntime.Xt.IsOpaque(slot),"UV editable construction body");ownBody=parts[0];}finally{KernelRuntime.MemoryFree(parts);}
+    }
+    int changed;int* replaced;byte* exactBody;Check(KernelRuntime.BodyTransform(ownBody,transform,0,&changed,&replaced,&exactBody),"UV body transform");if(replaced!=null)KernelRuntime.MemoryFree(replaced);if(exactBody!=null)KernelRuntime.MemoryFree(exactBody);
+    PK_LOGICAL_t* nativeExactBody;Check(PK_BODY_transform(reference,pkTransform,0,&changed,&replaced,&nativeExactBody),"UV native body transform");if(replaced!=null)PK_MEMORY_free(replaced);if(nativeExactBody!=null)PK_MEMORY_free(nativeExactBody);
+    bytes=Transmit(ownBody);File.WriteAllBytes(Path.Combine(directory,label+"-output.x_t"),bytes);File.WriteAllBytes(Path.Combine(directory,label+"-reference.x_t"),TransmitReference(reference));
+    var fresh=Receive(bytes);CheckBody(fresh,label+" fresh",Console.WriteLine);CheckBody(reference,label+" reference",Console.WriteLine);ParasolidBodyCompare.AssertEquivalent(reference,fresh,label);
+    var freshCurve=NativeSpatialMember(fresh);var referenceCurve=NativeSpatialMember(reference);
+    Check(PK_CURVE_eval(freshCurve,.37,2,expected),"UV actual XT construction curve");for(var order=0;order<3;order++)for(var axis=0;axis<3;axis++)Equal(actual[order].coord[axis],expected[order].coord[axis],label+$" free/body/fresh-XT D{order}");
+    // The external PK wire consumer receives each actual curve. No native
+    // reference or rebuilt curve is substituted for the GM XT definition.
+    range.value[0]=.17;range.value[1]=.83;
+    int freshWire,referenceWire;Check(PK_CURVE_make_wire_body(freshCurve,*(PK_INTERVAL_t*)&range,&freshWire),"UV fresh XT external finite consumer");Check(PK_CURVE_make_wire_body(referenceCurve,*(PK_INTERVAL_t*)&range,&referenceWire),"UV reference finite consumer");
+    CheckBody(freshWire,label+" external fresh wire",Console.WriteLine);ParasolidBodyCompare.AssertEquivalent(referenceWire,freshWire,label+" external finite wire");
+    if(operation is "reflection" or "scale")
+    {
+        var nativeForm=new PK_SPCURVE_sf_t();Check(PK_SPCURVE_ask(freshCurve,&nativeForm),"UV actual modified support");int wrongParameter;
+        Check(PK_BCURVE_create((PK_BCURVE_sf_t*)&curveForm,&wrongParameter),"UV original parameter-map negative");
+        nativeForm.curve=wrongParameter;int wrongCurve,wrongWire;Check(PK_SPCURVE_create(&nativeForm,&wrongCurve),"UV wrong parameter curve");
+        Check(PK_CURVE_make_wire_body(wrongCurve,*(PK_INTERVAL_t*)&range,&wrongWire),"UV wrong finite wire");var rejected=false;
+        try{ParasolidBodyCompare.AssertWireGeometry(referenceWire,wrongWire,label+" old UV map negative");}catch(InvalidOperationException){rejected=true;}
+        Require(rejected,"untransformed homogeneous UV poles must fail the finite geometry comparison");Check(PK_ENTITY_delete(1,&wrongWire),"UV negative cleanup");
+    }
+    Check(KernelRuntime.EntityDelete(1,&ownBody),"UV own cleanup");int* release=stackalloc int[4]{fresh,reference,freshWire,referenceWire};Check(PK_ENTITY_delete(4,release),"UV native cleanup");
+
+    static void Collect(int geometry,List<int> output)
+    {
+        if(output.Contains(geometry))return;output.Add(geometry);int count;int* dependencies;Check(PK_GEOM_ask_dependents(geometry,&count,&dependencies),"UV actual native dependencies");
+        try{for(var i=0;i<count;i++)Collect(dependencies[i],output);}finally{PK_MEMORY_free(dependencies);}
+    }
+    static int NativeSpatialMember(int part)
+    {
+        int count;int* geometry;Check(PK_PART_ask_geoms(part,&count,&geometry),"UV actual construction members");
+        var found=0;try{for(var i=0;i<count;i++){int cls;Check(PK_ENTITY_ask_class(geometry[i],&cls),"UV construction class");if(cls!=PK_CLASS_spcurve)continue;Require(found==0,"one spatial construction member");found=geometry[i];}}finally{PK_MEMORY_free(geometry);}
+        Require(found!=0,"actual SPCurve construction member present");return found;
+    }
+    static void CompareParameterDefinition(int ownCurve,int nativeCurve)
+    {
+        var ownData=KernelRuntime.BCurveDataStore[KernelRuntime.GetCurveByTag(ownCurve).DataIndex];var nativeData=new PK_BCURVE_sf_t();Check(PK_BCURVE_ask(nativeCurve,&nativeData),"UV native parameter definition");
+        try
+        {
+            Require(ownData.VertexDim==nativeData.vertex_dim&&ownData.NVertices==nativeData.n_vertices&&ownData.Degree==nativeData.degree&&(ownData.IsRational!=0)==(nativeData.is_rational==PK_LOGICAL_true),"UV native copied definition layout");
+            var values=ownData.PolesSpan();for(var i=0;i<values.Length;i++)Equal(values[i],nativeData.vertex[i],"UV copied homogeneous pole "+i);
+        }
+        finally{PK_MEMORY_free(nativeData.vertex);PK_MEMORY_free(nativeData.knot);PK_MEMORY_free(nativeData.knot_mult);}
+    }
 }
 
 static unsafe void CompareGeometry(string kind,int transform,int pkTransform,string label,Action<string> log)

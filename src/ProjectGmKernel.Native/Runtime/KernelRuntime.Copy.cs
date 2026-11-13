@@ -207,7 +207,11 @@ internal static unsafe partial class KernelRuntime
             case CurveClass.SPCurve:
             {
                 var d=SpCurveDataPool[data]; error=CloneEntity(d.SurfTag,ref context,depth,out var support); if(error!=0) return error;
-                error=CloneEntity(d.BCurveTag,ref context,depth,out var basis); if(error!=0) return error;
+                // The 2D curve is this SP-curve's private parameter definition.
+                // A separately selected copy of it is independent geometry,
+                // not a shared parameter map of the copied SP-curve.
+                var parameterContext=new EntityCopyContext{Pairs=stackalloc EntityCopyPair[1]};
+                error=CloneEntity(d.BCurveTag,ref parameterContext,depth,out var basis); if(error!=0) return error;
                 var next=CloneData(ref SpCurveDataPool,data);error=NewCopiedCurve(source,next,out clone);if(error!=0)return error;
                 SpCurveDataPool[next].SurfTag=support;SpCurveDataPool[next].BCurveTag=basis;
                 AcquireGeometryDependency(PoolKind.Surface,GetSurfaceSlotByTag(support));AcquireGeometryDependency(PoolKind.Curve,GetCurveSlotByTag(basis));

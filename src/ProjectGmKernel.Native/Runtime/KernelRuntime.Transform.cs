@@ -30,8 +30,9 @@ internal static unsafe partial class KernelRuntime
         return TryTransformEntitiesCore(entities,transform,tolerance);
     }
 
-    // PK's modify mode requires the caller to list every defining geometry,
-    // including children that are also referenced by another selected owner.
+    // PK's modify mode requires every external geometric dependent. An
+    // SP-curve's attached 2D parameter definition is transformed by its owner,
+    // not selected as another external geometry.
     // Omitting a child or an outside owner is PK_ERROR_bad_sharing; silently
     // walking into it would change geometry the caller did not select.
     private static int ValidateExplicitTransformClosure(ReadOnlySpan<GeomTag> geometries)
@@ -44,7 +45,17 @@ internal static unsafe partial class KernelRuntime
             if(pool is not (PoolKind.Point or PoolKind.Curve or PoolKind.Surface))return ParasolidConstants.PK_ERROR_unsuitable_entity;
             if(PoolPartitionOf(pool,record.Slot)!=CurrentPartition)return ParasolidConstants.PK_ERROR_not_in_same_partition;
             if(GeometryOwnerCount(pool,record.Slot)!=0)return ParasolidConstants.PK_ERROR_is_attached;
+            if(pool==PoolKind.Curve&&Curves[record.Slot].Class==CurveClass.BCurve&&Curves[record.Slot].GeometricOwnerCount>0)
+            {
+                var definition=BCurveDataStore[Curves[record.Slot].DataIndex];
+                if(definition.VertexDim-(definition.IsRational!=0?1:0)==2)return ParasolidConstants.PK_ERROR_is_attached;
+            }
+        }
+        for(var i=0;i<geometries.Length;i++)
+        {
+            var record=TagRec(geometries[i]);var pool=(PoolKind)record.Pool;
             var count=GetGeometryDependencyTags(pool,record.Slot,dependencies);
+            if(pool==PoolKind.Curve&&Curves[record.Slot].Class==CurveClass.SPCurve)count=1;
             for(var j=0;j<count;j++)if(!geometries.Contains(dependencies[j]))return ParasolidConstants.PK_ERROR_bad_sharing;
         }
         for(var i=0;i<geometries.Length;i++)
@@ -261,16 +272,16 @@ internal static unsafe partial class KernelRuntime
     private static int TransformPoles(Span<double> poles,int dimension,bool rational,in KernelAffineTransform m)
     {
         var spatial=dimension-(rational?1:0);
-        if(spatial!=3) return ParasolidConstants.PK_ERROR_bad_dimension;
+        if(spatial is not (2 or 3)) return ParasolidConstants.PK_ERROR_bad_dimension;
         for(var i=0;i<poles.Length;i+=dimension)
         {
-            var weight=rational?poles[i+3]:1;
+            var weight=rational?poles[i+spatial]:1;
             // PK rational poles are homogeneous, so translation is multiplied
             // by the unmodified weight. Derivatives/knots retain their domain.
-            var p=m.TransformVector(new KernelVector3 { X=poles[i],Y=poles[i+1],Z=poles[i+2] });
+            var p=m.TransformVector(new KernelVector3 { X=poles[i],Y=poles[i+1],Z=spatial==3?poles[i+2]:0 });
             p.X+=m.M03*weight;p.Y+=m.M13*weight;p.Z+=m.M23*weight;
-            if(!FiniteVector(p)) return ParasolidConstants.PK_ERROR_failed_to_transform;
-            poles[i]=p.X;poles[i+1]=p.Y;poles[i+2]=p.Z;
+            if(!double.IsFinite(p.X)||!double.IsFinite(p.Y)||spatial==3&&!double.IsFinite(p.Z)) return ParasolidConstants.PK_ERROR_failed_to_transform;
+            poles[i]=p.X;poles[i+1]=p.Y;if(spatial==3)poles[i+2]=p.Z;
         }
         return 0;
     }
@@ -386,22 +397,22 @@ internal static unsafe partial class KernelRuntime
         }
     }
 
-    private static bool TransformUv(SurfTag tag,double scale,double parity,ref double u,ref double v,int depth=0,bool allowNull=false,bool canonical=false)
+    private static bool TransformUv(SurfTag tag,double scale,double parity,ref double u,ref double v,int depth=0,bool allowNull=false,bool canonical=false,double homogeneousWeight=1)
     {
         if(allowNull&&double.IsNaN(u)&&double.IsNaN(v))return true;
-        if(depth>128||!double.IsFinite(u)||!double.IsFinite(v))return false;
+        if(depth>128||!double.IsFinite(u)||!double.IsFinite(v)||!double.IsFinite(homogeneousWeight))return false;
         var slot=GetSurfaceSlotByTag(tag);if(slot<0)return false;var s=Surfaces[slot];
         switch(s.Class)
         {
             case SurfaceClass.Plane:u*=scale;v*=scale*parity;break;
             case SurfaceClass.Cylinder:case SurfaceClass.Cone:u*=parity;v*=scale;if(canonical)CanonicalAngle(ref u);break;
             case SurfaceClass.Sphere:case SurfaceClass.Torus:u*=parity;if(canonical)CanonicalAngle(ref u);break;
-            case SurfaceClass.Offset:return TransformUv(OffsetDataPool[s.DataIndex].BaseSurfTag,scale,parity,ref u,ref v,depth+1,canonical:canonical);
+            case SurfaceClass.Offset:return TransformUv(OffsetDataPool[s.DataIndex].BaseSurfTag,scale,parity,ref u,ref v,depth+1,canonical:canonical,homogeneousWeight:homogeneousWeight);
             case SurfaceClass.Swept:u*=CurveParameterScale(SweptDataPool[s.DataIndex].SectionCurveTag,scale);v*=scale;break;
             case SurfaceClass.Spun:u*=CurveParameterScale(SpunDataPool[s.DataIndex].ProfileCurveTag,scale);v*=parity;break;
             case SurfaceClass.BlendSurface:
                 u*=CurveParameterScale(BlendedEdgeDataPool[s.DataIndex].SpineTag,scale);
-                if(parity<0)v=1-v;break;
+                if(parity<0)v=homogeneousWeight-v;break;
         }
         return double.IsFinite(u)&&double.IsFinite(v);
     }
@@ -447,7 +458,10 @@ internal static unsafe partial class KernelRuntime
         if(!SnapshotPayload(data.VertexBlock,(nuint)(data.NVertices*data.VertexDim*8),Curves[slot].Header.Partition))return ParasolidConstants.PK_ERROR_memory_full;
         var poles=data.PolesSpan();
         for(var i=0;i<poles.Length;i+=data.VertexDim)
-            if(!TransformUv(surface,scale,parity,ref poles[i],ref poles[i+1]))return ParasolidConstants.PK_ERROR_failed_to_transform;
+            // A rational 2D pole is (u*w,v*w,w). Apply the affine native
+            // parameter map in homogeneous coordinates; division/reweighting
+            // would add rounding and fail for a zero-weight projective pole.
+            if(!TransformUv(surface,scale,parity,ref poles[i],ref poles[i+1],homogeneousWeight:data.IsRational!=0?poles[i+2]:1))return ParasolidConstants.PK_ERROR_failed_to_transform;
         return 0;
     }
 

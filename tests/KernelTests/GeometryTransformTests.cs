@@ -115,7 +115,7 @@ public unsafe class GeometryTransformTests : IDisposable
     }
 
     [Fact]
-    public void ModifySpCurve_MapsExplicitUvDependencyListedBeforeItsOwner()
+    public void ModifySpCurve_RejectsExplicitUvDefinitionAndTransformsItThroughItsOwner()
     {
         var plane=CreateSurface("plane");double* poles=stackalloc double[4] {0,0,1,.5};double* knots=stackalloc double[2] {0,1};int* mult=stackalloc int[2] {2,2};
         var uvSf=new PK_BCURVE_sf_s {degree=1,n_vertices=2,vertex_dim=2,vertex=poles,n_knots=2,knot=knots,knot_mult=mult,
@@ -123,8 +123,30 @@ public unsafe class GeometryTransformTests : IDisposable
         int uv;Assert.Equal(0,KernelRuntime.BCurveCreate(&uvSf,&uv));var spSf=new PK_SPCURVE_sf_s {surf=plane,curve=uv};int sp;Assert.Equal(0,KernelRuntime.SpCurveCreate(&spSf,&sp));
         var before=EvalCurve(sp,.3);var transform=CreateTransform(Similarity(-2,2,2,3,5,7));
         int* inputs=stackalloc int[3] {uv,plane,sp};int* outputs=stackalloc int[3];byte* exact=stackalloc byte[3];var options=TransformOptions(true);
-        Assert.Equal(0,KernelRuntime.GeomTransform2(3,inputs,transform,&options,outputs,exact));
+        Assert.Equal(ParasolidConstants.PK_ERROR_is_attached,KernelRuntime.GeomTransform2(3,inputs,transform,&options,outputs,exact));
+        Vector(EvalCurve(sp,.3),before.coord[0],before.coord[1],before.coord[2]);
+        for(var i=0;i<3;i++){Assert.Equal(0,outputs[i]);Assert.Equal((byte)0,exact[i]);}
+        inputs[0]=plane;inputs[1]=sp;Assert.Equal(0,KernelRuntime.GeomTransform2(2,inputs,transform,&options,outputs,exact));
         Vector(EvalCurve(sp,.3),-2*before.coord[0]+3,2*before.coord[1]+5,2*before.coord[2]+7);
+    }
+
+    [Fact]
+    public void NewSpCurveKeepsItsParameterDefinitionSeparateFromAnExplicitlyCopiedUvCurve()
+    {
+        var plane=CreateSurface("plane");double* poles=stackalloc double[4]{0,0,1,.5};double* knots=stackalloc double[2]{0,1};int* mult=stackalloc int[2]{2,2};
+        var form=new PK_BCURVE_sf_s{degree=1,n_vertices=2,vertex_dim=2,vertex=poles,n_knots=2,knot=knots,knot_mult=mult,
+            form=ParasolidConstants.PK_BCURVE_form_arbitrary_c,knot_type=ParasolidConstants.PK_knot_bezier_ends_c,self_intersecting=ParasolidConstants.PK_self_intersect_false_c};
+        int uv;Assert.Equal(0,KernelRuntime.BCurveCreate(&form,&uv));var definition=new PK_SPCURVE_sf_s{surf=plane,curve=uv};int spatial;Assert.Equal(0,KernelRuntime.SpCurveCreate(&definition,&spatial));
+        var transform=CreateTransform(Similarity(-2,2,2,3,5,7));var options=TransformOptions(false);
+        int* inputs=stackalloc int[3]{uv,plane,spatial};int* outputs=stackalloc int[3];byte* exact=stackalloc byte[3];Assert.Equal(0,KernelRuntime.GeomTransform2(3,inputs,transform,&options,outputs,exact));
+        var copied=new PK_SPCURVE_sf_s();Assert.Equal(0,KernelRuntime.SpCurveAsk(outputs[2],&copied));Assert.NotEqual(outputs[0],copied.curve);
+        var sourcePoles=KernelRuntime.BCurveDataStore[KernelRuntime.GetCurveByTag(uv).DataIndex].PolesSpan();
+        Assert.Equal(0,sourcePoles[0]);Assert.Equal(0,sourcePoles[1]);Assert.Equal(1,sourcePoles[2]);Assert.Equal(.5,sourcePoles[3]);
+        var explicitPoles=KernelRuntime.BCurveDataStore[KernelRuntime.GetCurveByTag(outputs[0]).DataIndex].PolesSpan();
+        Assert.Equal(3,explicitPoles[0]);Assert.Equal(5,explicitPoles[1]);Assert.Equal(1,explicitPoles[2]);Assert.Equal(6,explicitPoles[3]);
+        var privatePoles=KernelRuntime.BCurveDataStore[KernelRuntime.GetCurveByTag(copied.curve).DataIndex].PolesSpan();
+        Assert.Equal(0,privatePoles[0]);Assert.Equal(0,privatePoles[1]);Assert.Equal(2,privatePoles[2]);Assert.Equal(-1,privatePoles[3]);
+        Vector(EvalCurve(outputs[2],.3),2.4,5.3,7);
     }
 
     [Fact]

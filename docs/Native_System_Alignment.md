@@ -1604,3 +1604,54 @@ manifest明确`independentlyAccepted=false`、`performanceQualified=false`。
 计数显示反复native区间Jacobian/求界及Clip/Arrange/Classify均有成本，尚不能把
 inclusive bound时间签成排他CPU，也不由此恢复被拒候选、删证明或增加预算。
 继续沿原生有限关联和实际主处理链处理共同缺口，包封存不是任务DONE。
+
+## 二维原生定义与外部几何分开复制、修改
+
+XT 5.2.1.8 定义 SPCurve 为二维 BCurve 嵌入原曲面的结果；有理二维控制点为
+`(u*w,v*w,w)`，而非三维点。原变换将 Blend 的反射映射 `v→1-v` 直接应用到
+第二个齐次分量，破坏了非单位权重定义。现在共同 UV 映射保留权重，使用
+`v_h→w-v_h`；普通原生 UV 仍取w=1，offset引用递归传同一权重，不除权重或重拟合。
+两项制造解原raw1及`native-rational-uv-transform-oracle-repro-v4`的两个真实PK
+反射D0失败均保留。输入顺序并非该错误根因，既有两阶段遍历已处理顺序。
+
+更深的真实接口差异是“定义依赖”并非全部都是调用者必须选择的几何。
+本轮PK的GEOM ask_dependents实际返回SPCurve、Blend、spine、两个原支持的五项闭包，
+不返回二维参数曲线；显式把参数曲线加入modify数组，五种similarity均返回34。
+GM原先要求六项，五项则错误返回921。现在modify选择只检查外部几何闭包；
+二维参数曲线仍是原拥有关系中的强依赖，由SPCurve自动修改。显式选择该已附着
+定义返回34，缺外部支持仍拒绝，所有权/删除图没有因为隐藏此选项而删去UV依赖。
+旧`ModifySpCurve`单测要求显式UV成功的断言已按真实PK合同更正，未保留兼容分支。
+
+new模式不能沿用modify限制。实际PK接受显式UV新副本，但它与新SPCurve的私有UV
+是两个不同对象：前者按二维XY几何变换，后者按父面的原生参数映射变换。
+平移、平面旋转、绕X轴倾转、尺度和反射的真实输出均已逐控制点核对；维数/权重
+保持二维原定义。GM原共享clone映射将两者错误归为同一tag，制造解原raw1。
+现在SPCurve仅用栈上一项私有clone映射复制其UV定义，外部几何仍用原共享映射；
+单独复制的二维BCurve按实际二维齐次XY规则变换。没有改变曲面原生参数或另造表示。
+
+MCP静态从`GTR_transform_curve → transform_sp_curve`继续到
+`GTR_transform_parm_surface/curve`的参数反求/变换依赖，复制链继续到
+`GDS_transformed_duplicate/new_transformed_duplicate`的真实依赖遍历及几何变换。
+`native-rational-uv-transform-dynamic-v1`在真实GEOM transform_2栈内命中SPCurve、
+invariant检测、参数surface/curve变换，以及MOD_change_logger/MOD_unset_box，raw0。
+这些命中属于本次SPCurve分支，不反向补签先前ICurve执行未命中的分支；静态列表
+不证明所有间接调用或内部复制布局已经解析。
+
+真实消费者覆盖同一GM原生XT输入，两侧各自实际修改/新建；同时检查私有/外部副本
+身份、全部齐次控制点、D0–D2、exact、source不变和两种选择顺序。携带真实SPCurve
+construction geometry的body分别回读并变换，再由GM fresh XT进入PK fullcheck/strict。
+PK随后分别消费两个实际曲线，建`.17..83`有限wire并比较；保留旧UV映射的同拓扑
+负例失败。该最后一步明确是PK外部wire消费者，未冒充GM已实现SPCurve建wire。
+本轮`native-rational-uv-transform-oracle-repro-v1`实际暴露GM该入口返回5000，
+仍列缺口；v2的固定六项native闭包假设、v3的构造成员副本假设失败亦保留。
+构造成员的原生copy可能继续归属原part，后继body消费者因此从原输入字节独立回读，
+不假定geometry copy对原part成员集合无影响。
+
+`native-uv-definition-integrated-full-v1`实际118/118、raw0，含原83项、此前暖ICurve
+及新增倾转/有理UV/new副本控制；原始ICurve off-centre D2差异仍单列。
+`native-uv-private-copy-managed-v1`65/65、raw0，guard CLEAN；
+`native-uv-definition-integrated-full-managed-v1`完整2203/2203、raw0、guard3179 CLEAN。
+生产Native SHA256为4748d74bdd3009b2d4756f889a22c44c68844c97a9573c1374e6c20e51e308b3。
+`native-uv-definition-copy-dynamic-v1`十项真实执行及inferior/debugger均raw0，
+新设复制断点仅命中GDS_plagiarize，未命中另两个duplicate断点，保留静态/动态区别。
+原9e固定包不覆盖，本轮增量继续向统一交付推进。
