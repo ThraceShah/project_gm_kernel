@@ -13,6 +13,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text.Json.Nodes;
 using M=ProjectGmKernel.Native.Generated;
+using ProjectGmKernel.Native.Geometry.Intersection;
 
 var benchRepeat=1;var benchOption=args.SingleOrDefault(x=>x.StartsWith("--bench-repeat=",StringComparison.Ordinal));
 if(benchOption!=null)benchRepeat=int.Parse(benchOption["--bench-repeat=".Length..],CultureInfo.InvariantCulture);
@@ -21,6 +22,16 @@ ModelingPerformance.Enabled=args.Contains("--bench-profile",StringComparer.Ordin
 KernelRuntime.ForbidLegacyRegularBlendAssembly=args.Contains("--event-arrangement",StringComparer.Ordinal);
 var cutArg=args.SingleOrDefault(x=>x.StartsWith("--cut-x=",StringComparison.Ordinal));
 var cutX=cutArg==null?.5:double.Parse(cutArg[8..],CultureInfo.InvariantCulture);
+var rationalSupports=args.Contains("--rational-supports",StringComparer.Ordinal);
+var lifecycleScaleOption=args.SingleOrDefault(x=>x.StartsWith("--lifecycle-scale=",StringComparison.Ordinal));
+var lifecycleScales=lifecycleScaleOption==null?new[]{.125,1.7,8}:new[]{double.Parse(lifecycleScaleOption["--lifecycle-scale=".Length..],CultureInfo.InvariantCulture)};
+Require(lifecycleScales.All(x=>double.IsFinite(x)&&x>0),"positive finite lifecycle scales");
+var reverseSupportU=args.Contains("--reverse-support-u",StringComparer.Ordinal);
+var firstUOption=args.SingleOrDefault(x=>x.StartsWith("--support-u-first=",StringComparison.Ordinal));
+var lastUOption=args.SingleOrDefault(x=>x.StartsWith("--support-u-last=",StringComparison.Ordinal));
+var supportFirstU=firstUOption==null?0:double.Parse(firstUOption["--support-u-first=".Length..],CultureInfo.InvariantCulture);
+var supportLastU=lastUOption==null?1:double.Parse(lastUOption["--support-u-last=".Length..],CultureInfo.InvariantCulture);
+Require(double.IsFinite(supportFirstU)&&double.IsFinite(supportLastU)&&supportLastU>supportFirstU,"finite increasing native support U domain");
 if(args.Contains("--jit-proof-only",StringComparer.Ordinal)){Console.WriteLine("JIT_PROOF "+RuntimePolicyProof(Environment.TickCount));return;}
 Require(cutX>0&&cutX<1,"the cut station must be inside the seed's X range");
 var requireCutSection=args.Contains("--require-cut-section",StringComparer.Ordinal);
@@ -50,6 +61,10 @@ if(KernelRuntime.ForbidLegacyRegularBlendAssembly)
             if(trace.Stage==KernelRuntime.BoundaryTraceStage.NativeCutLocator&&trace.First==trace.Last)cutEnds.Add((trace.ProductCurve,trace.StartEvent));
         }
         Console.WriteLine($"BOUNDARY {trace.Stage} source={trace.Source} face={trace.Face} product={trace.Product} surface={trace.Surface} edge={trace.Edge} carrier={trace.Curve}/{trace.Generation} product_curve={trace.ProductCurve} t=[{trace.First:R},{trace.Last:R}] events={trace.StartEvent}->{trace.EndEvent} forward={trace.Forward} source_edge={trace.SourceEdge} source_fin={trace.SourceFin}");
+        if(trace.Stage==KernelRuntime.BoundaryTraceStage.Successor)
+            Console.WriteLine($"SUCCESSOR surface={trace.Surface} edge={trace.Edge} forward={trace.Forward} next_edge={trace.NextEdge} angles={trace.StartAngle:R}/{trace.EndAngle:R} events={trace.StartEvent}/{trace.EndEvent}");
+        if(trace.Stage==KernelRuntime.BoundaryTraceStage.NativeContactEndpoint)
+        {unsafe{Console.WriteLine($"CONTACT_END source={trace.Curve} target={trace.ProductCurve} contact_u={trace.UvStart.param[0]:R}/{trace.UvEnd.param[0]:R} v={trace.UvStart.param[1]:R} station={trace.First:R} diameter={trace.SpatialError:R} witness={trace.Witness}");}}
     };
 var outputName=args.Single(x=>x.StartsWith("--output-name=",StringComparison.Ordinal))["--output-name=".Length..];
 Require(outputName.Length>0&&outputName.All(c=>char.IsAsciiLetterOrDigit(c)||c is '-' or '_'),"one new output directory name is required");
@@ -58,6 +73,7 @@ Require(!Directory.Exists(directory),"Existing execution evidence is immutable")
 ParasolidMassProperties.BeginEvidence(directory);
 Console.WriteLine("GM_ASSEMBLY sha256="+Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(typeof(KernelRuntime).Assembly.Location))));
 Console.WriteLine("RUNTIME "+System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription+" "+System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture);
+Console.WriteLine($"INPUT_SUPPORTS rational={rationalSupports} reverse_u={reverseSupportU} native_u={supportFirstU:R}/{supportLastU:R}");
 foreach(var pair in new[]{("DOTNET_TieredCompilation","System.Runtime.TieredCompilation"),("DOTNET_TieredPGO","System.Runtime.TieredPGO"),
     ("DOTNET_TC_QuickJit","System.Runtime.TieredCompilation.QuickJit"),("DOTNET_TC_QuickJitForLoops","System.Runtime.TieredCompilation.QuickJitForLoops"),("DOTNET_ReadyToRun","System.Runtime.ReadyToRun")})
     Console.WriteLine($"RUNTIME_REQUEST {pair.Item1}={Environment.GetEnvironmentVariable(pair.Item1)??"unset"} runtimeconfig={AppContext.GetData(pair.Item2)??"unset"}");
@@ -79,7 +95,7 @@ using(host)unsafe
         else if(args.Contains("native-only",StringComparer.Ordinal))
         {
             var concave=args.Contains("concave",StringComparer.Ordinal);var wall=args.Contains("wall",StringComparer.Ordinal);
-            var native=Roof(false,.4,wall,concave);CheckBody(native,"native input");var blend=Fillet(false,native,.1,concave);CheckBody(native,"native fillet");
+            var native=Roof(false,.4,wall,concave,rationalSupports,reverseSupportU,supportFirstU,supportLastU);CheckBody(native,"native input");var blend=Fillet(false,native,.1,concave);CheckBody(native,"native fillet");
             int type;Check(PK_ENTITY_ask_class(blend,&type),"native fillet surface class");Console.WriteLine($"native fillet support class={type}");DumpEdges(native);
             var stem="native-v261-"+(concave?"concave-":"")+(wall?"nurbs-nurbs-":"")+"fillet";DumpNativeXt(native,directory,stem);
             native=Cut(false,native,cutX);CheckBody(native,"native fillet cut");Console.WriteLine("NATIVE CUT EDGES");DumpEdges(native);DumpNativeXt(native,directory,stem+"-cut");Console.WriteLine("PASS native fixture and subsequent cutting");
@@ -91,7 +107,6 @@ using(host)unsafe
             {
                 if(name=="affine-plane-nurbs"&&!args.Contains(name,StringComparer.Ordinal))continue;
                 if(args.Length!=0&&!args.Contains(name,StringComparer.Ordinal))continue;
-                if(lifecycleOnly&&name!="plane-nurbs")continue;
                 for(var benchRep=0;benchRep<benchRepeat;benchRep++)
                 {
                 cases++;
@@ -100,7 +115,7 @@ using(host)unsafe
                 var caseStarted=Stopwatch.GetTimestamp();
                 try
                 {
-                    var own=Roof(true,bulge,wall,concave);var reference=Roof(false,bulge,wall,concave);CheckBody(reference,name+" reference input");
+                    var own=Roof(true,bulge,wall,concave,rationalSupports,reverseSupportU,supportFirstU,supportLastU);var reference=Roof(false,bulge,wall,concave,rationalSupports,reverseSupportU,supportFirstU,supportLastU);CheckBody(reference,name+" reference input");
                     if(args.Contains("--remote-bore",StringComparer.Ordinal)){own=Bore(true,own);reference=Bore(false,reference);CheckBody(reference,name+" bored reference input");}
                     if(remoteCapBore){own=Bore(true,own,true);reference=Bore(false,reference,true);CheckCapBoreRings(own,reference);}
                     var nativeBlend=Fillet(false,reference,radius,concave);CheckBody(reference,name+" reference fillet");
@@ -121,7 +136,7 @@ using(host)unsafe
                         try
                         {
                             var remodel=args.Contains("--lifecycle-remodel",StringComparer.Ordinal);
-                            foreach(var scale in remodel?new[]{.125,1.7,8}:new[]{2.0})
+                            foreach(var scale in remodel?lifecycleScales:new[]{2.0})
                                 CheckLifecycle(own,reference,directory,remodel?name+"-scale-"+scale.ToString("R",CultureInfo.InvariantCulture):name,cutX,scale,remodel);
                         }
                         catch(Exception ex){failures++;Console.WriteLine("FAIL independent lifecycle: "+ex.Message);}
@@ -214,7 +229,7 @@ static unsafe void ContactQueries(int source,int reference,string output,string 
     Console.WriteLine($"FINITE_CONTACT_QUERY_PASS cases={results.Count} actual finite face topology matches independent and same-product PK");
 }
 
-static unsafe int Roof(bool own,double bulge=.4,bool curvedWall=false,bool concave=false)
+static unsafe int Roof(bool own,double bulge=.4,bool curvedWall=false,bool concave=false,bool rational=false,bool reverseU=false,double firstU=0,double lastU=1)
 {
     var body=Block(own,.5,.5,0,1,1,1);if(concave)body=Notch(own,body);int n;int* faces;
     Check(own?KernelRuntime.BodyAskFaces(body,&n,&faces):PK_BODY_ask_faces(body,&n,&faces),"input faces");var top=0;var wall=0;
@@ -229,20 +244,29 @@ static unsafe int Roof(bool own,double bulge=.4,bool curvedWall=false,bool conca
         }
     }
     finally{Free(own,faces);}
-    Require(top!=0,"top plane");double* poles=stackalloc double[45];double* knots=stackalloc double[2]{0,1};int* um=stackalloc int[2]{5,5};int* vm=stackalloc int[2]{3,3};
-    for(var i=0;i<5;i++)for(var j=0;j<3;j++){var at=3*(i*3+j);poles[at]=i/4.0;poles[at+1]=(concave?.5:0)+(concave?.5:1)*j/2.0;poles[at+2]=(concave?.5:1)+(i==2&&j==1?bulge:0);}
-    var sf=new PK_BSURF_sf_t{u_degree=4,v_degree=2,n_u_vertices=5,n_v_vertices=3,vertex_dim=3,vertex=poles,n_u_knots=2,n_v_knots=2,
-        u_knot=knots,v_knot=knots,u_knot_mult=um,v_knot_mult=vm,form=PK_BSURF_form_arbitrary_c,u_knot_type=PK_knot_non_uniform_c,v_knot_type=PK_knot_non_uniform_c,
-        self_intersecting=PK_self_intersect_false_c,convexity=PK_convexity_unset_c};int roof;byte sense=1;
+    Require(top!=0,"top plane");var dim=rational?4:3;double* poles=stackalloc double[15*dim];double* uk=stackalloc double[2]{firstU,lastU};double* vk=stackalloc double[2]{0,1};int* um=stackalloc int[2]{5,5};int* vm=stackalloc int[2]{3,3};
+    for(var i=0;i<5;i++)for(var j=0;j<3;j++)
+    {
+        var sourceI=reverseU?4-i:i;var at=dim*(i*3+j);var w=rational?1+.1*(sourceI-2)+.07*(j-1):1;
+        poles[at]=sourceI/4.0*w;poles[at+1]=((concave?.5:0)+(concave?.5:1)*j/2.0)*w;poles[at+2]=((concave?.5:1)+(sourceI==2&&j==1?bulge:0))*w;if(rational)poles[at+3]=w;
+    }
+    var sf=new PK_BSURF_sf_t{u_degree=4,v_degree=2,n_u_vertices=5,n_v_vertices=3,vertex_dim=dim,is_rational=rational?PK_LOGICAL_true:PK_LOGICAL_false,vertex=poles,n_u_knots=2,n_v_knots=2,
+        u_knot=uk,v_knot=vk,u_knot_mult=um,v_knot_mult=vm,form=PK_BSURF_form_arbitrary_c,u_knot_type=PK_knot_non_uniform_c,v_knot_type=PK_knot_non_uniform_c,
+        self_intersecting=PK_self_intersect_false_c,convexity=PK_convexity_unset_c};int roof;byte sense=reverseU?(byte)0:(byte)1;
     Check(own?KernelRuntime.BSurfCreate((M.PK_BSURF_sf_s*)&sf,&roof):PK_BSURF_create(&sf,&roof),"roof surface");
     Check(own?KernelRuntime.TopologyDetachGeometry(top):PK_TOPOL_detach_geom(top),"detach top support");
     Check(own?KernelRuntime.FaceAttachSurfaces(1,&top,&roof,&sense):PK_FACE_attach_surfs(1,&top,&roof,(PK_LOGICAL_t*)&sense),"attach freeform roof");
     if(curvedWall)
     {
-        for(var i=0;i<5;i++)for(var j=0;j<3;j++){var at=3*(i*3+j);poles[at]=i/4.0;poles[at+1]=(concave?.5:0)+(i==2&&j==1?(concave?-.15:-.3):0);poles[at+2]=(concave?.5:0)+(concave?.5:1)*j/2.0;}
+        for(var i=0;i<5;i++)for(var j=0;j<3;j++)
+        {
+            var sourceI=reverseU?4-i:i;var at=dim*(i*3+j);var w=rational?1+.1*(sourceI-2)+.07*(j-1):1;
+            poles[at]=sourceI/4.0*w;poles[at+1]=((concave?.5:0)+(sourceI==2&&j==1?(concave?-.15:-.3):0))*w;poles[at+2]=((concave?.5:0)+(concave?.5:1)*j/2.0)*w;if(rational)poles[at+3]=w;
+        }
         int surface;Check(own?KernelRuntime.BSurfCreate((M.PK_BSURF_sf_s*)&sf,&surface):PK_BSURF_create(&sf,&surface),"curved wall surface");
         Check(own?KernelRuntime.TopologyDetachGeometry(wall):PK_TOPOL_detach_geom(wall),"detach wall support");
         var wallSense=concave?(byte)0:(byte)1;
+        if(reverseU)wallSense=(byte)(1-wallSense);
         Check(own?KernelRuntime.FaceAttachSurfaces(1,&wall,&surface,&wallSense):PK_FACE_attach_surfs(1,&wall,&surface,(PK_LOGICAL_t*)&wallSense),"attach curved wall");
     }
     return body;
@@ -364,19 +388,9 @@ static unsafe (double First,double Last) FiniteBlendRange(int body,int surface)
 static unsafe int ContactParameters(int surface,M.PK_VECTOR_s point,out M.PK_UV_s uv)
 {
     uv=default;
-    if(KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(surface)].Class!=SurfaceClass.BSurface)
-    {fixed(M.PK_UV_s* result=&uv)return KernelRuntime.SurfParameteriseVector(surface,point,result);}
-    // These manufactured supports have x=u and a linear y(v) for roofs or
-    // z(v) for walls. Verify the actual surface point after recovering UV,
-    // independently of the rolling solver's stored contact parameters.
-    var aUV=new M.PK_UV_s();var bUV=new M.PK_UV_s();bUV.param[1]=1;M.PK_VECTOR_s a,b;
-    var error=KernelRuntime.SurfEval(surface,aUV,0,0,0,&a);if(error!=0)return error;
-    error=KernelRuntime.SurfEval(surface,bUV,0,0,0,&b);if(error!=0)return error;
-    var axis=Math.Abs(b.coord[1]-a.coord[1])>Math.Abs(b.coord[2]-a.coord[2])?1:2;
-    uv.param[0]=point.coord[0];uv.param[1]=(point.coord[axis]-a.coord[axis])/(b.coord[axis]-a.coord[axis]);
-    if(uv.param[0]<0||uv.param[0]>1||uv.param[1]<0||uv.param[1]>1)return PK_ERROR_not_on_surface;
-    M.PK_VECTOR_s evaluated;error=KernelRuntime.SurfEval(surface,uv,0,0,0,&evaluated);if(error!=0)return error;
-    return Distance(*(PK_VECTOR_t*)&point,*(PK_VECTOR_t*)&evaluated)<1e-8?0:PK_ERROR_not_on_surface;
+    // Invert the actual native support, independently of the rolling
+    // solver's saved foot. Rational/reversed supports need not have x=u.
+    fixed(M.PK_UV_s* result=&uv)return KernelRuntime.SurfParameteriseVector(surface,point,result);
 }
 
 static unsafe void CheckCoincidentCylinderWell(string directory,List<KernelRuntime.BoundaryTrace> trace)
@@ -474,8 +488,36 @@ static unsafe int Cut(bool own,int body,double x,PK_TRANSF_t transform=0,string?
     var webMs=Stopwatch.GetElapsedTime(started).TotalMilliseconds;WebProgressCapture.BooleanAfter(own,error==0?new ReadOnlySpan<int>(bodies,n).ToArray():[],webMs,error,0,null);
     Console.WriteLine($"TIME {(own?"self":"PK")} BODY_boolean x={x:R} ms={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F3}, error={error}");
     if(own&&ModelingPerformance.Enabled)PrintProfile("BODY_boolean",webMs);
+    if(own&&error!=0)DumpFailedBoundary(body);
     Check(error,"cut filleted solid");
     try{Require(n==1,"one cut solid");return bodies[0];}finally{Free(own,bodies);}
+}
+static void DumpFailedBoundary(int body)
+{
+    Console.WriteLine($"FAILED_INTERSECTION stage={KernelRuntime.LastGeneralIntersectionStage} status={KernelRuntime.LastGeneralIntersectionStatus} nodes={KernelRuntime.LastGeneralIntersectionNodes} segments={KernelRuntime.LastGeneralIntersectionSegments}");
+    var first=KernelRuntime.LastGeneralLimitFirst;var last=KernelRuntime.LastGeneralLimitLast;
+    Console.WriteLine($"FAILED_INTERSECTION ends_uv={first.U:R}/{first.V:R}/{first.S:R}/{first.T:R} -> {last.U:R}/{last.V:R}/{last.S:R}/{last.T:R}");
+    var cell=SurfacePlaneIntersection.LastUnresolvedBox;
+    Console.WriteLine($"FAILED_INTERSECTION scalar_budget={SurfacePlaneIntersection.LastUnresolvedBudget} depth={SurfacePlaneIntersection.LastUnresolvedDepth} box={cell.U0:R}/{cell.U1:R}/{cell.V0:R}/{cell.V1:R} boundary={SurfacePlaneIntersection.LastBoundaryFailure} residual={SurfacePlaneIntersection.LastBoundaryResidual.Lower:R}/{SurfacePlaneIntersection.LastBoundaryResidual.Upper:R} iso={SurfaceIsoPlaneRoots.LastFailure}");
+    var slot=KernelRuntime.GetCurveSlotByTag(KernelRuntime.LastSheetCurve);if(slot<0)return;
+    var curve=KernelRuntime.Curves[slot];
+    Console.WriteLine($"FAILED_BOUNDARY curve={curve.Header.Tag} class={curve.Class} range={curve.TMin:R}/{curve.TMax:R} ray={KernelRuntime.LastSheetRayU:R}/{KernelRuntime.LastSheetRayV:R}");
+    if(curve.Class==CurveClass.ICurve)
+    {
+        var data=KernelRuntime.ICurveDataPool[curve.DataIndex];
+        Console.WriteLine($"FAILED_BOUNDARY ic_supports={data.Surface0Tag}/{data.Surface1Tag} contact={data.IsBlendContact} side={data.BlendContactSide} program={data.ProgramBlock} uv_type={data.UvType}");
+    }
+    if(curve.Class==CurveClass.SPCurve)
+    {
+        var data=KernelRuntime.SpCurveDataPool[curve.DataIndex];
+        Console.WriteLine($"FAILED_BOUNDARY sp_support={data.SurfTag} uv_curve={data.BCurveTag}");
+    }
+    var owner=KernelRuntime.Bodies[KernelRuntime.ResolveTagRecord(body).Slot];var face=owner.FirstFaceBody;
+    for(var i=0;i<owner.FaceCountBody;i++,face=KernelRuntime.Faces[face].NextInBody)
+    {
+        var tag=KernelRuntime.Faces[face].SurfTag;var surface=KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(tag)];
+        Console.WriteLine($"FAILED_BOUNDARY face={i} support={tag} class={surface.Class} domain={surface.UMin:R}/{surface.UMax:R}/{surface.VMin:R}/{surface.VMax:R}");
+    }
 }
 static void PrintProfile(string operation,double apiMs)
 {
@@ -677,7 +719,7 @@ static unsafe PK_VECTOR_t Cross(PK_VECTOR_t a,PK_VECTOR_t b)=>new(a.coord[1]*b.c
 static unsafe double Dot(PK_VECTOR_t a,PK_VECTOR_t b)=>a.coord[0]*b.coord[0]+a.coord[1]*b.coord[1]+a.coord[2]*b.coord[2];
 static unsafe double Distance(PK_VECTOR_t a,PK_VECTOR_t b){var sum=0.0;for(var d=0;d<3;d++)sum+=Math.Pow(a.coord[d]-b.coord[d],2);return Math.Sqrt(sum);}
 static unsafe void Free(bool own,void* memory){if(memory!=null)Check(own?KernelRuntime.MemoryFree(memory):PK_MEMORY_free(memory),"return buffer");}
-static void Check(int error,string name){if(error!=0)throw new Exception($"{name}: error={error}, blend={KernelRuntime.LastRegularBlendStage}, stage={KernelRuntime.LastRegularBooleanStage}, face={KernelRuntime.LastRegularBooleanFace}, sheet={KernelRuntime.LastSheetPartitionStage}, curve={KernelRuntime.LastSheetCurve}, parameter={KernelRuntime.LastSheetParameter:R}, algorithm={KernelRuntime.LastSheetAlgorithmStatus}");}
+static void Check(int error,string name){if(error!=0)throw new Exception($"{name}: error={error}, blend={KernelRuntime.LastRegularBlendStage}, stage={KernelRuntime.LastRegularBooleanStage}, clip={KernelRuntime.LastRegularClipStage}, face={KernelRuntime.LastRegularBooleanFace}, sheet={KernelRuntime.LastSheetPartitionStage}, curve={KernelRuntime.LastSheetCurve}, parameter={KernelRuntime.LastSheetParameter:R}, algorithm={KernelRuntime.LastSheetAlgorithmStatus}");}
 static void Require(bool value,string message){if(!value)throw new Exception(message);}
 static string ScriptPath([CallerFilePath]string path="")=>path;
 [MethodImpl(MethodImplOptions.NoInlining)]

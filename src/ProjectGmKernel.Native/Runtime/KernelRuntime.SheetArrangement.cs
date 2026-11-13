@@ -491,6 +491,7 @@ internal static unsafe partial class KernelRuntime
         Span<double> parameters=stackalloc double[SheetPointLimit];Span<BufferOffset> endpoints=stackalloc BufferOffset[SheetPointLimit];
         Span<IntervalNumber> bounds=stackalloc IntervalNumber[SheetPointLimit];
         Span<OperationIntersectionPoint> coincidenceRoots=stackalloc OperationIntersectionPoint[checkAllBoundaries?IntersectionPointCapacity:0];
+        var firstCutHalfedge=nh;
         for(var c=0;c<cuts.Length;c++)
         {
             var cut=cuts[c];var n=0;
@@ -658,9 +659,14 @@ internal static unsafe partial class KernelRuntime
                     if(edge>=0&&curve!=cut.Curve){var unused=curve;var deleted=EntityDelete(1,&unused);if(deleted!=0)return deleted;}
                 }
                 var add=0;if(edge<0){add=model.AddEdge(curve,lower,upper,positive?a:b,positive?b:a,true,out edge,exact:certified);if(add!=0)return add;}
+                // Several support pairs can deliver the same canonical cut
+                // occurrence. Insert its two directed uses once in this face;
+                // repeated providers do not create parallel halfedges.
+                if(checkAllBoundaries&&cut.KeepImprint!=0)model.CutEdges[edge]|=2;
+                var inserted=false;for(var h=firstCutHalfedge;h<nh;h++)inserted|=halfedges[h].Edge==edge;
+                if(inserted)continue;
                 if(checkAllBoundaries)
                 {
-                    if(cut.KeepImprint!=0)model.CutEdges[edge]|=2;
                     var already=false;for(var h=0;h<nh;h++)already|=halfedges[h].Edge==edge;if(already)continue;
                     model.CutEdges[edge]|=1;
                 }
@@ -681,10 +687,12 @@ internal static unsafe partial class KernelRuntime
         scoped Span<ModelingCoedge> cycleCoedges,scoped Span<SheetCycle> cycles,out BufferCount cycleCount,out BufferCount coedgeCount)
     {
         cycleCount=coedgeCount=0;var nh=halfedges.Length;
+        RemoveNullSheetSpurs(halfedges);
         // Clockwise successor from the incoming reverse tangent walks the face
         // on the left, including intersections at existing vertices.
         for(var i=0;i<nh;i++)
         {
+            if(halfedges[i].Used!=0)continue;
             LastSheetPartitionStage=SheetPartitionStage.CycleTrace;
             ref var h=ref halfedges[i];ref readonly var edge=ref model.Edges[h.Edge];
             LastSheetCurve=edge.Curve;LastSheetParameter=i;
@@ -693,6 +701,7 @@ internal static unsafe partial class KernelRuntime
             var best=double.PositiveInfinity;var next=-1;
             for(var j=0;j<nh;j++)
             {
+                if(halfedges[j].Used!=0)continue;
                 ref readonly var candidate=ref halfedges[j];ref readonly var ce=ref model.Edges[candidate.Edge];
                 var start=candidate.StartEvent;if(start!=end)continue;
                 var angle=h.EndAngle+Math.PI-candidate.StartAngle;angle-=Math.Tau*Math.Floor(angle/Math.Tau);if(angle<1e-12)angle=Math.Tau;
@@ -750,6 +759,46 @@ internal static unsafe partial class KernelRuntime
         }
         return 0;
     }
+
+    // A leaf with both directed uses is a zero boundary chain. Peel such
+    // cut trees before angular ordering, where a spur's reverse tangent can
+    // otherwise compete with a real cell boundary. Unpaired source uses and
+    // closed rings survive; no geometric distance or parameter epsilon joins
+    // events or removes a finite modeling edge.
+    private static void RemoveNullSheetSpurs(Span<SheetHalfedge> halfedges)
+    {
+        var changed=true;
+        while(changed)
+        {
+            changed=false;
+            for(var i=0;i<halfedges.Length;i++)
+            {
+                ref var h=ref halfedges[i];if(h.Used!=0||h.EndEvent<0||h.StartEvent==h.EndEvent)continue;
+                var twin=-1;var leaf=true;
+                for(var j=0;j<halfedges.Length;j++)
+                {
+                    ref readonly var other=ref halfedges[j];if(other.Used!=0||other.StartEvent!=h.EndEvent)continue;
+                    if(other.Edge!=h.Edge){leaf=false;break;}
+                    if(other.Forward!=h.Forward&&other.EndEvent==h.StartEvent)twin=j;
+                }
+                if(!leaf||twin<0)continue;
+                h.Used=halfedges[twin].Used=1;changed=true;
+            }
+        }
+    }
+
+#if KERNEL_TEST_HOOKS
+    internal static void TestSheetCycleSpurs(ReadOnlySpan<ModelingEdge> edges,ReadOnlySpan<ModelingCoedge> coedges,Span<byte> removed)
+    {
+        Span<SheetHalfedge> halfedges=stackalloc SheetHalfedge[coedges.Length];
+        for(var i=0;i<coedges.Length;i++)
+        {
+            var use=coedges[i];var edge=edges[use.Edge];
+            halfedges[i]=new(){Edge=use.Edge,Forward=use.Forward,StartEvent=use.Forward!=0?edge.StartVertex:edge.EndVertex,EndEvent=use.Forward!=0?edge.EndVertex:edge.StartVertex};
+        }
+        RemoveNullSheetSpurs(halfedges);for(var i=0;i<halfedges.Length;i++)removed[i]=halfedges[i].Used;
+    }
+#endif
 
     private static int TraceUnresolvedOrder(SurfTag surface,BoundaryEventId endpoint,CurveTag first,CurveTag second,double a,double b,IntervalNumber turn)
     {

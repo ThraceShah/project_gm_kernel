@@ -48,6 +48,12 @@ internal readonly ref struct SurfaceIntersectionPatch
     internal bool IsProcedural=>isBlend||normalOffset!=0||!curveDomains.IsEmpty||!cylinderPhaseSupport.IsEmpty;
     internal bool UVariable=>isBlend||!curveDomains.IsEmpty||bezier.UDegree>0;
     internal bool VVariable=>isBlend&&!isSpine||bezier.VDegree>0;
+    internal bool TryPlaneResidual(in AnalyticSurface plane,in SurfaceParameterBox box,out IntervalNumber residual)
+    {
+        residual=default;
+        return !IsProcedural&&isoAxis==0&&sweepAxis==0&&!parameterLine&&supportParameterSide==0
+            &&BezierPlaneResidual.TryBound(bezier,plane,box,out residual);
+    }
     internal SplineDegree UDegree=>!curveDomains.IsEmpty?curveDegree:isBlend?1:bezier.UDegree;
     internal SplineDegree VDegree=>isBlend?(isSpine?0:1):bezier.VDegree;
     internal SurfaceIntersectionPatch(BezierSurfacePatch patch){bezier=patch;blend=default;surface=0;isBlend=isSpine=false;Domain=patch.Domain;}

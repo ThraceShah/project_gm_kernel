@@ -29,6 +29,7 @@ internal static unsafe partial class KernelRuntime
         internal SurfTag ContactSurface,ContactSupport,CuttingSurface;
         internal FiniteCurveSurfaceRoot Root;
         internal IntervalNumber BlendStation;
+        internal ScalarRootIsolation ContactIsolation;
         internal SurfaceParameterBox SplineDomain,CuttingDomain,SplineUniqueDomain,CuttingUniqueDomain;
         internal byte NativeBoundaryAxis;
         internal BufferOffset InputCoedge;
@@ -115,6 +116,7 @@ internal static unsafe partial class KernelRuntime
     {
         var record=input.Faces[face];Span<OperationIntersectionPoint> roots=stackalloc OperationIntersectionPoint[IntersectionPointCapacity];
         Span<ScalarRootIsolation> nativeRoots=stackalloc ScalarRootIsolation[IntersectionPointCapacity];
+        Span<ScalarRootIsolation> contactRoots=stackalloc ScalarRootIsolation[IntersectionPointCapacity];
         Span<double> spatialErrors=stackalloc double[IntersectionPointCapacity];
         Span<IntervalNumber> linePoles=stackalloc IntervalNumber[8],blendStations=stackalloc IntervalNumber[IntersectionPointCapacity];
         Span<SurfaceParameterBox> commonUv=stackalloc SurfaceParameterBox[IntersectionPointCapacity],targetUv=stackalloc SurfaceParameterBox[IntersectionPointCapacity];
@@ -205,7 +207,8 @@ internal static unsafe partial class KernelRuntime
                     var isolated=IsolateFiniteNativeTriple(edge,record.Surface,surfaceSlot,roots,nativeRoots,spatialErrors,commonUv,targetUv,out n);
                     if(isolated!=AlgorithmStatus.Success){LastSheetAlgorithmStatus=isolated;return IntersectionError(isolated);}
                 }
-                var nativeProof=!tripleProof&&!known&&!lineProof&&!conicPlaneProof&&certificates.IsEmpty&&TryNativeCurvePlaneEvents(edge,surface,roots,nativeRoots,spatialErrors,out n);
+                contactRoots.Clear();
+                var nativeProof=!tripleProof&&!known&&!lineProof&&!conicPlaneProof&&certificates.IsEmpty&&TryNativeCurvePlaneEvents(edge,surface,roots,nativeRoots,spatialErrors,out n,contactRoots);
                 FiniteCurveSurfaceRoot endpoint=default;
                 if(!tripleProof&&!nativeProof&&!known&&!lineProof&&!conicPlaneProof&&certificates.IsEmpty&&!originals.IsEmpty&&curveClass==CurveClass.ICurve)
                     nativeProof=TryStationaryNativePlaneEnd(edge,surface,originals,roots,nativeRoots,spatialErrors,out n,out endpoint);
@@ -261,6 +264,7 @@ internal static unsafe partial class KernelRuntime
                                 :planePairCylinder?PlanePairCylinderLineCertificate
                                 :lineProof?LineSurfaceCertificate:known||conicProof?(byte)1:(byte)0,Root=witness,
                             BlendStation=planePairLine?blendStations[r]:default,
+                            ContactIsolation=nativeProof?contactRoots[r]:default,
                             SplineDomain=tripleProof?commonUv[r]:domain,CuttingDomain=tripleProof?targetUv[r]:mappedSplineBoundary?splineProofs[r].First:default,
                             SplineUniqueDomain=uniqueDomain,CuttingUniqueDomain=mappedSplineBoundary?splineProofs[r].FirstDomain:default,NativeBoundaryAxis=boundaryAxis,
                             ExactPositionAxes=exactPositionAxes,
@@ -322,14 +326,19 @@ internal static unsafe partial class KernelRuntime
     }
 
     private static bool TryNativeCurvePlaneEvents(in ModelingEdge edge,SurfTag surface,Span<OperationIntersectionPoint> roots,
-        Span<ScalarRootIsolation> isolation,Span<double> spatialErrors,out BufferCount count)
+        Span<ScalarRootIsolation> isolation,Span<double> spatialErrors,out BufferCount count,Span<ScalarRootIsolation> contactRoots)
     {
         count=0;var curve=Curves[GetCurveSlotByTag(edge.Curve)];var support=Surfaces[GetSurfaceSlotByTag(surface)];
         if(curve.Class!=CurveClass.ICurve||support.Class!=SurfaceClass.Plane||!TryPrepareSurface(support,out var plane))return false;
         var data=ICurveDataPool[curve.DataIndex];
         if(data.ProgramBlock<=0&&data.IsBlendContact==0)return false;
         if(RegularCoincidentSupports(surface,data.Surface0Tag)||RegularCoincidentSupports(surface,data.Surface1Tag))return false;
-        if(data.IsBlendContact!=0)return TryBlendContactPlaneEvents(data,edge,plane,roots,isolation,spatialErrors,out count);
+        if(data.IsBlendContact!=0)
+        {
+            var complete=TryBlendContactPlaneEvents(data,edge,plane,roots,isolation,spatialErrors,out count,contactRoots);
+            if(!complete)contactRoots.Clear();
+            return complete;
+        }
         var status=IntersectFiniteIntersectionCurvePlane(edge.Curve,edge.Start,edge.End,plane,roots,out count,isolation,spatialErrors);
         // Endpoint contacts or a nonmonotone unresolved cell retain the
         // existing explicit endpoint/general solver. No partial root list

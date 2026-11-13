@@ -302,7 +302,7 @@ internal static unsafe partial class KernelRuntime
                     var status=IsolateFiniteExplicitLevelSet(use,flat,roots,stations,errors,out count);if(status!=AlgorithmStatus.Success)return IntersectionError(status);
                 }
             }
-            else if(!TryNativeCurvePlaneEvents(use,plane,roots,stations,errors,out count))
+            else if(!TryNativeCurvePlaneEvents(use,plane,roots,stations,errors,out count,stackalloc ScalarRootIsolation[IntersectionPointCapacity]))
             {
                 if(!TryStationaryNativePlaneEnd(use,plane,originals,roots,stations,errors,out count,out var endpoint))
                     return ParasolidConstants.PK_ERROR_cant_do_intersect;

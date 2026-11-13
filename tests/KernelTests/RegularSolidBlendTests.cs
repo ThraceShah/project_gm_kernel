@@ -205,9 +205,51 @@ public unsafe class RegularSolidBlendTests:IDisposable
         Assert.Equal(0,KernelRuntime.EntityDelete(1,&received));Assert.Equal(blocks,KernelRuntime.BlocksLiveBytes);
     }
 
-    private static int RoundedRoof()
+    [Fact]
+    public void NativeContactEndpointRequiresItsUVRootAndCompletePrecisionNeighbourhood()
     {
-        var body=Roof();var edge=SelectedEdge(body);var set=new PK_EDGE_set_blend_constant_o_s{o_t_version=2};int count;
+        var body=RoundedRoof(true);
+        Assert.Equal(0,XtBrepImportTests.Receive(XtBrepImportTests.Transmit(body),out body));
+        Assert.True(KernelRuntime.TryResolveBodySlot(body,out var slot));
+        var face=KernelRuntime.Bodies[slot].FirstFaceBody;var blend=0;
+        for(var i=0;i<KernelRuntime.Bodies[slot].FaceCountBody;i++,face=KernelRuntime.Faces[face].NextInBody)
+        {
+            var tag=KernelRuntime.Faces[face].SurfTag;
+            if(KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(tag)].Class==SurfaceClass.BlendSurface)blend=tag;
+        }
+        Assert.NotEqual(0,blend);var attached=blend;blend=0;Assert.Equal(0,KernelRuntime.EntityCopy(attached,&blend));
+        var definition=new PK_PLANE_sf_s();definition.basis_set.location.coord[0]=.47;
+        definition.basis_set.axis.coord[0]=1;definition.basis_set.ref_direction.coord[1]=1;var plane=0;
+        Assert.Equal(0,KernelRuntime.PlaneCreate(&definition,&plane));
+        var options=new PK_SURF_intersect_surf_o_s{o_t_version=3,tolerance=1e-8,mixed_curve_category=ParasolidConstants.PK_mixed_intersection_pline_c,have_uvbox_1=1};
+        var support=KernelRuntime.Surfaces[KernelRuntime.GetSurfaceSlotByTag(blend)];
+        options.uvbox_1.param[0]=support.UMin;options.uvbox_1.param[1]=support.VMin;options.uvbox_1.param[2]=support.UMax;options.uvbox_1.param[3]=support.VMax;
+        int np,nc;PK_VECTOR_s* points;int* curves;PK_INTERVAL_s* ranges;int* kinds;
+        Assert.Equal(0,KernelRuntime.SurfIntersectSurf(blend,plane,&options,&np,&points,&nc,&curves,&ranges,&kinds));
+        try
+        {
+            Assert.Equal(1,nc);Assert.Equal(CurveClass.ICurve,KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(curves[0])].Class);
+            var edge=KernelRuntime.Bodies[slot].FirstEdgeBody;var checkedEnds=0;
+            for(var i=0;i<KernelRuntime.Bodies[slot].EdgeCountBody;i++,edge=KernelRuntime.Edges[edge].NextInBody)
+            {
+                var record=KernelRuntime.Curves[KernelRuntime.GetCurveSlotByTag(KernelRuntime.Edges[edge].CurveTag)];
+                if(record.Class!=CurveClass.ICurve||KernelRuntime.ICurveDataPool[record.DataIndex].IsBlendContact==0)continue;
+                Assert.Equal(0,KernelRuntime.TestNativeContactEnd(edge,curves[0],plane,ranges[0].value[0],ranges[0].value[1],0,out var handled));
+                Assert.True(handled);checkedEnds++;
+                for(byte invalid=1;invalid<=4;invalid++)
+                {
+                    Assert.Equal(0,KernelRuntime.TestNativeContactEnd(edge,curves[0],plane,ranges[0].value[0],ranges[0].value[1],invalid,out handled));
+                    Assert.False(handled);
+                }
+            }
+            Assert.Equal(2,checkedEnds);
+        }
+        finally{KernelRuntime.MemoryFree(points);KernelRuntime.MemoryFree(curves);KernelRuntime.MemoryFree(ranges);KernelRuntime.MemoryFree(kinds);}
+    }
+
+    private static int RoundedRoof(bool curvedWall=false)
+    {
+        var body=Roof(.4,curvedWall);var edge=SelectedEdge(body);var set=new PK_EDGE_set_blend_constant_o_s{o_t_version=2};int count;
         Assert.Equal(0,KernelRuntime.EdgeSetBlendConstant(1,&edge,.1,&set,&count,null));
         var fix=new PK_BODY_fix_blends_o_s{o_t_version=31,tolerance=1e-7};int fault,fe,ft;
         Assert.Equal(0,KernelRuntime.BodyFixBlends(body,&fix,&count,null,null,null,&fault,&fe,&ft));return body;

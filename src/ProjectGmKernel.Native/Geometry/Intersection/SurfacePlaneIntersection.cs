@@ -212,6 +212,9 @@ internal static class SurfacePlaneIntersection
         if(isolation.Certified){node.Isolation=isolation;node.RootAxis=axis==0?(byte)2:(byte)1;}
         Span<IntervalNumber> bounds=stackalloc IntervalNumber[9];var status=patch.Bound(new(u,u,v,v),bounds);if(status!=AlgorithmStatus.Success)return status;
         LastBoundaryResidual=Distance(bounds,plane);
+        if(LastBoundaryResidual.Magnitude>tolerance&&patch.TryPlaneResidual(plane,new(u,u,v,v),out var composed))
+            LastBoundaryResidual=new(Math.Max(LastBoundaryResidual.Lower,composed.Lower),Math.Min(LastBoundaryResidual.Upper,composed.Upper));
+        if(!LastBoundaryResidual.Finite)return AlgorithmStatus.NotConverged;
         if(isolation.Certified)
         {
             // The sign bracket and monotone derivative already establish a

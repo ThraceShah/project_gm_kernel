@@ -1084,3 +1084,61 @@ CHART secant 的偏离仅用于初始盒宽提示，不能当曲线误差界；�
 
 这是算法结构与成本的实改，仍非 M0–M5、剩余分类或完整性能目标完成。
 没有新增独立 review worker；整体稳定交付再集中接受。
+
+## 在研：有理支撑的求交误差与原生接触端点传递
+
+新执行把有理权重、反向 U、非单位 native knot、镜像旋转、三尺度、复制删源及
+editable XT 回读后的 Boolean 连起来；不是仅在新四维系统内自验。
+
+1. 原齐次 Bezier net 先组合平面线性泛函，再作有理投影，得到同一曲面的
+   outward residual 包围。只在原 XYZ 点包围残差不能满足请求时与其取交；
+   空交显式失败。没有改变 `2e-14` 点残差门限、root budget 或几何容差。
+   原先平移后约 `2e-13` 的独立 XYZ 区间宽度不能据此认定模型错误。
+   这不是已拒 NativeScalarLevel 的 Blend/V 公式或 root-solver 改写。
+2. 接触线/平面已在 Blend 原生 U 隔离出唯一根，但映射回 ICurve chord gauge
+   后原 U 根盒、单调域被丢弃，后续退回 XYZ 反求。现在在操作私有
+   `RegularBoundaryRoot` 保留该原始证据，失败的 provider 清空其接触证据。
+   同一个 Blend、同切割平面、同固定 native V 且在同一单调根域的有限
+   provider 端点，必须把根到存储端点的完整 native U 条带及两侧实际空间
+   包围全部放进 `1e-8` 线性精度邻域，才关联到该有限端点。它是精度合同内
+   的有限代表，不声称该代表恰是平面数学零点；不按参数 epsilon、坐标或
+   单点距离合并。新增 trace 记录原 U 根盒、V、有限 station、完整直径和 witness。
+3. 多个 support pair 提供同一 canonical cut occurrence 时只插入一次有向对，
+   保留 KeepImprint 标记。环提取前仅剥离具有反向成对用途的悬挂树：其边界
+   1-chain 为零，不能围成面域。已有闭环、没有反向用途的源边不被剥离，
+   也不因此删除模型定义中的实体。原来提环后的零链规则保持相同含义。
+
+以上都是 GM 实现结论。官方 XT/FD 对原生参数、有限拓扑及 precision 的定义是
+前提；此前同平台 PK CNS/ISS 动态链仍是实际所选分支证据。新静态查询的
+`PK_SURF_parameterise_vector` 经 COI/QSU；QSU 的空 callgraph 在实际反汇编
+中有 tail jump 和间接 switch，不能解释为没有调用。PK 是否采用本轮四未知量
+消元及如何在内部关联这些有限端点仍未知，不作已复刻 PK 内部算法的声明。
+
+执行日志仍在 `temp_docs/native-system-alignment/`，原字节及退出码保留：
+
+- `native-uv-plane-composition-managed-v1` 27/27 raw 0；
+  `native-uv-plane-spur-managed-v1` 为测试命名空间编译错 raw 1，修正后 v2
+  48/48 raw 0，不计为建模失败。
+- `native-uv-plane-spur-full-managed-v1` 2171/2171 raw 0；端点证据集成后的
+  `native-uv-contact-integrated-full-managed-v1` 2172/2172 raw 0，IL guard
+  3166 CLEAN。其后仅增加 failed-provider 清空保护及相应负例；
+  `native-contact-end-negative-managed-v4` 16/16 raw 0，包含错误 UV 根、
+  无认证、远离实际空间邻域及裁剪后失败 provider 不可遗留证据。此前 v1
+  是测试调用签名编译错，v2 是 owned/free geometry 不同 body 的 API 拒绝，
+  v3 正确复制为 free geometry 后 8/8 raw 0，均未反签失败操作。
+- `native-uv-contact-final-rational-v1` 是脚本 fixed-buffer unsafe context
+  编译错；v2 实际执行三族 Fix、各自 Boolean、九个 lifecycle/remodel：
+  有理权重、U 反向、native U `[-2,3]`、尺度 `.125/1.7/8`，全部 GM fresh XT
+  receive/fullcheck/strict、材料及上下游操作分别通过，raw 2 保留物性 U。
+- `native-uv-contact-final-sheet-v1` 全部 88/88 raw 0，实际 periodic winding
+  87；不是给尚未执行的曲面或事件类别授予资格。
+- 原 `native-uv-rational-*` 定位执行中的 raw 134/157/5018/5295 保留。中间
+  spurs 集成只通过五个 lifecycle，两个后续失败不被删除；保留原生 U
+  根证据后凸双 NURBS 的第六项通过；用完整 native 条带精度证明后凹支撑
+  三尺度也通过。最后以统一 v2 执行重新确认九项，而非拼接中间绿灯。
+- 扩大验证的 `native-uv-contact-native-gauge-v1`：有理正向 U、native 域
+  `[-.125,.375]`、切割 `x=.43`、生命周期尺度1.7，仍暴露凸双 NURBS 回读
+  Boolean 和凹双 NURBS Fix 终止失败。PK 同输入操作已执行；这些新缺口
+  继续由本 owner 处理，不把前述九项通过当通用能力或整体目标完成。
+
+新的 whole-operation 性能与固定包尚待当前主线稳定集成；旧 de9 包保持原字节。

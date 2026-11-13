@@ -178,7 +178,9 @@ internal static unsafe partial class KernelRuntime
         var final=BSurfaceEvaluation.Evaluate(surface,node.U,node.V,layout,workspace,jets);if(final!=AlgorithmStatus.Success)return final;
         final=source.Bound(new(node.U,node.U,node.V,node.V),bound);if(final!=AlgorithmStatus.Success)return final;
         var distance=(bound[0]-plane.Origin.X)*plane.Axis.X+(bound[1]-plane.Origin.Y)*plane.Axis.Y+(bound[2]-plane.Origin.Z)*plane.Axis.Z;
-        if(distance.Magnitude>2e-14)return AlgorithmStatus.NotConverged;
+        if(distance.Magnitude>2e-14&&BezierPlaneResidual.TryBound(patch,plane,new(node.U,node.U,node.V,node.V),out var composed))
+            distance=new(Math.Max(distance.Lower,composed.Lower),Math.Min(distance.Upper,composed.Upper));
+        if(!distance.Finite||distance.Magnitude>2e-14)return AlgorithmStatus.NotConverged;
         node.Point=jets[0];return OperationIntersection.Parameters(plane,node.Point,out node.S,out node.T);
     }
 

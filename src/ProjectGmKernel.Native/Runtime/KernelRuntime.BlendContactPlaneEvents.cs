@@ -14,7 +14,7 @@ internal static unsafe partial class KernelRuntime
     // ICurve chord gauge. Adjacent gauge cells share their stored anchor;
     // retain both projections when the one isolated U root spans that seam.
     private static bool TryBlendContactPlaneEvents(in ICurveData data,in ModelingEdge edge,in AnalyticSurface plane,
-        Span<OperationIntersectionPoint> roots,Span<ScalarRootIsolation> isolation,Span<double> spatialErrors,out BufferCount count)
+        Span<OperationIntersectionPoint> roots,Span<ScalarRootIsolation> isolation,Span<double> spatialErrors,out BufferCount count,Span<ScalarRootIsolation> contactRoots)
     {
         count=0;var n=data.ChartCount;
         var map=BlendContactMap(data);var station=map[..n];var t=map.Slice(n,n);var scales=map.Slice(2*n,n-1);
@@ -35,7 +35,7 @@ internal static unsafe partial class KernelRuntime
         Span<KernelVector3> point=stackalloc KernelVector3[1];
         for(var r=0;r<found;r++)
         {
-            var u=isolation[r].Root;IntervalNumber native=default;var first=-1;var shared=double.NaN;
+            var contactRoot=isolation[r];var u=contactRoot.Root;IntervalNumber native=default;var first=-1;var shared=double.NaN;
             for(var cell=0;cell<n-1;cell++)
             {
                 var increasing=station[cell+1]>station[cell];
@@ -68,10 +68,11 @@ internal static unsafe partial class KernelRuntime
             var jn=count++;
             while(jn>0&&roots[jn-1].First>parameter)
             {
-                roots[jn]=roots[jn-1];isolation[jn]=isolation[jn-1];spatialErrors[jn]=spatialErrors[jn-1];jn--;
+                roots[jn]=roots[jn-1];isolation[jn]=isolation[jn-1];spatialErrors[jn]=spatialErrors[jn-1];contactRoots[jn]=contactRoots[jn-1];jn--;
             }
             roots[jn]=new(){Point=p,First=parameter,Second=u.Midpoint,Kind=IntersectionVectorKind.Simple};
             isolation[jn]=new(){Root=native,Certified=true};spatialErrors[jn]=error;
+            contactRoots[jn]=contactRoot;
         }
         for(var r=1;r<count;r++)if(isolation[r-1].Root.Upper>=isolation[r].Root.Lower)return false;
         return true;
