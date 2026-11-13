@@ -1581,3 +1581,26 @@ BLEND_BOUND 的父U/接触t表和已编译隐式spine CHART。解析圆/椭圆�
 原始D2差异仍标Different；D0/D1跨端对照、各端实际D2变换协变和有限几何分别验收，
 不把差分样本称为任意曲线等价证明。三层脚本原有高阶差值诊断也不补签全部查询。
 以上实现仍未取得独立接受或性能资格，完整原目标继续执行。
+
+### 9e03c0ea 固定源交付检查点
+
+源码 `9e03c0ea20c8087cc59567b82def0ea8fda13466` 已提交推送。原生参数修改的
+固定源复验为 `9e03c0ea-q2-{transform,rational,nested,periodic,local,whole,complete-junction}-v1`，
+七个实际生产执行均记录同一 Native SHA256
+449aa7c2b6a50fd7de69d17c6870a8328af6c598d3c0f5482320d0a8b53c5126。
+transform87、periodic9、local5及三层nested各raw0；有理三族九组生命周期、
+四族×2的Fix/Boolean和两种complete追踪交汇几何拓扑通过，raw2保留各物性U。
+追踪34/32关系含错误来源负例，但其有限来源样本不冒称连续包含证明。
+完整托管2200/2200、guard3179 CLEAN仍是单列的testhooks构建结果。
+
+固定包 `temp_docs/native-system-delivery/checkpoint-9e03c0ea.zip`：27,305,682字节，
+SHA256 `2f94d46925528722c6f7ba865412c8ab50d87add7fc7636aa108b26c7f3a2b1d`，
+410项制品，源码zip、生产DLL/PDB的编译文档校验、原日志/退出、真实输入/输出XT和
+逐源结果说明已封存；没有厂商运行库或凭证。旧b08包字节保持不变。
+manifest明确`independentlyAccepted=false`、`performanceQualified=false`。
+
+本次whole打开profiling，8053.299ms、raw2，不能当作无探针性能接受。warm四参
+家族的Fix约205ms、后续Boolean约253ms，真实PK约3.7ms/2.2ms，仍有明显整链差距。
+计数显示反复native区间Jacobian/求界及Clip/Arrange/Classify均有成本，尚不能把
+inclusive bound时间签成排他CPU，也不由此恢复被拒候选、删证明或增加预算。
+继续沿原生有限关联和实际主处理链处理共同缺口，包封存不是任务DONE。
